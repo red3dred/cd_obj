@@ -28,6 +28,7 @@ public class ConfigInvasion extends Config
         writer.newLine();
         writeProperty(writer, "update-messages-enabled");
         writeProperty(writer, "destructed-blocks-drop");
+        writeProperty(writer, "enable-log-file");
         writeProperty(writer, "craft-items-enabled");
         writeProperty(writer, "guiID-Nexus");
         if (debug)

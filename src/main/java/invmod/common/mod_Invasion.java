@@ -111,7 +111,7 @@ import net.minecraft.client.resources.IReloadableResourceManager;
 
 
 //basic @Mod 
-@Mod(modid = "mod_Invasion", name = "Invasion", version = "1.1.2")
+@Mod(modid = "mod_Invasion", name = "Invasion", version = "1.1.5")
 public class mod_Invasion 
 {
 
@@ -121,7 +121,7 @@ public class mod_Invasion
 	
 	//public static ResourceLoader resourceLoader;
 	public static String recentNews;
-	public static Version versionNumber = new Version(1, 1, 2);
+	public static Version versionNumber = new Version(1, 1, 5);
 	public static String latestVersionNumber;
 	public static GuiHandler guiHandler;
 	public static ConfigInvasion configInvasion;
@@ -143,6 +143,7 @@ public class mod_Invasion
 	public static final byte PACKET_SFX = 0;
 	public static final byte PACKET_INV_MOB_SPAWN = 2;
 	public static int entityId=250;
+	public static final String modid = "mod_Invasion";
 	/*NOOB HAUS: Default settings for blocks/items etc; used to write config (common.Config) on first run 
 	 */
 	
@@ -183,6 +184,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 	private static int maxNightMobs;
 	private static float nightMobStatsScaling;
 	private static boolean nightMobsBurnInDay;
+	private static boolean enableLog;
 	
 	//mobhealth
 	public static HashMap<String, Integer> mobHealthNightspawn = new HashMap();
@@ -253,7 +255,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 		
 		configInvasion = new ConfigInvasion();
 		configInvasion.loadConfig(configFile);
-		
+		enableLog = configInvasion.getPropertyValueBoolean("enable-log-file", false);
 		destructedBlocksDrop = configInvasion.getPropertyValueBoolean("destructed-blocks-drop", true);
 		updateNotifications=configInvasion.getPropertyValueBoolean("update-messages-enabled", true);;
 		//soundsEnabled = configInvasion.getPropertyValueBoolean("sounds-enabled", true);
@@ -342,7 +344,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 
 	@EventHandler
 	public void postInitialise(FMLPostInitializationEvent evt) {
-		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
+		/*((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(new IResourceManagerReloadListener() {
 			private boolean ranOnce = false;
 
 			@Override
@@ -359,7 +361,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 
 
 			}
-		});
+		});*/
 	}
 	
 	@EventHandler
@@ -499,17 +501,16 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 	{
 		  
 		//Register Entities
-        EntityRegistry.registerGlobalEntityID(EntityIMZombie.class, "IMZombie", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMSkeleton.class, "IMSkeleton", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMSpider.class, "IMSpider", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMPigEngy.class, "IMPigEngy", EntityRegistry.findGlobalUniqueEntityId());  
-        EntityRegistry.registerGlobalEntityID(EntityIMThrower.class, "IMThrower", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMWolf.class, "IMWolf", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMEgg.class, "IMEgg", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMCreeper.class, "IMCreeper", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMImp.class, "IMImp", EntityRegistry.findGlobalUniqueEntityId());
-        EntityRegistry.registerGlobalEntityID(EntityIMZombiePigman.class, "IMZombiePigman", EntityRegistry.findGlobalUniqueEntityId());
-        
+		EntityRegistry.registerModEntity(EntityIMZombie.class, "IMZombie", 5, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMSkeleton.class, "IMSkeleton", 6, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMSpider.class, "IMSpider", 7, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMPigEngy.class, "IMPigEngy", 8, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMWolf.class, "IMWolf", 9, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMEgg.class, "IMEgg", 10, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMCreeper.class, "IMCreeper", 11, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMImp.class, "IMImp", 12, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMZombiePigman.class, "IMZombiePigman", 13, this, 128, 1, true);
+        EntityRegistry.registerModEntity(EntityIMThrower.class, "IMThrower", 14, this, 128, 1, true);
         EntityRegistry.registerModEntity(EntityIMBoulder.class, "IMBoulder", 1, this, 36, 4, true);
         EntityRegistry.registerModEntity(EntityIMBolt.class, "IMBolt", 2, this, 36, 5, false);
         EntityRegistry.registerModEntity(EntityIMTrap.class, "IMTrap", 3, this, 36, 5, false);
@@ -518,8 +519,8 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 		if (debugMode) 
 		{
 			
-			  EntityRegistry.registerGlobalEntityID(EntityIMBird.class, "IMBird", EntityRegistry.findGlobalUniqueEntityId());
-		      EntityRegistry.registerGlobalEntityID(EntityIMGiantBird.class, "IMGiantBird", EntityRegistry.findGlobalUniqueEntityId());		
+			EntityRegistry.registerModEntity(EntityIMBird.class, "IMBird", 15, this, 128, 1, true);
+            EntityRegistry.registerModEntity(EntityIMGiantBird.class, "IMGiantBird", 16, this, 128, 1, true);
 		}
         
         //spawneggs needed things and despensebehavior
@@ -527,27 +528,27 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
         BlockDispenser.dispenseBehaviorRegistry.putObject(itemSpawnEgg, new DispenserBehaviorSpawnEgg());
         
         //Add spawneggs
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 1, "IMZombie", "Zombie T1", CustomTags.IMZombie_T1(), 0x6B753F, 0x281B0A));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 2, "IMZombie", "Zombie T2", CustomTags.IMZombie_T2(), 0x497533, 0x7C7C7C));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 3, "IMZombie", "Tar Zombie T2", CustomTags.IMZombie_T2_tar(), 0x3A4225, 0x191C13));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 4, "IMZombie", "Zombie Brute T3", CustomTags.IMZombie_T3(), 0x586146, 0x1E4639));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 5, "IMSkeleton", "Skeleton T1", new NBTTagCompound(), 0x9B9B9B, 0x797979));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 6, "IMSpider", "Spider T1", new NBTTagCompound(), 0x504A3E, 0xA4121C));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 7, "IMSpider", "Spider T1 Baby", CustomTags.IMSpider_T1_baby(), 0x504A3E, 0xA4121C));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 8, "IMSpider", "Spider T2 Jumper", CustomTags.IMSpider_T2(), 0x444167, 0x0A0328));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 9, "IMSpider", "Spider T2 Mother", CustomTags.IMSpider_T2_mother(), 0x444167, 0x0A0328));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 10, "IMCreeper", "Creeper T1", new NBTTagCompound(), 0x238F1F, 0xA5AAA6));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 11, "IMPigEngy", "Pigman Engineer T1", new NBTTagCompound(), 0xEC9695, 0x420000));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 12, "IMThrower", "Thrower T1", new NBTTagCompound(), 0x545F37, 0x1D2D3E));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 13, "IMThrower", "Thrower T2", CustomTags.IMThrower_T2(), 0x5303814, 0x632808));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 14, "IMImp", "Imp T1", new NBTTagCompound(), 0xB40113, 0xFF0000));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 15, "IMZombiePigman", "Zombie Pigman T1", CustomTags.IMZombiePigman_T1(), 0xEB8E91, 0x49652F));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 16, "IMZombiePigman", "Zombie Pigman T2", CustomTags.IMZombiePigman_T2(), 0xEB8E91, 0x49652F));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 17, "IMZombiePigman", "Zombie Pigman T3", CustomTags.IMZombiePigman_T3(), 0xEB8E91, 0x49652F));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 1, "mod_Invasion.IMZombie", "Zombie T1", CustomTags.IMZombie_T1(), 0x6B753F, 0x281B0A));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 2, "mod_Invasion.IMZombie", "Zombie T2", CustomTags.IMZombie_T2(), 0x497533, 0x7C7C7C));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 3, "mod_Invasion.IMZombie", "Tar Zombie T2", CustomTags.IMZombie_T2_tar(), 0x3A4225, 0x191C13));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 4, "mod_Invasion.IMZombie", "Zombie Brute T3", CustomTags.IMZombie_T3(), 0x586146, 0x1E4639));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 5, "mod_Invasion.IMSkeleton", "Skeleton T1", new NBTTagCompound(), 0x9B9B9B, 0x797979));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 6, "mod_Invasion.IMSpider", "Spider T1", new NBTTagCompound(), 0x504A3E, 0xA4121C));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 7, "mod_Invasion.IMSpider", "Spider T1 Baby", CustomTags.IMSpider_T1_baby(), 0x504A3E, 0xA4121C));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 8, "mod_Invasion.IMSpider", "Spider T2 Jumper", CustomTags.IMSpider_T2(), 0x444167, 0x0A0328));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 9, "mod_Invasion.IMSpider", "Spider T2 Mother", CustomTags.IMSpider_T2_mother(), 0x444167, 0x0A0328));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 10, "mod_Invasion.IMCreeper", "Creeper T1", new NBTTagCompound(), 0x238F1F, 0xA5AAA6));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 11, "mod_Invasion.IMPigEngy", "Pigman Engineer T1", new NBTTagCompound(), 0xEC9695, 0x420000));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 12, "mod_Invasion.IMThrower", "Thrower T1", new NBTTagCompound(), 0x545F37, 0x1D2D3E));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 13, "mod_Invasion.IMThrower", "Thrower T2", CustomTags.IMThrower_T2(), 0x5303814, 0x632808));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 14, "mod_Invasion.IMImp", "Imp T1", new NBTTagCompound(), 0xB40113, 0xFF0000));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 15, "mod_Invasion.IMZombiePigman", "Zombie Pigman T1", CustomTags.IMZombiePigman_T1(), 0xEB8E91, 0x49652F));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 16, "mod_Invasion.IMZombiePigman", "Zombie Pigman T2", CustomTags.IMZombiePigman_T2(), 0xEB8E91, 0x49652F));
+        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 17, "mod_Invasion.IMZombiePigman", "Zombie Pigman T3", CustomTags.IMZombiePigman_T3(), 0xEB8E91, 0x49652F));
         
         if (debugMode)
         {   
-            SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 18, "IMGiantBird", "Vulture T1", new NBTTagCompound(), 0x2B2B2B, 0xEA7EDC));
+            SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 18, "mod_Invasion.IMGiantBird", "Vulture T1", new NBTTagCompound(), 0x2B2B2B, 0xEA7EDC));
         }
 
 		
@@ -624,7 +625,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 
 		GameRegistry.addRecipe(new ItemStack(itemProbe, 1, 0), new Object[] { " X ", "XX ", "XX ", Character.valueOf('X'), Items.iron_ingot });
 
-		GameRegistry.addRecipe(new ItemStack(itemProbe, 1, 1), new Object[] { " D ", " # ", " X ", Character.valueOf('X'), Items.blaze_rod, Character.valueOf('#'), itemPhaseCrystal, Character.valueOf('D'), new ItemStack(itemProbe, 1, 0) });
+		GameRegistry.addRecipe(new ItemStack(itemProbe, 1, 1), new Object[] { " D ", " # ", " X ", Character.valueOf('X'), Items.stick, Character.valueOf('#'), itemPhaseCrystal, Character.valueOf('D'), new ItemStack(itemProbe, 1, 0) });
 
 		GameRegistry.addSmelting(itemCatalystMixture, new ItemStack(itemNexusCatalyst), 1.0F);
 		GameRegistry.addSmelting(itemStableCatalystMixture, new ItemStack(itemStableNexusCatalyst), 1.0F);
@@ -913,27 +914,29 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 
 	public static void log(String s) 
 	{
-		if (s == null) 
-		{
-			return;
-		}
-		try
-		{
-			if (logOut != null) 
+		if (mod_Invasion.enableLog) {
+			if (s == null) 
 			{
-				logOut.write(s);
-				logOut.newLine();
-				logOut.flush();
+				return;
 			}
-			else 
+			try
 			{
+				if (logOut != null) 
+				{
+					logOut.write(s);
+					logOut.newLine();
+					logOut.flush();
+				}
+				else 
+				{
+					System.out.println(s);
+				}
+			} 
+			catch (IOException e) 
+			{
+				System.out.println("Couldn't write to invasion log file");
 				System.out.println(s);
 			}
-		} 
-		catch (IOException e) 
-		{
-			System.out.println("Couldn't write to invasion log file");
-			System.out.println(s);
 		}
 	}
 
@@ -951,7 +954,6 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 			{
 			health = mobHealthInvasion.get(mob.toString() + "-invasionSpawn-health");
 			}else{
-				System.out.println(mob.toString()+" not found, using default health value");
 				return 20;
 			}
 		}else{
@@ -959,7 +961,6 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 			{
 			health = mobHealthNightspawn.get(mob.toString() + "-nightSpawn-health");
 			}else{
-				System.out.println(mob.toString()+" not found, using default health value");
 				return 20;
 			}
 		}

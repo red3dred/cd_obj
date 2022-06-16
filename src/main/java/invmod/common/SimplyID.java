@@ -56,7 +56,7 @@ public class SimplyID
     file = new File(directory + "savedIDs.txt");
     try
     {
-      writer = new PrintWriter(new BufferedWriter(new FileWriter(file, true))); } catch (FileNotFoundException e) {
+      writer = new PrintWriter(new BufferedWriter(new FileWriter(file, true))); } catch (FileNotFoundException e2) {
     } catch (IOException e) {
       e.printStackTrace();
     }

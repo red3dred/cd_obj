@@ -298,7 +298,7 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 //	    		{
 	            //this.worldObj.createExplosion(null, this.xTile, this.yTile, this.zTile, 1.0F, true);
 	            
-	    			 Explosion explosion = new Explosion(this.worldObj, this, this.xTile, this.yTile, this.zTile, 1.0F);
+	    			 Explosion explosion = new Explosion(this.worldObj, this, this.xTile, this.yTile, this.zTile, 4.0F);
 	    	            explosion.isFlaming = false;
 	    	            explosion.isSmoking = mobgriefing;
 	    	            explosion.doExplosionA();

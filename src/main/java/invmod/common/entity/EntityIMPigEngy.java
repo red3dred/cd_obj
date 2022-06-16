@@ -129,7 +129,10 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 
 		this.askForScaffoldTimer -= 1;
 		if (this.targetNexus != null) {
-			int weight = Math.max(6000 / this.targetNexus.getYCoord() - getYCoord(), 1);
+			int weight = 1;
+            if (this.targetNexus.getYCoord() - this.getYCoord() > 1) {
+                weight = Math.max(6000 / this.targetNexus.getYCoord() - getYCoord(), 1);
+            }
 			if ((this.currentGoal == Goal.BREAK_NEXUS) && (((getNavigatorNew().getLastPathDistanceToTarget() > 2.0F) && (this.askForScaffoldTimer <= 0)) || (this.rand.nextInt(weight) == 0))) {
 				if (this.targetNexus.getAttackerAI().askGenerateScaffolds(this)) {
 					getNavigatorNew().clearPath();

@@ -3,7 +3,6 @@ package invmod.client;
 import invmod.client.render.AnimationRegistry;
 import invmod.client.render.ModelIMSkeleton;
 import invmod.client.render.ModelImp;
-import invmod.client.render.ModelQuetzalcoatlus;
 import invmod.client.render.ModelThrower;
 import invmod.client.render.ModelTrap;
 import invmod.client.render.RenderB;

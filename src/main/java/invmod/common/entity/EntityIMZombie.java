@@ -29,6 +29,7 @@ import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
+import net.minecraft.entity.monster.EntityGolem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -134,6 +135,7 @@ public class EntityIMZombie extends EntityIMMob implements ICanDig
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIKillEntity(this, EntityPlayer.class, 40));
 		this.tasks.addTask(1, new EntityAIKillEntity(this, EntityPlayerMP.class, 40));
+		this.tasks.addTask(1, new EntityAIKillEntity(this, EntityGolem.class, 30));
 		this.tasks.addTask(2, new EntityAIAttackNexus(this));
 		this.tasks.addTask(3, new EntityAIWaitForEngy(this, 4.0F, true));
 		this.tasks.addTask(4, new EntityAIKillEntity(this, EntityLiving.class, 40));

@@ -282,7 +282,7 @@ public class EntityIMBoulder extends Entity
     		{
             //this.worldObj.createExplosion(null, this.xTile, this.yTile, this.zTile, 0.5F, true);
             
-            Explosion explosion = new Explosion(this.worldObj, this, this.xTile, this.yTile, this.zTile, 0.5F);
+            Explosion explosion = new Explosion(this.worldObj, this, this.xTile, this.yTile, this.zTile, 2.0F);
             explosion.isFlaming = false;
             explosion.isSmoking = mobgriefing;
             explosion.doExplosionA();
