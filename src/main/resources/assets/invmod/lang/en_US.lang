@@ -24,20 +24,20 @@ item.debugWand.name=Debug Wand
 
 itemGroup.invasionTab=Invasion mod
 
-entity.IMZombie.name=IM Zombie
-entity.IMZombiePigman.name=IM Zombie Pigman
-entity.IMSkeleton.name=IM Skeleton
-entity.IMSpider.name=IM Spider
-entity.IMPigEngy.name=IM Pigman Engineer
-entity.IMBird.name=WIP-IM Bird
-entity.IMThrower.name=IM Thrower
-entity.IMWolf.name=IM Wolf
-entity.IMCreeper.name=IM Creeper
-entity.IMGiantBird.name=IM Vulture
-entity.IMBoulder.name=Boulder
-entity.IMEgg.name=Spider Egg
-entity.IMTrap.name=Trap
-entity.IMImp.name=IM Imp
+entity.mod_Invasion.IMZombie.name=IM Zombie
+entity.mod_Invasion.IMZombiePigman.name=IM Zombie Pigman
+entity.mod_Invasion.IMSkeleton.name=IM Skeleton
+entity.mod_Invasion.IMSpider.name=IM Spider
+entity.mod_Invasion.IMPigEngy.name=IM Pigman Engineer
+entity.mod_Invasion.IMBird.name=WIP-IM Bird
+entity.mod_Invasion.IMThrower.name=IM Thrower
+entity.mod_Invasion.IMWolf.name=IM Wolf
+entity.mod_Invasion.IMCreeper.name=IM Creeper
+entity.mod_Invasion.IMGiantBird.name=IM Vulture
+entity.mod_Invasion.IMBoulder.name=Boulder
+entity.mod_Invasion.IMEgg.name=Spider Egg
+entity.mod_Invasion.IMTrap.name=Trap
+entity.mod_Invasion.IMImp.name=IM Imp
 
 invmod.waila.status.active=Status: Activated
 invmod.waila.status.deactivated=Status: Deactivated

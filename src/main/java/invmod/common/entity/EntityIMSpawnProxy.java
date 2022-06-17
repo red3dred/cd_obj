@@ -24,8 +24,8 @@ public class EntityIMSpawnProxy extends EntityLiving
   {
     if (this.worldObj != null)
     {
-      Entity[] nightMobSpawns1 = mod_Invasion.getNightMobSpawns1(this.worldObj);
-      for (Entity entity : nightMobSpawns1)
+      Entity[] entities = mod_Invasion.getNightMobSpawns1(this.worldObj);
+      for (Entity entity : entities)
       {
         entity.setLocationAndAngles(this.posX, this.posY, this.posZ, this.rotationYaw, this.rotationPitch);
         this.worldObj.spawnEntityInWorld(entity);
