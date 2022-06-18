@@ -1,6 +1,5 @@
 package invmod.common;
 
-
 import invmod.common.creativetab.CreativeTabInvmod;
 import invmod.common.entity.EntityIMBird;
 import invmod.common.entity.EntityIMBolt;
@@ -45,9 +44,6 @@ import invmod.common.nexus.MobBuilder;
 import invmod.common.nexus.TileEntityNexus;
 import invmod.common.util.ISelect;
 import invmod.common.util.RandomSelectionPool;
-import invmod.common.util.ThreadGetData;
-import invmod.common.util.Version;
-import invmod.common.util.VersionChecker;
 import invmod.common.util.spawneggs.CustomTags;
 import invmod.common.util.spawneggs.DispenserBehaviorSpawnEgg;
 import invmod.common.util.spawneggs.ItemSpawnEgg;
@@ -109,7 +105,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.resources.IReloadableResourceManager;
 
-
 //basic @Mod 
 @Mod(modid = "mod_Invasion", name = "Invasion", version = "1.1.5")
 public class mod_Invasion 
@@ -117,12 +112,11 @@ public class mod_Invasion
 
 	@SidedProxy(clientSide = "invmod.client.ProxyClient", serverSide = "invmod.common.ProxyCommon")
 	public static ProxyCommon proxy;
-
 	
 	//public static ResourceLoader resourceLoader;
 	public static String recentNews;
-	public static Version versionNumber = new Version(1, 1, 5);
-	public static String latestVersionNumber;
+	/*public static Version versionNumber = new Version(1, 1, 5);
+	public static String latestVersionNumber;*/
 	public static GuiHandler guiHandler;
 	public static ConfigInvasion configInvasion;
 	private static File configFile;
@@ -164,7 +158,7 @@ public class mod_Invasion
 	public static final String[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS = {
 		"zombie_t1_any", "zombie_t2_any_basic", "zombie_t2_plain", "zombie_t2_tar",
 		"zombie_t2_pigman","zombie_t3_any","zombiePigman_t1_any","zombiePigman_t2_any","zombiePigman_t3_any", "spider_t1_any", "spider_t2_any", "pigengy_t1_any", "skeleton_t1_any", "thrower_t1", "thrower_t2", "creeper_t1_basic","imp_t1" };
-public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
+	public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 		1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F };
 	
 	//NOOB HAUS: Declare them values.. Declare em good
@@ -189,13 +183,13 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 	//mobhealth
 	public static HashMap<String, Integer> mobHealthNightspawn = new HashMap();
 	public static HashMap<String, Integer> mobHealthInvasion = new HashMap();
-	//Creative tab declariation
+	//Creative tab declaration
 	public static CreativeTabInvmod tabInvmod;
 	
-	//NOOB HAUS: The almighty Nexus Block Declaration
+	//NOOB HAUS: The almighty Nexus Block declaration
 	public static BlockNexus blockNexus;
 	
-	//NOOB HAUS: Item Declarations
+	//NOOB HAUS: Item declarations
 	public static Item itemPhaseCrystal;
 	public static Item itemRiftFlux;
 	public static Item itemSmallRemnants;
@@ -233,7 +227,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 	public void preInit(FMLPreInitializationEvent event) 
 	{
 
-		 //First up, we check for the config file, write it if it don't exsit; or capture and return an error to the log
+		//First up, we check for the config file, write it if it don't exist; or capture and return an error to the log
 
 		File logFile = proxy.getFile("/logs/invasion_log.log");
 		try 
@@ -251,13 +245,14 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 
 		//NOOB HAUS: Get the config file - store it into a variable; pass all that shiz thru common.configInvasion
 		configFile = proxy.getFile("/config/invasion_config.cfg");
-		alreadyNotified=false;
+		alreadyNotified = false;
 		
 		configInvasion = new ConfigInvasion();
 		configInvasion.loadConfig(configFile);
+		
 		enableLog = configInvasion.getPropertyValueBoolean("enable-log-file", false);
 		destructedBlocksDrop = configInvasion.getPropertyValueBoolean("destructed-blocks-drop", true);
-		updateNotifications=configInvasion.getPropertyValueBoolean("update-messages-enabled", true);;
+		updateNotifications = configInvasion.getPropertyValueBoolean("update-messages-enabled", false);
 		//soundsEnabled = configInvasion.getPropertyValueBoolean("sounds-enabled", true);
 		craftItemsEnabled = configInvasion.getPropertyValueBoolean("craft-items-enabled", true);
 		debugMode = configInvasion.getPropertyValueBoolean("debug", false);
@@ -268,7 +263,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 
 		nightSpawnConfig();
 		loadHealthConfig();
-		//NOOB HAUS: Here a hashmap is done up for the block strength (what it takes for IM mob to dig thru it)
+		//NOOB HAUS: Here a HashMap is done up for the block strength (what it takes for IM mob to dig thru it)
 		HashMap strengthOverrides = new HashMap();
 		for (int i = 1; i < 4096; i++) 
 		{
@@ -302,8 +297,9 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 		NetworkRegistry.INSTANCE.registerGuiHandler(instance, guiHandler);
 
 		
-
-		new ThreadGetData();
+		
+		//removed along VersionChecker
+		//new ThreadGetData();
 		//Register to receive subscribed events
 		FMLCommonHandler.instance().bus().register(this);
 		MinecraftForge.EVENT_BUS.register(this);
@@ -374,17 +370,17 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
 		}
 	}
 
-	@SubscribeEvent
+	/*@SubscribeEvent
     public void PlayerLoggedInEvent (cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event)
     {
 		try {
 			if(getUpdateNotifications() && !alreadyNotified)
 			{
 				alreadyNotified=true;
-				VersionChecker.checkForUpdates((EntityPlayerMP)event.player);
+				//VersionChecker.checkForUpdates((EntityPlayerMP)event.player);
 			}
 		} catch(Exception e) {}
-    }
+    }*/
 	
 	//load mobhealth config
 	private void loadHealthConfig()
@@ -972,7 +968,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
     {
     	return updateNotifications;
     }
-    public static Version getVersionNumber()
+    /*public static Version getVersionNumber()
     {
     	return versionNumber;
     }
@@ -980,7 +976,7 @@ public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
     public static String getLatestVersionNumber()
     {
     	return latestVersionNumber;
-    }
+    }*/
     public static String getRecentNews()
     {
     	return recentNews;

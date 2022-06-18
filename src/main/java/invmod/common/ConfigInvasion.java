@@ -26,6 +26,8 @@ public class ConfigInvasion extends Config
         writer.newLine();
         writer.write("# General settings and IDs");
         writer.newLine();
+        writer.write("# Update-messages-enabled is currently unused");
+        writer.newLine();
         writeProperty(writer, "update-messages-enabled");
         writeProperty(writer, "destructed-blocks-drop");
         writeProperty(writer, "enable-log-file");
