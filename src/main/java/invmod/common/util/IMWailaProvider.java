@@ -25,21 +25,19 @@ public class IMWailaProvider implements IWailaDataProvider{
 	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config) {
 		return currenttip;
 	}
+	
 	@Override
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,IWailaDataAccessor accessor, IWailaConfigHandler config) {
 		TileEntityNexus teNexus = (TileEntityNexus)accessor.getTileEntity();
 		if (teNexus != null){
-				if(teNexus.isActive()){
-					int waveNumber=teNexus.getCurrentWave();
-					currenttip.add(StatCollector.translateToLocal("invmod.waila.status.active"));
-					currenttip.add(StatCollector.translateToLocal("invmod.waila.wavenumber")+waveNumber);
-					
-				}else{
-					currenttip.add(StatCollector.translateToLocal("invmod.waila.status.deactivated"));
-					
-				}
+			if(teNexus.isActive()){
+				int waveNumber=teNexus.getCurrentWave();
+				currenttip.add(StatCollector.translateToLocal("invmod.waila.status.active"));
+				currenttip.add(StatCollector.translateToLocal("invmod.waila.wavenumber")+waveNumber);
+			}else{
+				currenttip.add(StatCollector.translateToLocal("invmod.waila.status.deactivated"));
+			}
 		}
-		
 		return currenttip;
 	}
 
