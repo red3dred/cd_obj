@@ -218,6 +218,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		while (this.hp + 5 <= this.lastHp) {
 			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus at " + (this.lastHp - 5) + " hp");
 			this.lastHp -= 5;
+			playSoundForBoundPlayers("mob.blaze.hit");
 		}
 	}
 
@@ -910,9 +911,10 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 				if (time - ((Long) entry.getValue()).longValue() < 300000L) {
 					EntityPlayer player = this.worldObj.getPlayerEntityByName((String) entry.getKey());
 					if (player != null) {
+						player.getEntityWorld().playSoundAtEntity(player,"mob.enderdragon.end", 4, 1);
 						player.attackEntityFrom(DamageSource.magic, 500.0F);
-						playSoundForBoundPlayers("random.explode");
-						
+                                                 
+      
 					}
 
 				}
@@ -926,7 +928,10 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 
 	private void continuousNexusHurt() {
 		mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus severely damaged!");
-		playSoundForBoundPlayers("random.explode");
+		for (Map.Entry entry : this.boundPlayers.entrySet()) {
+			EntityPlayer player = this.worldObj.getPlayerEntityByName((String) entry.getKey());
+			player.getEntityWorld().playSoundAtEntity(player,"mob.enderdragon.end", 4, 1);
+		}
 		killAllMobs();
 		this.waveSpawner.stop();
 		this.powerLevel = ((int) ((this.powerLevel - (this.powerLevel - this.lastPowerLevel)) * 0.7F));
