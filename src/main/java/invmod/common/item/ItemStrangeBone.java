@@ -28,7 +28,6 @@ public class ItemStrangeBone extends ItemIM
     return 0;
   }
   
-  
   @Override
   public boolean itemInteractionForEntity(ItemStack itemStack, EntityPlayer player, EntityLivingBase targetEntity)
   {
@@ -65,15 +64,12 @@ public class ItemStrangeBone extends ItemIM
                   wolf.setDead();
                   itemStack.stackSize -= 1;
               }else{
-            	  player.addChatMessage(new ChatComponentText("The wolf doesn't like this strange bone."));
+            	  player.addChatMessage(new ChatComponentText("§cThe wolf doesn't like this Strange Bone. Maybe a certain block is missing..."));
               }
           }
-
           return true;
       }
-
       return false;
   }
-  
   
 }

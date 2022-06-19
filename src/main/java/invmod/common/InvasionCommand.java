@@ -38,15 +38,15 @@ public class InvasionCommand extends CommandBase {
 					if (mod_Invasion.getFocusNexus() != null) {
 						if ((radius >= 32) && (radius <= 128)) {
 							if (mod_Invasion.getFocusNexus().setSpawnRadius(radius)) {
-								sender.addChatMessage(new ChatComponentText("Set nexus range to " + radius));
+								sender.addChatMessage(new ChatComponentText("Set Nexus range to " + radius));
 							} else {
-								sender.addChatMessage(new ChatComponentText(username + ": Can't change range while nexus is active"));
+								sender.addChatMessage(new ChatComponentText(username + ": Can't change range while Nexus is active"));
 							}
 						} else {
 							sender.addChatMessage(new ChatComponentText(username + ": Range must be between 32 and 128"));
 						}
 					} else {
-						sender.addChatMessage(new ChatComponentText(username + ": Right-click the nexus first to set target for command"));
+						sender.addChatMessage(new ChatComponentText(username + ": Right-click the Nexus first to set target for command"));
 					}
 				}
 			} else if (args[0].equals("spawnertest")) {
@@ -104,10 +104,9 @@ public class InvasionCommand extends CommandBase {
 					mod_Invasion.getFocusNexus().createBolt(x, y, z, time);
 				}
 			} else if (args[0].equals("status")) {
-				sender.addChatMessage(new ChatComponentText("nexus status:"+mod_Invasion.getFocusNexus().isActive()));
-				
+				sender.addChatMessage(new ChatComponentText("Nexus status: "+mod_Invasion.getFocusNexus().isActive()));
 			}else{
-				sender.addChatMessage(new ChatComponentText("Command not recognised, use /invasion help for a list of all the available commands").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+				sender.addChatMessage(new ChatComponentText("Command not recognized, use /invasion help for a list of all available commands").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 			}
 				
 		}

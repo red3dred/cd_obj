@@ -165,7 +165,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 				mod_Invasion.setInvasionEnded(this);
 				stop();
 				invalidate();
-				mod_Invasion.log("Stranded nexus entity trying to delete itself...");
+				mod_Invasion.log("Stranded Nexus entity trying to delete itself...");
 			}
 		}
 	}
@@ -216,7 +216,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			}
 		}
 		while (this.hp + 5 <= this.lastHp) {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus at " + (this.lastHp - 5) + " hp");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§4Nexus is at " + (this.lastHp - 5) + " HP!");
 			this.lastHp -= 5;
 			playSoundForBoundPlayers("mob.blaze.hit");
 		}
@@ -228,14 +228,14 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		this.mobsLeftInWave -= 1;
 		if (this.mobsLeftInWave <= 0) {
 			if (this.lastMobsLeftInWave > 0) {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus rift stable again!");
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Unleashing tapped energy...");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§aNexus rift stable again!");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§aUnleashing tapped energy...");
 				this.lastMobsLeftInWave = this.mobsLeftInWave;
 			}
 			return;
 		}
 		while (this.mobsLeftInWave + this.mobsToKillInWave * 0.1F <= this.lastMobsLeftInWave) {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus rift stabilised to " + (100 - (int) (100 * this.mobsLeftInWave / this.mobsToKillInWave)) + "%");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§2Nexus rift stabilised to " + (100 - (int) (100 * this.mobsLeftInWave / this.mobsToKillInWave)) + "%");
 			this.lastMobsLeftInWave = ((int) (this.lastMobsLeftInWave - this.mobsToKillInWave * 0.1F));
 		}
 	}
@@ -536,7 +536,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	private void startInvasion(int startWave) {
 		this.boundingBoxToRadius.setBounds(this.xCoord - (this.spawnRadius + 10), this.yCoord - (this.spawnRadius + 40), this.zCoord - (this.spawnRadius + 10), this.xCoord + (this.spawnRadius + 10), this.yCoord + (this.spawnRadius + 40), this.zCoord + (this.spawnRadius + 10));
 		if ((this.mode == 2) && (this.continuousAttack)) {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Can't activate nexus when already under attack!");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cCan't activate Nexus when already under attack!");
 			return;
 		}
 
@@ -555,18 +555,18 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.lastHp = this.maxHp;
 					this.waveDelayTimer = -1L;
 					this.timer = System.currentTimeMillis();
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"The first wave is coming soon!");
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cBrace yourselves! The first wave is coming soon!");
 					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
 					stop();
 					mod_Invasion.log(e.getMessage());
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),e.getMessage());
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§4" + e.getMessage());
 				}
 			} else {
-				mod_Invasion.log("Wave spawner not in ready state");
+				mod_Invasion.log("Wave spawner is not in ready state");
 			}
 		} else {
-			mod_Invasion.log("Tried to activate nexus while already active");
+			mod_Invasion.log("Tried to activate Nexus while already active");
 		}
 	}
 
@@ -580,12 +580,12 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			this.lastWorldTime = this.worldObj.getWorldTime();
 			this.nextAttackTime = ((int) (this.lastWorldTime / 24000L * 24000L) + 14000);
 			if ((this.lastWorldTime % 24000L > 12000L) && (this.lastWorldTime % 24000L < 16000L)) {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"The night looms around the nexus...");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cThe night looms around the Nexus...");
 			} else {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus activated and stable");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§aNexus activated and stable");
 			}
 		} else {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Couldn't activate nexus");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§4Couldn't activate Nexus!");
 		}
 	}
 
@@ -597,7 +597,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 				generateFlux(1);
 				if (this.waveSpawner.isWaveComplete()) {
 					if (this.waveDelayTimer == -1L) {
-						mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Wave " + this.currentWave + " almost complete!");
+						mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§aWave §2" + this.currentWave + " §aalmost complete!");
 						playSoundForBoundPlayers("invmod:chime1");
 						this.waveDelayTimer = 0L;
 						this.waveDelay = this.waveSpawner.getWaveRestTime();
@@ -605,7 +605,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 						this.waveDelayTimer += elapsed;
 						if (this.waveDelayTimer > this.waveDelay) {
 							this.currentWave += 1;
-							mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Wave " + this.currentWave + " about to begin");
+							mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cWave §4" + this.currentWave + " §cabout to begin");
 							this.waveSpawner.beginNextWave(this.currentWave);
 							this.waveDelayTimer = -1L;
 							playSoundForBoundPlayers("invmod:rumble1");
@@ -663,7 +663,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			long currentTime = this.worldObj.getWorldTime();
 			int timeOfDay = (int) (this.lastWorldTime % 24000L);
 			if ((timeOfDay < 12000) && (currentTime % 24000L >= 12000L) && (currentTime + 12000L > this.nextAttackTime)) {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"The night looms around the nexus...");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cThe night looms around the Nexus...");
 			}
 			if (this.lastWorldTime > currentTime) {
 				this.nextAttackTime = ((int) (this.nextAttackTime - (this.lastWorldTime - currentTime)));
@@ -684,7 +684,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.hp = (this.lastHp = 100);
 					this.zapTimer = 0;
 					this.waveDelayTimer = -1L;
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Forces are destabilising the nexus!");
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cForces are destabilising the Nexus!");
 					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
 					mod_Invasion.log(e.getMessage());
@@ -857,11 +857,11 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			long time = System.currentTimeMillis();
 			if (!this.boundPlayers.containsKey(entityPlayer.getDisplayName())) 
 			{
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s") + " life is now bound to the nexus");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§2" + entityPlayer.getDisplayName() + "§a" + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s") + " life is now bound to the Nexus");
 			} 
 			else if (time - ((Long) this.boundPlayers.get(entityPlayer.getDisplayName())).longValue() > 300000L) 
 			{
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s") + " life is now bound to the nexus");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§2" + entityPlayer.getDisplayName() + "§a" + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s") + " life is now bound to the Nexus");
 			}
 			this.boundPlayers.put(entityPlayer.getDisplayName(), Long.valueOf(time));
 		}
@@ -904,7 +904,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 
 	private void theEnd() {
 		if (!this.worldObj.isRemote) {
-			mod_Invasion.sendMessageToPlayers( this.boundPlayers, "The nexus is destroyed!");
+			mod_Invasion.sendMessageToPlayers(this.boundPlayers, "§4The Nexus was DESTROYED - the mobs win!");
 			stop();
 			long time = System.currentTimeMillis();
 			for (Map.Entry entry : this.boundPlayers.entrySet()) {
@@ -927,7 +927,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	}
 
 	private void continuousNexusHurt() {
-		mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Nexus severely damaged!");
+		mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§4Nexus severely damaged!");
 		for (Map.Entry entry : this.boundPlayers.entrySet()) {
 			EntityPlayer player = this.worldObj.getPlayerEntityByName((String) entry.getKey());
 			player.getEntityWorld().playSoundAtEntity(player,"mob.enderdragon.end", 4, 1);

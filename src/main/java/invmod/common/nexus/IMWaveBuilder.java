@@ -62,7 +62,7 @@ public class IMWaveBuilder
     finaleGroup.addEntry(getPattern("thrower_t1"), mobsPerBigGroup / 5);
     generateGroupPool(tierLevel + 0.5F, finaleGroup, mobsPerBigGroup);
     WaveEntry finale = new WaveEntry(time, time + 8000, mobsPerBigGroup + mobsPerBigGroup / 7, 500, finaleGroup, 45, 3);
-    finale.addAlert("A large number of mobs are slipping through the nexus rift!", 0);
+    finale.addAlert("§cA large number of mobs are slipping through the Nexus rift!", 0);
 
     entryList.add(finale);
     entryList.add(new WaveEntry(time + 5000, (int)(time + groupTimeInterval * 2.25F), extraMobsForFinale / 2, 500, generateSteadyPool(tierLevel), 160, 5));
@@ -246,7 +246,7 @@ public class IMWaveBuilder
       wave3BurstPool.addEntry(getPattern("spider_t1_any"), 1);
       wave3BurstPool.addEntry(getPattern("creeper_t1_basic"), 1);
       WaveEntry wave3Burst = new WaveEntry(50000, 55000, 5, 500, wave3BurstPool, 25, 6);
-      wave3Burst.addAlert("A small group of mobs have gathered...", 0);
+      wave3Burst.addAlert("§cA small group of mobs have gathered...", 0);
       entryList.add(wave3Burst);
       return new Wave(120000, 18000, entryList);
     case 4:
@@ -301,7 +301,7 @@ public class IMWaveBuilder
       wave5BurstPool.addEntry(getPattern("spider_t2_any"), 1);
       wave5BurstPool.addEntry(getPattern("thrower_t1"), 1);
       WaveEntry wave5Burst = new WaveEntry(115000, 118000, 8, 500, wave5BurstPool, 35, 5);
-      wave5Burst.addAlert("A large number of mobs are slipping through the nexus rift!", 0);
+      wave5Burst.addAlert("§cA large number of mobs are slipping through the Nexus rift!", 0);
       entryList.add(wave5Burst);
 
       FiniteSelectionPool wave5FinalePool = new FiniteSelectionPool();
@@ -399,7 +399,7 @@ public class IMWaveBuilder
       wave8BurstPool.addEntry(getPattern("skeleton_t1_any"), 1);
       wave8BurstPool.addEntry(getPattern("creeper_t1_basic"), 1);
       WaveEntry wave8Burst = new WaveEntry(60000, 63000, 8, 500, wave8BurstPool, 25, 2);
-      wave8Burst.addAlert("A group of mobs have gathered...", 0);
+      wave8Burst.addAlert("§cA group of mobs have gathered...", 0);
       entryList.add(wave8Burst);
       return new Wave(110000, 30000, entryList);
     case 9:
@@ -464,7 +464,7 @@ public class IMWaveBuilder
       wave10BurstPool.addEntry(getPattern("spider_t2_any"), 1);
       wave10BurstPool.addEntry(getPattern("thrower_t1"), 1);
       WaveEntry wave10Burst = new WaveEntry(125000, 128000, 12, 500, wave10BurstPool, 35, 5);
-      wave10Burst.addAlert("A large number of mobs are slipping through the nexus rift!", 0);
+      wave10Burst.addAlert("§cA large number of mobs are slipping through the Nexus rift!", 0);
       entryList.add(wave10Burst);
 
       FiniteSelectionPool wave10FinalePool = new FiniteSelectionPool();

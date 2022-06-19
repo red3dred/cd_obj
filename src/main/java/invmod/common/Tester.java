@@ -22,7 +22,7 @@ public class Tester
   public void doWaveBuilderTest(float difficulty, float tierLevel, int lengthSeconds)
   {
     mod_Invasion.log("Doing wave builder test. Difficulty: " + difficulty + ", tier: " + tierLevel + ", length: " + lengthSeconds + " seconds");
-    mod_Invasion.log("Generating dummy nexus and fake spawn points...");
+    mod_Invasion.log("Generating dummy Nexus and fake spawn points...");
     DummyNexus nexus = new DummyNexus();
     SpawnPointContainer spawnPoints = new SpawnPointContainer();
     for (int i = -170; i < -100; i += 3) {
@@ -71,7 +71,7 @@ public class Tester
   public void doWaveSpawnerTest(int startWave, int endWave)
   {
     mod_Invasion.log("Doing wave spawner test. Start wave: " + startWave + "  End wave: " + endWave);
-    mod_Invasion.log("Generating dummy nexus and fake spawn points...");
+    mod_Invasion.log("Generating dummy Nexus and fake spawn points...");
     DummyNexus nexus = new DummyNexus();
     SpawnPointContainer spawnPoints = new SpawnPointContainer();
     for (int i = -170; i < -100; i += 3) {

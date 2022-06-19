@@ -64,7 +64,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		if (!this.active) {
 			generateSpawnPoints();
 		} else if (this.debugMode) {
-			mod_Invasion.log("Successful spawns last wave: " + this.successfulSpawns);
+			mod_Invasion.log("Successful spawns of last wave: " + this.successfulSpawns);
 		}
 
 		wave.resetWave();
