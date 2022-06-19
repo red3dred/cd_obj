@@ -247,6 +247,10 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	public boolean isActivating() {
 		return (this.activationTimer > 0) && (this.activationTimer < 400);
 	}
+	
+	public int getHp() {
+		return this.hp;
+	}
 
 	@Override
 	public int getMode() {
