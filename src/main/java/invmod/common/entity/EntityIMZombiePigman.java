@@ -496,7 +496,7 @@ public class EntityIMZombiePigman extends EntityIMMob implements ICanDig
 		{
 			if (--this.throttled2 <= 0) 
 			{
-				this.worldObj.playSoundAtEntity(this, "invmod:scrape", 0.85F, 1.0F / (this.rand.nextFloat() * 0.5F + 1.0F));
+				this.worldObj.playSoundAtEntity(this, "invmod:scrape" + (rand.nextInt(3)+1), 0.85F, 1.0F / (this.rand.nextFloat() * 0.5F + 1.0F));
 				this.throttled2 = (45 + this.rand.nextInt(20));
 			}
 		}
@@ -529,7 +529,7 @@ public class EntityIMZombiePigman extends EntityIMMob implements ICanDig
 	@Override
 	protected String getLivingSound() {
 		if (this.tier == 3) {
-			return this.rand.nextInt(3) == 0 ? "invmod:bigzombiePigman1" : null;
+			return this.rand.nextInt(3) == 0 ? "invmod:bigzombie1" : null;
 		}
 
 		return "mob.zombiepig.zpig";
@@ -639,9 +639,6 @@ public class EntityIMZombiePigman extends EntityIMMob implements ICanDig
 	
 	@Override
 	public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3,
-			Block block) {
-		// TODO Auto-generated method stub
-		
-	}
+			Block block) {}
 
 }

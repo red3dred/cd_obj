@@ -86,7 +86,7 @@ public class EntityIMBolt extends Entity
     super.onUpdate();
     this.age += 1;
     if ((this.age == 1) && (this.soundMade == 1)) {
-      this.worldObj.playSoundAtEntity(this, "invmod:zap"+(rand.nextInt(2)+(Integer)1), 1.0F, 1.0F);
+      this.worldObj.playSoundAtEntity(this, "invmod:zap"+(rand.nextInt(3)+1), 1.0F, 1.0F);
     }
     if (this.age > this.ticksToRender)
       setDead();
@@ -123,7 +123,7 @@ public class EntityIMBolt extends Entity
   {
     if (byte0 == 0)
     {
-      this.worldObj.playSoundAtEntity(this, "invmod:zap"+(rand.nextInt(2)+(Integer)1), 1.0F, 1.0F);
+      this.worldObj.playSoundAtEntity(this, "invmod:zap"+(rand.nextInt(3)+1), 1.0F, 1.0F);
     }
     else if (byte0 != 1)
     {

@@ -555,7 +555,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.waveDelayTimer = -1L;
 					this.timer = System.currentTimeMillis();
 					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"The first wave is coming soon!");
-					playSoundForBoundPlayers("invmod:rumble");
+					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
 					stop();
 					mod_Invasion.log(e.getMessage());
@@ -684,7 +684,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.zapTimer = 0;
 					this.waveDelayTimer = -1L;
 					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(),"Forces are destabilising the nexus!");
-					playSoundForBoundPlayers("invmod:rumble");
+					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
 					mod_Invasion.log(e.getMessage());
 					e.printStackTrace();
@@ -1016,7 +1016,6 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 
 	@Override
 	public boolean hasCustomInventoryName() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

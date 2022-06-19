@@ -130,7 +130,7 @@ public class EntityIMZombie extends EntityIMMob implements ICanDig
 
 	protected void setAI() 
 	{
-		//added entityaiswimming and increased all other tasksordernumers with 1
+		//added EntityAISwimming and increased all other tasks order numbers with 1
 		this.tasks = new EntityAITasks(this.worldObj.theProfiler);
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIKillEntity(this, EntityPlayer.class, 40));
@@ -479,7 +479,7 @@ public class EntityIMZombie extends EntityIMMob implements ICanDig
 		{
 			if (--this.throttled2 <= 0) 
 			{
-				this.worldObj.playSoundAtEntity(this, "invmod:scrape", 0.85F, 1.0F / (this.rand.nextFloat() * 0.5F + 1.0F));
+				this.worldObj.playSoundAtEntity(this, "invmod:scrape" + (rand.nextInt(3)+1), 0.85F, 1.0F / (this.rand.nextFloat() * 0.5F + 1.0F));
 				this.throttled2 = (45 + this.rand.nextInt(20));
 			}
 		}
@@ -669,9 +669,6 @@ public class EntityIMZombie extends EntityIMMob implements ICanDig
 
 	@Override
 	public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3,
-			Block block) {
-		// TODO Auto-generated method stub
-		
-	}
+			Block block) {}
 
 }
