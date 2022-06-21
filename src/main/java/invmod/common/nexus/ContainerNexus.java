@@ -166,16 +166,9 @@ public class ContainerNexus extends Container
           return null;
         }
       }
-      else if ((i >= 2) && (i < 29))
+      else if ((i >= 2) && (i < 38))
       {
-        if (!mergeItemStack(itemstack1, 29, 38, false))
-        {
-          return null;
-        }
-      }
-      else if ((i >= 29) && (i < 38))
-      {
-        if (!mergeItemStack(itemstack1, 2, 29, false))
+        if (!mergeItemStack(itemstack1, 0, 1, false))
         {
           return null;
         }
