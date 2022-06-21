@@ -89,15 +89,18 @@ public class ItemProbe extends ItemIM
     	  
       }
       
-      nexus.setSpawnRadius(newRange);
-      mod_Invasion.sendMessageToPlayer(player, "Nexus range changed to: " + nexus.getSpawnRadius());
+      if(nexus.setSpawnRadius(newRange)) {
+    	  mod_Invasion.sendMessageToPlayer(player, "§2Nexus range changed to: §a" + nexus.getSpawnRadius());
+      } else if(nexus.isActive()) {
+    	  mod_Invasion.sendMessageToPlayer(player, "§cNexus is currently active! Range: " + nexus.getSpawnRadius());
+      }
       return true;
     }
     if (itemstack.getItemDamage() == 1)
     {
     	
       float blockStrength = EntityIMLiving.getBlockStrength(x, y, z, block, world);
-      mod_Invasion.sendMessageToPlayer(player, "Block strength: " + (int)((blockStrength + 0.005D) * 100.0D) / 100.0D);
+      mod_Invasion.sendMessageToPlayer(player, "§2Block strength: §a" + (int) ((blockStrength + 0.005D) * 100.0D) / 100.0D);
       return true;
     }
     return false;
