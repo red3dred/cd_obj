@@ -559,6 +559,15 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.lastHp = this.maxHp;
 					this.waveDelayTimer = -1L;
 					this.timer = System.currentTimeMillis();
+					String boundPlayers = "§3Bound players: §b";
+					if(this.getBoundPlayers().size() == 1) {
+						boundPlayers = "§3Bound player: §b";
+					}
+					for(String playername : this.getBoundPlayers().keySet()) {
+						boundPlayers += playername + "§3, §b";
+					}
+					boundPlayers = boundPlayers.substring(0, boundPlayers.length()-4);
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), boundPlayers);
 					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cBrace yourselves! The first wave is coming soon!");
 					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
@@ -609,7 +618,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 						this.waveDelayTimer += elapsed;
 						if (this.waveDelayTimer > this.waveDelay) {
 							this.currentWave += 1;
-							mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cWave §4" + this.currentWave + " §cabout to begin");
+							mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), "§cWave §4" + this.currentWave + " §cabout to begin...");
 							this.waveSpawner.beginNextWave(this.currentWave);
 							this.waveDelayTimer = -1L;
 							playSoundForBoundPlayers("invmod:rumble1");
