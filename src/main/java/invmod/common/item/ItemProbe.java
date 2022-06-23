@@ -15,6 +15,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
@@ -90,9 +91,9 @@ public class ItemProbe extends ItemIM
       }
       
       if(nexus.setSpawnRadius(newRange)) {
-    	  mod_Invasion.sendMessageToPlayer(player, "§2Nexus range changed to: §a" + nexus.getSpawnRadius());
+    	  mod_Invasion.sendMessageToPlayer(player, EnumChatFormatting.DARK_GREEN + "Nexus range changed to: " + EnumChatFormatting.GREEN + nexus.getSpawnRadius());
       } else if(nexus.isActive()) {
-    	  mod_Invasion.sendMessageToPlayer(player, "§cNexus is currently active! Range: " + nexus.getSpawnRadius());
+    	  mod_Invasion.sendMessageToPlayer(player, EnumChatFormatting.RED + "Nexus is currently active! Range: " + nexus.getSpawnRadius());
       }
       return true;
     }
@@ -100,7 +101,7 @@ public class ItemProbe extends ItemIM
     {
     	
       float blockStrength = EntityIMLiving.getBlockStrength(x, y, z, block, world);
-      mod_Invasion.sendMessageToPlayer(player, "§2Block strength: §a" + (int) ((blockStrength + 0.005D) * 100.0D) / 100.0D);
+      mod_Invasion.sendMessageToPlayer(player, EnumChatFormatting.DARK_GREEN + "Block strength: " + EnumChatFormatting.GREEN + (int) ((blockStrength + 0.005D) * 100.0D) / 100.0D);
       return true;
     }
     return false;
