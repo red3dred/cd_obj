@@ -161,7 +161,7 @@ public class EntityIMCreeper extends EntityIMMob
           getMoveHelper().setMoveTo(this.posX + invmod.common.util.CoordsInt.offsetAdjX[this.explodeDirection], this.posY, this.posZ + invmod.common.util.CoordsInt.offsetAdjZ[this.explodeDirection], 0.0D);
         }
         if (this.timeSinceIgnited == 0) {
-          this.worldObj.playSoundAtEntity(this, "random.fuse", 1.0F, 0.5F);
+          this.worldObj.playSoundAtEntity(this, "creeper.primed", 1.0F, 0.5F);
         }
       }
       this.timeSinceIgnited += state;
