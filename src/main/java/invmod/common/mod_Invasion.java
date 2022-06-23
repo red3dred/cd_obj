@@ -227,7 +227,7 @@ public class mod_Invasion
 	public void preInit(FMLPreInitializationEvent event) 
 	{
 
-		//First up, we check for the config file, write it if it don't exist; or capture and return an error to the log
+		//First up, we check for the config file, write it if it doesn't exist; or capture and return an error to the log
 
 		File logFile = proxy.getFile("/logs/invasion_log.log");
 		try 
@@ -404,7 +404,7 @@ public class mod_Invasion
 		mobHealthInvasion.put("IMZombiePigman-T2-invasionSpawn-health",  mod_Invasion.configInvasion.getPropertyValueInt("IMZombiePigman-T2-invasionSpawn-health", 30));
 		mobHealthInvasion.put("IMZombiePigman-T3-invasionSpawn-health",  mod_Invasion.configInvasion.getPropertyValueInt("IMZombiePigman-T3-invasionSpawn-health", 65));
 		
-		//Nightspawns
+		//Night spawns
 		mobHealthNightspawn.put("IMCreeper-T1-nightSpawn-health", mod_Invasion.configInvasion.getPropertyValueInt("IMCreeper-T1-nightSpawn-health", 20));
 		mobHealthNightspawn.put("IMVulture-T1-nightSpawn-health",  mod_Invasion.configInvasion.getPropertyValueInt("IMVulture-T1-nightSpawn-health", 20));
 		mobHealthNightspawn.put("IMImp-T1-nightSpawn-health",  mod_Invasion.configInvasion.getPropertyValueInt("IMImp-T1-nightSpawn-health", 20));
@@ -519,7 +519,7 @@ public class mod_Invasion
             EntityRegistry.registerModEntity(EntityIMGiantBird.class, "IMGiantBird", 16, this, 128, 1, true);
 		}
         
-        //spawneggs needed things and despensebehavior
+        //spawneggs' needed things and dispenser behavior
         GameRegistry.registerItem(itemSpawnEgg, itemSpawnEgg.getUnlocalizedName());
         BlockDispenser.dispenseBehaviorRegistry.putObject(itemSpawnEgg, new DispenserBehaviorSpawnEgg());
         
@@ -621,7 +621,7 @@ public class mod_Invasion
 
 		GameRegistry.addRecipe(new ItemStack(itemProbe, 1, 0), new Object[] { " X ", "XX ", "XX ", Character.valueOf('X'), Items.iron_ingot });
 
-		GameRegistry.addRecipe(new ItemStack(itemProbe, 1, 1), new Object[] { " D ", " # ", " X ", Character.valueOf('X'), Items.stick, Character.valueOf('#'), itemPhaseCrystal, Character.valueOf('D'), new ItemStack(itemProbe, 1, 0) });
+		GameRegistry.addRecipe(new ItemStack(itemProbe, 1, 1), new Object[] { " D ", " # ", " X ", Character.valueOf('X'), Items.blaze_rod, Character.valueOf('#'), itemPhaseCrystal, Character.valueOf('D'), new ItemStack(itemProbe, 1, 0) });
 
 		GameRegistry.addSmelting(itemCatalystMixture, new ItemStack(itemNexusCatalyst), 1.0F);
 		GameRegistry.addSmelting(itemStableCatalystMixture, new ItemStack(itemStableNexusCatalyst), 1.0F);
@@ -655,7 +655,7 @@ public class mod_Invasion
 				} 
 				else 
 				{
-					log("Pattern 1 slot " + (i + 1) + " in config not recognised. Proceeding as blank.");
+					log("Pattern 1 slot " + (i + 1) + " in config not recognized. Proceeding as blank.");
 					configInvasion.setProperty("nm-spawnpool1-slot" + (1 + i), "none");
 				}
 			}
@@ -827,7 +827,7 @@ public class mod_Invasion
 		for (int i = 0; i < numberOfMobs; i++) {
 			EntityIMLiving mob = getMobBuilder().createMobFromConstruct(((IEntityIMPattern) mobPool.selectNext()).generateEntityConstruct(), world, null);
 			mob.setEntityIndependent();
-			//also set in entityLiving constructor, is needed for ai to function properly, I believe
+			//also set in entityLiving constructor, is needed for AI to function properly, I believe
 			mob.setAggroRange(getNightMobSightRange());
 			mob.setSenseRange(getNightMobSenseRange());
 			mob.setBurnsInDay(getNightMobsBurnInDay());
