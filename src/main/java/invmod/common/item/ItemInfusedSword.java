@@ -6,15 +6,14 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
-import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 public class ItemInfusedSword extends ItemSword
 {
@@ -22,7 +21,7 @@ public class ItemInfusedSword extends ItemSword
   public ItemInfusedSword()
   {
     super(ToolMaterial.EMERALD);
-    //amount of entity hits it takes to recharge sword.
+    //amount of entity hits it takes to recharge the sword.
     this.setMaxDamage(40);
     this.setCreativeTab(mod_Invasion.tabInvmod);
     this.setUnlocalizedName("infusedSword");
@@ -45,15 +44,15 @@ public class ItemInfusedSword extends ItemSword
   {
     if (this.isDamaged(itemstack))
     {
-    	 this.setDamage(itemstack, this.getDamage(itemstack)-1);
+      this.setDamage(itemstack, this.getDamage(itemstack)-1);
       
     }
     return true;
   }
   
-// get break speed
+  // get break speed
   //should be getStrVsBlock
- @Override
+  @Override
   public float func_150893_a(ItemStack par1ItemStack, Block par2Block)
   {
     if (par2Block == Blocks.web)
@@ -87,15 +86,20 @@ public class ItemInfusedSword extends ItemSword
     		entityplayer.getFoodStats().addStats(6, 0.5f);
     		world.playSoundAtEntity(entityplayer, "random.burp", 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
     	}else{
-      entityplayer.heal(6.0F);
-      //spawn heart particles around the player
-      world.spawnParticle("heart", entityplayer.posX + 1.5D, entityplayer.posY, entityplayer.posZ, 0.0D, 0.0D, 0.0D);
-      world.spawnParticle("heart", entityplayer.posX - 1.5D, entityplayer.posY, entityplayer.posZ, 0.0D, 0.0D, 0.0D);
-      world.spawnParticle("heart", entityplayer.posX, entityplayer.posY, entityplayer.posZ + 1.5D, 0.0D, 0.0D, 0.0D);
-      world.spawnParticle("heart", entityplayer.posX, entityplayer.posY, entityplayer.posZ - 1.5D, 0.0D, 0.0D, 0.0D);
+    	  entityplayer.heal(6.0F);
+    	  
+    	  //spawn heart particles around the player
+    	  if(!world.isRemote) {
+			WorldServer worldserver = (WorldServer) entityplayer.worldObj;
+			worldserver.func_147487_a("heart", entityplayer.posX + 1.5D, entityplayer.posY + entityplayer.eyeHeight, entityplayer.posZ, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+			worldserver.func_147487_a("heart", entityplayer.posX - 1.5D, entityplayer.posY + entityplayer.eyeHeight, entityplayer.posZ, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+			worldserver.func_147487_a("heart", entityplayer.posX, entityplayer.posY + entityplayer.eyeHeight, entityplayer.posZ + 1.5D, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+		    worldserver.func_147487_a("heart", entityplayer.posX, entityplayer.posY + entityplayer.eyeHeight, entityplayer.posZ - 1.5D, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+      	  }
+      
     	}
     	
-    	  itemstack.setItemDamage(this.getMaxDamage());
+	  itemstack.setItemDamage(this.getMaxDamage());
     }
 
     return itemstack;
