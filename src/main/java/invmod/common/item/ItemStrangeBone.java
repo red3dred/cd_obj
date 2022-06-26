@@ -65,7 +65,8 @@ public class ItemStrangeBone extends ItemIM
                   wolf.setDead();
                   itemStack.stackSize -= 1;
               }else{
-            	  player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "The wolf doesn't like this Strange Bone. Maybe a certain block is missing..."));
+            	  player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "The wolf doesn't like this Strange Bone."));
+            	  player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Maybe a certain block is missing..."));
               }
           }
           return true;
