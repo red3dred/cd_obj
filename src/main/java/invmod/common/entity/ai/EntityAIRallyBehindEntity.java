@@ -25,11 +25,12 @@ public class EntityAIRallyBehindEntity<T extends EntityLivingBase, ILeader> exte
 	@Override
 	public void updateTask() {
 		super.updateTask();
-		if (getEntity().readyToRally()) {
+		// Doenerstyle: Commented unused if block
+		/*if (getEntity().readyToRally()) {
 			EntityLivingBase leader = (EntityLivingBase) getTarget();
 			//if (((ILeader) leader).isMartyr())
 				//rally(leader);
-		}
+		}*/
 	}
 
 	protected void rally(T leader) {
