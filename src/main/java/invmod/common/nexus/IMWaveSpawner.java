@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.entity.EntityList;
+import net.minecraft.util.EnumChatFormatting;
 
 public class IMWaveSpawner implements ISpawnerAccess {
 	private final int MAX_SPAWN_TRIES = 20;
@@ -164,11 +165,11 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		}
 	}
 
-	public void sendSpawnAlert(String message) {
+	public void sendSpawnAlert(String message, EnumChatFormatting color) {
 		if (this.debugMode) {
 			mod_Invasion.log(message);
 		}
-		mod_Invasion.sendMessageToPlayers(this.nexus.getBoundPlayers(),message);
+		mod_Invasion.sendMessageToPlayers(this.nexus.getBoundPlayers(), color, message);
 	}
 
 	public void noSpawnPointNotice() {

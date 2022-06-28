@@ -81,6 +81,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StringTranslate;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -295,8 +298,6 @@ public class mod_Invasion
 	public void load(FMLInitializationEvent event) 
 	{
 		NetworkRegistry.INSTANCE.registerGuiHandler(instance, guiHandler);
-
-		
 		
 		//removed along VersionChecker
 		//new ThreadGetData();
@@ -351,11 +352,7 @@ public class mod_Invasion
 					ranOnce = true;
 					return;
 				}
-
-						StringTranslate.inject(new ByteArrayInputStream(("item.upgrade.structural."  + ".name="   + " "  + " ("  + ")").getBytes()));
-
-
-
+				StringTranslate.inject(new ByteArrayInputStream(("item.upgrade.structural."  + ".name="   + " "  + " ("  + ")").getBytes()));
 			}
 		});*/
 	}
@@ -886,25 +883,24 @@ public class mod_Invasion
 		return instance;
 	}
 
-	public static void broadcastToAll(String message) 
+	public static void broadcastToAll(EnumChatFormatting color, String message) 
 	{
-		FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().sendChatMsg(new ChatComponentText(message));
+		FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().sendChatMsg(new ChatComponentText(message).setChatStyle(new ChatStyle().setColor(color)));
 	}
 
-	public static void sendMessageToPlayers(HashMap<String, Long> hashMap, String message) {
+	public static void sendMessageToPlayers(HashMap<String, Long> hashMap, EnumChatFormatting color, String message, Object... formatArgs) {
 		if (hashMap != null) {
 			for (Map.Entry entry : hashMap.entrySet())
 	        {
-	          
-	          sendMessageToPlayer((EntityPlayerMP)FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().func_152612_a((String) entry.getKey()),message);
+	          sendMessageToPlayer((EntityPlayerMP) FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().func_152612_a((String) entry.getKey()), color, message, formatArgs);
 	        }
 		}
 	}
 	
-	public static void sendMessageToPlayer(EntityPlayerMP player, String message) 
+	public static void sendMessageToPlayer(EntityPlayerMP player, EnumChatFormatting color, String message, Object... formatArgs) 
 	{
 		if (player != null) {
-			player.addChatComponentMessage(new ChatComponentText(message));
+			player.addChatMessage(new ChatComponentTranslation(message, formatArgs).setChatStyle(new ChatStyle().setColor(color)));
 		}
 	}
 

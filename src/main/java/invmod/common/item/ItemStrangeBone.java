@@ -10,6 +10,8 @@ import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
@@ -65,8 +67,8 @@ public class ItemStrangeBone extends ItemIM
                   wolf.setDead();
                   itemStack.stackSize -= 1;
               }else{
-            	  player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "The wolf doesn't like this Strange Bone."));
-            	  player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Maybe a certain block is missing..."));
+            	  player.addChatMessage(new ChatComponentTranslation("invmod.message.bone.nonearbynexus1").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+            	  player.addChatMessage(new ChatComponentTranslation("invmod.message.bone.nonearbynexus2").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
               }
           }
           return true;

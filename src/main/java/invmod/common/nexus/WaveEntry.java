@@ -2,6 +2,8 @@ package invmod.common.nexus;
 
 import invmod.common.mod_Invasion;
 import invmod.common.util.ISelect;
+import net.minecraft.util.EnumChatFormatting;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -175,7 +177,7 @@ public class WaveEntry
   {
     String message = (String)this.alerts.remove(Integer.valueOf(this.nextAlert));
     if (message != null) {
-      spawner.sendSpawnAlert(message);
+      spawner.sendSpawnAlert(message, EnumChatFormatting.RED);
     }
     this.nextAlert = 2147483647;
     if (this.alerts.size() > 0)

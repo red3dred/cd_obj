@@ -28,7 +28,7 @@ public class InvasionCommand extends CommandBase {
 			} else if (args[0].equals("end")) {
 				if (mod_Invasion.getActiveNexus() != null) {
 					mod_Invasion.getActiveNexus().emergencyStop();
-					mod_Invasion.broadcastToAll(username + " ended invasion");
+					mod_Invasion.broadcastToAll(EnumChatFormatting.RED, username + " has ended the invasion!");
 				} else {
 					sender.addChatMessage(new ChatComponentText(username + ": No invasion to end"));
 				}
