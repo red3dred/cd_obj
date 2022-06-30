@@ -1,15 +1,15 @@
 [
 {
-  "modid": "mod_invasion",
-  "name": "Invasion mod",
-  "description": "So you think your base is tough do you?",
+  "modid": "mod_Invasion",
+  "name": "Invasion Mod",
+  "description": "So you think your base is tough, do you?",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": [ "Lieu", "Elsee", "UnstoppableN" ],
-  "credits": "Lieu and Elsee, the original mod creators.  Davidee for better spawn eggs",
-  "logoFile": "",
+  "url": "https://github.com/Doenerstyle/Invasion-Mod",
+  "updateUrl": "https://github.com/Doenerstyle/Invasion-Mod/releases",
+  "authorList": [ "Lieu", "Elsee", "UnstoppableN", "Doenerstyle" ],
+  "credits": "Lieu and Elsee, the original mod creators.  Davidee for better spawn eggs.  UnstoppableN for maintaining until 1.7.10.",
+  "logoFile": "assets/invmod/meta/logo.png",
   "screenshots": [],
   "dependencies": ["MinecraftForge"]
 }
