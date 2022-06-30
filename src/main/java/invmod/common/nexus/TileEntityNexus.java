@@ -644,13 +644,13 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			for (Map.Entry entry : boundPlayers.entrySet())
 	        {
 				try{
-	          //should have getPlayerForUsername at the end
-				EntityPlayerMP player=(EntityPlayerMP)FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().func_152612_a((String) entry.getKey());
-				if(player!=null){
-				player.getEntityWorld().playSoundAtEntity((Entity)player,sound,1,1);
-				}
+		            //should have getPlayerForUsername at the end
+					EntityPlayerMP player=(EntityPlayerMP)FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().func_152612_a((String) entry.getKey());
+					if(player!=null){
+						player.getEntityWorld().playSoundAtEntity((Entity)player,sound,1,1);
+					}
 				}catch(Exception name){
-				System.out.println("Problem while trying to play sound at player.");
+					System.out.println("Problem while trying to play sound " + sound + " at player " + entry.getKey());
 				}
 	        }
 		}
@@ -1001,7 +1001,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			return true;
 		} catch (WaveSpawnerException e) {
 			float tierLevel;
-			mod_Invasion.log("Error resuming spawner:" + e.getMessage());
+			mod_Invasion.log("Error resuming spawner: " + e.getMessage());
 			this.waveSpawner.stop();
 			return false;
 		} finally {
@@ -1015,7 +1015,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			this.waveSpawner.resumeFromState(this.currentWave, this.spawnerElapsedRestore, this.spawnRadius);
 			return true;
 		} catch (WaveSpawnerException e) {
-			mod_Invasion.log("Error resuming spawner:" + e.getMessage());
+			mod_Invasion.log("Error resuming spawner: " + e.getMessage());
 			this.waveSpawner.stop();
 			return false;
 		} finally {
