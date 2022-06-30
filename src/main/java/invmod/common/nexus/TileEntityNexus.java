@@ -873,13 +873,14 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			long time = System.currentTimeMillis();
 			if (!this.boundPlayers.containsKey(entityPlayer.getDisplayName())) 
 			{
+				this.boundPlayers.put(entityPlayer.getDisplayName(), Long.valueOf(time));
 				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_GREEN, "invmod.message.nexus.lifenowbound", EnumChatFormatting.GREEN + entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s"));
 			} 
 			else if (time - ((Long) this.boundPlayers.get(entityPlayer.getDisplayName())).longValue() > 300000L) 
 			{
+				this.boundPlayers.put(entityPlayer.getDisplayName(), Long.valueOf(time));
 				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_GREEN, "invmod.message.nexus.lifenowbound", EnumChatFormatting.GREEN + entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s"));
 			}
-			this.boundPlayers.put(entityPlayer.getDisplayName(), Long.valueOf(time));
 		}
 	}
 
