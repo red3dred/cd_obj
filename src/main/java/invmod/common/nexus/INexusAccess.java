@@ -9,35 +9,34 @@ import java.util.List;
 
 import net.minecraft.world.World;
 
-public abstract interface INexusAccess extends IPosition
-{
-  public abstract void attackNexus(int paramInt);
+public interface INexusAccess extends IPosition {
+    void attackNexus(int paramInt);
 
-  public abstract void registerMobDied();
+    void registerMobDied();
 
-  public abstract boolean isActivating();
+    boolean isActivating();
 
-  public abstract int getMode();
+    int getMode();
 
-  public abstract int getActivationTimer();
+    int getActivationTimer();
 
-  public abstract int getSpawnRadius();
+    int getSpawnRadius();
 
-  public abstract int getNexusKills();
+    int getNexusKills();
 
-  public abstract int getGeneration();
+    int getGeneration();
 
-  public abstract int getNexusLevel();
+    int getNexusLevel();
 
-  public abstract int getCurrentWave();
+    int getCurrentWave();
 
-  public abstract World getWorld();
+    World getWorld();
 
-  public abstract List<EntityIMLiving> getMobList();
+    List<EntityIMLiving> getMobList();
 
-  public abstract AttackerAI getAttackerAI();
+    AttackerAI getAttackerAI();
 
-  public abstract void askForRespawn(EntityIMLiving paramEntityIMLiving);
-  
-  public abstract HashMap<String, Long> getBoundPlayers();
+    void askForRespawn(EntityIMLiving paramEntityIMLiving);
+
+    HashMap<String, Long> getBoundPlayers();
 }

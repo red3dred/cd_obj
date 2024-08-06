@@ -13,27 +13,9 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.ai.EntityAISit;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.item.EntityXPOrb;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 public class EntityIMWolf extends EntityWolf
@@ -79,7 +61,7 @@ public class EntityIMWolf extends EntityWolf
     }
   }
   @Override
-  
+
   public void onEntityUpdate()
   {
     super.onEntityUpdate();
@@ -163,7 +145,7 @@ public class EntityIMWolf extends EntityWolf
       }
     }
   }
-  
+
 
 	@Override
 	public void setDead() {
@@ -206,7 +188,7 @@ public class EntityIMWolf extends EntityWolf
           }
         }
       }
-      Collections.sort(spawnPoints, new ComparatorDistanceFrom(x, y, z));
+      Collections.sort(spawnPoints, ComparatorDistanceFrom.ofComparisonPosition(x, y, z));
 
       if (spawnPoints.size() > 0)
       {
@@ -331,12 +313,12 @@ public class EntityIMWolf extends EntityWolf
 
     return nexus;
   }
-  
+
   @Override
   public boolean attackEntityFrom(DamageSource damageSource, float par2float)
   {
-	  
+
 	return super.attackEntityFrom(damageSource, par2float);
   }
-  
+
 }

@@ -1,154 +1,154 @@
 package invmod.common.util.spawneggs;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 
-public class CustomTags {
-	
-	public static NBTTagCompound poweredCreeper() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setByte("powered", (byte) 1);
+public interface CustomTags {
+
+	static NbtCompound poweredCreeper() {
+		NbtCompound tag = new NbtCompound();
+		tag.putByte("powered", (byte) 1);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMZombie_T1() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 0);
-		tag.setInteger("tier", 1);
+
+	static NbtCompound IMZombie_T1() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 0);
+		tag.putInt("tier", 1);
 		return tag;
 	}
-	
-	
-	public static NBTTagCompound IMZombie_T2() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 0);
-		tag.setInteger("tier", 2);
+
+
+	static NbtCompound IMZombie_T2() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 0);
+		tag.putInt("tier", 2);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMZombie_T2_tar() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 2);
-		tag.setInteger("tier", 2);
+
+	static NbtCompound IMZombie_T2_tar() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 2);
+		tag.putInt("tier", 2);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMZombie_T3() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 0);
-		tag.setInteger("tier", 3);
+
+	static NbtCompound IMZombie_T3() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 0);
+		tag.putInt("tier", 3);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMSpider_T1_baby() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 1);
-		tag.setInteger("tier", 1);
+
+	static NbtCompound IMSpider_T1_baby() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 1);
+		tag.putInt("tier", 1);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMSpider_T2() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 0);
-		tag.setInteger("tier", 2);
+
+	static NbtCompound IMSpider_T2() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 0);
+		tag.putInt("tier", 2);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMSpider_T2_mother() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 1);
-		tag.setInteger("tier", 2);
+
+	static NbtCompound IMSpider_T2_mother() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 1);
+		tag.putInt("tier", 2);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMThrower_T2() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("tier", 2);
+
+	static NbtCompound IMThrower_T2() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("tier", 2);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMZombiePigman_T1() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 1);
-		tag.setInteger("tier", 1);
+
+	static NbtCompound IMZombiePigman_T1() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 1);
+		tag.putInt("tier", 1);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMZombiePigman_T2() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 1);
-		tag.setInteger("tier", 2);
+
+	static NbtCompound IMZombiePigman_T2() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 1);
+		tag.putInt("tier", 2);
 		return tag;
 	}
-	
-	public static NBTTagCompound IMZombiePigman_T3() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("flavour", 1);
-		tag.setInteger("tier", 3);
+
+	static NbtCompound IMZombiePigman_T3() {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("flavour", 1);
+		tag.putInt("tier", 3);
 		return tag;
 	}
-	
-	public static NBTTagCompound witherSkeleton() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setByte("SkeletonType", (byte) 1);
-		NBTTagList list = new NBTTagList();
-		NBTTagCompound swordItem = createItemTag((byte) 1, (short) 0, (short) 272);
-		list.appendTag(swordItem);
+
+	static NbtCompound witherSkeleton() {
+		NbtCompound tag = new NbtCompound();
+		tag.putByte("SkeletonType", (byte) 1);
+		NbtList list = new NbtList();
+		NbtCompound swordItem = createItemTag((byte) 1, (short) 0, (short) 272);
+		list.add(swordItem);
 		for (int i = 0; i < 4; ++i)
-			list.appendTag(new NBTTagCompound());
-		tag.setTag("Equipment", list);
+			list.add(new NbtCompound());
+		tag.put("Equipment", list);
 		return tag;
 	}
-	
-	public static NBTTagCompound villagerZombie() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setByte("IsVillager", (byte)1);
+
+	static NbtCompound villagerZombie() {
+		NbtCompound tag = new NbtCompound();
+		tag.putByte("IsVillager", (byte)1);
 		return tag;
 	}
-	
-	public static NBTTagCompound babyZombie() {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setByte("IsBaby", (byte)1);
+
+	static NbtCompound babyZombie() {
+		NbtCompound tag = new NbtCompound();
+		tag.putByte("IsBaby", (byte)1);
 		return tag;
 	}
-	
-	public static NBTTagCompound horseType(int type) {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setInteger("Type", type);
+
+	static NbtCompound horseType(int type) {
+		NbtCompound tag = new NbtCompound();
+		tag.putInt("Type", type);
 		return tag;
 	}
-	
-	public static NBTTagCompound createItemTag(byte count, short damage, short id) {
-		NBTTagCompound item = new NBTTagCompound();
-		item.setByte("Count", count);
-		item.setShort("Damage", damage);
-		item.setShort("id", id);
+
+	static NbtCompound createItemTag(byte count, short damage, short id) {
+		NbtCompound item = new NbtCompound();
+		item.putByte("Count", count);
+		item.putShort("Damage", damage);
+		item.putShort("id", id);
 		return item;
 	}
-	
-	public static NBTTagCompound getEntityTag(String entityID) {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setString("id", entityID);
+
+	static NbtCompound getEntityTag(String entityID) {
+		NbtCompound tag = new NbtCompound();
+		tag.putString("id", entityID);
 		return tag;
 	}
-	
-	public static NBTTagCompound ridingTag(NBTTagCompound ridden) {
-		NBTTagCompound tag = new NBTTagCompound();
-		tag.setTag("Riding", ridden);
+
+	static NbtCompound ridingTag(NbtCompound ridden) {
+		NbtCompound tag = new NbtCompound();
+		tag.put("Riding", ridden);
 		return tag;
 	}
-	
-	public static NBTTagCompound spiderJockey(boolean wither) {
-		NBTTagCompound skele = (wither) ? witherSkeleton() : new NBTTagCompound();
-		skele.setTag("Riding", getEntityTag("Spider"));
+
+	static NbtCompound spiderJockey(boolean wither) {
+		NbtCompound skele = (wither) ? witherSkeleton() : new NbtCompound();
+		skele.put("Riding", getEntityTag("Spider"));
 		return skele;
 	}
-	
-	public static NBTTagCompound chickenJockey(boolean villager) {
-		NBTTagCompound zomb = babyZombie();
+
+	static NbtCompound chickenJockey(boolean villager) {
+		NbtCompound zomb = babyZombie();
 		if (villager)
-			zomb.setByte("IsVillager", (byte)1);
-		zomb.setTag("Riding", getEntityTag("Chicken"));
+			zomb.putByte("IsVillager", (byte)1);
+		zomb.put("Riding", getEntityTag("Chicken"));
 		return zomb;
 	}
 

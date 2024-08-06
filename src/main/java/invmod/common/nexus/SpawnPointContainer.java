@@ -5,149 +5,118 @@ import invmod.common.util.PolarAngle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class SpawnPointContainer
-{
-  private EnumMap<SpawnType, ArrayList<SpawnPoint>> spawnPoints;
-  private boolean sorted;
-  private Random random;
-  private PolarAngle angleDesired;
+public class SpawnPointContainer {
+    private final Map<SpawnType, List<SpawnPoint>> spawnPoints = new EnumMap<>(SpawnType.class);
+    private boolean sorted;
+    private Random random = new Random();
 
-  public SpawnPointContainer()
-  {
-    this.sorted = false;
-    this.random = new Random();
-    this.angleDesired = new PolarAngle(0);
-    this.spawnPoints = new EnumMap(SpawnType.class);
-    for (SpawnType type : SpawnType.values())
-    {
-      this.spawnPoints.put(type, new ArrayList());
-    }
-  }
+    public void addSpawnPointXZ(SpawnPoint spawnPoint) {
+        boolean foundMatch = false;
+        List<SpawnPoint> spawnList = spawnPoints.computeIfAbsent(spawnPoint.type(), i -> new ArrayList<>());
 
-  public void addSpawnPointXZ(SpawnPoint spawnPoint)
-  {
-    boolean flag = false;
-    ArrayList spawnList = (ArrayList)this.spawnPoints.get(spawnPoint.getType());
-    for (int i = 0; i < spawnList.size(); i++)
-    {
-      SpawnPoint oldPoint = (SpawnPoint)spawnList.get(i);
-      if ((oldPoint.getXCoord() == spawnPoint.getXCoord()) && (oldPoint.getZCoord() == spawnPoint.getZCoord()))
-      {
-        if (oldPoint.getYCoord() > spawnPoint.getYCoord())
-        {
-          spawnList.set(i, spawnPoint);
+        for (int i = 0; i < spawnList.size(); i++) {
+            SpawnPoint oldPoint = spawnList.get(i);
+            if (oldPoint.columnEquals(spawnPoint)) {
+                if (oldPoint.y() > spawnPoint.getYCoord()) {
+                    spawnList.set(i, spawnPoint);
+                }
+                foundMatch = true;
+                break;
+            }
         }
-        flag = true;
-        break;
-      }
+
+        if (!foundMatch) {
+            spawnList.add(spawnPoint);
+        }
+        this.sorted = false;
     }
 
-    if (!flag)
-    {
-      spawnList.add(spawnPoint);
-    }
-    this.sorted = false;
-  }
-
-  public SpawnPoint getRandomSpawnPoint(SpawnType spawnType)
-  {
-    ArrayList spawnList = (ArrayList)this.spawnPoints.get(spawnType);
-    if (spawnList.size() == 0)
-    {
-      return null;
-    }
-    return (SpawnPoint)spawnList.get(this.random.nextInt(spawnList.size()));
-  }
-
-  public SpawnPoint getRandomSpawnPoint(SpawnType spawnType, int minAngle, int maxAngle)
-  {
-    ArrayList spawnList = (ArrayList)this.spawnPoints.get(spawnType);
-    if (spawnList.size() == 0)
-    {
-      return null;
+    @Nullable
+    public SpawnPoint getRandomSpawnPoint(SpawnType spawnType) {
+        List<SpawnPoint> spawnList = spawnPoints.getOrDefault(spawnType, List.of());
+        return spawnList.isEmpty() ? null : spawnList.get(random.nextInt(spawnList.size()));
     }
 
-    if (!this.sorted)
-    {
-      Collections.sort(spawnList);
-      this.sorted = true;
+    public SpawnPoint getRandomSpawnPoint(SpawnType spawnType, int minAngle, int maxAngle) {
+        List<SpawnPoint> spawnList = spawnPoints.get(spawnType);
+        if (spawnList.isEmpty()) {
+            return null;
+        }
+
+        if (!this.sorted) {
+            Collections.sort(spawnList);
+            this.sorted = true;
+        }
+
+        int start = Collections.binarySearch(spawnList, new PolarAngle(minAngle));
+        if (start < 0) {
+            start = -start - 1;
+        }
+        int end = Collections.binarySearch(spawnList, new PolarAngle(maxAngle));
+        if (end < 0) {
+            end = -end - 1;
+        }
+        if (end > start) {
+            return spawnList.get(start + this.random.nextInt(end - start));
+        }
+        if ((start > end) && (end > 0)) {
+            int r = start + this.random.nextInt(spawnList.size() + end - start);
+            if (r >= spawnList.size()) {
+                r -= spawnList.size();
+            }
+            return spawnList.get(r);
+        }
+        return null;
     }
 
-    this.angleDesired.setAngle(minAngle);
-    int start = Collections.binarySearch(spawnList, this.angleDesired);
-    if (start < 0) {
-      start = -start - 1;
-    }
-    this.angleDesired.setAngle(maxAngle);
-    int end = Collections.binarySearch(spawnList, this.angleDesired);
-    if (end < 0) {
-      end = -end - 1;
-    }
-    if (end > start) {
-      return (SpawnPoint)spawnList.get(start + this.random.nextInt(end - start));
-    }
-    if ((start > end) && (end > 0))
-    {
-      int r = start + this.random.nextInt(spawnList.size() + end - start);
-      if (r >= spawnList.size()) {
-        r -= spawnList.size();
-      }
-      return (SpawnPoint)spawnList.get(r);
-    }
-    return null;
-  }
-
-  public int getNumberOfSpawnPoints(SpawnType type)
-  {
-    return ((ArrayList)this.spawnPoints.get(SpawnType.HUMANOID)).size();
-  }
-
-  public int getNumberOfSpawnPoints(SpawnType spawnType, int minAngle, int maxAngle)
-  {
-    ArrayList spawnList = (ArrayList)this.spawnPoints.get(spawnType);
-    if ((spawnList.size() == 0) || (maxAngle - minAngle >= 360))
-    {
-      return spawnList.size();
+    public int getNumberOfSpawnPoints(SpawnType type) {
+        return spawnPoints.getOrDefault(SpawnType.HUMANOID, List.of()).size();
     }
 
-    if (!this.sorted)
-    {
-      Collections.sort(spawnList);
-      this.sorted = true;
+    public int getNumberOfSpawnPoints(SpawnType spawnType, int minAngle, int maxAngle) {
+        List<SpawnPoint> spawnList = this.spawnPoints.get(spawnType);
+        if (spawnList.isEmpty() || (maxAngle - minAngle) >= 360) {
+            return spawnList.size();
+        }
+
+        if (!this.sorted) {
+            Collections.sort(spawnList);
+            this.sorted = true;
+        }
+
+        int start = Collections.binarySearch(spawnList, new PolarAngle(minAngle));
+        if (start < 0) {
+            start = -start - 1;
+        }
+        int end = Collections.binarySearch(spawnList, new PolarAngle(maxAngle));
+        if (end < 0) {
+            end = -end - 1;
+        }
+        if (end > start) {
+            return end - start;
+        }
+        if ((start > end) && (end > 0)) {
+            return end + spawnList.size() - start;
+        }
+        return 0;
     }
 
-    this.angleDesired.setAngle(minAngle);
-    int start = Collections.binarySearch(spawnList, this.angleDesired);
-    if (start < 0) {
-      start = -start - 1;
+    public void pointDisplayTest(Block block, World world) {
+        List<SpawnPoint> points = this.spawnPoints.get(SpawnType.HUMANOID);
+        for (int i = 0; i < points.size(); i++) {
+            SpawnPoint point = points.get(i);
+            world.setBlockState(new BlockPos(point.getXCoord(), point.getYCoord(), point.getZCoord()),
+                    block.getDefaultState());
+        }
     }
-    this.angleDesired.setAngle(maxAngle);
-    int end = Collections.binarySearch(spawnList, this.angleDesired);
-    if (end < 0) {
-      end = -end - 1;
-    }
-    if (end > start) {
-      return end - start;
-    }
-    if ((start > end) && (end > 0)) {
-      return end + spawnList.size() - start;
-    }
-    return 0;
-  }
-
-  public void pointDisplayTest(Block block, World world)
-  {
-    ArrayList points = (ArrayList)this.spawnPoints.get(SpawnType.HUMANOID);
-    SpawnPoint point = null;
-    for (int i = 0; i < points.size(); i++)
-    {
-      point = (SpawnPoint)points.get(i);
-      world.setBlock(point.getXCoord(), point.getYCoord(), point.getZCoord(), block);
-    }
-  }
 }

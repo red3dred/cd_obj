@@ -16,7 +16,6 @@ public class KeyFrame {
 	private float posY;
 	private float posZ;
 	private InterpType interpType;
-	private float[][] mods;
 	private boolean hasPos;
 
 	public KeyFrame(float time, float rotX, float rotY, float rotZ, InterpType interpType) {
@@ -72,41 +71,36 @@ public class KeyFrame {
 		return this.hasPos;
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return "(" + this.time + ", " + this.rotX + ", " + this.rotY + ", " + this.rotZ + ")";
 	}
 
 	public static List<KeyFrame> cloneFrames(List<KeyFrame> keyFrames) {
-		return new ArrayList(keyFrames);
+		return List.copyOf(keyFrames);
 	}
 
-	public static void toRadians(List<KeyFrame> keyFrames) {
-		ListIterator iter = keyFrames.listIterator();
-		while (iter.hasNext()) {
-			float radDeg = 0.01745329F;
-			KeyFrame keyFrame = (KeyFrame) iter.next();
-			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), keyFrame.getRotX() * radDeg, keyFrame.getRotY() * radDeg, keyFrame.getRotZ() * radDeg, keyFrame.getPosX(), keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
-
-			newFrame.hasPos = keyFrame.hasPos;
-			iter.set(newFrame);
-		}
+	public static List<KeyFrame> toRadians(List<KeyFrame> keyFrames) {
+	    float radDeg = 0.01745329F;
+	    return keyFrames.stream().map(keyFrame -> {
+            KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), keyFrame.getRotX() * radDeg, keyFrame.getRotY() * radDeg, keyFrame.getRotZ() * radDeg, keyFrame.getPosX(), keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
+            newFrame.hasPos = keyFrame.hasPos;
+            return newFrame;
+	    }).toList();
 	}
 
-	public static void mirrorFramesX(List<KeyFrame> keyFrames) {
-		ListIterator iter = keyFrames.listIterator();
-		while (iter.hasNext()) {
-			KeyFrame keyFrame = (KeyFrame) iter.next();
+	public static List<KeyFrame> mirrorFramesX(List<KeyFrame> keyFrames) {
+		return keyFrames.stream().map(keyFrame -> {
 			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), keyFrame.getRotX(), -keyFrame.getRotY(), -keyFrame.getRotZ(), -keyFrame.getPosX(), keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
-
 			newFrame.hasPos = keyFrame.hasPos;
-			iter.set(newFrame);
-		}
+			return newFrame;
+		}).toList();
 	}
 
 	public static void mirrorFramesY(List<KeyFrame> keyFrames) {
-		ListIterator iter = keyFrames.listIterator();
+		ListIterator<KeyFrame> iter = keyFrames.listIterator();
 		while (iter.hasNext()) {
-			KeyFrame keyFrame = (KeyFrame) iter.next();
+			KeyFrame keyFrame = iter.next();
 			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), -keyFrame.getRotX(), keyFrame.getRotY(), -keyFrame.getRotZ(), keyFrame.getPosX(), -keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
 
 			newFrame.hasPos = keyFrame.hasPos;
@@ -115,9 +109,9 @@ public class KeyFrame {
 	}
 
 	public static void mirrorFramesZ(List<KeyFrame> keyFrames) {
-		ListIterator iter = keyFrames.listIterator();
+		ListIterator<KeyFrame> iter = keyFrames.listIterator();
 		while (iter.hasNext()) {
-			KeyFrame keyFrame = (KeyFrame) iter.next();
+			KeyFrame keyFrame = iter.next();
 			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), -keyFrame.getRotX(), -keyFrame.getRotY(), keyFrame.getRotZ(), keyFrame.getPosX(), keyFrame.getPosY(), -keyFrame.getPosZ(), keyFrame.getInterpType());
 
 			newFrame.hasPos = keyFrame.hasPos;
@@ -132,22 +126,22 @@ public class KeyFrame {
 		float diff = end - start;
 		offset %= diff;
 		float k1 = end - offset;
-		List copy = cloneFrames(keyFrames);
+		List<KeyFrame> copy = cloneFrames(keyFrames);
 		keyFrames.clear();
 		KeyFrame currFrame = null;
-		ListIterator iter = copy.listIterator();
+		ListIterator<KeyFrame> iter = copy.listIterator();
 
 		while (iter.hasNext()) {
-			currFrame = (KeyFrame) iter.next();
+			currFrame = iter.next();
 			if (currFrame.getTime() >= start)
 				break;
 			keyFrames.add(currFrame);
 		}
 
-		List buffer = new ArrayList();
+		List<KeyFrame> buffer = new ArrayList<>();
 		buffer.add(currFrame);
 		while (iter.hasNext()) {
-			currFrame = (KeyFrame) iter.next();
+			currFrame = iter.next();
 			if (currFrame.getTime() >= k1) {
 				break;
 			}
@@ -156,7 +150,7 @@ public class KeyFrame {
 		KeyFrame fencepostStart;
 		if (!MathUtil.floatEquals(currFrame.getTime(), k1, 0.001F)) {
 			iter.previous();
-			KeyFrame prev = (KeyFrame) iter.previous();
+			KeyFrame prev = iter.previous();
 
 			float dt = k1 - prev.getTime();
 			float dtFrame = currFrame.getTime() - prev.getTime();
@@ -172,7 +166,7 @@ public class KeyFrame {
 		keyFrames.add(fencepostStart);
 
 		while (iter.hasNext()) {
-			currFrame = (KeyFrame) iter.next();
+			currFrame = iter.next();
 			if (currFrame.getTime() <= end) {
 				float t = currFrame.getTime() + offset - diff;
 				KeyFrame newFrame = new KeyFrame(t, currFrame.getRotX(), currFrame.getRotY(), currFrame.getRotZ(), currFrame.getPosX(), currFrame.getPosY(), currFrame.getPosZ(), InterpType.LINEAR);
@@ -186,9 +180,9 @@ public class KeyFrame {
 
 		}
 
-		Iterator iter2 = buffer.iterator();
+		Iterator<KeyFrame> iter2 = buffer.iterator();
 		while (iter2.hasNext()) {
-			currFrame = (KeyFrame) iter2.next();
+			currFrame = iter2.next();
 			float t = currFrame.getTime() + offset;
 			KeyFrame newFrame = new KeyFrame(t, currFrame.getRotX(), currFrame.getRotY(), currFrame.getRotZ(), currFrame.getPosX(), currFrame.getPosY(), currFrame.getPosZ(), InterpType.LINEAR);
 
@@ -199,7 +193,7 @@ public class KeyFrame {
 		keyFrames.add(new KeyFrame(end, fencepostStart.getRotX(), fencepostStart.getRotY(), fencepostStart.getRotZ(), InterpType.LINEAR));
 
 		while (iter.hasNext()) {
-			keyFrames.add((KeyFrame) iter.next());
+			keyFrames.add(iter.next());
 		}
 	}
 }

@@ -2,29 +2,27 @@ package invmod.common.util;
 
 import java.util.Comparator;
 
-public class ComparatorDistanceFrom
-  implements Comparator<IPosition>
-{
-  private double x;
-  private double y;
-  private double z;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 
-  public ComparatorDistanceFrom(double x, double y, double z)
-  {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-
-  public int compare(IPosition pos1, IPosition pos2)
-  {
-    double d1 = (this.x - pos1.getXCoord()) * (this.x - pos1.getXCoord()) + (this.y - pos1.getYCoord()) * (this.y - pos1.getYCoord()) + (this.z - pos1.getZCoord()) * (this.z - pos1.getZCoord());
-    double d2 = (this.x - pos2.getXCoord()) * (this.x - pos2.getXCoord()) + (this.y - pos2.getYCoord()) * (this.y - pos2.getYCoord()) + (this.z - pos2.getZCoord()) * (this.z - pos2.getZCoord());
-    if (d1 > d2)
-      return -1;
-    if (d1 < d2) {
-      return 1;
+public interface ComparatorDistanceFrom {
+    static Comparator<IPosition> ofComparisonPosition(double x, double y, double z) {
+        return ofComparingPosition(new Vec3d(x, y, z));
     }
-    return 0;
-  }
+
+    static Comparator<IPosition> ofComparingPosition(Vec3d origin) {
+        return Comparator.comparingDouble(pos -> origin.squaredDistanceTo(pos.getXCoord(), pos.getYCoord(), pos.getZCoord()));
+    }
+
+    static Comparator<Entity> ofComparisonEntities(IPosition pos) {
+        return ofComparisonEntities(new Vec3d(pos.getXCoord(), pos.getYCoord(), pos.getZCoord()));
+    }
+
+    static Comparator<Entity> ofComparisonEntities(double x, double y, double z) {
+        return ofComparisonEntities(new Vec3d(x, y, z));
+    }
+
+    static Comparator<Entity> ofComparisonEntities(Vec3d origin) {
+        return Comparator.comparingDouble(e -> e.squaredDistanceTo(origin));
+    }
 }

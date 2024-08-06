@@ -3,48 +3,41 @@ package invmod.common.nexus;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMZombie;
-
+import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
-import net.minecraft.entity.EntityList;
-import net.minecraft.util.EnumChatFormatting;
+import org.jetbrains.annotations.Nullable;
 
 public class IMWaveSpawner implements ISpawnerAccess {
-	private final int MAX_SPAWN_TRIES = 20;
-	private final int NORMAL_SPAWN_HEIGHT = 30;
-	private final int MIN_SPAWN_POINTS_TO_KEEP = 15;
-	private final int MIN_SPAWN_POINTS_TO_KEEP_BELOW_HEIGHT_CUTOFF = 20;
-	private final int HEIGHT_CUTOFF = 35;
-	private final float SPAWN_POINT_CULL_RATE = 0.3F;
-	private SpawnPointContainer spawnPointContainer;
+	private static final int MAX_SPAWN_TRIES = 20;
+	private static final int NORMAL_SPAWN_HEIGHT = 30;
+	private static final int MIN_SPAWN_POINTS_TO_KEEP = 15;
+	private static final int MIN_SPAWN_POINTS_TO_KEEP_BELOW_HEIGHT_CUTOFF = 20;
+	private static final int HEIGHT_CUTOFF = 35;
+	private static final float SPAWN_POINT_CULL_RATE = 0.3F;
+
+	private SpawnPointContainer spawnPointContainer = new SpawnPointContainer();
+
+	@Nullable
 	private INexusAccess nexus;
-	private MobBuilder mobBuilder;
-	private Random rand;
+	private final MobBuilder mobBuilder = new MobBuilder();
+	//private final Random rand = new Random();
+	@Nullable
 	private Wave currentWave;
+
 	private boolean active;
 	private boolean waveComplete;
-	private boolean spawnMode;
+	private boolean spawnMode = true;
 	private boolean debugMode;
+
 	private int spawnRadius;
-	private int currentWaveNumber;
+	//private int currentWaveNumber = 1;
 	private int successfulSpawns;
 	private long elapsed;
 
 	public IMWaveSpawner(INexusAccess tileEntityNexus, int radius) {
 		this.nexus = tileEntityNexus;
-		this.active = false;
-		this.waveComplete = false;
-		this.spawnMode = true;
-		this.debugMode = false;
 		this.spawnRadius = radius;
-		this.currentWaveNumber = 1;
-		this.elapsed = 0L;
-		this.successfulSpawns = 0;
-		this.rand = new Random();
-		this.spawnPointContainer = new SpawnPointContainer();
-		this.mobBuilder = new MobBuilder();
 	}
 
 	public long getElapsedTime() {
@@ -123,19 +116,15 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	}
 
 	public void stop() {
-		this.active = false;
+		active = false;
 	}
 
 	public boolean isActive() {
-		return this.active;
+		return active;
 	}
 
 	public boolean isReady() {
-		if ((!this.active) && (this.nexus != null) && (this.nexus.getWorld() != null)) {
-			return true;
-		}
-
-		return false;
+		return !active && nexus != null && nexus.getWorld() != null;
 	}
 
 	public boolean isWaveComplete() {
@@ -159,27 +148,30 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	}
 
 	public void askForRespawn(EntityIMLiving entity) {
-		if (this.spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID) > 10) {
-			SpawnPoint spawnPoint = this.spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID);
-			entity.setLocationAndAngles(spawnPoint.getXCoord(), spawnPoint.getYCoord(), spawnPoint.getZCoord(), 0.0F, 0.0F);
+		if (spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID) > 10) {
+			SpawnPoint spawnPoint = spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID);
+			entity.updatePositionAndAngles(spawnPoint.getXCoord() + 0.5D, spawnPoint.getYCoord() + 0.5D, spawnPoint.getZCoord() + 0.5D, 0, 0);
 		}
 	}
 
-	public void sendSpawnAlert(String message, EnumChatFormatting color) {
+	@Override
+    public void sendSpawnAlert(String message, Formatting color) {
 		if (this.debugMode) {
 			mod_Invasion.log(message);
 		}
 		mod_Invasion.sendMessageToPlayers(this.nexus.getBoundPlayers(), color, message);
 	}
 
-	public void noSpawnPointNotice() {
+	@Override
+    public void noSpawnPointNotice() {
 	}
 
 	public void debugMode(boolean isOn) {
 		this.debugMode = isOn;
 	}
 
-	public int getNumberOfPointsInRange(int minAngle, int maxAngle, SpawnType type) {
+	@Override
+    public int getNumberOfPointsInRange(int minAngle, int maxAngle, SpawnType type) {
 		return this.spawnPointContainer.getNumberOfSpawnPoints(type, minAngle, maxAngle);
 	}
 
@@ -190,6 +182,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	public void giveSpawnPoints(SpawnPointContainer spawnPointContainer) {
 		this.spawnPointContainer = spawnPointContainer;
 	}
+
 	@Override
 	public boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle) {
 		if (this.nexus.getWorld() == null) {
@@ -204,8 +197,8 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		}
 
 		int spawnTries = getNumberOfPointsInRange(minAngle, maxAngle, SpawnType.HUMANOID);
-		if (spawnTries > 20) {
-			spawnTries = 20;
+		if (spawnTries > MAX_SPAWN_TRIES) {
+			spawnTries = MAX_SPAWN_TRIES;
 		}
 		for (int j = 0; j < spawnTries; j++) {
 			SpawnPoint spawnPoint;
@@ -226,18 +219,18 @@ public class IMWaveSpawner implements ISpawnerAccess {
 				return true;
 			}
 
-			mob.setLocationAndAngles(spawnPoint.getXCoord(), spawnPoint.getYCoord(), spawnPoint.getZCoord(), 0.0F, 0.0F);
+			mob.updatePositionAndAngles(spawnPoint.getXCoord() + 0.5, spawnPoint.getYCoord() + 0.5, spawnPoint.getZCoord() + 0.5, 0, 0);
 			if (mob.getCanSpawnHere()) {
 				this.successfulSpawns += 1;
-				this.nexus.getWorld().spawnEntityInWorld(mob);
+				this.nexus.getWorld().spawnEntity(mob);
 				if (this.debugMode) {
-					mod_Invasion.log("[Spawn] Time: " + this.currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + mob.posX + ", " + mob.posY + ", " + mob.posZ + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+					mod_Invasion.log("[Spawn] Time: " + this.currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
 				}
-				
+
 				return true;
 			}
 		}
-		mod_Invasion.log("Could not find valid spawn for '" + EntityList.getEntityString(mob) + "' after " + spawnTries + " tries");
+		mod_Invasion.log("Could not find valid spawn for '" + mob.getName() + "' after " + spawnTries + " tries");
 		return false;
 	}
 
@@ -246,7 +239,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			return;
 		}
 		EntityIMZombie zombie = new EntityIMZombie(this.nexus.getWorld(), this.nexus);
-		List spawnPoints = new ArrayList();
+		List<SpawnPoint> spawnPoints = new ArrayList<>();
 		int x = this.nexus.getXCoord();
 		int y = this.nexus.getYCoord();
 		int z = this.nexus.getZCoord();
@@ -272,26 +265,23 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 		}
 
-		if (spawnPoints.size() > 15) 
-		{
+		if (spawnPoints.size() > MIN_SPAWN_POINTS_TO_KEEP) {
 			int i;
-			int amountToRemove = (int) ((spawnPoints.size() - 15) * 0.3F);
-			for (i = spawnPoints.size() - 1; i >= spawnPoints.size() - amountToRemove; i--) 
-				{
-				if (Math.abs(((SpawnPoint) spawnPoints.get(i)).getYCoord() - y) < 30) {
+			int amountToRemove = (int) ((spawnPoints.size() - MIN_SPAWN_POINTS_TO_KEEP) * SPAWN_POINT_CULL_RATE);
+			for (i = spawnPoints.size() - 1; i >= spawnPoints.size() - amountToRemove; i--) {
+				if (Math.abs(spawnPoints.get(i).getYCoord() - y) < NORMAL_SPAWN_HEIGHT) {
 					break;
 				}
 			}
-			for (; i >= 20; i--) 
-			{
-				SpawnPoint spawnPoint = (SpawnPoint) spawnPoints.get(i);
-				if (spawnPoint.getYCoord() - y <= 35) {
+			for (; i >= MIN_SPAWN_POINTS_TO_KEEP_BELOW_HEIGHT_CUTOFF; i--) {
+				SpawnPoint spawnPoint = spawnPoints.get(i);
+				if (spawnPoint.getYCoord() - y <= HEIGHT_CUTOFF) {
 					this.spawnPointContainer.addSpawnPointXZ(spawnPoint);
 				}
 
 			}
 			for (; i >= 0; i--) {
-				this.spawnPointContainer.addSpawnPointXZ((SpawnPoint) spawnPoints.get(i));
+				this.spawnPointContainer.addSpawnPointXZ(spawnPoints.get(i));
 			}
 
 		}
@@ -300,18 +290,18 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	}
 
 	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, int x, int y, int z) {
-		entity.setLocationAndAngles(x, y, z, 0.0F, 0.0F);
+		entity.updatePositionAndAngles(x + 0.5, y + 0.5, z + 0.5, 0, 0);
 		if (entity.getCanSpawnHere()) {
 			int angle = (int) (Math.atan2(this.nexus.getZCoord() - z, this.nexus.getXCoord() - x) * 180.0D / 3.141592653589793D);
 			spawnPoints.add(new SpawnPoint(x, y, z, angle, SpawnType.HUMANOID));
 		}
 	}
 
-	private void checkAddSpawn(EntityIMLiving entity, int x, int y, int z) {
-		entity.setLocationAndAngles(x, y, z, 0.0F, 0.0F);
+	/*private void checkAddSpawn(EntityIMLiving entity, int x, int y, int z) {
+	    entity.updatePositionAndAngles(x + 0.5, y + 0.5, z + 0.5, 0, 0);
 		if (entity.getCanSpawnHere()) {
 			int angle = (int) (Math.atan2(this.nexus.getZCoord() - z, this.nexus.getXCoord() - x) * 180.0D / 3.141592653589793D);
 			this.spawnPointContainer.addSpawnPointXZ(new SpawnPoint(x, y, z, angle, SpawnType.HUMANOID));
 		}
-	}
+	}*/
 }

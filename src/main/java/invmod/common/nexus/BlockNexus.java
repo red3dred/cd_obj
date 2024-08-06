@@ -4,25 +4,12 @@ import invmod.common.mod_Invasion;
 
 import java.util.Random;
 
-import net.minecraft.block.BlockContainer;
-import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.item.EntityTNTPrimed;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.block.BlockWithEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockNexus extends BlockContainer {
+public class BlockNexus extends BlockWithEntity {
 
 	@SideOnly(Side.CLIENT)
 	private IIcon sideOn;
@@ -47,7 +34,7 @@ public class BlockNexus extends BlockContainer {
 		this.setBlockName("blockNexus");
 		this.setCreativeTab(mod_Invasion.tabInvmod);
 	}
-	
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister) {
@@ -72,33 +59,33 @@ public class BlockNexus extends BlockContainer {
 		}
 		return side != 0 ? this.sideOn : this.botTexture;
 	}
-	 
+
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int par6, float par7, float par8, float par9) {
-		
+
 		Item item = null;
 		ItemStack equippedItem = entityPlayer.getCurrentEquippedItem();
 		if(equippedItem!=null){
 			item = equippedItem.getItem();
 		}
-		
+
 		if (world.isRemote) {
 			return true;
-			
+
 		}
 		if ((item != mod_Invasion.itemProbe) && ((!mod_Invasion.isDebug()) || (item != mod_Invasion.itemDebugWand))) {
 			TileEntityNexus tileEntityNexus = (TileEntityNexus) world.getTileEntity(x, y, z);
 			if (tileEntityNexus != null) {
 				mod_Invasion.setNexusClicked(tileEntityNexus);
 				entityPlayer.openGui(mod_Invasion.getLoadedInstance(), mod_Invasion.getGuiIdNexus(), world, x, y, z);
-				
+
 			}
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	@Override
 	public void randomDisplayTick(World world, int x, int y, int z, Random random) {
 		int meta = world.getBlockMetadata(x, y, z);
@@ -139,11 +126,11 @@ public class BlockNexus extends BlockContainer {
 	public TileEntity createNewTileEntity(World world, int metadata) {
 		return new TileEntityNexus(world);
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public float getPlayerRelativeBlockHardness(EntityPlayer player, World world, int x, int y, int z){
-	
+
 		TileEntityNexus tile=(TileEntityNexus)world.getTileEntity(x, y, z);
 
 		if(tile.isActive()){
@@ -151,6 +138,6 @@ public class BlockNexus extends BlockContainer {
 		}else{
 			 return ForgeHooks.blockStrength(this, player, world, x, y, z);
 		}
-		
+
 	}
 }

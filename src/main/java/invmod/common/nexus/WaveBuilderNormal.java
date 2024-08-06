@@ -1,9 +1,11 @@
 package invmod.common.nexus;
 
+@Deprecated(since = "unused")
 public class WaveBuilderNormal
   implements IWaveSource
 {
-  public Wave getWave()
+  @Override
+public Wave getWave()
   {
     int difficulty = 0;
     int lengthSeconds = 0;

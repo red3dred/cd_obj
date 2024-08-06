@@ -1,6 +1,6 @@
 package invmod.common.nexus;
 
-public abstract interface IWaveSource
-{
-  public abstract Wave getWave();
+@Deprecated(since = "unused")
+public interface IWaveSource {
+    Wave getWave();
 }

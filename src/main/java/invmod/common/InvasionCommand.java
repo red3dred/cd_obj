@@ -1,13 +1,17 @@
 package invmod.common;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.server.command.ServerCommandSource;
 
 public class InvasionCommand extends CommandBase {
-	
+
+    public static LiteralArgumentBuilder<ServerCommandSource> create(CommandRegistryAccess registries) {
+        //TODO:
+        return null;
+    }
+
 	public void processCommand(ICommandSender sender, String[] args) {
 		String username = sender.getCommandSenderName();
 		if ((args.length > 0) && (args.length <= 7)) {
@@ -107,7 +111,7 @@ public class InvasionCommand extends CommandBase {
 			}else{
 				sender.addChatMessage(new ChatComponentText("Command not recognized, use /invasion help for a list of all available commands").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 			}
-				
+
 		} else {
 			sendCommandHelp(sender);
 		}
@@ -120,12 +124,12 @@ public class InvasionCommand extends CommandBase {
 	public String getCommandUsage(ICommandSender icommandsender) {
 		return "";
 	}
-	
+
 	public static void sendCommandHelp(ICommandSender sender) {
 		sender.addChatMessage(new ChatComponentText("--- Showing Invasion help page 1 of 1 ---").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_GREEN)));
 		sender.addChatMessage(new ChatComponentText("/invasion begin x" + EnumChatFormatting.GRAY + " - start a wave").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
 		sender.addChatMessage(new ChatComponentText("/invasion end" + EnumChatFormatting.GRAY + " - end the current invasion").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
 		sender.addChatMessage(new ChatComponentText("/invasion range x" + EnumChatFormatting.GRAY + " - set the spawn range").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
 	}
-	
+
 }

@@ -1,14 +1,13 @@
 package invmod.common.nexus;
 
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.Formatting;
 
-public abstract interface ISpawnerAccess
-{
-  public abstract boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle);
+public interface ISpawnerAccess {
+    boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle);
 
-  public abstract int getNumberOfPointsInRange(int minAngle, int maxAngle, SpawnType type);
+    int getNumberOfPointsInRange(int minAngle, int maxAngle, SpawnType type);
 
-  public abstract void sendSpawnAlert(String message, EnumChatFormatting color);
+    void sendSpawnAlert(String message, Formatting color);
 
-  public abstract void noSpawnPointNotice();
+    void noSpawnPointNotice();
 }

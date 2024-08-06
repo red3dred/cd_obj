@@ -1,51 +1,46 @@
 package invmod.client.render;
 
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMZombie;
 import net.minecraft.block.Block;
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 import org.lwjgl.opengl.GL11;
 
-public class RenderIMZombie extends RenderLiving {
-	private static final ResourceLocation t_old = new ResourceLocation("invmod:textures/zombie_old.png");
-	private static final ResourceLocation t_T1a = new ResourceLocation("invmod:textures/zombieT1a.png");
-	private static final ResourceLocation t_pig = new ResourceLocation("invmod:textures/pigzombie64x32.png");
-	private static final ResourceLocation t_T2 = new ResourceLocation("invmod:textures/zombieT2.png");
-	private static final ResourceLocation t_T2a = new ResourceLocation("invmod:textures/zombieT2a.png");
-	private static final ResourceLocation t_T3 = new ResourceLocation("invmod:textures/zombieT3.png");
-	private static final ResourceLocation t_tar = new ResourceLocation("invmod:textures/zombietar.png");
-	protected ModelBiped modelBiped;
+public class RenderIMZombie extends LivingEntityRenderer<EntityIMZombie, BipedEntityModel<EntityIMZombie>> {
+	private static final Identifier t_old = InvasionMod.id("textures/zombie_old.png");
+	private static final Identifier t_T1a = InvasionMod.id("textures/zombieT1a.png");
+	private static final Identifier t_pig = InvasionMod.id("textures/pigzombie64x32.png");
+	private static final Identifier t_T2 = InvasionMod.id("textures/zombieT2.png");
+	private static final Identifier t_T2a = InvasionMod.id("textures/zombieT2a.png");
+	private static final Identifier t_T3 = InvasionMod.id("textures/zombieT3.png");
+	private static final Identifier t_tar = InvasionMod.id("textures/zombietar.png");
+	protected BipedEntityModel<EntityIMZombie> modelBiped;
 	protected ModelBigBiped modelBigBiped;
 
-	public RenderIMZombie(ModelBiped model, float par2) {
+	public RenderIMZombie(BipedEntityModel<EntityIMZombie> model, float par2) {
 		this(model, par2, 1.0F);
 	}
 
-	public RenderIMZombie(ModelBiped model, float par2, float par3) {
+	public RenderIMZombie(BipedEntityModel<EntityIMZombie> model, float par2, float par3) {
 		super(model, par2);
 		this.modelBiped = model;
 		this.modelBigBiped = new ModelBigBiped();
 	}
 	@Override
-	public void doRender(EntityLiving entity, double par2, double par4, double par6, float par8, float par9) {
-		if ((entity instanceof EntityIMZombie)) {
-			if (((EntityIMZombie) entity).isBigRenderTempHack()) {
-				this.mainModel = this.modelBigBiped;
-				this.modelBigBiped.setSneaking(entity.isSneaking());
-			} else {
-				this.mainModel = this.modelBiped;
-			}
-			super.doRender(entity, par2, par4, par6, par8, par9);
+	public void doRender(EntityIMZombie entity, double par2, double par4, double par6, float par8, float par9) {
+		if (entity.isBigRenderTempHack()) {
+			this.mainModel = this.modelBigBiped;
+			this.modelBigBiped.setSneaking(entity.isSneaking());
+		} else {
+			this.mainModel = this.modelBiped;
 		}
+		super.doRender(entity, par2, par4, par6, par8, par9);
 	}
 	@Override
 	protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
@@ -107,7 +102,8 @@ public class RenderIMZombie extends RenderLiving {
 		}
 	}
 
-	protected ResourceLocation getTexture(EntityIMZombie entity) {
+	@Override
+    public Identifier getTexture(EntityIMZombie entity) {
 		switch (entity.getTextureId()) {
 		case 0:
 			return t_old;
@@ -125,9 +121,5 @@ public class RenderIMZombie extends RenderLiving {
 			return t_T3;
 		}
 		return t_old;
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return getTexture((EntityIMZombie) entity);
 	}
 }

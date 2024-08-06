@@ -5,6 +5,7 @@ import invmod.common.entity.EntityIMBolt;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMWolf;
 import invmod.common.entity.ai.AttackerAI;
+import invmod.common.util.ComparatorDistanceFrom;
 import invmod.common.util.ComparatorEntityDistance;
 
 import java.util.ArrayList;
@@ -13,31 +14,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cpw.mods.fml.common.FMLCommonHandler;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.Packet;
-import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class TileEntityNexus extends TileEntity implements INexusAccess, IInventory {
+public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedInventory {
 	private static final long BIND_EXPIRE_TIME = 300000L;
 	private IMWaveSpawner waveSpawner;
 	private IMWaveBuilder waveBuilder;
 	private ItemStack[] nexusItemStacks;
-	private AxisAlignedBB boundingBoxToRadius;
+	private Box boundingBoxToRadius;
 	private HashMap<String, Long> boundPlayers;
 	private List<EntityIMLiving> mobList;
 	private AttackerAI attackerAI;
@@ -73,12 +70,9 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	private boolean mobsSorted;
 	private boolean resumedFromNBT;
 	private boolean activated;
-	public TileEntityNexus() {
-		this(null);
-	}
 
-	public TileEntityNexus(World world) {
-		this.worldObj = world;
+	public TileEntityNexus(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+		super(type, pos, state);
 		this.spawnRadius = 52;
 		this.waveSpawner = new IMWaveSpawner(this, this.spawnRadius);
 		this.waveBuilder = new IMWaveBuilder();
@@ -197,15 +191,18 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	}
 
 	public void createBolt(int x, int y, int z, int t) {
-		EntityIMBolt bolt = new EntityIMBolt(this.worldObj, this.xCoord + 0.5D, this.yCoord + 0.5D, this.zCoord + 0.5D, x + 0.5D, y + 0.5D, z + 0.5D, t, 1);
-		this.worldObj.spawnEntityInWorld(bolt);
+	    Vec3d pos = getPos().toCenterPos();
+		getWorld().spawnEntity(new EntityIMBolt(getWorld(), pos.getX(), pos.getY(), pos.getZ(), x + 0.5D, y + 0.5D, z + 0.5D, t, 1));
 	}
 
 	public boolean setSpawnRadius(int radius) {
 		if ((!this.waveSpawner.isActive()) && (radius > 8)) {
 			this.spawnRadius = radius;
 			this.waveSpawner.setRadius(radius);
-			this.boundingBoxToRadius.setBounds(this.xCoord - (this.spawnRadius + 10), 0.0D, this.zCoord - (this.spawnRadius + 10), this.xCoord + (this.spawnRadius + 10), 127.0D, this.zCoord + (this.spawnRadius + 10));
+			this.boundingBoxToRadius.setBounds(
+			        this.xCoord - (this.spawnRadius + 10), 0.0D, this.zCoord - (this.spawnRadius + 10),
+			        this.xCoord + (this.spawnRadius + 10), 127.0D, this.zCoord + (this.spawnRadius + 10)
+	        );
 			return true;
 		}
 
@@ -222,7 +219,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			}
 		}
 		while (this.hp + 5 <= this.lastHp) {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_RED, "invmod.message.nexus.hpat", (this.lastHp - 5));
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_RED, "invmod.message.nexus.hpat", (this.lastHp - 5));
 			this.lastHp -= 5;
 			playSoundForBoundPlayers("mob.blaze.hit");
 		}
@@ -234,14 +231,14 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		this.mobsLeftInWave -= 1;
 		if (this.mobsLeftInWave <= 0) {
 			if (this.lastMobsLeftInWave > 0) {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.GREEN, "invmod.message.nexus.stableagain");
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.GREEN, "invmod.message.nexus.unleashingenergy");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.GREEN, "invmod.message.nexus.stableagain");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.GREEN, "invmod.message.nexus.unleashingenergy");
 				this.lastMobsLeftInWave = this.mobsLeftInWave;
 			}
 			return;
 		}
 		while (this.mobsLeftInWave + this.mobsToKillInWave * 0.1F <= this.lastMobsLeftInWave) {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.GREEN, "invmod.message.nexus.stabilizedto", "" +  EnumChatFormatting.DARK_GREEN + (100 - (int) (100 * this.mobsLeftInWave / this.mobsToKillInWave)) + "%");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.GREEN, "invmod.message.nexus.stabilizedto", "" +  Formatting.DARK_GREEN + (100 - 100 * this.mobsLeftInWave / this.mobsToKillInWave) + "%");
 			this.lastMobsLeftInWave = ((int) (this.lastMobsLeftInWave - this.mobsToKillInWave * 0.1F));
 		}
 	}
@@ -253,7 +250,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	public boolean isActivating() {
 		return (this.activationTimer > 0) && (this.activationTimer < 400);
 	}
-	
+
 	public int getHp() {
 		return this.hp;
 	}
@@ -262,7 +259,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	public int getMode() {
 		return this.mode;
 	}
-	
+
 	@Override
 	public int getActivationTimer() {
 		return this.activationTimer;
@@ -341,10 +338,11 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		return this.powerLevel;
 	}
 
-	public int getCurrentWave() {
+	@Override
+    public int getCurrentWave() {
 		return this.currentWave;
 	}
-	
+
 	@Override
 	public int getSizeInventory() {
 		return this.nexusItemStacks.length;
@@ -391,12 +389,12 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		return null;
 	}
 
-	
+
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
 		return true;
 	}
-	
+
 	@Override
 	public ItemStack getStackInSlotOnClosing(int i) {
 		return null;
@@ -506,12 +504,14 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		this.attackerAI.writeToNBT(nbttagcompound);
 	}
 
-	public void askForRespawn(EntityIMLiving entity) {
+	@Override
+    public void askForRespawn(EntityIMLiving entity) {
 		mod_Invasion.log("Stuck entity asking for respawn: " + entity.toString() + "  " + entity.posX + ", " + entity.posY + ", " + entity.posZ);
 		this.waveSpawner.askForRespawn(entity);
 	}
 
-	public AttackerAI getAttackerAI() {
+	@Override
+    public AttackerAI getAttackerAI() {
 		return this.attackerAI;
 	}
 
@@ -546,7 +546,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	private void startInvasion(int startWave) {
 		this.boundingBoxToRadius.setBounds(this.xCoord - (this.spawnRadius + 10), this.yCoord - (this.spawnRadius + 40), this.zCoord - (this.spawnRadius + 10), this.xCoord + (this.spawnRadius + 10), this.yCoord + (this.spawnRadius + 40), this.zCoord + (this.spawnRadius + 10));
 		if ((this.mode == 2) && (this.continuousAttack)) {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.RED, "invmod.message.nexus.alreadyactivated");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.RED, "invmod.message.nexus.alreadyactivated");
 			return;
 		}
 
@@ -565,18 +565,18 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.lastHp = this.maxHp;
 					this.waveDelayTimer = -1L;
 					this.timer = System.currentTimeMillis();
-					String boundPlayers = EnumChatFormatting.AQUA + "";
+					String boundPlayers = Formatting.AQUA + "";
 					for(String playername : this.getBoundPlayers().keySet()) {
-						boundPlayers += playername + EnumChatFormatting.DARK_AQUA + ", " + EnumChatFormatting.AQUA;
+						boundPlayers += playername + Formatting.DARK_AQUA + ", " + Formatting.AQUA;
 					}
 					boundPlayers = boundPlayers.substring(0, boundPlayers.length()-4);
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_AQUA, "invmod.message.nexus.listboundplayers", boundPlayers);
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.RED, "invmod.message.nexus.firstwavesoon");
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_AQUA, "invmod.message.nexus.listboundplayers", boundPlayers);
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.RED, "invmod.message.nexus.firstwavesoon");
 					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
 					stop();
 					mod_Invasion.log(e.getMessage());
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_RED, e.getMessage());
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_RED, e.getMessage());
 				}
 			} else {
 				mod_Invasion.log("Wave spawner is not in ready state");
@@ -596,12 +596,12 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			this.lastWorldTime = this.worldObj.getWorldTime();
 			this.nextAttackTime = ((int) (this.lastWorldTime / 24000L * 24000L) + 14000);
 			if ((this.lastWorldTime % 24000L > 12000L) && (this.lastWorldTime % 24000L < 16000L)) {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.RED, "invmod.message.nexus.nightlooming");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.RED, "invmod.message.nexus.nightlooming");
 			} else {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.GREEN, "invmod.message.nexus.activatedandstable");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.GREEN, "invmod.message.nexus.activatedandstable");
 			}
 		} else {
-			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_RED, "invmod.message.nexus.couldnotactivate");
+			mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_RED, "invmod.message.nexus.couldnotactivate");
 		}
 	}
 
@@ -613,7 +613,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 				generateFlux(1);
 				if (this.waveSpawner.isWaveComplete()) {
 					if (this.waveDelayTimer == -1L) {
-						mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.GREEN, "invmod.message.wave.complete", "" + EnumChatFormatting.DARK_GREEN + this.currentWave);
+						mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.GREEN, "invmod.message.wave.complete", "" + Formatting.DARK_GREEN + this.currentWave);
 						playSoundForBoundPlayers("invmod:chime1");
 						this.waveDelayTimer = 0L;
 						this.waveDelay = this.waveSpawner.getWaveRestTime();
@@ -621,7 +621,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 						this.waveDelayTimer += elapsed;
 						if (this.waveDelayTimer > this.waveDelay) {
 							this.currentWave += 1;
-							mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.RED, "invmod.message.wave.begin","" + EnumChatFormatting.DARK_RED + this.currentWave);
+							mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.RED, "invmod.message.wave.begin","" + Formatting.DARK_RED + this.currentWave);
 							this.waveSpawner.beginNextWave(this.currentWave);
 							this.waveDelayTimer = -1L;
 							playSoundForBoundPlayers("invmod:rumble1");
@@ -655,7 +655,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	        }
 		}
 	}
-	
+
 	private void doContinuous(int elapsed) {
 		this.powerLevelTimer += elapsed;
 		if (this.powerLevelTimer > 2200) {
@@ -679,7 +679,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 			long currentTime = this.worldObj.getWorldTime();
 			int timeOfDay = (int) (this.lastWorldTime % 24000L);
 			if ((timeOfDay < 12000) && (currentTime % 24000L >= 12000L) && (currentTime + 12000L > this.nextAttackTime)) {
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.RED, "invmod.message.nexus.nightlooming");
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.RED, "invmod.message.nexus.nightlooming");
 			}
 			if (this.lastWorldTime > currentTime) {
 				this.nextAttackTime = ((int) (this.nextAttackTime - (this.lastWorldTime - currentTime)));
@@ -700,7 +700,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					this.hp = (this.lastHp = 100);
 					this.zapTimer = 0;
 					this.waveDelayTimer = -1L;
-					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.RED, "invmod.message.nexus.destabilizing");
+					mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.RED, "invmod.message.nexus.destabilizing");
 					playSoundForBoundPlayers("invmod:rumble1");
 				} catch (WaveSpawnerException e) {
 					mod_Invasion.log(e.getMessage());
@@ -719,7 +719,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 				this.waveDelayTimer = 0L;
 				this.waveDelay = this.waveSpawner.getWaveRestTime();
 			} else {
-				
+
 				this.waveDelayTimer += elapsed;
 				if ((this.waveDelayTimer > this.waveDelay) && (this.zapTimer < -200)) {
 					this.waveDelayTimer = -1L;
@@ -868,18 +868,18 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 
 	private void bindPlayers() {
 		List<EntityPlayer> players = this.worldObj.getEntitiesWithinAABB(EntityPlayer.class, this.boundingBoxToRadius);
-		for (EntityPlayer entityPlayer : players) 
+		for (EntityPlayer entityPlayer : players)
 		{
 			long time = System.currentTimeMillis();
-			if (!this.boundPlayers.containsKey(entityPlayer.getDisplayName())) 
+			if (!this.boundPlayers.containsKey(entityPlayer.getDisplayName()))
 			{
 				this.boundPlayers.put(entityPlayer.getDisplayName(), Long.valueOf(time));
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_GREEN, "invmod.message.nexus.lifenowbound", EnumChatFormatting.GREEN + entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s"));
-			} 
-			else if (time - ((Long) this.boundPlayers.get(entityPlayer.getDisplayName())).longValue() > 300000L) 
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_GREEN, "invmod.message.nexus.lifenowbound", Formatting.GREEN + entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s"));
+			}
+			else if (time - ((Long) this.boundPlayers.get(entityPlayer.getDisplayName())).longValue() > 300000L)
 			{
 				this.boundPlayers.put(entityPlayer.getDisplayName(), Long.valueOf(time));
-				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_GREEN, "invmod.message.nexus.lifenowbound", EnumChatFormatting.GREEN + entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s"));
+				mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_GREEN, "invmod.message.nexus.lifenowbound", Formatting.GREEN + entityPlayer.getDisplayName() + (entityPlayer.getDisplayName().toLowerCase().endsWith("s") ? "'" : "'s"));
 			}
 		}
 	}
@@ -921,7 +921,7 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 
 	private void theEnd() {
 		if (!this.worldObj.isRemote) {
-			mod_Invasion.sendMessageToPlayers(this.boundPlayers, EnumChatFormatting.DARK_RED, "invmod.message.nexus.destroyed");
+			mod_Invasion.sendMessageToPlayers(this.boundPlayers, Formatting.DARK_RED, "invmod.message.nexus.destroyed");
 			stop();
 			long time = System.currentTimeMillis();
 			for (Map.Entry entry : this.boundPlayers.entrySet()) {
@@ -930,8 +930,8 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 					if (player != null) {
 						player.getEntityWorld().playSoundAtEntity(player,"mob.enderdragon.end", 4, 1);
 						player.attackEntityFrom(DamageSource.magic, 500.0F);
-                                                 
-      
+
+
 					}
 
 				}
@@ -944,9 +944,9 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	}
 
 	private void continuousNexusHurt() {
-		mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), EnumChatFormatting.DARK_RED, "invmod.message.nexus.severelydamaged");
+		mod_Invasion.sendMessageToPlayers(this.getBoundPlayers(), Formatting.DARK_RED, "invmod.message.nexus.severelydamaged");
 		for (Map.Entry entry : this.boundPlayers.entrySet()) {
-			EntityPlayer player = this.worldObj.getPlayerEntityByName((String) entry.getKey());
+			PlayerEntity player = this.worldObj.getPlayerEntityByName((String) entry.getKey());
 			player.getEntityWorld().playSoundAtEntity(player,"mob.enderdragon.end", 4, 1);
 		}
 		killAllMobs();
@@ -965,8 +965,8 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		for (EntityIMLiving mob : mobs) {
 			mob.attackEntityFrom(DamageSource.magic, 500.0F);
 		}
-		
-		
+
+
 		//wolves
 		List<EntityIMWolf> wolves = this.worldObj.getEntitiesWithinAABB(EntityIMWolf.class, this.boundingBoxToRadius);
 		for (EntityIMWolf wolf : wolves) {
@@ -977,9 +977,9 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 	private boolean zapEnemy(int sfx) {
 		if (this.mobList.size() > 0) {
 			if (!this.mobsSorted) {
-				Collections.sort(this.mobList, new ComparatorEntityDistance(this.xCoord, this.yCoord, this.zCoord));
+				Collections.sort(this.mobList, ComparatorDistanceFrom.ofComparisonEntities(this));
 			}
-			EntityIMLiving mob = (EntityIMLiving) this.mobList.remove(this.mobList.size() - 1);
+			EntityIMLiving mob = this.mobList.remove(this.mobList.size() - 1);
 			mob.attackEntityFrom(DamageSource.magic, 500.0F);
 			EntityIMBolt bolt = new EntityIMBolt(this.worldObj, this.xCoord + 0.5D, this.yCoord + 0.5D, this.zCoord + 0.5D, mob.posX, mob.posY, mob.posZ, 15, sfx);
 			this.worldObj.spawnEntityInWorld(bolt);
@@ -1047,19 +1047,19 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 
 	@Override
 	public void closeInventory() {
-		
+
 	}
 
 	@Override
 	public HashMap<String, Long> getBoundPlayers() {
 		return this.boundPlayers;
 	}
-	
+
 	public boolean isActive()
 	{
 		return this.activated;
 	}
-	
+
 	@Override
 	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
 		this.readFromNBT(pkt.func_148857_g());
@@ -1072,5 +1072,5 @@ public class TileEntityNexus extends TileEntity implements INexusAccess, IInvent
 		this.writeToNBT(tag);
 		return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 0, tag);
 	}
-	
+
 }

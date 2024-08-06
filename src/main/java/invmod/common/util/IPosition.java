@@ -1,10 +1,25 @@
 package invmod.common.util;
 
-public abstract interface IPosition
-{
-  public abstract int getXCoord();
+import net.minecraft.util.math.BlockPos;
 
-  public abstract int getYCoord();
+public interface IPosition {
+    int getXCoord();
 
-  public abstract int getZCoord();
+    int getYCoord();
+
+    int getZCoord();
+
+    default boolean columnEquals(IPosition position) {
+        return getXCoord() == position.getXCoord() && getZCoord() == position.getZCoord();
+    }
+
+    default BlockPos toBlockPos() {
+        return new BlockPos(getXCoord(), getYCoord(), getZCoord());
+    }
+
+    default double squareDistanceTo(IPosition other) {
+        return Math.pow(getXCoord() - other.getXCoord(), 2)
+            + Math.pow(getYCoord() - other.getYCoord(), 2)
+            + Math.pow(getZCoord() - other.getZCoord(), 2);
+    }
 }

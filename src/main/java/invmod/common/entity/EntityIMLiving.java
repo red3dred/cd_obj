@@ -18,24 +18,13 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public abstract class EntityIMLiving extends EntityCreature implements IMob, IPathfindable, IPosition, IHasNexus, SparrowAPI 
+public abstract class EntityIMLiving extends MobEntity implements IMob, IPathfindable, IPosition, IHasNexus, SparrowAPI
 {
 	private final NavigatorIM bo;
 	private final PathNavigateAdapter oldNavAdapter;
@@ -112,13 +101,13 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 	private static final Map<Block, BlockSpecial> blockSpecials = new HashMap();
 	private static final Map<Block, Integer> blockType = new HashMap();
     protected static List<Block> unDestructableBlocks=Arrays.asList(Blocks.bedrock, Blocks.command_block, Blocks.end_portal_frame, Blocks.ladder, Blocks.chest);
-	
-	public EntityIMLiving(World world) 
+
+	public EntityIMLiving(World world)
 	{
 		this(world, null);
 	}
 
-	public EntityIMLiving(World world, INexusAccess nexus) 
+	public EntityIMLiving(World world, INexusAccess nexus)
 	{
 		super(world);
 		this.targetNexus = nexus;
@@ -201,7 +190,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 		this.dataWatcher.addObject(25, "");
 	}
 
-//	public EntityIMLiving(World world, INexusAccess nexus,Entity entity) 
+//	public EntityIMLiving(World world, INexusAccess nexus,Entity entity)
 //	{
 //		super(world);
 //		this.targetNexus = nexus;
@@ -255,7 +244,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 //		this.experienceValue = 5;
 //		this.maxDestructiveness = 0;
 //		this.blockRemoveSpeed = 1.0F;
-//		
+//
 //		if (nexus != null)
 //		{
 //			this.nexusBound = true;
@@ -286,8 +275,8 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 //		this.dataWatcher.addObject(24, Integer.valueOf(MathUtil.packAnglesDeg(this.rotationRoll, this.rotationYawHeadIM, this.rotationPitchHead, 0.0F)));
 //		this.dataWatcher.addObject(25, "");
 //	}
-	
-	
+
+
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
@@ -512,7 +501,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 //		return isInWater;
 //	}
 
-	public void rally(Entity leader) 
+	public void rally(Entity leader)
 	{
 		this.rallyCooldown = 300;
 	}
@@ -539,7 +528,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 		}
 	}
 
-	
+
 	public boolean avoidsBlock(Block block ) {
 		if ((block == Blocks.fire) || (block == Blocks.bedrock) || (block == Blocks.lava)|| (block == Blocks.flowing_lava)|| (block == Blocks.cactus)) {
 			return true;
@@ -557,9 +546,9 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 	public boolean isBlockDestructible(IBlockAccess terrainMap, int x, int y, int z, Block block) {
 		 //check if mobgriefing is enabled
 		boolean mobgriefing = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-		
+
 		if(mobgriefing){
-		
+
 				if (unDestructableBlocks.contains(block)||block==Blocks.air||blockHasLadder(terrainMap,x,y,z))
 	        	{
 	            	return false;
@@ -573,7 +562,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 	        	if (block.getMaterial().isSolid())
 	        	{
 	        		return true;
-	        	}	        
+	        	}
 	        }
 
 	        return false;
@@ -668,12 +657,12 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 		return this.attackRange;
 	}
 
-	public void setMaxHealth(float health) 
+	public void setMaxHealth(float health)
 	{
 		this.maxHealth = health;
 	}
 
-	public void setMaxHealthAndHealth(float health) 
+	public void setMaxHealthAndHealth(float health)
 	{
 		this.maxHealth = health;
 		this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue((double)health);
@@ -681,10 +670,10 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 	}
 
 	@Override
-	public boolean getCanSpawnHere() 
+	public boolean getCanSpawnHere()
 	{
 		boolean lightFlag = false;
-		if ((this.nexusBound) || (getLightLevelBelow8())) 
+		if ((this.nexusBound) || (getLightLevelBelow8()))
 		{
 			lightFlag = true;
 		}
@@ -755,7 +744,8 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 		return this.pitchRate;
 	}
 
-	public float getGravity() {
+	@Override
+    public float getGravity() {
 		return this.gravityAcel;
 	}
 
@@ -773,7 +763,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 
 	public static BlockSpecial getBlockSpecial(Block block2) {
 		if (blockSpecials.containsKey(block2)) {
-			return (BlockSpecial) blockSpecials.get(block2);
+			return blockSpecials.get(block2);
 		}
 		return BlockSpecial.NONE;
 	}
@@ -803,7 +793,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 	public float getBlockPathCost(PathNode prevNode, PathNode node, IBlockAccess terrainMap) {
 		return calcBlockPathCost(prevNode, node, terrainMap);
 	}
-	
+
 	@Override
 	public void getPathOptionsFromNode(IBlockAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
 		calcPathOptions(terrainMap, currentNode, pathFinder);
@@ -954,7 +944,8 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 		return this.nexusBound;
 	}
 
-	public boolean isHoldingOntoLadder() {
+	@Override
+    public boolean isHoldingOntoLadder() {
 		return this.dataWatcher.getWatchableObjectByte(20) == 1;
 	}
 
@@ -1131,7 +1122,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 		setFire(8);
 	}
 
-	
+
 	protected boolean onPathBlocked(Path path, INotifyTask asker) {
 		return false;
 	}
@@ -1169,7 +1160,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 
 		Block block = terrainMap.getBlock(node.xCoord, node.yCoord, node.zCoord);
 		if (blockCosts.containsKey(block)) {
-			return prevNode.distanceTo(node) * ((Float) blockCosts.get(block)).floatValue() * multiplier;
+			return prevNode.distanceTo(node) * blockCosts.get(block).floatValue() * multiplier;
 		}
 		if (block.isCollidable()) {
 			return prevNode.distanceTo(node) * 3.2F * multiplier;
@@ -1502,15 +1493,15 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 
 	public static int getBlockType(Block block) {
 		if (blockType.containsKey(block)) {
-			return ((Integer) blockType.get(block)).intValue();
+			return blockType.get(block).intValue();
 		}
 		return 0;
 	}
 
 	public static float getBlockStrength(int x, int y, int z, Block block, World world) {
-		
+
 		if (blockSpecials.containsKey(block)) {
-			BlockSpecial special = (BlockSpecial) blockSpecials.get(block);
+			BlockSpecial special = blockSpecials.get(block);
 			if (special == BlockSpecial.CONSTRUCTION_1) {
 				int bonus = 0;
 				if (world.getBlock(x, y - 1, z) == block)
@@ -1526,7 +1517,7 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 				if (world.getBlock(x, y, z - 1) == block)
 					bonus++;
 
-				return ((Float) blockStrength.get(block)).floatValue() * (1.0F + bonus * 0.1F);
+				return blockStrength.get(block).floatValue() * (1.0F + bonus * 0.1F);
 			}
 			if (special == BlockSpecial.CONSTRUCTION_STONE) {
 				int bonus = 0;
@@ -1548,12 +1539,12 @@ public abstract class EntityIMLiving extends EntityCreature implements IMob, IPa
 				adjBlock = world.getBlock(x, y, z + 1);
 				if ((adjBlock == Blocks.stone) || (adjBlock == Blocks.cobblestone) || (adjBlock == Blocks.mossy_cobblestone) || (adjBlock == Blocks.stonebrick))
 					bonus++;
-				return ((Float) blockStrength.get(block)).floatValue() * (1.0F + bonus * 0.1F);
+				return blockStrength.get(block).floatValue() * (1.0F + bonus * 0.1F);
 			}
 		}
 
 		if (blockStrength.containsKey(block)) {
-			return ((Float) blockStrength.get(block)).floatValue();
+			return blockStrength.get(block).floatValue();
 		}
 		return 2.5F;
 	}

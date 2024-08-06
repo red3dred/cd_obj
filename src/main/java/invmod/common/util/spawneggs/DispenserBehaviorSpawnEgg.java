@@ -1,26 +1,22 @@
 package invmod.common.util.spawneggs;
 
-import net.minecraft.block.BlockDispenser;
-import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
-import net.minecraft.dispenser.IBlockSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.block.dispenser.ItemDispenserBehavior;
 
-public class DispenserBehaviorSpawnEgg extends BehaviorDefaultDispenseItem{
-	
-	public ItemStack dispenseStack(IBlockSource blockSource, ItemStack stack) {
-		EnumFacing enumfacing = BlockDispenser.func_149937_b /*getFacing*/(blockSource.getBlockMetadata());
-		double x = blockSource.getX() + (double)enumfacing.getFrontOffsetX();
-		double y = (double)((float)blockSource.getYInt() + 0.2F);
-		double z = blockSource.getZ() + (double)enumfacing.getFrontOffsetZ();
-		Entity entity = ItemSpawnEgg.spawnCreature(blockSource.getWorld(), stack, x, y, z);
-		if (entity instanceof EntityLiving && stack.hasDisplayName())
-			((EntityLiving)entity).setCustomNameTag(stack.getDisplayName());
+// TODO: The regular dispenser behaviour for spawn eggs can do what we need
+@Deprecated
+public class DispenserBehaviorSpawnEgg extends ItemDispenserBehavior {
+/*
+	@Override
+    public ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+	    Position position = DispenserBlock.getOutputLocation(pointer);
 
-		stack.splitStack(1);
-		
+		Entity entity = ItemSpawnEgg.spawnCreature(pointer.blockEntity().getWorld(), stack, position.getX(), position.getY(), position.getZ());
+		if (entity instanceof LivingEntity l && stack.hasDisplayName()) {
+			l.setCustomName(stack.getName());
+		}
+
+		stack.split(1);
 		return stack;
 	}
+	*/
 }

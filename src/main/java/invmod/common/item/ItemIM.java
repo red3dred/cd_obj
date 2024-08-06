@@ -1,23 +1,14 @@
 package invmod.common.item;
 
-import invmod.common.mod_Invasion;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
 
+@Deprecated
 public class ItemIM extends Item
 {
-  public ItemIM()
+  public ItemIM(Item.Settings settings)
   {
-    super();
-    this.setCreativeTab(mod_Invasion.tabInvmod);
-    this.setMaxStackSize(1);
-  }
-
-  @SideOnly(Side.CLIENT)
-  public void registerIcons(IIconRegister par1IconRegister)
-  {
-    this.itemIcon = par1IconRegister.registerIcon("invmod:" + getUnlocalizedName().substring(5));
+    super(settings);
+    //this.setCreativeTab(mod_Invasion.tabInvmod);
+    //this.setMaxStackSize(1);
   }
 }

@@ -1,4 +1,4 @@
-package invmod.common.nexus;
+/*package invmod.common.nexus;
 
 import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
@@ -7,6 +7,8 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+
+// TODO: Why is there another one? This has slight differences so I don't know which is the correct one to use
 
 public class ContainerNexus extends Container
 {
@@ -149,7 +151,7 @@ public class ContainerNexus extends Container
   {
     return this.nexus.isUseableByPlayer(entityplayer);
   }
-  
+
   @Override
   public ItemStack transferStackInSlot(EntityPlayer player, int i)
   {
@@ -201,4 +203,4 @@ public class ContainerNexus extends Container
     }
     return itemstack;
   }
-}
+}*/

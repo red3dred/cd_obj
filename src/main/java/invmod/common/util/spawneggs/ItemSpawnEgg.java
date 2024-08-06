@@ -6,30 +6,17 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.Facing;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
 public class ItemSpawnEgg extends Item {
-	
+
 	private IIcon overlay;
 
 	public ItemSpawnEgg() {
 		setHasSubtypes(true);
-	    setCreativeTab(mod_Invasion.tabInvmod);
 		setUnlocalizedName("monsterPlacer");
 	}
 
@@ -54,7 +41,7 @@ public class ItemSpawnEgg extends Item {
 
 		if (displayName == null)
 			name += ' ' + attemptToTranslate("entity." + mobID + ".name", mobID);
-		else 
+		else
 			name += ' ' + attemptToTranslate("eggdisplay." + displayName, displayName);
 
 		return name;
@@ -82,7 +69,7 @@ public class ItemSpawnEgg extends Item {
 
 	@Override
 	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int par7, float par8, float par9, float par10) {
-		if (world.isRemote) 
+		if (world.isRemote)
 			return true;
 
 		Block block = world.getBlock(x, y, z);
@@ -126,7 +113,7 @@ public class ItemSpawnEgg extends Item {
 
 			if (world.getBlock(x, y, z) instanceof BlockLiquid) {
 				Entity entity = spawnCreature(world, stack, x, y, z);
-				
+
 				if (entity != null) {
 					if (entity instanceof EntityLiving && stack.hasDisplayName())
 						((EntityLiving)entity).setCustomNameTag(stack.getDisplayName());
@@ -177,7 +164,7 @@ public class ItemSpawnEgg extends Item {
 
 		return entity;
 	}
-	
+
 	private static void spawnRiddenCreatures(Entity entity, World world, NBTTagCompound cur) {
 		while (cur.hasKey("Riding")) {
 		    cur = cur.getCompoundTag("Riding");
@@ -197,7 +184,7 @@ public class ItemSpawnEgg extends Item {
 		NBTTagCompound newTag = new NBTTagCompound();
 		entity.writeToNBTOptional(newTag);
 
-		for (String name : (Set<String>) spawnData.func_150296_c()) 
+		for (String name : (Set<String>) spawnData.func_150296_c())
 			newTag.setTag(name, spawnData.getTag(name).copy());
 
 		entity.readFromNBT(newTag);
@@ -216,16 +203,16 @@ public class ItemSpawnEgg extends Item {
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void getSubItems(Item item, CreativeTabs par2CreativeTabs, List list) {
-		for (SpawnEggInfo info : SpawnEggRegistry.getEggInfoList()) 
+		for (SpawnEggInfo info : SpawnEggRegistry.getEggInfoList())
 			list.add(new ItemStack(item, 1, info.eggID));
 	}
-	
+
 	@Override
 	public void registerIcons(IIconRegister iconRegister){
 		itemIcon = iconRegister.registerIcon("spawn_egg");
 		overlay = iconRegister.registerIcon("spawn_egg_overlay");
 	}
-	
+
 	public static String attemptToTranslate(String key, String _default) {
 		String result = StatCollector.translateToLocal(key);
 		return (result.equals(key)) ? _default : result;
