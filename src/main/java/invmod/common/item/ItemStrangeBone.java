@@ -4,7 +4,7 @@ import invmod.common.entity.EntityIMWolf;
 
 import org.jetbrains.annotations.Nullable;
 
-import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.nexus.TileEntityNexus;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -49,7 +49,7 @@ class ItemStrangeBone extends Item {
     @Nullable
     private TileEntityNexus findNexus(World world, BlockPos center) {
         for (BlockPos pos : BlockPos.iterateOutwards(center, 8, 5, 8)) {
-            if (world.getBlockState(pos).isOf(mod_Invasion.blockNexus)) {
+            if (world.getBlockState(pos).isOf(InvBlocks.NEXUS_CORE)) {
                 if (world.getBlockEntity(pos) instanceof TileEntityNexus nexus) {
                     return nexus;
                 }

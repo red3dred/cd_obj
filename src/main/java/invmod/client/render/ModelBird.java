@@ -5,10 +5,7 @@ import invmod.client.render.animation.KeyFrame;
 import invmod.client.render.animation.ModelAnimator;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
 
 public class ModelBird extends ModelBase
 {
@@ -179,31 +176,27 @@ public class ModelBird extends ModelBase
     innerWingFrames.add(new KeyFrame(45.0F * frameUnit, 1.0F, -19.0F, 0.0F, InterpType.LINEAR));
     innerWingFrames.add(new KeyFrame(50.0F * frameUnit, -3.0F, -38.0F, 0.0F, InterpType.LINEAR));
     innerWingFrames.add(new KeyFrame(55.0F * frameUnit, -1.0F, -48.0F, 0.0F, InterpType.LINEAR));
-    KeyFrame.toRadians(innerWingFrames);
     this.animationWingFlap.addPart(this.rightwing1, innerWingFrames);
-    List copy = KeyFrame.cloneFrames(innerWingFrames);
-    KeyFrame.mirrorFramesX(copy);
+    List copy = KeyFrame.mirrorFramesX(innerWingFrames);
+
     this.animationWingFlap.addPart(this.leftwing1, copy);
 
-    List outerWingFrames = new ArrayList(13);
-    outerWingFrames.add(new KeyFrame(0.0F, 2.0F, 34.5F, 0.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(5.0F * frameUnit, 5.0F, 13.0F, -7.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(10.0F * frameUnit, 7.0F, 8.5F, -10.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(15.0F * frameUnit, 7.5F, -2.5F, -10.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(25.0F * frameUnit, 5.0F, 7.0F, -10.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(30.0F * frameUnit, 2.0F, 15.0F, 0.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(35.0F * frameUnit, -3.0F, 37.0F, 12.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(40.0F * frameUnit, -9.0F, 56.0F, 27.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(45.0F * frameUnit, -13.0F, 68.0F, 28.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(50.0F * frameUnit, -13.5F, 70.0F, 31.5F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(53.0F * frameUnit, -9.0F, 71.0F, 31.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(55.0F * frameUnit, -3.5F, 65.5F, 22.0F, InterpType.LINEAR));
-    outerWingFrames.add(new KeyFrame(58.0F * frameUnit, 0.0F, 52.0F, 8.0F, InterpType.LINEAR));
-    KeyFrame.toRadians(outerWingFrames);
+    List outerWingFrames = List.of(
+            new KeyFrame(0.0F, 2.0F, 34.5F, 0.0F, InterpType.LINEAR),
+            new KeyFrame(5.0F * frameUnit, 5.0F, 13.0F, -7.0F, InterpType.LINEAR),
+            new KeyFrame(10.0F * frameUnit, 7.0F, 8.5F, -10.0F, InterpType.LINEAR),
+            new KeyFrame(15.0F * frameUnit, 7.5F, -2.5F, -10.0F, InterpType.LINEAR),
+            new KeyFrame(25.0F * frameUnit, 5.0F, 7.0F, -10.0F, InterpType.LINEAR),
+            new KeyFrame(30.0F * frameUnit, 2.0F, 15.0F, 0.0F, InterpType.LINEAR),
+            new KeyFrame(35.0F * frameUnit, -3.0F, 37.0F, 12.0F, InterpType.LINEAR),
+            new KeyFrame(40.0F * frameUnit, -9.0F, 56.0F, 27.0F, InterpType.LINEAR),
+            new KeyFrame(45.0F * frameUnit, -13.0F, 68.0F, 28.0F, InterpType.LINEAR),
+            new KeyFrame(50.0F * frameUnit, -13.5F, 70.0F, 31.5F, InterpType.LINEAR),
+            new KeyFrame(53.0F * frameUnit, -9.0F, 71.0F, 31.0F, InterpType.LINEAR),
+            new KeyFrame(55.0F * frameUnit, -3.5F, 65.5F, 22.0F, InterpType.LINEAR),
+            new KeyFrame(58.0F * frameUnit, 0.0F, 52.0F, 8.0F, InterpType.LINEAR));
     this.animationWingFlap.addPart(this.rightwing2, outerWingFrames);
-    List copy2 = KeyFrame.cloneFrames(outerWingFrames);
-    KeyFrame.mirrorFramesX(copy2);
-    this.animationWingFlap.addPart(this.leftwing2, copy2);
+    this.animationWingFlap.addPart(this.leftwing2, KeyFrame.mirrorFramesX(outerWingFrames));
   }
 
   public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5)

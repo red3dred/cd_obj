@@ -22,6 +22,10 @@ public final class AnimationRegistry {
 
     private AnimationRegistry() { }
 
+    public void clear() {
+        animationMap.clear();
+    }
+
     public <T extends Enum<T>> void registerAnimation(String name, Animation<T> animation) {
         if (!this.animationMap.containsKey(name)) {
             this.animationMap.put(name, animation);

@@ -1,5 +1,6 @@
 package invmod.common;
 
+import invmod.common.block.InvBlocks;
 import invmod.common.creativetab.CreativeTabInvmod;
 import invmod.common.entity.EntityIMBird;
 import invmod.common.entity.EntityIMBolt;
@@ -20,22 +21,11 @@ import invmod.common.entity.EntityIMTrap;
 import invmod.common.entity.EntityIMWolf;
 import invmod.common.entity.EntityIMZombie;
 import invmod.common.entity.EntityIMZombiePigman;
-import invmod.common.item.ItemCatalystMixture;
-import invmod.common.item.ItemDampingAgent;
 import invmod.common.item.ItemDebugWand;
-import invmod.common.item.ItemEngyHammer;
 import invmod.common.item.ItemInfusedSword;
-import invmod.common.item.ItemNexusCatalyst;
-import invmod.common.item.ItemPhaseCrystal;
 import invmod.common.item.ItemProbe;
-import invmod.common.item.ItemRiftFlux;
 import invmod.common.item.ItemSearingBow;
-import invmod.common.item.ItemSmallRemnants;
-import invmod.common.item.ItemStableCatalystMixture;
-import invmod.common.item.ItemStableNexusCatalyst;
 import invmod.common.item.ItemStrangeBone;
-import invmod.common.item.ItemStrongCatalyst;
-import invmod.common.item.ItemStrongDampingAgent;
 import invmod.common.item.ItemTrap;
 import invmod.common.nexus.BlockNexus;
 import invmod.common.nexus.IEntityIMPattern;
@@ -151,7 +141,8 @@ public class mod_Invasion {
     public static CreativeTabInvmod tabInvmod;
 
     // NOOB HAUS: The almighty Nexus Block declaration
-    public static BlockNexus blockNexus;
+    @Deprecated
+    public static final BlockNexus blockNexus = InvBlocks.NEXUS_CORE;
 
     // NOOB HAUS: Item declarations
 
@@ -215,8 +206,6 @@ public class mod_Invasion {
         configInvasion.saveConfig(configFile, strengthOverrides, DEBUG_CONFIG);
 
         // Load the Things!!
-        loadCreativeTabs();
-        loadBlocks();
         loadEntities();
     }
 
@@ -302,18 +291,6 @@ public class mod_Invasion {
         mobHealthNightspawn.put("IMZombiePigman-T3-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T3-nightSpawn-health", 65));
     }
 
-    // load Creativetab
-    protected void loadCreativeTabs() {
-        tabInvmod = new CreativeTabInvmod();
-    }
-
-    // Load Blocks
-    protected void loadBlocks() {
-        blockNexus = new BlockNexus();
-        GameRegistry.registerBlock(blockNexus, blockNexus.getUnlocalizedName().substring(5));
-        GameRegistry.registerTileEntity(TileEntityNexus.class, "Nexus");
-    }
-
     // Load Entities
     protected void loadEntities() {
 
@@ -383,32 +360,6 @@ public class mod_Invasion {
             SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 18, "IMGiantBird", "Vulture T1",
                     new NBTTagCompound(), 0x2B2B2B, 0xEA7EDC));
         }
-
-        // preload Textures
-        proxy.preloadTexture("/mods/invmod/textures/zombie_old.png");
-        proxy.preloadTexture("/mods/invmod/textures/zombieT1a.png");
-        proxy.preloadTexture("/mods/invmod/textures/zombieT2.png");
-        proxy.preloadTexture("/mods/invmod/textures/zombieT2a.png");
-        proxy.preloadTexture("/mods/invmod/textures/zombietar.png");
-        proxy.preloadTexture("/mods/invmod/textures/zombieT3.png");
-        proxy.preloadTexture("/mods/invmod/textures/spiderT2.png");
-        proxy.preloadTexture("/mods/invmod/textures/spiderT2b.png");
-        proxy.preloadTexture("/mods/invmod/textures/throwerT1.png");
-        proxy.preloadTexture("/mods/invmod/textures/throwerT2.png");
-        proxy.preloadTexture("/mods/invmod/textures/pigengT1.png");
-        proxy.preloadTexture("/mods/invmod/textures/nexusgui.png");
-        proxy.preloadTexture("/mods/invmod/textures/boulder.png");
-        proxy.preloadTexture("/mods/invmod/textures/trap.png");
-        proxy.preloadTexture("/mods/invmod/textures/testmodel.png");
-        proxy.preloadTexture("/mods/invmod/textures/burrower.png");
-        proxy.preloadTexture("/mods/invmod/textures/spideregg.png");
-        proxy.preloadTexture("/mods/invmod/textures/imp.png");
-
-        proxy.preloadTexture("/mods/invmod/textures/vulture.png");
-
-        // Animations and rendering
-        proxy.loadAnimations();
-        proxy.registerEntityRenderers();
     }
 
     // Register Recipes

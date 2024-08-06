@@ -1,13 +1,12 @@
 package invmod.common.nexus;
 
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlockEntities;
 import invmod.common.entity.EntityIMBolt;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMWolf;
 import invmod.common.entity.ai.AttackerAI;
 import invmod.common.util.ComparatorDistanceFrom;
-import invmod.common.util.ComparatorEntityDistance;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,8 +70,8 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 	private boolean resumedFromNBT;
 	private boolean activated;
 
-	public TileEntityNexus(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-		super(type, pos, state);
+	public TileEntityNexus(BlockPos pos, BlockState state) {
+		super(InvBlockEntities.NEXUS, pos, state);
 		this.spawnRadius = 52;
 		this.waveSpawner = new IMWaveSpawner(this, this.spawnRadius);
 		this.waveBuilder = new IMWaveBuilder();

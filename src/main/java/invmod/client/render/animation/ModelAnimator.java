@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+
 import net.minecraft.client.model.ModelPart;
 
 public class ModelAnimator<T extends Enum<T>> {
@@ -49,10 +52,10 @@ public class ModelAnimator<T extends Enum<T>> {
 			KeyFrame prevFrame = keyFrames.get(prevIndex++);
 			KeyFrame nextFrame = null;
 
-			if (prevFrame.getTime() <= newTime) {
+			if (prevFrame.time() <= newTime) {
 				for (; prevIndex < keyFrames.size(); prevIndex++) {
 					KeyFrame keyFrame = keyFrames.get(prevIndex);
-					if (newTime < keyFrame.getTime()) {
+					if (newTime < keyFrame.time()) {
 						nextFrame = keyFrame;
 						prevIndex--;
 						break;
@@ -68,7 +71,7 @@ public class ModelAnimator<T extends Enum<T>> {
 			} else {
 				for (prevIndex = 0; prevIndex < keyFrames.size(); prevIndex++) {
 					KeyFrame keyFrame = keyFrames.get(prevIndex);
-					if (newTime < keyFrame.getTime()) {
+					if (newTime < keyFrame.time()) {
 						nextFrame = keyFrame;
 						prevIndex--;
 						prevFrame = keyFrames.get(prevIndex);
@@ -81,29 +84,28 @@ public class ModelAnimator<T extends Enum<T>> {
 		}
 	}
 
+	private final Vector3f tempVector = new Vector3f();
+
 	private void interpolate(KeyFrame prevFrame, KeyFrame nextFrame, float time, ModelPart part) {
-		if (prevFrame.getInterpType() == InterpType.LINEAR) {
-			float dtPrev = time - prevFrame.getTime();
-			float dtFrame = nextFrame.getTime() - prevFrame.getTime();
+		if (prevFrame.interpType() == InterpType.LINEAR) {
+			float dtPrev = time - prevFrame.time();
+			float dtFrame = nextFrame.time() - prevFrame.time();
 			if (dtFrame < 0.0F) {
 				dtFrame += this.animationPeriod;
 			}
 
 			float r = dtPrev / dtFrame;
-			part.pitch = (prevFrame.getRotX() + r * (nextFrame.getRotX() - prevFrame.getRotX()));
-			part.yaw = (prevFrame.getRotY() + r * (nextFrame.getRotY() - prevFrame.getRotY()));
-			part.roll = (prevFrame.getRotZ() + r * (nextFrame.getRotZ() - prevFrame.getRotZ()));
+
+			Vector3fc rotation = KeyFrame.lerp(r, prevFrame.rotation(), nextFrame.rotation(), tempVector);
+			part.pitch = rotation.x();
+			part.yaw = rotation.y();
+			part.roll = rotation.z();
 
 			if (prevFrame.hasPos()) {
-				if (nextFrame.hasPos()) {
-					part.pivotX = (prevFrame.getPosX() + r * (nextFrame.getPosX() - prevFrame.getPosX()));
-					part.pivotY = (prevFrame.getPosY() + r * (nextFrame.getPosY() - prevFrame.getPosY()));
-					part.pivotZ = (prevFrame.getPosZ() + r * (nextFrame.getPosZ() - prevFrame.getPosZ()));
-				} else {
-					part.pivotX = prevFrame.getPosX();
-					part.pivotY = prevFrame.getPosY();
-					part.pivotZ = prevFrame.getPosZ();
-				}
+			    Vector3fc pivot = nextFrame.hasPos() ? KeyFrame.lerp(r, prevFrame.pivot(), nextFrame.pivot(), tempVector) : prevFrame.pivot();
+			    part.pivotX = pivot.x();
+                part.pivotY = pivot.y();
+                part.pivotZ = pivot.z();
 			}
 		}
 	}
@@ -112,12 +114,12 @@ public class ModelAnimator<T extends Enum<T>> {
 		if (keyFrames.size() < 2) {
 			return false;
 		}
-		if (keyFrames.get(0).getTime() != 0.0F) {
+		if (keyFrames.get(0).time() != 0.0F) {
 			return false;
 		}
 		int prevTime = 0;
 		for (int i = 1; i < keyFrames.size(); i++) {
-			if (keyFrames.get(i).getTime() <= prevTime) {
+			if (keyFrames.get(i).time() <= prevTime) {
 				return false;
 			}
 		}

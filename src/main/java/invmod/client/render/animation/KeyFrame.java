@@ -1,139 +1,83 @@
 package invmod.client.render.animation;
 
 import invmod.common.util.MathUtil;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-public class KeyFrame {
-	private float time;
-	private float rotX;
-	private float rotY;
-	private float rotZ;
-	private float posX;
-	private float posY;
-	private float posZ;
-	private InterpType interpType;
-	private boolean hasPos;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
+public record KeyFrame(
+        float time,
+        Vector3fc rotation,
+        Vector3fc pivot,
+        InterpType interpType,
+        boolean hasPos) {
+    static final Vector3fc ZERO_VECTOR = new Vector3f(0, 0, 0);
 	public KeyFrame(float time, float rotX, float rotY, float rotZ, InterpType interpType) {
-		this(time, rotX, rotY, rotZ, 0.0F, 0.0F, 0.0F, interpType);
-		this.hasPos = false;
+		this(time, new Vector3f(rotX, rotY, rotZ).mul(MathHelper.RADIANS_PER_DEGREE), ZERO_VECTOR, interpType, false);
 	}
 
 	public KeyFrame(float time, float rotX, float rotY, float rotZ, float posX, float posY, float posZ, InterpType interpType) {
-		this.time = time;
-		this.rotX = rotX;
-		this.rotY = rotY;
-		this.rotZ = rotZ;
-		this.posX = posX;
-		this.posY = posY;
-		this.posZ = posZ;
-		this.interpType = interpType;
-		this.hasPos = true;
+	    this(time, new Vector3f(rotX, rotY, rotZ).mul(MathHelper.RADIANS_PER_DEGREE), new Vector3f(posX, posY, posZ), interpType, true);
 	}
 
-	public float getTime() {
-		return this.time;
-	}
-
-	public float getRotX() {
-		return this.rotX;
-	}
-
-	public float getRotY() {
-		return this.rotY;
-	}
-
-	public float getRotZ() {
-		return this.rotZ;
-	}
-
-	public float getPosX() {
-		return this.posX;
-	}
-
-	public float getPosY() {
-		return this.posY;
-	}
-
-	public float getPosZ() {
-		return this.posZ;
-	}
-
-	public InterpType getInterpType() {
-		return this.interpType;
-	}
-
-	public boolean hasPos() {
-		return this.hasPos;
-	}
-
-	@Override
-    public String toString() {
-		return "(" + this.time + ", " + this.rotX + ", " + this.rotY + ", " + this.rotZ + ")";
-	}
-
-	public static List<KeyFrame> cloneFrames(List<KeyFrame> keyFrames) {
-		return List.copyOf(keyFrames);
-	}
-
+	@Deprecated
 	public static List<KeyFrame> toRadians(List<KeyFrame> keyFrames) {
-	    float radDeg = 0.01745329F;
-	    return keyFrames.stream().map(keyFrame -> {
-            KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), keyFrame.getRotX() * radDeg, keyFrame.getRotY() * radDeg, keyFrame.getRotZ() * radDeg, keyFrame.getPosX(), keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
-            newFrame.hasPos = keyFrame.hasPos;
-            return newFrame;
-	    }).toList();
+	    return keyFrames;
 	}
 
 	public static List<KeyFrame> mirrorFramesX(List<KeyFrame> keyFrames) {
-		return keyFrames.stream().map(keyFrame -> {
-			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), keyFrame.getRotX(), -keyFrame.getRotY(), -keyFrame.getRotZ(), -keyFrame.getPosX(), keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
-			newFrame.hasPos = keyFrame.hasPos;
-			return newFrame;
-		}).toList();
+		return keyFrames.stream().map(keyFrame -> new KeyFrame(keyFrame.time(),
+		        keyFrame.rotation().mul(1, -1, -1, new Vector3f()),
+		        keyFrame.pivot().mul(-1, 1, 1, new Vector3f()),
+		        keyFrame.interpType(),
+		        keyFrame.hasPos
+        )).toList();
 	}
 
-	public static void mirrorFramesY(List<KeyFrame> keyFrames) {
-		ListIterator<KeyFrame> iter = keyFrames.listIterator();
-		while (iter.hasNext()) {
-			KeyFrame keyFrame = iter.next();
-			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), -keyFrame.getRotX(), keyFrame.getRotY(), -keyFrame.getRotZ(), keyFrame.getPosX(), -keyFrame.getPosY(), keyFrame.getPosZ(), keyFrame.getInterpType());
+   public static List<KeyFrame> mirrorFramesY(List<KeyFrame> keyFrames) {
+        return keyFrames.stream().map(keyFrame -> new KeyFrame(keyFrame.time(),
+                keyFrame.rotation().mul(-1, 1, -1, new Vector3f()),
+                keyFrame.pivot().mul(1, -1, 1, new Vector3f()),
+                keyFrame.interpType(),
+                keyFrame.hasPos
+        )).toList();
+    }
 
-			newFrame.hasPos = keyFrame.hasPos;
-			iter.set(newFrame);
-		}
-	}
+   public static List<KeyFrame> mirrorFramesZ(List<KeyFrame> keyFrames) {
+       return keyFrames.stream().map(keyFrame -> new KeyFrame(keyFrame.time(),
+               keyFrame.rotation().mul(-1, -1, 1, new Vector3f()),
+               keyFrame.pivot().mul(1, 1, -1, new Vector3f()),
+               keyFrame.interpType(),
+               keyFrame.hasPos
+       )).toList();
+   }
 
-	public static void mirrorFramesZ(List<KeyFrame> keyFrames) {
-		ListIterator<KeyFrame> iter = keyFrames.listIterator();
-		while (iter.hasNext()) {
-			KeyFrame keyFrame = iter.next();
-			KeyFrame newFrame = new KeyFrame(keyFrame.getTime(), -keyFrame.getRotX(), -keyFrame.getRotY(), keyFrame.getRotZ(), keyFrame.getPosX(), keyFrame.getPosY(), -keyFrame.getPosZ(), keyFrame.getInterpType());
+   public static Vector3fc lerp(float delta, Vector3fc from, Vector3fc to, Vector3f output) {
+       return to.sub(from, new Vector3f()).mul(delta).add(to);
+   }
 
-			newFrame.hasPos = keyFrame.hasPos;
-			iter.set(newFrame);
-		}
-	}
-
-	public static void offsetFramesCircular(List<KeyFrame> keyFrames, float start, float end, float offset) {
-		if (keyFrames.size() < 1) {
-			return;
-		}
+	public static List<KeyFrame> offsetFramesCircular(List<KeyFrame> keyFrames, float start, float end, float offset) {
+       if (keyFrames.isEmpty()) {
+            return keyFrames;
+        }
+	    keyFrames = new ArrayList<>(keyFrames);
 		float diff = end - start;
 		offset %= diff;
 		float k1 = end - offset;
-		List<KeyFrame> copy = cloneFrames(keyFrames);
+		List<KeyFrame> copy = new ArrayList<>(keyFrames);
 		keyFrames.clear();
 		KeyFrame currFrame = null;
 		ListIterator<KeyFrame> iter = copy.listIterator();
 
 		while (iter.hasNext()) {
 			currFrame = iter.next();
-			if (currFrame.getTime() >= start)
+			if (currFrame.time() >= start)
 				break;
 			keyFrames.add(currFrame);
 		}
@@ -142,23 +86,22 @@ public class KeyFrame {
 		buffer.add(currFrame);
 		while (iter.hasNext()) {
 			currFrame = iter.next();
-			if (currFrame.getTime() >= k1) {
+			if (currFrame.time() >= k1) {
 				break;
 			}
 			buffer.add(currFrame);
 		}
 		KeyFrame fencepostStart;
-		if (!MathUtil.floatEquals(currFrame.getTime(), k1, 0.001F)) {
+		if (!MathUtil.floatEquals(currFrame.time(), k1, 0.001F)) {
 			iter.previous();
 			KeyFrame prev = iter.previous();
 
-			float dt = k1 - prev.getTime();
-			float dtFrame = currFrame.getTime() - prev.getTime();
+			float dt = k1 - prev.time();
+			float dtFrame = currFrame.time() - prev.time();
 			float r = dt / dtFrame;
-			float x = prev.getRotX() + r * (currFrame.getRotX() - prev.getRotX());
-			float y = prev.getRotY() + r * (currFrame.getRotY() - prev.getRotY());
-			float z = prev.getRotZ() + r * (currFrame.getRotZ() - prev.getRotZ());
-			fencepostStart = new KeyFrame(start, x, y, z, InterpType.LINEAR);
+
+			Vector3fc rot = lerp(r, prev.rotation(), currFrame.rotation(), new Vector3f());
+			fencepostStart = new KeyFrame(start, rot, ZERO_VECTOR, InterpType.LINEAR, false);
 		} else {
 			fencepostStart = currFrame;
 		}
@@ -167,12 +110,9 @@ public class KeyFrame {
 
 		while (iter.hasNext()) {
 			currFrame = iter.next();
-			if (currFrame.getTime() <= end) {
-				float t = currFrame.getTime() + offset - diff;
-				KeyFrame newFrame = new KeyFrame(t, currFrame.getRotX(), currFrame.getRotY(), currFrame.getRotZ(), currFrame.getPosX(), currFrame.getPosY(), currFrame.getPosZ(), InterpType.LINEAR);
-
-				newFrame.hasPos = currFrame.hasPos;
-				keyFrames.add(newFrame);
+			if (currFrame.time() <= end) {
+				float t = currFrame.time() + offset - diff;
+				keyFrames.add(new KeyFrame(t, currFrame.rotation(), currFrame.pivot(), InterpType.LINEAR, currFrame.hasPos));
 			} else {
 				//UnstoppableN testcode, this seemed to fix some issues, not sure why
 				//iter.previous();
@@ -183,17 +123,16 @@ public class KeyFrame {
 		Iterator<KeyFrame> iter2 = buffer.iterator();
 		while (iter2.hasNext()) {
 			currFrame = iter2.next();
-			float t = currFrame.getTime() + offset;
-			KeyFrame newFrame = new KeyFrame(t, currFrame.getRotX(), currFrame.getRotY(), currFrame.getRotZ(), currFrame.getPosX(), currFrame.getPosY(), currFrame.getPosZ(), InterpType.LINEAR);
-
-			newFrame.hasPos = currFrame.hasPos;
-			keyFrames.add(newFrame);
+			float t = currFrame.time() + offset;
+			keyFrames.add(new KeyFrame(t, currFrame.rotation(), currFrame.pivot(), InterpType.LINEAR, currFrame.hasPos));
 		}
 
-		keyFrames.add(new KeyFrame(end, fencepostStart.getRotX(), fencepostStart.getRotY(), fencepostStart.getRotZ(), InterpType.LINEAR));
+		keyFrames.add(new KeyFrame(end, fencepostStart.rotation(), ZERO_VECTOR, InterpType.LINEAR, false));
 
 		while (iter.hasNext()) {
 			keyFrames.add(iter.next());
 		}
+
+		return keyFrames;
 	}
 }

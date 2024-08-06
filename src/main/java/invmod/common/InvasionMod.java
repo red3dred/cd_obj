@@ -3,6 +3,8 @@ package invmod.common;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import invmod.common.block.InvBlocks;
+import invmod.common.entity.InvEntities;
 import invmod.common.item.InvItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -21,6 +23,8 @@ public class InvasionMod implements ModInitializer {
             dispatcher.register(InvasionCommand.create(registries));
         });
 
+        InvBlocks.bootstrap();
         InvItems.bootstrap();
+        InvEntities.bootstrap();
     }
 }

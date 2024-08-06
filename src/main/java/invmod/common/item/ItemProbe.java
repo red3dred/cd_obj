@@ -1,7 +1,7 @@
 package invmod.common.item;
 
 import invmod.common.entity.EntityIMLiving;
-import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.nexus.TileEntityNexus;
 
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +43,7 @@ class ItemProbe extends Item {
         if (player == null) {
             return ActionResult.FAIL;
         }
-        if (state.isOf(mod_Invasion.blockNexus)) {
+        if (state.isOf(InvBlocks.NEXUS_CORE)) {
             TileEntityNexus nexus = (TileEntityNexus) world.getBlockEntity(pos);
             int newRange = nexus.getSpawnRadius();
 
