@@ -18,10 +18,12 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public abstract class EntityIMLiving extends MobEntity implements IMob, IPathfindable, IPosition, IHasNexus, SparrowAPI
@@ -1498,6 +1500,12 @@ public abstract class EntityIMLiving extends MobEntity implements IMob, IPathfin
 		return 0;
 	}
 
+	public static float getBlockStrength(BlockPos pos, BlockState state, World world) {
+	    return getBlockStrength(pos.getX(), pos.getY(), pos.getZ(), state.getBlock(), world);
+	}
+
+	// TODO:
+	@Deprecated
 	public static float getBlockStrength(int x, int y, int z, Block block, World world) {
 
 		if (blockSpecials.containsKey(block)) {

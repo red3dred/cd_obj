@@ -58,9 +58,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.render.entity.model.ZombieEntityModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
@@ -70,7 +72,6 @@ public class ProxyClient extends ProxyCommon {
 
 
 	public <T extends Entity> void registerEntityRenderingHandler(Class<T> entityClass, EntityRenderer<T> renderer) {
-
 	}
 
 	public void printGuiMessage(Text message) {
@@ -79,7 +80,7 @@ public class ProxyClient extends ProxyCommon {
 
 	@Override
     public void registerEntityRenderers() {
-		registerEntityRenderingHandler(EntityIMZombie.class, new RenderIMZombie(new ModelZombie(0, true), 0.5F));
+		registerEntityRenderingHandler(EntityIMZombie.class, new RenderIMZombie(new ZombieEntityModel(0, true), 0.5F));
 		registerEntityRenderingHandler(EntityIMZombiePigman.class, new RenderIMZombiePigman(new ModelZombie(0, true), 0.5F));
 		registerEntityRenderingHandler(EntityIMSkeleton.class, new RenderIMSkeleton(new ModelIMSkeleton(), 0.5F));
 		registerEntityRenderingHandler(EntityIMSpider.class, new RenderSpiderIM());

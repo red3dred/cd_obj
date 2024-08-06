@@ -14,13 +14,17 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-public class EntityIMWolf extends EntityWolf
+public class EntityIMWolf extends WolfEntity
 {
-  private static final int META_BOUND = 30;
+  private static final TrackedData<Byte> META_BOUND = DataTracker.registerData(EntityIMWolf.class, TrackedDataHandlerRegistry.BYTE);
   private INexusAccess nexus;
   private int nexusX;
   private int nexusY;
@@ -34,11 +38,11 @@ public class EntityIMWolf extends EntityWolf
     this(world, null);
   }
 
-  public EntityIMWolf(EntityWolf wolf, INexusAccess nexus)
+  public EntityIMWolf(WolfEntity wolf, INexusAccess nexus)
   {
-    this(wolf.worldObj, nexus);
+    this(wolf.getWorld(), nexus);
     this.loadedFromNBT = false;
-    setPositionAndRotation(wolf.posX, wolf.posY, wolf.posZ, wolf.rotationYaw, wolf.rotationPitch);
+    updatePositionAndAngles(wolf.getX(), wolf.getY(), wolf.getZ(), wolf.getYaw(), wolf.getPitch());
     this.dataWatcher.updateObject(16, Byte.valueOf(wolf.getDataWatcher().getWatchableObjectByte(16)));
     this.dataWatcher.updateObject(17, wolf.getDataWatcher().getWatchableObjectString(17));
     this.dataWatcher.updateObject(18, Float.valueOf(wolf.getDataWatcher().getWatchableObjectFloat(18)));
@@ -57,9 +61,17 @@ public class EntityIMWolf extends EntityWolf
       this.nexusX = nexus.getXCoord();
       this.nexusY = nexus.getYCoord();
       this.nexusZ = nexus.getZCoord();
-      this.dataWatcher.updateObject(30, Byte.valueOf((byte)1));
+      this.dataWatcher.updateObject(META_BOUND, 1);
     }
+    this.initDataTracker();
   }
+
+  @Override
+  protected void initDataTracker(DataTracker.Builder builder) {
+      super.initDataTracker(builder);
+      builder.add(META_BOUND, (byte)0);
+  }
+
   @Override
 
   public void onEntityUpdate()
@@ -206,7 +218,9 @@ public class EntityIMWolf extends EntityWolf
   @Override
   public boolean getCanSpawnHere()
   {
-    return (this.worldObj.checkNoEntityCollision(this.boundingBox)) && (this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox).size() == 0) && (!this.worldObj.isAnyLiquid(this.boundingBox));
+    return (this.worldObj.checkNoEntityCollision(this.boundingBox))
+            && (this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox).size() == 0)
+            && (!this.worldObj.isAnyLiquid(this.boundingBox));
   }
 
 //  @Override
@@ -313,12 +327,4 @@ public class EntityIMWolf extends EntityWolf
 
     return nexus;
   }
-
-  @Override
-  public boolean attackEntityFrom(DamageSource damageSource, float par2float)
-  {
-
-	return super.attackEntityFrom(damageSource, par2float);
-  }
-
 }

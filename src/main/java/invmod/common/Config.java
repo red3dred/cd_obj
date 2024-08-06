@@ -16,14 +16,12 @@ public class Config {
         try {
             if (!configFile.exists()) {
                 mod_Invasion.log("Config not found. Creating file 'invasion_config.txt' in minecraft directory");
-                if (!configFile.createNewFile())
+                if (!configFile.createNewFile()) {
                     mod_Invasion.log("Unable to create new config file.");
+                }
             } else {
-                FileReader configRead = new FileReader(configFile);
-                try {
+                try (FileReader configRead = new FileReader(configFile)) {
                     this.properties.load(configRead);
-                } finally {
-                    configRead.close();
                 }
             }
 

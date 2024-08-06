@@ -1,79 +1,60 @@
 package invmod.common.item;
 
 import invmod.common.entity.EntityIMWolf;
+
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.mod_Invasion;
 import invmod.common.nexus.TileEntityNexus;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MathHelper;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ItemStrangeBone extends ItemIM
-{
-  public ItemStrangeBone()
-  {
-    super();
-    this.setUnlocalizedName("strangeBone");
-  }
-  
-  @Override
-  public int getDamage(ItemStack stack)
-  {
-    return 0;
-  }
-  
-  @Override
-  public boolean itemInteractionForEntity(ItemStack itemStack, EntityPlayer player, EntityLivingBase targetEntity)
-  {
-  	if ((!targetEntity.worldObj.isRemote) && ((targetEntity instanceof EntityWolf)) && (!(targetEntity instanceof EntityIMWolf)))
-      {
-          EntityWolf wolf = (EntityWolf)targetEntity;
+class ItemStrangeBone extends Item {
+    public ItemStrangeBone(Settings settings) {
+        super(settings);
+    }
 
-          if (wolf.isTamed())
-          {
-              TileEntityNexus nexus = null;
-              int x = MathHelper.floor_double(wolf.posX);
-              int y = MathHelper.floor_double(wolf.posY);
-              int z = MathHelper.floor_double(wolf.posZ);
+    @Override
+    public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
+        if (entity.getWorld().isClient || !(entity instanceof WolfEntity wolf && wolf.isTamed()) || entity instanceof EntityIMWolf) {
+            return ActionResult.PASS;
+        }
 
-              for (int i = -7; i < 8; i++)
-              {
-                  for (int j = -4; j < 5; j++)
-                  {
-                      for (int k = -7; k < 8; k++)
-                      {
-                          if (wolf.worldObj.getBlock(x + i, y + j, z + k) == mod_Invasion.blockNexus)
-                          {
-                              nexus = (TileEntityNexus)wolf.worldObj.getTileEntity(x + i, y + j, z + k);
-                              break;
-                          }
-                      }
-                  }
-              }
+        @Nullable
+        TileEntityNexus nexus = findNexus(entity.getWorld(), entity.getBlockPos());
 
-              if (nexus != null)
-              {
-                  EntityIMWolf newWolf = new EntityIMWolf(wolf, nexus);
-                  wolf.worldObj.spawnEntityInWorld(newWolf);
-                  wolf.setDead();
-                  itemStack.stackSize -= 1;
-              }else{
-            	  player.addChatMessage(new ChatComponentTranslation("invmod.message.bone.nonearbynexus1").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-            	  player.addChatMessage(new ChatComponentTranslation("invmod.message.bone.nonearbynexus2").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-              }
-          }
-          return true;
-      }
-      return false;
-  }
-  
+        if (nexus == null) {
+            user.sendMessage(Text.translatable("invmod.message.bone.nonearbynexus1").formatted(Formatting.RED));
+            user.sendMessage(Text.translatable("invmod.message.bone.nonearbynexus2").formatted(Formatting.RED));
+            return ActionResult.FAIL;
+        }
+
+        EntityIMWolf newWolf = new EntityIMWolf(wolf, nexus);
+
+        wolf.getWorld().spawnEntity(newWolf);
+        wolf.discard();
+        stack.decrement(1);
+        return ActionResult.SUCCESS;
+    }
+
+    @Nullable
+    private TileEntityNexus findNexus(World world, BlockPos center) {
+        for (BlockPos pos : BlockPos.iterateOutwards(center, 8, 5, 8)) {
+            if (world.getBlockState(pos).isOf(mod_Invasion.blockNexus)) {
+                if (world.getBlockEntity(pos) instanceof TileEntityNexus nexus) {
+                    return nexus;
+                }
+            }
+        }
+        return null;
+    }
 }

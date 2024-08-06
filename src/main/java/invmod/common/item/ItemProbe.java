@@ -1,140 +1,71 @@
 package invmod.common.item;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.mod_Invasion;
 import invmod.common.nexus.TileEntityNexus;
 
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IIcon;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-public class ItemProbe extends ItemIM
-{
+class ItemProbe extends Item {
+    private final boolean isProbe;
 
-  @SideOnly(Side.CLIENT)
-  private IIcon iconAdjuster;
-
-  @SideOnly(Side.CLIENT)
-  private IIcon iconProbe;
-  public static final String[] probeNames = { "nexusAdjuster", "materialProbe" };
-
-  public ItemProbe()
-  {
-    super();
-    setHasSubtypes(true);
-    this.setMaxDamage(0);
-  }
-
-  @SideOnly(Side.CLIENT)
-  @Override
-  public void registerIcons(IIconRegister par1IconRegister)
-  {
-    this.iconAdjuster = par1IconRegister.registerIcon("invmod:adjuster");
-    this.iconProbe = par1IconRegister.registerIcon("invmod:probe");
-  }
-  
-  @Override
-  public boolean isFull3D()
-  {
-    return true;
-  }
-  
-  @Override
-  public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer)
-  {
-    return itemstack;
-  }
-
-  @Override
-  public boolean onItemUseFirst(ItemStack itemstack, EntityPlayer entityplayer, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
-  {
-
-    if (world.isRemote) {
-      return false;
+    public ItemProbe(Settings settings, boolean isProbe) {
+        super(settings);
+        this.isProbe = isProbe;
     }
-    Block block = world.getBlock(x, y, z);
-    EntityPlayerMP player = (EntityPlayerMP)entityplayer;
-    if (block == mod_Invasion.blockNexus)
-    {
 
-      TileEntityNexus nexus = (TileEntityNexus)world.getTileEntity(x, y, z);
-      int newRange = nexus.getSpawnRadius();
-      
-      //check if the player wants to increase or decrease the range
-      if(entityplayer.isSneaking()){
-    	  
-    	  newRange -= 8;
-    	  if (newRange < 32)
-    	  {
-    		  newRange = 128;
-    	  }
-    	  
-      }else{
-    	  
-    	  newRange += 8;
-    	  if (newRange > 128)
-    	  {
-    		  newRange = 32;
-    	  }
-    	  
-      }
-      
-      if(nexus.setSpawnRadius(newRange)) {
-    	  mod_Invasion.sendMessageToPlayer(player, EnumChatFormatting.DARK_GREEN, "invmod.message.probe.rangechanged", "" + EnumChatFormatting.GREEN + nexus.getSpawnRadius());
-      } else if(nexus.isActive()) {
-    	  mod_Invasion.sendMessageToPlayer(player, EnumChatFormatting.RED, "invmod.message.probe.cannotchangerange", nexus.getSpawnRadius());
-      }
-      return true;
+    @Override
+    public int getEnchantability() {
+        return 14;
     }
-    if (itemstack.getItemDamage() == 1)
-    {
-    	
-      float blockStrength = EntityIMLiving.getBlockStrength(x, y, z, block, world);
-      mod_Invasion.sendMessageToPlayer(player, EnumChatFormatting.DARK_GREEN, "invmod.message.probe.blockstrength", "" + EnumChatFormatting.GREEN + (int) ((blockStrength + 0.005D) * 100.0D) / 100.0D);
-      return true;
-    }
-    return false;
-  }
-  @Override
-  public String getUnlocalizedName(ItemStack itemstack)
-  {
-    if (itemstack.getItemDamage() < probeNames.length) {
-      return probeNames[itemstack.getItemDamage()];
-    }
-    return "";
-  }
-  @Override
-  public IIcon getIconFromDamage(int i)
-  {
-    if (i == 1) {
-      return this.iconProbe;
-    }
-    return this.iconAdjuster;
-  }
-  @Override
-  public int getItemEnchantability()
-  {
-    return 14;
-  }
 
-  @SideOnly(Side.CLIENT)
-  @Override
-  public void getSubItems(Item item, CreativeTabs tab, List dest)
-  {
-    dest.add(new ItemStack(item, 1, 0));
-    dest.add(new ItemStack(item, 1, 1));
-  }
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        World world = context.getWorld();
+        if (world.isClient) {
+            return ActionResult.PASS;
+        }
+        BlockPos pos = context.getBlockPos();
+        BlockState state = world.getBlockState(pos);
+        @Nullable
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResult.FAIL;
+        }
+        if (state.isOf(mod_Invasion.blockNexus)) {
+            TileEntityNexus nexus = (TileEntityNexus) world.getBlockEntity(pos);
+            int newRange = nexus.getSpawnRadius();
+
+            // check if the player wants to increase or decrease the range
+            newRange += player.isSneaking() ? -8 : 8;
+            // TODO: this check should be handled by the block entity, not here
+            newRange = MathHelper.clamp(newRange, 32, 128);
+
+            if (nexus.setSpawnRadius(newRange)) {
+                player.sendMessage(Text.translatable("invmod.message.probe.rangechanged", Text.literal(nexus.getSpawnRadius() + "").formatted(Formatting.GREEN)).formatted(Formatting.DARK_GREEN));
+            } else if (nexus.isActive()) {
+                player.sendMessage(Text.translatable("invmod.message.probe.cannotchangerange", Text.literal(nexus.getSpawnRadius() + "")).formatted(Formatting.RED));
+            }
+            return ActionResult.SUCCESS;
+        }
+
+        if (isProbe) {
+            float blockStrength = EntityIMLiving.getBlockStrength(pos, state, world);
+            int strengthRounded = (int) ((blockStrength + 0.005D) * 100.0D) / 100;
+            player.sendMessage(Text.translatable("invmod.message.probe.blockstrength", Text.literal(strengthRounded + "").formatted(Formatting.GREEN)).formatted(Formatting.DARK_GREEN));
+            return ActionResult.SUCCESS;
+        }
+        return ActionResult.FAIL;
+    }
 }

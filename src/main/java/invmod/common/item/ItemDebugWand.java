@@ -10,118 +10,108 @@ import invmod.common.entity.EntityIMThrower;
 import invmod.common.entity.EntityIMZombie;
 import invmod.common.mod_Invasion;
 import invmod.common.nexus.TileEntityNexus;
-import java.util.ArrayList;
-import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.monster.EntityZombie;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.BlockPos;
 
-public class ItemDebugWand extends ItemIM
-{
-  private TileEntityNexus nexus;
+class ItemDebugWand extends Item {
+    private TileEntityNexus nexus;
 
-  public ItemDebugWand()
-  {
-    super();
-    this.setMaxDamage(0);
-    this.setUnlocalizedName("debugWand");
-  }
-
-  @Override
-  public boolean onItemUseFirst(ItemStack itemstack, EntityPlayer entityplayer, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
-  {
-    if (world.isRemote) {
-      return false;
-    }
-    Block block = world.getBlock(x, y, z);
-    if (block == mod_Invasion.blockNexus)
-    {
-      this.nexus = ((TileEntityNexus)world.getTileEntity(x, y, z));
-      return true;
+    public ItemDebugWand(Settings settings) {
+        super(settings);
     }
 
-    EntityIMBird bird = new EntityIMGiantBird(world);
-    bird.setPosition(x, y + 1, z);
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
 
-    EntityZombie zombie2 = new EntityZombie(world);
-    zombie2.setPosition(x, y + 1, z);
+        if (!(context.getWorld() instanceof ServerWorld world)) {
+            return ActionResult.PASS;
+        }
 
-    EntityWolf wolf = new EntityWolf(world);
-    wolf.setPosition(x, y + 1, z);
-    world.spawnEntityInWorld(wolf);
+        BlockState state = world.getBlockState(context.getBlockPos());
+        if (state.isOf(mod_Invasion.blockNexus)) {
+            this.nexus = ((TileEntityNexus) world.getBlockEntity(context.getBlockPos()));
+            return ActionResult.SUCCESS;
+        }
 
-    Entity entity1 = new EntityIMPigEngy(world);
-    entity1.setPosition(x, y + 1, z);
+        BlockPos pos = context.getBlockPos().offset(context.getSide());
+        EntityIMBird bird = new EntityIMGiantBird(world);
+        bird.setPosition(pos.toBottomCenterPos());
 
-    EntityIMZombie zombie = new EntityIMZombie(world, this.nexus);
-    zombie.setTexture(0);
-    zombie.setFlavour(0);
-    zombie.setTier(1);
+        ZombieEntity zombie2 = new ZombieEntity(world);
+        zombie2.setPosition(pos.toBottomCenterPos());
 
-    zombie.setPosition(x, y + 1, z);
+        EntityType.WOLF.create(world, w -> {}, pos, SpawnReason.COMMAND, true, false);
 
-    if (this.nexus != null)
-    {
-      Entity entity = new EntityIMPigEngy(world, this.nexus);
-      entity.setPosition(x, y + 1, z);
+        Entity entity1 = new EntityIMPigEngy(world);
+        entity1.setPosition(pos.toBottomCenterPos());
 
-      zombie = new EntityIMZombie(world, this.nexus);
-      zombie.setTexture(0);
-      zombie.setFlavour(0);
-      zombie.setTier(2);
-      zombie.setPosition(x, y + 1, z);
+        EntityIMZombie zombie = new EntityIMZombie(world, this.nexus);
+        zombie.setTexture(0);
+        zombie.setFlavour(0);
+        zombie.setTier(1);
 
-      Entity thrower = new EntityIMThrower(world, this.nexus);
-      thrower.setPosition(x, y + 1, z);
+        zombie.setPosition(pos.toBottomCenterPos());
 
-      EntityIMCreeper creep = new EntityIMCreeper(world, this.nexus);
-      creep.setPosition(x, y + 1, z);
+        if (this.nexus != null) {
+            Entity entity = new EntityIMPigEngy(world, this.nexus);
+            entity.setPosition(pos.toBottomCenterPos());
 
-      EntityIMSpider spider = new EntityIMSpider(world, this.nexus);
+            zombie = new EntityIMZombie(world, this.nexus);
+            zombie.setTexture(0);
+            zombie.setFlavour(0);
+            zombie.setTier(2);
+            zombie.setPosition(pos.toBottomCenterPos());
 
-      spider.setTexture(0);
-      spider.setFlavour(0);
-      spider.setTier(2);
+            Entity thrower = new EntityIMThrower(world, this.nexus);
+            thrower.setPosition(pos.toBottomCenterPos());
 
-      spider.setPosition(x, y + 1, z);
+            EntityIMCreeper creep = new EntityIMCreeper(world, this.nexus);
+            creep.setPosition(pos.toBottomCenterPos());
 
-      EntityIMSkeleton skeleton = new EntityIMSkeleton(world, this.nexus);
-      skeleton.setPosition(x, y + 1, z);
+            EntityIMSpider spider = new EntityIMSpider(world, this.nexus);
+
+            spider.setTexture(0);
+            spider.setFlavour(0);
+            spider.setTier(2);
+
+            spider.setPosition(pos.toBottomCenterPos());
+
+            EntityIMSkeleton skeleton = new EntityIMSkeleton(world, this.nexus);
+            skeleton.setPosition(pos.toBottomCenterPos());
+        }
+
+        EntityIMSpider entity = new EntityIMSpider(world, this.nexus);
+
+        entity.setTexture(0);
+        entity.setFlavour(1);
+        entity.setTier(2);
+
+        entity.setPosition(pos.toBottomCenterPos());
+
+        EntityIMCreeper creep = new EntityIMCreeper(world);
+        creep.setPosition(150.5D, 64.0D, 271.5D);
+
+        return ActionResult.SUCCESS;
     }
 
-    EntityIMSpider entity = new EntityIMSpider(world, this.nexus);
-
-    entity.setTexture(0);
-    entity.setFlavour(1);
-    entity.setTier(2);
-
-    entity.setPosition(x, y + 1, z);
-
-    EntityIMCreeper creep = new EntityIMCreeper(world);
-    creep.setPosition(150.5D, 64.0D, 271.5D);
-
-    return true;
-  }
-
-  public boolean hitEntity(ItemStack itemstack, EntityPlayer player, EntityLivingBase targetEntity)
-  {
-    if ((targetEntity instanceof EntityWolf))
-    {
-      EntityWolf wolf = (EntityWolf)targetEntity;
-
-      if (player != null) {
-        wolf.func_152115_b(player.getDisplayName());
-      }
-      return true;
+    @Override
+    public boolean postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        if (target instanceof WolfEntity wolf && attacker instanceof PlayerEntity player) {
+            wolf.setOwner(player);
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
-
-  public void addCreativeItems(ArrayList itemList)
-  {
-  }
 }
