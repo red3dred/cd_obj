@@ -1,78 +1,103 @@
 buildscript {
-    repositories {
-        maven {
-            name = "forge"
-            url = "https://maven.minecraftforge.net/"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-    }
     dependencies {
-        classpath ('com.anatawa12.forge:ForgeGradle:1.2-1.1.+') {
-            changing = true
-        }
-        classpath 'org.ajoberstar:gradle-git:0.10.1'
+        classpath 'com.github.dexman545:Outlet:1.6.1'
     }
 }
+plugins {
+    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'maven-publish'
+    id 'com.modrinth.minotaur' version '2.+'
+    id 'org.ajoberstar.reckon' version '0.13.1'
+}
+apply plugin: 'io.github.dexman545.outlet'
 
-apply plugin: 'forge'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    withSourcesJar()
+}
 
-version = mod_version
-group = package_group // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "${mod_name}-${mc_version}-dev"
+outlet.allowSnapshotsForProject = false
+outlet.mcVersionRange = ">=${project.minecraft_version}"
 
-import org.ajoberstar.grgit.Grgit
+group = project.group
+description = project.displayname
+archivesBaseName = project.name
+
+
+loom {
+    mixin.defaultRefmapName = 'invasion.mixin.refmap.json'
+   // accessWidenerPath = file('src/main/resources/invasion.aw')
+}
+
+reckon {
+    scopeFromProp()
+    stageFromProp('beta', 'rc', 'final')
+}
 
 repositories {
-    maven { url "http://mobiusstrip.eu/maven"}    // Waila
-    maven { url "https://maven.covers1624.net/" } // new NEI
+    mavenLocal()
+    maven { name 'modmenu'; url 'https://maven.terraformersmc.com/releases' }
 }
 
 dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modApi "net.fabricmc:fabric-loader:${project.loader_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    /*
     compile "mcp.mobius.waila:Waila:${waila_version}_${mc_version}"
     compile "codechicken:CodeChickenCore:1.7.10-1.0.7.48:dev"
     compile "codechicken:CodeChickenLib:1.7.10-1.1.3.141:dev"
     compile "codechicken:NotEnoughItems:1.7.10-1.0.5.120:dev"
     compile fileTree(dir: 'libs', include: '*.jar')
-}
+    */
 
-minecraft {
-    version = "1.7.10-10.13.4.1614-1.7.10"
-    runDir = "eclipse"
-}
-
-dependencies {
-    // you may put jars on which you depend on in ./libs
-    // or you may define them like so..
-    //compile "some.group:artifact:version:classifier"
-    //compile "some.group:artifact:version"
-      
-    // real examples
-    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
-    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
-
-    // for more info...
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
     // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+    inputs.property "version", project.version.toString()
 
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version.toString(),
+                "minecraftVersion": ">=${project.minecraft_version}",
+                "loaderVersion": ">=${project.loader_version}",
+                "fabricVersion": ">=${project.fabric_version}"
     }
-        
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+
+    from 'LICENSE'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+
+tasks.modrinth {
+    onlyIf {
+      def stage = version.version.stage.value
+      stage == null || stage.name != 'beta'
     }
 }
+
+modrinth {
+    token = System.env.MODRINTH_KEY
+    projectId = project.modrinth_project_id
+    //featured = true
+    versionNumber = version.toString()
+    versionName = archivesBaseName + '-' + version
+    changelog = "[Changelog](https://github.com/MineLittlePony/MineLittlePony/releases/tag/${version.toString()})"
+    loaders = ['fabric', 'quilt']
+    uploadFile = remapJar
+    outlet.mcVersions().each{ver ->
+      gameVersions.add ver
+    }
+    dependencies {
+       required.project 'P7dR8mSH' // Fabric API
+    }
+}
+
