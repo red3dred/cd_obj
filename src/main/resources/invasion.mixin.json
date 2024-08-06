@@ -1,0 +1,9 @@
+{
+    "required": true,
+    "minVersion": "0.7",
+    "package": "invmod.common.mixin",
+    "refmap": "invasion.mixin.refmap.json",
+    "compatibilityLevel": "JAVA_16",
+    "client": [
+    ]
+}

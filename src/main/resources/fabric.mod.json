@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "mod_invasion",
+  "version": "${version}",
+  "name": "Invasion",
+  "description": "So you think your base is tough, do you?",
+  "authors": [
+    "Lieu", "Elsee", "Davidee", "UnstoppableN", "Doenerstyle", "Sollace"
+  ],
+  "contact": {
+    "sources": "https://github.com/Sollace/Invasion-Mod",
+    "issues": "https://github.com/Sollace/Invasion-Mod/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/invmod/meta/logo.png",
+  "accessWidener": "invasion.aw",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.minelittlepony.server.MineLittlePonyServer"
+    ],
+    "client": [
+      "com.minelittlepony.client.MineLittlePony"
+    ],
+    "hdskins": [
+      "com.minelittlepony.client.compat.hdskins.MineLPHDSkins"
+    ],
+    "modmenu": [
+      "com.minelittlepony.client.compat.modmenu.MineLPModMenuFactory"
+    ]
+  },
+  "mixins": [
+    "invasion.mixin.json"
+  ],
+  "depends": {
+    "minecraft": "${minecraftVersion}",
+    "fabricloader": "${loaderVersion}",
+    "java": ">=21",
+    "fabric-api": "${fabricVersion}"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
