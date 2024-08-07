@@ -2,11 +2,10 @@ package invmod.common;
 
 import invmod.common.entity.PathNode;
 import invmod.common.entity.PathfinderIM;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.WorldAccess;
 
-public abstract interface IPathfindable
-{
-  public abstract float getBlockPathCost(PathNode paramPathNode1, PathNode paramPathNode2, IBlockAccess paramIBlockAccess);
+public interface IPathfindable {
+    float getBlockPathCost(PathNode paramPathNode1, PathNode paramPathNode2, WorldAccess paramIBlockAccess);
 
-  public abstract void getPathOptionsFromNode(IBlockAccess paramIBlockAccess, PathNode paramPathNode, PathfinderIM paramPathfinderIM);
+    void getPathOptionsFromNode(WorldAccess paramIBlockAccess, PathNode paramPathNode, PathfinderIM paramPathfinderIM);
 }

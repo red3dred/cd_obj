@@ -1,7 +1,6 @@
 package invmod.common;
 
 import invmod.common.block.InvBlocks;
-import invmod.common.creativetab.CreativeTabInvmod;
 import invmod.common.entity.EntityIMBird;
 import invmod.common.entity.EntityIMBolt;
 import invmod.common.entity.EntityIMBoulder;
@@ -21,11 +20,8 @@ import invmod.common.entity.EntityIMTrap;
 import invmod.common.entity.EntityIMWolf;
 import invmod.common.entity.EntityIMZombie;
 import invmod.common.entity.EntityIMZombiePigman;
-import invmod.common.item.ItemDebugWand;
 import invmod.common.item.ItemInfusedSword;
-import invmod.common.item.ItemProbe;
 import invmod.common.item.ItemSearingBow;
-import invmod.common.item.ItemStrangeBone;
 import invmod.common.item.ItemTrap;
 import invmod.common.nexus.BlockNexus;
 import invmod.common.nexus.IEntityIMPattern;
@@ -51,6 +47,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
@@ -108,11 +105,19 @@ public class mod_Invasion {
     private static final int DEFAULT_NIGHT_MOB_LIMIT_OVERRIDE = 70;
     private static final float DEFAULT_NIGHT_MOB_STATS_SCALING = 1.0F;
     private static final boolean DEFAULT_NIGHT_MOBS_BURN = true;
-    public static final String[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS = { "zombie_t1_any", "zombie_t2_any_basic",
-            "zombie_t2_plain", "zombie_t2_tar", "zombie_t2_pigman", "zombie_t3_any", "zombiePigman_t1_any",
-            "zombiePigman_t2_any", "zombiePigman_t3_any", "spider_t1_any", "spider_t2_any", "pigengy_t1_any",
-            "skeleton_t1_any", "thrower_t1", "thrower_t2", "creeper_t1_basic", "imp_t1" };
-    public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = { 1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F };
+    public static final String[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS = {
+            "zombie_t1_any", "zombie_t2_any_basic",
+            "zombie_t2_plain", "zombie_t2_tar", "zombie_t2_pigman", "zombie_t3_any",
+            "zombiePigman_t1_any", "zombiePigman_t2_any", "zombiePigman_t3_any",
+            "spider_t1_any", "spider_t2_any", "pigengy_t1_any",
+            "skeleton_t1_any",
+            "thrower_t1", "thrower_t2",
+            "creeper_t1_basic",
+            "imp_t1"
+    };
+    public static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
+            1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F
+    };
 
     // NOOB HAUS: Declare them values.. Declare em good
     private static boolean alreadyNotified;
@@ -161,12 +166,7 @@ public class mod_Invasion {
 
     //@EventHandler
     public void preInit(/*FMLPreInitializationEvent event*/) {
-
-        // First up, we check for the config file, write it if it doesn't exist; or
-
-        // NOOB HAUS: Get the config file - store it into a variable; pass all that shiz
-        // thru common.configInvasion
-        configFile = proxy.getFile("/config/invasion_config.cfg");
+        configFile = FabricLoader.getInstance().getConfigDir().resolve("invasion_config.cfg").toFile();
         alreadyNotified = false;
 
         configInvasion = new ConfigInvasion();

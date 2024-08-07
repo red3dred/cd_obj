@@ -409,8 +409,8 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 		}
 
 		Block block = terrainMap.getBlock(node.xCoord, node.yCoord, node.zCoord);
-		if (EntityIMLiving.blockCosts.containsKey(block)) {
-			return prevNode.distanceTo(node) * ((Float) EntityIMLiving.blockCosts.get(block)).floatValue() * multiplier;
+		if (EntityIMLiving.BLOCK_COSTS.containsKey(block)) {
+			return prevNode.distanceTo(node) * ((Float) EntityIMLiving.BLOCK_COSTS.get(block)).floatValue() * multiplier;
 		}
 		if (block.isCollidable()) {
 			return prevNode.distanceTo(node) * 3.2F * multiplier;

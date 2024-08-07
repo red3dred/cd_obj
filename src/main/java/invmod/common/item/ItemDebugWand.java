@@ -8,7 +8,7 @@ import invmod.common.entity.EntityIMSkeleton;
 import invmod.common.entity.EntityIMSpider;
 import invmod.common.entity.EntityIMThrower;
 import invmod.common.entity.EntityIMZombie;
-import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.nexus.TileEntityNexus;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -40,7 +40,7 @@ class ItemDebugWand extends Item {
         }
 
         BlockState state = world.getBlockState(context.getBlockPos());
-        if (state.isOf(mod_Invasion.blockNexus)) {
+        if (state.isOf(InvBlocks.NEXUS_CORE)) {
             this.nexus = ((TileEntityNexus) world.getBlockEntity(context.getBlockPos()));
             return ActionResult.SUCCESS;
         }

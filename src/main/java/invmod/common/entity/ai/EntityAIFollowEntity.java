@@ -2,9 +2,9 @@ package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMLiving;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 
-public class EntityAIFollowEntity<T extends EntityLivingBase> extends EntityAIMoveToEntity<T>
+public class EntityAIFollowEntity<T extends LivingEntity> extends EntityAIMoveToEntity<T>
 {
   private float followDistanceSq;
 
@@ -19,19 +19,22 @@ public class EntityAIFollowEntity<T extends EntityLivingBase> extends EntityAIMo
     this.followDistanceSq = (followDistance * followDistance);
   }
 
-  public void startExecuting()
+  @Override
+public void startExecuting()
   {
     getEntity().onFollowingEntity(getTarget());
     super.startExecuting();
   }
 
-  public void resetTask()
+  @Override
+public void resetTask()
   {
     getEntity().onFollowingEntity(null);
     super.resetTask();
   }
 
-  public void updateTask()
+  @Override
+public void updateTask()
   {
     super.updateTask();
     Entity entity = getTarget();

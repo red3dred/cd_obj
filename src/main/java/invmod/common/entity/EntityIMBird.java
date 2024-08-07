@@ -6,13 +6,8 @@ import invmod.client.render.animation.AnimationState;
 import invmod.common.mod_Invasion;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.passive.EntityWolf;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
-import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
 
 public class EntityIMBird extends EntityIMFlying
 {
@@ -26,7 +21,7 @@ public class EntityIMBird extends EntityIMFlying
   private int animationFlags;
   private float carriedEntityYawOffset;
   private int tier;
-  
+
   public EntityIMBird(World world)
   {
     this(world, null);
@@ -47,7 +42,7 @@ public class EntityIMBird extends EntityIMFlying
 	    setName("Bird");
 	    setGender(2);
 	    setBaseMoveSpeedStat(1.0F);
-	    this.attackStrength = 1;
+	    setAttackStrength(1);
 	    setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
 	    this.animationFlags = 0;
 	    this.carriedEntityYawOffset = 0.0F;
@@ -61,7 +56,7 @@ public class EntityIMBird extends EntityIMFlying
 	    setMoveState(MoveState.STANDING);
 	    setFlyState(FlyState.GROUNDED);
 	    this.tier=1;
-	    
+
 	    this.dataWatcher.addObject(26, Integer.valueOf(0));
   }
 
@@ -118,7 +113,8 @@ public class EntityIMBird extends EntityIMFlying
     }
   }
 
-  public String getSpecies()
+  @Override
+public String getSpecies()
   {
     return "Bird";
   }
@@ -166,8 +162,8 @@ public class EntityIMBird extends EntityIMFlying
     {
       return false;
     }
-    
-    
+
+
 //    if (((par1DamageSource == DamageSource.anvil) || (par1DamageSource == DamageSource.fallingBlock)) && (getCurrentItemOrArmor(4) != null))
 //    {
 //      //getCurrentItemOrArmor(4).damageItem((int)(par2 * 4.0F + this.rand.nextFloat() * par2 * 2.0F), this);
@@ -316,13 +312,13 @@ public class EntityIMBird extends EntityIMFlying
   {
     this.beakController.update();
   }
-  
+
   @Override
   public int getTier()
   {
 	  return this.tier;
   }
-  
+
   @Override
   public String toString()
   {

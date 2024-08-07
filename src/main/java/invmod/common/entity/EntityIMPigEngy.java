@@ -468,7 +468,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 	}
 
 	public static boolean canPlaceLadderAt(IBlockAccess map, int x, int y, int z) {
-		if(EntityIMLiving.unDestructableBlocks.contains(map.getBlock(x, y, z)))
+		if(EntityIMLiving.UNDESTRUCTABLE_BLOCKS.contains(map.getBlock(x, y, z)))
 		{
 		if ((map.getBlock(x + 1, y, z).isNormalCube()) || (map.getBlock(x - 1, y, z).isNormalCube()) || (map.getBlock(x, y, z + 1).isNormalCube()) || (map.getBlock(x, y, z - 1).isNormalCube())) {
 			return true;

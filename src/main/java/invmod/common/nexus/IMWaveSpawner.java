@@ -230,7 +230,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 				return true;
 			}
 		}
-		mod_Invasion.log("Could not find valid spawn for '" + mob.getName() + "' after " + spawnTries + " tries");
+		mod_Invasion.log("Could not find valid spawn for '" + mob.getName().getString() + "' after " + spawnTries + " tries");
 		return false;
 	}
 

@@ -2,11 +2,9 @@ package invmod.common.entity;
 
 import invmod.common.util.IPosition;
 import net.minecraft.block.Block;
-import net.minecraft.entity.ai.EntityMoveHelper;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
+import net.minecraft.entity.ai.control.MoveControl;
 
-public class IMMoveHelper extends EntityMoveHelper {
+public class IMMoveHelper extends MoveControl {
 	protected EntityIMLiving a;
 	protected double b;
 	protected double c;
@@ -30,7 +28,8 @@ public class IMMoveHelper extends EntityMoveHelper {
 		return this.needsUpdate;
 	}
 
-	public double getSpeed() {
+	@Override
+    public double getSpeed() {
 		return this.setSpeed;
 	}
 

@@ -1,48 +1,77 @@
 package invmod.common;
 
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.entity.Entity;
 
-public abstract interface SparrowAPI
-{
-  public abstract boolean isStupidToAttack();
+public interface SparrowAPI {
+    default boolean isStupidToAttack() {
+        return false;
+    }
 
-  public abstract boolean doNotVaporize();
+    default boolean doNotVaporize() {
+        return false;
+    }
 
-  public abstract boolean isPredator();
+    default boolean isPredator() {
+        return false;
+    }
 
-  public abstract boolean isHostile();
+    default boolean isHostile() {
+        return false;
+    }
 
-  public abstract boolean isPeaceful();
+    default boolean isPeaceful() {
+        return false;
+    }
 
-  public abstract boolean isPrey();
+    default boolean isPrey() {
+        return false;
+    }
 
-  public abstract boolean isNeutral();
+    default boolean isNeutral() {
+        return false;
+    }
 
-  public abstract boolean isUnkillable();
+    default boolean isUnkillable() {
+        return false;
+    }
 
-  public abstract boolean isThreatTo(Entity paramEntity);
+    default boolean isThreatTo(Entity paramEntity) {
+        return false;
+    }
 
-  public abstract boolean isFriendOf(Entity paramEntity);
+    default boolean isFriendOf(Entity paramEntity) {
+        return false;
+    }
 
-  public abstract boolean isNPC();
+    boolean isNPC();
 
-  public abstract int isPet();
+    default int isPet() {
+        return 0;
+    }
 
-  public abstract Entity getPetOwner();
+    @Nullable
+    default Entity getPetOwner() {
+        return null;
+    }
 
-  public abstract String getName();
+    Entity getAttackingTarget();
 
-  public abstract Entity getAttackingTarget();
+    float getSize();
 
-  public abstract float getSize();
+    String getSpecies();
 
-  public abstract String getSpecies();
+    default int getTier() {
+        return 0;
+    }
 
-  public abstract int getTier();
+    int getGender();
 
-  public abstract int getGender();
+    @Nullable
+    default String customStringAndResponse(String paramString) {
+        return null;
+    }
 
-  public abstract String customStringAndResponse(String paramString);
-
-  public abstract String getSimplyID();
+    String getSimplyID();
 }

@@ -102,7 +102,7 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 		if (block == Blocks.air) {
 			return prevNode.distanceTo(node) * 1.0F * penalty;
 		}
-		if (EntityIMLiving.blockCosts.containsKey(block)) {
+		if (EntityIMLiving.BLOCK_COSTS.containsKey(block)) {
 			return prevNode.distanceTo(node) * 1.0F * 1.3F * penalty;
 		}
 		if (block.isCollidable()) {

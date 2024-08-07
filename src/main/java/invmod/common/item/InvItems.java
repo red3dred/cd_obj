@@ -5,7 +5,9 @@ import java.util.List;
 
 import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -40,6 +42,8 @@ public interface InvItems {
     //ItemSpawnEgg SPAWN_EGG;
     // TODO: Spawn eggs
 
+    Item NEXUS_CORE = register("nexus_core", new BlockItem(InvBlocks.NEXUS_CORE, new Item.Settings()));
+
     private static <T extends Item> T register(String name, T item) {
         REGISTRY.add(item);
         return Registry.register(Registries.ITEM, InvasionMod.id(name), item);
@@ -52,6 +56,6 @@ public interface InvItems {
         Identifier tabId = InvasionMod.id("invasion_mod");
         Registry.register(Registries.ITEM_GROUP, tabId, FabricItemGroup.builder().entries((context, entries) -> {
             REGISTRY.forEach(item -> entries.add(item.getDefaultStack()));
-        }).icon(() -> mod_Invasion.blockNexus.asItem().getDefaultStack()).displayName(Text.translatable(Util.createTranslationKey("itemGroup", tabId))).build());
+        }).icon(NEXUS_CORE::getDefaultStack).displayName(Text.translatable(Util.createTranslationKey("itemGroup", tabId))).build());
     }
 }

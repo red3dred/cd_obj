@@ -3,47 +3,46 @@ package invmod.common.entity;
 import invmod.common.INotifyTask;
 import net.minecraft.entity.Entity;
 
-public abstract interface INavigation extends INotifyTask
-{
-  public abstract PathAction getCurrentWorkingAction();
+public interface INavigation extends INotifyTask {
+    PathAction getCurrentWorkingAction();
 
-  public abstract void setSpeed(float paramFloat);
+    void setSpeed(float paramFloat);
 
-  public abstract Path getPathToXYZ(double paramDouble1, double paramDouble2, double paramDouble3, float paramFloat);
+    Path getPathToXYZ(double paramDouble1, double paramDouble2, double paramDouble3, float paramFloat);
 
-  public abstract boolean tryMoveToXYZ(double paramDouble1, double paramDouble2, double paramDouble3, float paramFloat1, float paramFloat2);
+    boolean tryMoveToXYZ(double paramDouble1, double paramDouble2, double paramDouble3, float paramFloat1, float paramFloat2);
 
-  public abstract Path getPathTowardsXZ(double paramDouble1, double paramDouble2, int paramInt1, int paramInt2, int paramInt3);
+    Path getPathTowardsXZ(double paramDouble1, double paramDouble2, int paramInt1, int paramInt2, int paramInt3);
 
-  public abstract boolean tryMoveTowardsXZ(double paramDouble1, double paramDouble2, int paramInt1, int paramInt2, int paramInt3, float paramFloat);
+    boolean tryMoveTowardsXZ(double paramDouble1, double paramDouble2, int paramInt1, int paramInt2, int paramInt3, float paramFloat);
 
-  public abstract Path getPathToEntity(Entity paramEntity, float paramFloat);
+    Path getPathToEntity(Entity paramEntity, float paramFloat);
 
-  public abstract boolean tryMoveToEntity(Entity paramEntity, float paramFloat1, float paramFloat2);
+    boolean tryMoveToEntity(Entity paramEntity, float paramFloat1, float paramFloat2);
 
-  public abstract void autoPathToEntity(Entity paramEntity);
+    void autoPathToEntity(Entity paramEntity);
 
-  public abstract boolean setPath(Path paramPath, float paramFloat);
+    boolean setPath(Path paramPath, float paramFloat);
 
-  public abstract boolean isWaitingForTask();
+    boolean isWaitingForTask();
 
-  public abstract Path getPath();
+    Path getPath();
 
-  public abstract void onUpdateNavigation();
+    void onUpdateNavigation();
 
-  public abstract int getLastActionResult();
+    int getLastActionResult();
 
-  public abstract boolean noPath();
+    boolean noPath();
 
-  public abstract int getStuckTime();
+    int getStuckTime();
 
-  public abstract float getLastPathDistanceToTarget();
+    float getLastPathDistanceToTarget();
 
-  public abstract void clearPath();
+    void clearPath();
 
-  public abstract void haltForTick();
+    void haltForTick();
 
-  public abstract Entity getTargetEntity();
+    Entity getTargetEntity();
 
-  public abstract String getStatus();
+    String getStatus();
 }
