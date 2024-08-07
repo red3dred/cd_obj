@@ -1,39 +1,33 @@
 package invmod.common.util;
 
-public class CoordsInt
-  implements IPosition
-{
-  public static final int[] offsetAdjX = { 1, -1, 0, 0 };
-  public static final int[] offsetAdjZ = { 0, 0, 1, -1 };
+import net.minecraft.util.math.BlockPos;
 
-  public static final int[] offsetAdj2X = { 2, 2, -1, -1, 1, 0, 0, 1 };
-  public static final int[] offsetAdj2Z = { 0, 1, 1, 0, 2, 2, -1, -1 };
+public record CoordsInt(int x, int y, int z) implements IPosition {
+    public static final int[] offsetAdjX = { 1, -1, 0, 0 };
+    public static final int[] offsetAdjZ = { 0, 0, 1, -1 };
 
-  public static final int[] offsetRing1X = { 1, 0, -1, -1, -1, 0, 1, 1 };
-  public static final int[] offsetRing1Z = { 1, 1, 1, 0, -1, -1, -1, 0 };
-  private int x;
-  private int y;
-  private int z;
+    public static final int[] offsetAdj2X = { 2, 2, -1, -1, 1, 0, 0, 1 };
+    public static final int[] offsetAdj2Z = { 0, 1, 1, 0, 2, 2, -1, -1 };
 
-  public CoordsInt(int x, int y, int z)
-  {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
+    public static final int[] offsetRing1X = { 1, 0, -1, -1, -1, 0, 1, 1 };
+    public static final int[] offsetRing1Z = { 1, 1, 1, 0, -1, -1, -1, 0 };
 
-  public int getXCoord()
-  {
-    return this.x;
-  }
+    public CoordsInt(BlockPos pos) {
+        this(pos.getX(), pos.getY(), pos.getZ());
+    }
 
-  public int getYCoord()
-  {
-    return this.y;
-  }
+    @Override
+    public int getXCoord() {
+        return this.x;
+    }
 
-  public int getZCoord()
-  {
-    return this.z;
-  }
+    @Override
+    public int getYCoord() {
+        return this.y;
+    }
+
+    @Override
+    public int getZCoord() {
+        return this.z;
+    }
 }

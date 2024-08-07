@@ -73,4 +73,6 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
 			currentPool.get(i).setVal2(originalPool.get(i));
 		}
 	}
+
+	record Entry<T>(ISelect<T> value, int amount) {}
 }
