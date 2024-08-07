@@ -1,136 +1,93 @@
 package invmod.common.entity;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
-import invmod.common.entity.ai.EntityAIKillWithArrow;
-import invmod.common.entity.ai.EntityAILeaderTarget;
-import invmod.common.entity.ai.EntityAIRallyBehindEntity;
 import invmod.common.entity.ai.EntityAISimpleTarget;
 import invmod.common.entity.ai.EntityAIWanderIM;
-import invmod.common.nexus.INexusAccess;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.RangedAttackMob;
+import net.minecraft.entity.ai.goal.BowAttackGoal;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.item.Items;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
 
-public class EntityIMSkeleton extends EntityIMMob
-{
-  private static final ItemStack defaultHeldItem = new ItemStack(Items.bow, 1);
-private int tier;
-  public EntityIMSkeleton(World world)
-  {
-    this(world, null);
-  }
-
-  public EntityIMSkeleton(World world, INexusAccess nexus)
-  {
-    super(world, nexus);
-    this.tier=1;
-    //setBurnsInDay(true);
- 
-    setMaxHealthAndHealth(mod_Invasion.getMobHealth((EntityIMLiving)this));
-    setName("Skeleton");
-    setGender(0);
-    setBaseMoveSpeedStat(0.21F);
-    
-    setAI();
-	
-  }
-
-  private void setAI()
-  {
-	  this.tasks.addTask(0, new EntityAISwimming(this));
-	    this.tasks.addTask(1, new EntityAIKillWithArrow(this, EntityPlayer.class, 65, 16.0F));
-	    this.tasks.addTask(1, new EntityAIKillWithArrow(this, EntityPlayerMP.class, 65, 16.0F));
-	    //this.tasks.addTask(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
-	    this.tasks.addTask(2, new EntityAIKillWithArrow(this, EntityLiving.class, 65, 16.0F));
-	    this.tasks.addTask(3, new EntityAIAttackNexus(this));
-	    this.tasks.addTask(4, new EntityAIGoToNexus(this));
-	    this.tasks.addTask(5, new EntityAIWanderIM(this));
-	    this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-	    this.tasks.addTask(6, new EntityAILookIdle(this));
-	    this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityIMCreeper.class, 12.0F));
-	    
-	    this.targetTasks.addTask(0, new EntityAISimpleTarget(this, EntityPlayer.class, this.getSenseRange(), false));
-	    this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, false));
-  }
-  
-  @Override
-  protected String getLivingSound()
-  {
-    return "mob.skeleton.say";
-  }
-
-  @Override
-  protected String getHurtSound()
-  {
-    return "mob.skeleton.hurt";
-  }
-
-  @Override
-  protected String getDeathSound()
-  {
-    return "mob.skeleton.death";
-  }
-
-  @Override
-  public void writeEntityToNBT(NBTTagCompound nbttagcompound)
-  {
-    super.writeEntityToNBT(nbttagcompound);
-  }
-
-  @Override
-  public void readEntityFromNBT(NBTTagCompound nbttagcompound)
-  {
-    super.readEntityFromNBT(nbttagcompound);
-  }
-
-  @Override
-  public String getSpecies()
-  {
-    return "Skeleton";
-  }
-
-  @Override
-  public int getTier()
-  {
-    return this.tier;
-  }
-
-  @Override
-  public String toString()
-  {
-    return "IMSkeleton-T"+this.getTier();
-  }
-
-  @Override
-  protected void dropFewItems(boolean flag, int bonus)
-  {
-    super.dropFewItems(flag, bonus);
-    int i = this.rand.nextInt(3);
-    for (int j = 0; j < i; j++)
-    {
-      dropItem(Items.arrow, 1);
+public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
+    public EntityIMSkeleton(EntityType<EntityIMSkeleton> type, World world) {
+        super(type, world, null);
+        setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+        setBaseMoveSpeedStat(0.21F);
     }
 
-    i = this.rand.nextInt(3);
-    for (int k = 1; k < i; k++)
-    {
-      dropItem(Items.bone, 1);
-    }
-  }
+    @Override
+    protected void initGoals() {
+        goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(1, new BowAttackGoal<>(this, 65D, 20, 16F));
+        // goalSelector.add(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
+        goalSelector.add(3, new EntityAIAttackNexus(this));
+        goalSelector.add(4, new EntityAIGoToNexus(this));
+        goalSelector.add(5, new EntityAIWanderIM(this));
+        goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8));
+        goalSelector.add(6, new LookAroundGoal(this));
+        goalSelector.add(6, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
 
-  @Override
-  public ItemStack getHeldItem()
-  {
-    return defaultHeldItem;
-  }
+        targetSelector.add(0, new EntityAISimpleTarget<>(this, PlayerEntity.class, getSenseRange(), false));
+        targetSelector.add(1, new RevengeGoal(this));
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return SoundEvents.ENTITY_SKELETON_AMBIENT;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return SoundEvents.ENTITY_SKELETON_HURT;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return SoundEvents.ENTITY_SKELETON_DEATH;
+    }
+
+    @Override
+    public String getSpecies() {
+        return "Skeleton";
+    }
+
+    @Override
+    public int getTier() {
+        return 1;
+    }
+
+    @Override
+    public void shootAt(LivingEntity target, float pullProgress) {
+        ItemStack bow = getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
+        ItemStack arrow = getProjectileType(bow);
+        PersistentProjectileEntity projectile = createArrowProjectile(arrow, pullProgress, bow);
+        double dX = target.getX() - getX();
+        double dY = target.getBodyY(0.3333333333333333) - projectile.getY();
+        double dZ = target.getZ() - getZ();
+        double horLength = Math.sqrt(dX * dX + dZ * dZ);
+        projectile.setVelocity(dX, dY + horLength * 0.2F, dZ, 1.6F, 14 - getWorld().getDifficulty().getId() * 4);
+        playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1, 1 / (getRandom().nextFloat() * 0.4F + 0.8F));
+        getWorld().spawnEntity(projectile);
+    }
+
+    protected PersistentProjectileEntity createArrowProjectile(ItemStack arrow, float damageModifier, @Nullable ItemStack shotFrom) {
+        return ProjectileUtil.createArrowProjectile(this, arrow, damageModifier, shotFrom);
+    }
 }

@@ -18,6 +18,7 @@ import invmod.common.entity.EntityIMWolf;
 import invmod.common.entity.EntityIMZombie;
 import invmod.common.entity.EntityIMZombiePigman;
 import invmod.common.entity.EntitySFX;
+import invmod.common.entity.InvEntities;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.entity.model.ZombieEntityModel;
 
@@ -27,10 +28,10 @@ public interface InvRenderers {
     static void bootstrap() {
         registerEntityRenderingHandler(EntityIMZombie.class, new RenderIMZombie(new ZombieEntityModel(0, true), 0.5F));
         registerEntityRenderingHandler(EntityIMZombiePigman.class, new RenderIMZombiePigman(new ModelZombie(0, true), 0.5F));
-        registerEntityRenderingHandler(EntityIMSkeleton.class, new RenderIMSkeleton(new ModelIMSkeleton(), 0.5F));
+        EntityRendererRegistry.register(InvEntities.SKELETON, RenderIMSkeleton::new);
         registerEntityRenderingHandler(EntityIMSpider.class, new RenderSpiderIM());
         registerEntityRenderingHandler(EntityIMPigEngy.class, new RenderPigEngy(new ModelBiped(), 0.5F));
-        registerEntityRenderingHandler(EntityIMImp.class, new RenderImp(new ModelImp(), 0.3F));
+        EntityRendererRegistry.register(InvEntities.IMP, RenderImp::new);
         registerEntityRenderingHandler(EntityIMThrower.class, new RenderThrower(new ModelThrower(), 1.5F));
         registerEntityRenderingHandler(EntityIMBurrower.class, new RenderBurrower());
         registerEntityRenderingHandler(EntityIMWolf.class, new RenderIMWolf());

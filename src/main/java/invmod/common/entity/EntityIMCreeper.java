@@ -15,27 +15,12 @@ import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.ExplosionUtil;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.ai.EntityAIAvoidEntity;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.passive.EntityOcelot;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.item.Items;
 import net.minecraft.world.World;
 
 //NOOB HAUS  this.c.addTask(0, new EntityAISwimming(this));   c = this.tasks...
@@ -50,7 +35,7 @@ public class EntityIMCreeper extends EntityIMMob
   private boolean commitToExplode;
   private int explodeDirection;
   private int tier;
-  
+
   public EntityIMCreeper(World world)
   {
     this(world, null);
@@ -90,18 +75,6 @@ public class EntityIMCreeper extends EntityIMMob
 		this.targetTasks.addTask(2, new EntityAISimpleTarget(this, EntityPlayer.class, this.getAggroRange(), true));
 		}
 	    this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
-  }
-  
-  @Override
-  public void updateAITick()
-  {
-    super.updateAITick();
-  }
-
-  @Override
-  public boolean isAIEnabled()
-  {
-    return true;
   }
 
   @Override
@@ -213,9 +186,9 @@ public class EntityIMCreeper extends EntityIMMob
   {
     super.onDeath(par1DamageSource);
 
-    if ((par1DamageSource.getEntity() instanceof EntitySkeleton))
+    if ((par1DamageSource.getEntity() instanceof SkeletonEntity))
     {
-      dropItem(Item.getItemById(Item.getIdFromItem(Items.record_13) + this.rand.nextInt(10)), 1);
+      dropItem(Item.getItemById(Item.getIdFromItem(Items.MUSIC_DISC_13) + this.rand.nextInt(10)), 1);
     }
   }
 
@@ -247,9 +220,9 @@ public class EntityIMCreeper extends EntityIMMob
   {
 	  return "IMCreeper-T" + this.getTier();
   }
-  
+
   @Override
-  protected void dropFewItems(boolean flag, int amount) 
+  protected void dropFewItems(boolean flag, int amount)
   {
     entityDropItem(new ItemStack(Items.gunpowder, 1, 1), 0.0F);
   }
@@ -265,7 +238,7 @@ public class EntityIMCreeper extends EntityIMMob
       }
       ExplosionUtil.doExplosionB(worldObj,explosion,true);
   }
-  
+
   public int getCreeperState()
   {
     return this.dataWatcher.getWatchableObjectByte(16);
@@ -278,5 +251,5 @@ public class EntityIMCreeper extends EntityIMMob
     }
     this.dataWatcher.updateObject(16, Byte.valueOf((byte)state));
   }
-  
+
 }

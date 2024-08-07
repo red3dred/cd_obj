@@ -1,9 +1,6 @@
 package invmod.client.render;
 
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
 
 public class ModelImp extends ModelBase
 {
@@ -107,17 +104,17 @@ public class ModelImp extends ModelBase
     this.lfoot.rotateAngleY = 0.0F;
     this.lfoot.rotateAngleZ = 0.0F;
     this.lfoot.mirror = false;
-    
+
     this.rhorn = new ModelRenderer(this, 0, 0);
     this.rhorn.addBox(1.0F, -4.0F, 1.5F, 1, 1, 1);
     this.rhorn.setRotationPoint(-0.4F, 0F, -3.3F);
     this.rhorn.mirror = false;
-    
+
     this.lhorn = new ModelRenderer(this, 0, 2);
     this.lhorn.addBox(-1.0F, -4.0F, 1.5F, 1, 1, 1);
     this.lhorn.setRotationPoint(-0.4F, 0F, -3.3F);
     this.lhorn.mirror = false;
-    
+
     this.bodymid = new ModelRenderer(this, 1, 1);
     this.bodymid.addBox(0.0F, 0.0F, 0.0F, 7, 5, 3);
     this.bodymid.setRotationPoint(-4.0F, 12.46667F, -2.266667F);
@@ -153,7 +150,7 @@ public class ModelImp extends ModelBase
     this.tail2.rotateAngleY = 0.0F;
     this.tail2.rotateAngleZ = 0.0F;
     this.tail2.mirror = false;
-    
+
     this.head.addChild(lhorn);
     this.head.addChild(rhorn);
   }
@@ -185,8 +182,7 @@ public class ModelImp extends ModelBase
   {
     this.head.rotateAngleY = (f3 / 57.29578F);
     this.head.rotateAngleX = (f4 / 57.29578F);
-    
-    
+
     this.rightarm.rotateAngleX = (MathHelper.cos(f * 0.6662F + 3.141593F) * 2.0F * f1 * 0.5F);
     this.leftarm.rotateAngleX = (MathHelper.cos(f * 0.6662F) * 2.0F * f1 * 0.5F);
     this.rightarm.rotateAngleZ = 0.0F;

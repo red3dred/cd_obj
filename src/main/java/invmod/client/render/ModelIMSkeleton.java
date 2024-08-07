@@ -1,11 +1,15 @@
 package invmod.client.render;
 
-import net.minecraft.client.model.ModelSkeleton;
-import net.minecraft.entity.EntityLivingBase;
+import invmod.common.entity.EntityIMSkeleton;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.entity.model.SkeletonEntityModel;
 
-public class ModelIMSkeleton extends ModelSkeleton
-{
-  public void setLivingAnimations(EntityLivingBase par1EntityLiving, float par2, float par3, float par4)
-  {
-  }
+public class ModelIMSkeleton extends SkeletonEntityModel<EntityIMSkeleton> {
+    public ModelIMSkeleton(ModelPart modelPart) {
+        super(modelPart);
+    }
+
+    @Override
+    public void animateModel(EntityIMSkeleton mobEntity, float f, float g, float h) {
+    }
 }

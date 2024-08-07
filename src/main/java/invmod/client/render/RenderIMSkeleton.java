@@ -1,26 +1,20 @@
 package invmod.client.render;
 
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.renderer.entity.RenderBiped;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import invmod.common.entity.EntityIMSkeleton;
+import net.minecraft.client.render.entity.BipedEntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.model.SkeletonEntityModel;
+import net.minecraft.util.Identifier;
 
-public class RenderIMSkeleton extends RenderBiped
-{
-  private static final ResourceLocation texture = new ResourceLocation("textures/entity/skeleton/skeleton.png");
+public class RenderIMSkeleton extends BipedEntityRenderer<EntityIMSkeleton, ModelIMSkeleton> {
+    private static final Identifier TEXTURE = Identifier.ofVanilla("textures/entity/skeleton/skeleton.png");
 
-  public RenderIMSkeleton(ModelBiped model, float shadowSize)
-  {
-    super(model, shadowSize);
-  }
+    public RenderIMSkeleton(EntityRendererFactory.Context ctx) {
+        super(ctx, new ModelIMSkeleton(SkeletonEntityModel.getTexturedModelData().createModel()), 0.5F);
+    }
 
-  public RenderIMSkeleton(ModelBiped model, float shadowSize, float par3)
-  {
-    super(model, shadowSize, par3);
-  }
-
-  protected ResourceLocation getEntityTexture(Entity entity)
-  {
-    return texture;
-  }
+    @Override
+    public Identifier getTexture(EntityIMSkeleton entity) {
+        return TEXTURE;
+    }
 }

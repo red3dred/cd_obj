@@ -36,6 +36,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -60,7 +61,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class EntityIMLiving extends PathAwareEntity implements Monster, IPathfindable, IPosition, IHasNexus, SparrowAPI {
+public abstract class EntityIMLiving extends HostileEntity implements Monster, IPathfindable, IPosition, IHasNexus, SparrowAPI {
     protected static final float DEFAULT_SOFT_STRENGTH = 2.5F;
     protected static final float DEFAULT_HARD_STRENGTH = 5.5F;
     protected static final float DEFAULT_SOFT_COST = 2;
@@ -235,12 +236,12 @@ public abstract class EntityIMLiving extends PathAwareEntity implements Monster,
     public EntityIMLiving(EntityType<? extends EntityIMLiving> type, World world, @Nullable INexusAccess nexus) {
         super(type, world);
         moveControl = new IMMoveHelper(this);
-        experiencePoints = 5;
         pathSource = new PathCreator(700, 50);
         bo = new NavigatorIM(this, this.pathSource);
         oldNavAdapter = new PathNavigateAdapter(this.bo);
         setNexus(nexus);
         setAttackStrength(2);
+        setMovementSpeed(0.26F);
         setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
     }
 
@@ -526,8 +527,9 @@ public abstract class EntityIMLiving extends PathAwareEntity implements Monster,
         return canSpawn(world) && (nexusBound || getLightLevelBelow8()) && getWorld().isTopSolid(getBlockPos(), this);
     }
 
+    @Deprecated
     public float getMoveSpeedStat() {
-        return this.moveSpeed;
+        return getMovementSpeed();
     }
 
     public float getBaseMoveSpeedStat() {

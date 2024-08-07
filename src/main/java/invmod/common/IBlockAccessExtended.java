@@ -1,10 +1,9 @@
 package invmod.common;
 
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.BlockView;
 
-public abstract interface IBlockAccessExtended extends IBlockAccess
-{
-  public abstract int getLayeredData(int paramInt1, int paramInt2, int paramInt3);
+public interface IBlockAccessExtended extends BlockView {
+    int getLayeredData(int paramInt1, int paramInt2, int paramInt3);
 
-  public abstract void setData(int paramInt1, int paramInt2, int paramInt3, Integer paramInteger);
+    void setData(int paramInt1, int paramInt2, int paramInt3, Integer paramInteger);
 }

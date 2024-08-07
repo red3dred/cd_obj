@@ -1,43 +1,40 @@
 package invmod.common.entity.ai;
 
+import java.util.EnumSet;
+
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.Path;
-import invmod.common.util.IPosition;
-import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIWanderIM extends EntityAIBase
-{
-  private static final int MIN_HORIZONTAL_PATH = 1;
-  private static final int MAX_HORIZONTAL_PATH = 6;
-  private static final int MAX_VERTICAL_PATH = 4;
-  private EntityIMLiving theEntity;
-  private IPosition movePosition;
+public class EntityAIWanderIM extends Goal {
+    private static final int MIN_HORIZONTAL_PATH = 1;
+    private static final int MAX_HORIZONTAL_PATH = 6;
+    private static final int MAX_VERTICAL_PATH = 4;
 
-  public EntityAIWanderIM(EntityIMLiving entity)
-  {
-    this.theEntity = entity;
-    setMutexBits(1);
-  }
+    private final EntityIMLiving mob;
 
-  public boolean shouldExecute()
-  {
-    if (this.theEntity.getRNG().nextInt(120) == 0)
-    {
-      int x = this.theEntity.getXCoord() + this.theEntity.getRNG().nextInt(13) - 6;
-      int z = this.theEntity.getZCoord() + this.theEntity.getRNG().nextInt(13) - 6;
-      Path path = this.theEntity.getNavigatorNew().getPathTowardsXZ(x, z, 1, 6, 4);
-      if (path != null)
-      {
-        this.theEntity.getNavigatorNew().setPath(path, this.theEntity.getMoveSpeedStat());
-        return true;
-      }
+    public EntityAIWanderIM(EntityIMLiving mob) {
+        this.mob = mob;
+        setControls(EnumSet.of(Control.MOVE, Control.LOOK));
     }
 
-    return false;
-  }
+    @Override
+    public boolean canStart() {
+        if (mob.getRandom().nextInt(120) == 0) {
+            double x = mob.getX() + mob.getRandom().nextInt(13) - MAX_HORIZONTAL_PATH;
+            double z = mob.getZ() + mob.getRandom().nextInt(13) - MAX_HORIZONTAL_PATH;
+            Path path = mob.getNavigatorNew().getPathTowardsXZ(x, z, MIN_HORIZONTAL_PATH, MAX_HORIZONTAL_PATH, MAX_VERTICAL_PATH);
+            if (path != null) {
+                mob.getNavigatorNew().setPath(path, mob.getMoveSpeedStat());
+                return true;
+            }
+        }
 
-  public boolean continueExecuting()
-  {
-    return (!this.theEntity.getNavigatorNew().noPath()) && (this.theEntity.getNavigatorNew().getStuckTime() < 40);
-  }
+        return false;
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        return !mob.getNavigatorNew().noPath() && mob.getNavigatorNew().getStuckTime() < 40;
+    }
 }

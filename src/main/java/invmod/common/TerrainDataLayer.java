@@ -2,137 +2,61 @@ package invmod.common;
 
 import invmod.common.entity.PathAction;
 import invmod.common.entity.PathNode;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IntHashMap;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.biome.BiomeGenBase;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 
-public class TerrainDataLayer
-  implements IBlockAccessExtended
-{
-  public static final int EXT_DATA_SCAFFOLD_METAPOSITION = 16384;
-  private IBlockAccess world;
-  private IntHashMap dataLayer;
+public class TerrainDataLayer implements IBlockAccessExtended {
+    public static final int EXT_DATA_SCAFFOLD_METAPOSITION = 16384;
 
-  public TerrainDataLayer(IBlockAccess world)
-  {
-    this.world = world;
-    this.dataLayer = new IntHashMap();
-  }
+    private final BlockView world;
+    private final Int2IntMap dataLayer = new Int2IntOpenHashMap();
 
-  public void setData(int x, int y, int z, Integer data)
-  {
-    this.dataLayer.addKey(PathNode.makeHash(x, y, z, PathAction.NONE), data);
-  }
-
-  public int getLayeredData(int x, int y, int z)
-  {
-    int key = PathNode.makeHash(x, y, z, PathAction.NONE);
-    if (this.dataLayer.containsItem(key)) {
-      return ((Integer)this.dataLayer.lookup(key)).intValue();
+    public TerrainDataLayer(BlockView world) {
+        this.world = world;
     }
-    return 0;
-  }
 
-  public void setAllData(IntHashMap data)
-  {
-    this.dataLayer = data;
-  }
-  @Override
-  public Block getBlock(int x, int y, int z)
-  {
-    return this.world.getBlock(x, y, z);
-  }
+    @Override
+    public void setData(int x, int y, int z, Integer data) {
+        dataLayer.put(PathNode.makeHash(x, y, z, PathAction.NONE), data.intValue());
+    }
 
-  public TileEntity getBlockTileEntity(int x, int y, int z)
-  {
-    return this.world.getTileEntity(x, y, z);
-  }
+    @Override
+    public int getLayeredData(int x, int y, int z) {
+        return dataLayer.get(PathNode.makeHash(x, y, z, PathAction.NONE));
+    }
 
-  public int getLightBrightnessForSkyBlocks(int x, int y, int z, int meta)
-  {
-    return this.world.getLightBrightnessForSkyBlocks(x, y, z, meta);
-  }
+    public void setAllData(Int2IntMap data) {
+        dataLayer.clear();
+        dataLayer.putAll(data);
+    }
 
-  //useless?
-//  public float getBrightness(int x, int y, int z, int meta)
-//  {
-//    return this.world.getBrightness(x, y, z, meta);
-//  }
-//
-//  public float getLightBrightness(int x, int y, int z)
-//  {
-//    return this.world.getLightBrightness(x, y, z);
-//  }
+    @Override
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        return world.getBlockEntity(pos);
+    }
 
-  public int getBlockMetadata(int x, int y, int z)
-  {
-    return this.world.getBlockMetadata(x, y, z);
-  }
+    @Override
+    public BlockState getBlockState(BlockPos pos) {
+        return world.getBlockState(pos);
+    }
 
-  public Material getBlockMaterial(int x, int y, int z)
-  {
-    return this.world.getBlock(x, y, z).getMaterial();
-  }
+    @Override
+    public FluidState getFluidState(BlockPos pos) {
+        return world.getFluidState(pos);
+    }
 
-  public boolean isBlockOpaqueCube(int x, int y, int z)
-  {
-    return this.world.getBlock(x, y, z).isOpaqueCube();
-  }
+    @Override
+    public int getHeight() {
+        return world.getHeight();
+    }
 
-  public boolean isBlockNormalCube(int x, int y, int z)
-  {
-    return this.world.getBlock(x, y, z).isNormalCube();
-  }
-
-  public boolean isAirBlock(int x, int y, int z)
-  {
-    return this.world.isAirBlock(x, y, z);
-  }
-
-  public BiomeGenBase getBiomeGenForCoords(int i, int j)
-  {
-    return this.world.getBiomeGenForCoords(i, j);
-  }
-
-  public int getHeight()
-  {
-    return this.world.getHeight();
-  }
-
-  public boolean extendedLevelsInChunkCache()
-  {
-    return this.world.extendedLevelsInChunkCache();
-  }
-
-  public boolean doesBlockHaveSolidTopSurface(int x, int y, int z)
-  {
-    return this.world.getBlock(x, y, z).getMaterial().isSolid();
-  }
-
-
-  public int isBlockProvidingPowerTo(int var1, int var2, int var3, int var4)
-  {
-    return this.world.isBlockProvidingPowerTo(var1, var2, var3, var4);
-  }
-
-  public boolean isBlockSolidOnSide(int x, int y, int z, net.minecraftforge.common.util.ForgeDirection side, boolean _default)
-  {
-    return this.world.isSideSolid(x, y, z, side, _default);
-  }
-
-
-
-@Override
-public TileEntity getTileEntity(int x, int y, int z) {
-	 return this.world.getTileEntity(x, y, z);
-}
-
-@Override
-public boolean isSideSolid(int x, int y, int z, net.minecraftforge.common.util.ForgeDirection side, boolean _default) {
-	return this.world.getBlock(x, y, z).getMaterial().isSolid();
-}
+    @Override
+    public int getBottomY() {
+        return world.getBottomY();
+    }
 }
