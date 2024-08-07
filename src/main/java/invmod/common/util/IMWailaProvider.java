@@ -1,4 +1,4 @@
-package invmod.common.util;
+/*package invmod.common.util;
 
 import invmod.common.nexus.BlockNexus;
 import invmod.common.nexus.TileEntityNexus;
@@ -17,15 +17,15 @@ import mcp.mobius.waila.api.IWailaDataProvider;
 import mcp.mobius.waila.api.IWailaRegistrar;
 
 public class IMWailaProvider implements IWailaDataProvider{
-	
+
 	@Override
 	public ItemStack getWailaStack(IWailaDataAccessor accessor,	IWailaConfigHandler config) { return null; }
-	
+
 	@Override
 	public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor, IWailaConfigHandler config) {
 		return currenttip;
 	}
-	
+
 	@Override
 	public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,IWailaDataAccessor accessor, IWailaConfigHandler config) {
 		TileEntityNexus teNexus = (TileEntityNexus)accessor.getTileEntity();
@@ -42,19 +42,20 @@ public class IMWailaProvider implements IWailaDataProvider{
 		}
 		return currenttip;
 	}
-	
+
 	@Override
 	public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,	IWailaConfigHandler config) {
 		return currenttip;
 	}
-	
+
 	public static void callbackRegister(IWailaRegistrar registrar){
 		registrar.registerBodyProvider(new IMWailaProvider(), BlockNexus.class);
 	}
-	
+
 	// Doenerstyle: Added after updating Waila (overrides the method), no idea what to return here
 	public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x, int y, int z) {
 		return new NBTTagCompound();
 	}
 
 }
+*/
