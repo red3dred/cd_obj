@@ -34,8 +34,9 @@ public final class AnimationRegistry {
         mod_Invasion.log("Register animation: Name \"" + name + "\" already assigned");
     }
 
-    public Animation<?> getAnimation(String name) {
-        Animation<?> animation = animationMap.getOrDefault(name, emptyAnim);
+    public <T extends Enum<T>> Animation<T> getAnimation(String name) {
+        @SuppressWarnings("unchecked")
+        Animation<T> animation = (Animation<T>)animationMap.getOrDefault(name, emptyAnim);
         if (animation == emptyAnim) {
             mod_Invasion.log("Tried to use animation \"" + name + "\" but it doesn't exist");
         }

@@ -3,8 +3,9 @@ package invmod.client.render.animation;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.client.model.ModelPart;
 
 public record Animation<T extends Enum<T>>(
         Class<T> skeletonType,
@@ -28,8 +29,11 @@ public record Animation<T extends Enum<T>>(
         return this.skeletonType;
     }
 
-    @Nullable
     public List<KeyFrame> getKeyFramesFor(T skeletonPart) {
-        return this.keyframes.getOrDefault(skeletonPart, null);
+        return this.keyframes.getOrDefault(skeletonPart, List.of());
+    }
+
+    public ModelAnimator<T> createAnimator(Map<T, ModelPart> parts) {
+        return new ModelAnimator<>(parts, this);
     }
 }
