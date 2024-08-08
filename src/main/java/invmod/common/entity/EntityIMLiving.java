@@ -3,6 +3,7 @@ package invmod.common.entity;
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
 import invmod.common.IPathfindable;
+import invmod.common.InvasionMod;
 import invmod.common.SparrowAPI;
 import invmod.common.mod_Invasion;
 import invmod.common.item.InvItems;
@@ -14,41 +15,33 @@ import invmod.common.util.Distance;
 import invmod.common.util.IPosition;
 import invmod.common.util.MathUtil;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.Flutterer;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
@@ -63,13 +56,13 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class EntityIMLiving extends HostileEntity implements Monster, IPathfindable, IPosition, IHasNexus, SparrowAPI, BuildableMob {
+public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IPosition, IHasNexus, SparrowAPI, BuildableMob {
     protected static final float DEFAULT_SOFT_STRENGTH = 2.5F;
     protected static final float DEFAULT_HARD_STRENGTH = 5.5F;
     protected static final float DEFAULT_SOFT_COST = 2;
     protected static final float DEFAULT_HARD_COST = 3.2F;
     protected static final float AIR_BASE_COST = 1;
-    protected static final Map<Block, Float> BLOCK_COSTS = Util.make(new HashMap<>(), costs -> {
+    private static final Map<Block, Float> BLOCK_COSTS = Util.make(new HashMap<>(), costs -> {
         costs.put(Blocks.AIR, AIR_BASE_COST);
         costs.put(Blocks.LADDER, AIR_BASE_COST);
         costs.put(Blocks.STONE, DEFAULT_HARD_COST);
@@ -193,7 +186,6 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
     private float airResistance = 0.9995F;
     private float groundFriction = 0.546F;
     private float gravityAcel = 0.08F;
-    private float moveSpeed = 0.26F;
     private float moveSpeedBase = 0.26F;
     private float turnRate = 30.0F;
     private float pitchRate = 2.0F;
@@ -350,10 +342,14 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
     }
 
     @Override
-    public boolean damage(DamageSource damagesource, float damage) {
-        if (super.damage(damagesource, damage)) {
+    public boolean damage(DamageSource source, float damage) {
+        if (source.isIn(DamageTypeTags.IS_FIRE)) {
+            damage *= flammability;
+        }
+
+        if (super.damage(source, damage)) {
             @Nullable
-            Entity attacker = damagesource.getAttacker();
+            Entity attacker = source.getAttacker();
             if (attacker != null && attacker != this && isConnectedThroughVehicle(attacker)) {
                 this.j = attacker;
             }
@@ -428,13 +424,14 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return state.isIn(BlockTags.DOORS) || state.isIn(BlockTags.TRAPDOORS) || state.isSolidBlock(world, pos);
     }
 
-    public boolean canEntityBeDetected(Entity entity) {
+    @Override
+    public boolean canSee(Entity entity) {
         float distance = distanceTo(entity);
-        return (distance <= getSenseRange()) || ((canSee(entity)) && (distance <= getAggroRange()));
+        return distance <= getSenseRange() || (super.canSee(entity) && distance <= getAggroRange());
     }
 
     public double findDistanceToNexus() {
-        if (this.targetNexus == null) {
+        if (targetNexus == null) {
             return 1.7976931348623157E+308D;
         }
         double x = targetNexus.getXCoord() + 0.5D - getX();
@@ -443,9 +440,11 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return Math.sqrt(x * x + y * y + z * z);
     }
 
+    // TODO: This is somewhere else now
+    @Deprecated
     @Nullable
-    @Override
-    public Entity findPlayerToAttack() {
+    //@Override
+    protected Entity findPlayerToAttack() {
         PlayerEntity entityPlayer = getWorld().getClosestPlayer(this, getSenseRange());
         if (entityPlayer != null) {
             return entityPlayer;
@@ -641,11 +640,8 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
     }
 
     @Override
-    public float getBlockPathWeight(int i, int j, int k) {
-        if (this.nexusBound) {
-            return 0.0F;
-        }
-        return 0.5F - getWorld().getLightBrightness(i, j, k);
+    public float getPathfindingFavor(BlockPos pos, WorldView world) {
+        return nexusBound ? 0 : 0.5F - world.getLightLevel(pos);
     }
 
     @Override
@@ -787,13 +783,10 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
     }
 
     @Override
-    public void setSize(float width, float height) {
-        super.setSize(width, height);
-        this.collideSize = new CoordsInt(
-                MathHelper.floor_double(width + 1.0F),
-                MathHelper.floor_double(height + 1.0F),
-                MathHelper.floor_double(width + 1.0F)
-        );
+    public boolean recalculateDimensions(EntityDimensions previous) {
+        boolean result = super.recalculateDimensions(previous);
+        collideSize = new CoordsInt(getBlockPos().add(1, 1, 1));
+        return result;
     }
 
     public void setBurnsInDay(boolean flag) {
@@ -877,26 +870,12 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         this.currentTargetPos = pos;
     }
 
-    @Override
-    protected vstrengthsntity(Entity entity, float f) {
-        if ((this.attackTime <= 0) && (f < 2.0F) && (entity.boundingBox.maxY > this.boundingBox.minY)
-                && (entity.boundingBox.minY < this.boundingBox.maxY)) {
-            this.attackTime = 38;
-            tryAttack(entity);
-        }
-    }
-
     protected void sunlightDamageTick() {
         setFireTicks(8);
     }
 
     protected boolean onPathBlocked(Path path, INotifyTask asker) {
         return false;
-    }
-
-    @Override
-    protected void dealFireDamage(int i) {
-        super.dealFireDamage(i * this.flammability);
     }
 
     @Override
@@ -907,11 +886,11 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         }
     }
 
+    @SuppressWarnings("deprecation")
     protected float calcBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
         float multiplier = 1.0F;
-        if ((terrainMap instanceof IBlockAccessExtended)) {
-            int mobDensity = ((IBlockAccessExtended) terrainMap).getLayeredData(node.xCoord, node.yCoord, node.zCoord)
-                    & 0x7;
+        if ((terrainMap instanceof IBlockAccessExtended i)) {
+            int mobDensity = i.getLayeredData(node.getXCoord(), node.getYCoord(), node.getZCoord()) & 0x7;
             multiplier += mobDensity * 3;
         }
 
@@ -924,36 +903,29 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         }
 
         if (node.action == PathAction.SWIM) {
-            multiplier *= ((node.yCoord <= prevNode.yCoord) && !terrainMap.isAir(node.pos) ? 3.0F : 1.0F);
+            multiplier *= ((node.getYCoord() <= prevNode.getYCoord()) && !terrainMap.isAir(node.pos) ? 3.0F : 1.0F);
             return prevNode.distanceTo(node) * 1.3F * multiplier;
         }
 
-        Block block = terrainMap.getBlock(node.xCoord, node.yCoord, node.zCoord);
-        if (BLOCK_COSTS.containsKey(block)) {
-            return prevNode.distanceTo(node) * BLOCK_COSTS.get(block).floatValue() * multiplier;
-        }
-        if (block.isCollidable()) {
-            return prevNode.distanceTo(node) * 3.2F * multiplier;
-        }
-
-        return prevNode.distanceTo(node) * 1.0F * multiplier;
+        BlockState block = terrainMap.getBlockState(node.pos);
+        return prevNode.distanceTo(node) * getBlockCost(block).orElse(block.isSolid() ? 3.2F : 1) * multiplier;
     }
 
     protected void calcPathOptions(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-        if ((currentNode.yCoord <= 0) || (currentNode.yCoord > 255)) {
+        if (getWorld().isOutOfHeightLimit(currentNode.getYCoord())) {
             return;
         }
 
         calcPathOptionsVertical(terrainMap, currentNode, pathFinder);
 
-        if ((currentNode.action == PathAction.DIG)
-                && (!canStandAt(terrainMap, currentNode.xCoord, currentNode.yCoord, currentNode.zCoord))) {
+        if (currentNode.action == PathAction.DIG && !canStandAt(terrainMap, currentNode.pos)) {
             return;
         }
 
+        BlockPos.Mutable mutable = new BlockPos.Mutable();
         int height = getJumpHeight();
         for (int i = 1; i <= height; i++) {
-            if (getCollide(terrainMap, currentNode.xCoord, currentNode.yCoord + i, currentNode.zCoord) == 0) {
+            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == 0) {
                 height = i - 1;
             }
         }
@@ -975,128 +947,115 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
                 }
             }
             int yOffset = 0;
-            int currentY = currentNode.yCoord + height;
+            int currentY = currentNode.getYCoord() + height;
             boolean passedLevel = false;
             do {
-                yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.xCoord + CoordsInt.offsetAdjX[i], currentY,
-                        currentNode.zCoord + CoordsInt.offsetAdjZ[i], maxFall + currentY - currentNode.yCoord);
-                if (yOffset > 0)
+
+                yOffset = getNextLowestSafeYOffset(terrainMap, mutable.set(
+                        currentNode.getXCoord() + CoordsInt.offsetAdjX[i],
+                        currentY,
+                        currentNode.getZCoord() + CoordsInt.offsetAdjZ[i]
+                ), maxFall + currentY - currentNode.getYCoord());
+                if (yOffset > 0) {
                     break;
+                }
                 if (yOffset > -maxFall) {
-                    pathFinder.addNode(currentNode.xCoord + CoordsInt.offsetAdjX[i], currentY + yOffset,
-                            currentNode.zCoord + CoordsInt.offsetAdjZ[i], PathAction.NONE);
+                    pathFinder.addNode(new BlockPos(
+                            currentNode.getXCoord() + CoordsInt.offsetAdjX[i],
+                            currentY + yOffset,
+                            currentNode.getZCoord() + CoordsInt.offsetAdjZ[i]
+                    ), PathAction.NONE);
                 }
 
                 currentY += yOffset - 1;
 
-                if ((!passedLevel) && (currentY <= currentNode.yCoord)) {
+                if ((!passedLevel) && (currentY <= currentNode.getYCoord())) {
                     passedLevel = true;
-                    if (currentY != currentNode.yCoord) {
-                        addAdjacent(terrainMap, currentNode.xCoord + CoordsInt.offsetAdjX[i], currentNode.yCoord,
-                                currentNode.zCoord + CoordsInt.offsetAdjZ[i], currentNode, pathFinder);
+                    if (currentY != currentNode.getYCoord()) {
+                        addAdjacent(terrainMap, currentNode.pos.add(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i]), currentNode, pathFinder);
                     }
 
                 }
 
-            }
-
-            while (currentY >= currentNode.yCoord);
+            } while (currentY >= currentNode.getYCoord());
         }
 
         if (canSwimHorizontal()) {
             for (int i = 0; i < 4; i++) {
-                if (getCollide(terrainMap, currentNode.xCoord + CoordsInt.offsetAdjX[i], currentNode.yCoord,
-                        currentNode.zCoord + CoordsInt.offsetAdjZ[i]) == -1)
-                    pathFinder.addNode(currentNode.xCoord + CoordsInt.offsetAdjX[i], currentNode.yCoord,
-                            currentNode.zCoord + CoordsInt.offsetAdjZ[i], PathAction.SWIM);
+                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i])) == -1)
+                    pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
             }
         }
     }
 
     protected void calcPathOptionsVertical(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-        int collideUp = getCollide(terrainMap, currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord);
+        int collideUp = getCollide(terrainMap, currentNode.pos.up());
         if (collideUp > 0) {
-            if (terrainMap.getBlock(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord) == Blocks.ladder) {
-                int meta = terrainMap.getBlockMetadata(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord);
-                PathAction action = PathAction.NONE;
-                if (meta == 4)
-                    action = PathAction.LADDER_UP_PX;
-                else if (meta == 5)
-                    action = PathAction.LADDER_UP_NX;
-                else if (meta == 2)
-                    action = PathAction.LADDER_UP_PZ;
-                else if (meta == 3) {
-                    action = PathAction.LADDER_UP_NZ;
-                }
+            BlockState state = terrainMap.getBlockState(currentNode.pos.up());
+            if (state.isIn(BlockTags.CLIMBABLE)) {
+                Direction facing = state.getOrEmpty(HorizontalFacingBlock.FACING).orElse(null);
+                PathAction action = PathAction.getLadderActionForDirection(facing);
 
                 if (currentNode.action == PathAction.NONE) {
-                    pathFinder.addNode(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord, action);
-                } else if ((currentNode.action == PathAction.LADDER_UP_PX)
-                        || (currentNode.action == PathAction.LADDER_UP_NX)
-                        || (currentNode.action == PathAction.LADDER_UP_PZ)
-                        || (currentNode.action == PathAction.LADDER_UP_NZ)) {
+                    pathFinder.addNode(currentNode.pos.up(), action);
+                } else if (currentNode.action.getType() == PathAction.Type.LADDER && currentNode.action.getBuildDirection() != Direction.UP) {
                     if (action == currentNode.action) {
-                        pathFinder.addNode(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord, action);
+                        pathFinder.addNode(currentNode.pos.up(), action);
                     }
                 } else {
-                    pathFinder.addNode(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord, action);
+                    pathFinder.addNode(currentNode.pos.up(), action);
                 }
             } else if (getCanClimb()) {
-                if (isAdjacentSolidBlock(terrainMap, currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord)) {
-                    pathFinder.addNode(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord, PathAction.NONE);
+                if (isAdjacentSolidBlock(terrainMap, currentNode.pos.up())) {
+                    pathFinder.addNode(currentNode.pos.up(), PathAction.NONE);
                 }
             }
         }
-        int below = getCollide(terrainMap, currentNode.xCoord, currentNode.yCoord - 1, currentNode.zCoord);
-        int above = getCollide(terrainMap, currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord);
+        int below = getCollide(terrainMap, currentNode.pos.down());
+        int above = getCollide(terrainMap, currentNode.pos.up());
         if (getCanDigDown()) {
             if (below == 2) {
-                pathFinder.addNode(currentNode.xCoord, currentNode.yCoord - 1, currentNode.zCoord, PathAction.DIG);
+                pathFinder.addNode(currentNode.pos.down(), PathAction.DIG);
             } else if (below == 1) {
                 int maxFall = 5;
-                int yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.xCoord, currentNode.yCoord - 1,
-                        currentNode.zCoord, maxFall);
+                int yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.pos.down(), maxFall);
                 if (yOffset <= 0) {
-                    pathFinder.addNode(currentNode.xCoord, currentNode.yCoord - 1 + yOffset, currentNode.zCoord,
-                            PathAction.NONE);
+                    pathFinder.addNode(currentNode.pos.up(yOffset - 1), PathAction.NONE);
                 }
             }
         }
 
         if (canSwimVertical()) {
             if (below == -1) {
-                pathFinder.addNode(currentNode.xCoord, currentNode.yCoord - 1, currentNode.zCoord, PathAction.SWIM);
+                pathFinder.addNode(currentNode.pos.down(), PathAction.SWIM);
             }
-            if (above == -1)
-                pathFinder.addNode(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord, PathAction.SWIM);
+            if (above == -1) {
+                pathFinder.addNode(currentNode.pos.up(), PathAction.SWIM);
+            }
         }
     }
 
-    protected void addAdjacent(WorldAccess terrainMap, int x, int y, int z, PathNode currentNode,
-            PathfinderIM pathFinder) {
-        if (getCollide(terrainMap, x, y, z) <= 0) {
+    protected void addAdjacent(WorldAccess terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
+        if (getCollide(terrainMap, pos) <= 0) {
             return;
         }
         if (getCanClimb()) {
-            if (isAdjacentSolidBlock(terrainMap, x, y, z))
-                pathFinder.addNode(x, y, z, PathAction.NONE);
-        } else if (terrainMap.getBlock(x, y, z) == Blocks.ladder) {
-            pathFinder.addNode(x, y, z, PathAction.NONE);
+            if (isAdjacentSolidBlock(terrainMap, pos)) {
+                pathFinder.addNode(pos, PathAction.NONE);
+            }
+        } else if (terrainMap.getBlockState(pos).isIn(BlockTags.CLIMBABLE)) {
+            pathFinder.addNode(pos, PathAction.NONE);
         }
     }
 
-    protected boolean isAdjacentSolidBlock(WorldAccess terrainMap, int x, int y, int z) {
-        if ((this.collideSize.getXCoord() == 1) && (this.collideSize.getZCoord() == 1)) {
-            for (int i = 0; i < 4; i++) {
-                Block block = terrainMap.getBlock(x + CoordsInt.offsetAdjX[i], y, z + CoordsInt.offsetAdjZ[i]);
-                if ((block != Blocks.air) && (block.getMaterial().isSolid()))
-                    return true;
-            }
-        } else if ((this.collideSize.getXCoord() == 2) && (this.collideSize.getZCoord() == 2)) {
-            for (int i = 0; i < 8; i++) {
-                Block block = terrainMap.getBlock(x + CoordsInt.offsetAdj2X[i], y, z + CoordsInt.offsetAdj2Z[i]);
-                if ((block != Blocks.air) && (block.getMaterial().isSolid()))
-                    return true;
+    @SuppressWarnings("deprecation")
+    protected boolean isAdjacentSolidBlock(WorldAccess terrainMap, BlockPos pos) {
+        for (BlockPos offset : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
+                : collideSize.getXCoord() == 2 && collideSize.getZCoord() == 2 ? CoordsInt.OFFSET_ADJACENT_2
+                : CoordsInt.ZERO) {
+            BlockState state = terrainMap.getBlockState(pos.add(offset));
+            if (!state.isAir() && state.isSolid()) {
+                return true;
             }
         }
         return false;
@@ -1113,6 +1072,7 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return 1;
     }
 
+    @SuppressWarnings("deprecation")
     protected boolean canStandAt(BlockView world, BlockPos pos) {
         boolean isSolidBlock = false;
         pos = pos.down();
@@ -1121,7 +1081,7 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
             if (!state.isAir()) {
                 if (!state.blocksMovement()) {
                     isSolidBlock = true;
-                } else if (avoidsBlock(state.getBlock())) {
+                } else if (avoidsBlock(state)) {
                     return false;
                 }
             }
@@ -1136,7 +1096,7 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
     @SuppressWarnings("deprecation")
     protected boolean canStandOnBlock(BlockView world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
-        return !state.isAir() && state.hasSolidTopSurface(world, pos, this) && !state.blocksMovement() && !avoidsBlock(state.getBlock());
+        return !state.isAir() && state.hasSolidTopSurface(world, pos, this) && !state.blocksMovement() && !avoidsBlock(state);
     }
 
     protected boolean blockHasLadder(BlockView world, BlockPos pos) {
@@ -1150,49 +1110,40 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     protected int getCollide(BlockView terrainMap, BlockPos pos) {
         boolean destructibleFlag = false;
         boolean liquidFlag = false;
 
         for (BlockPos p : BlockPos.iterate(pos, this.getCollideSize().toBlockPos().add(pos))) {
-            BlockState block = terrainMap.getBlockState(p);
-            if (!block.isAir()) {
-                if (block.isLiquid()) {
+            BlockState state = terrainMap.getBlockState(p);
+            if (!state.isAir()) {
+                if (state.isLiquid()) {
                     liquidFlag = true;
-                } else if (!block.blocksMovement()) {
-                    if (!isBlockDestructible(terrainMap, p, block)) {
+                } else if (!state.blocksMovement()) {
+                    if (!isBlockDestructible(terrainMap, p, state)) {
                         return 0;
                     }
                     destructibleFlag = true;
-                } else if (terrainMap.getBlockState(p.down()).isIn(BlockTags.WOODEN_FENCES)) {
-                    if (isBlockDestructible(terrainMap, pos, Blocks.OAK_FENCE)) {
-                        return 3;
+                } else {
+                    state = terrainMap.getBlockState(p.down());
+                    if (state.isIn(BlockTags.WOODEN_FENCES)) {
+                        return isBlockDestructible(terrainMap, pos, state) ? 3 : 0;
                     }
-                    return 0;
                 }
 
-                if (avoidsBlock(block)) {
+                if (avoidsBlock(state)) {
                     return -2;
                 }
             }
         }
-
-        if (destructibleFlag) {
-            return 2;
-        }
-        if (liquidFlag) {
-            return -1;
-        }
-        return 1;
+        return destructibleFlag ? 2 : liquidFlag ? -1 : 1;
     }
 
     protected boolean getLightLevelBelow8() {
         BlockPos pos = getBlockPos();
-        if (getWorld().getLightLevel(LightType.SKY, pos) > random.nextInt(32)) {
-            return false;
-        }
-
-        return getWorld().getLightLevel(LightType.BLOCK, pos) <= random.nextInt(8);
+        return getWorld().getLightLevel(LightType.SKY, pos) <= random.nextInt(32)
+            && getWorld().getLightLevel(LightType.BLOCK, pos) <= random.nextInt(8);
     }
 
     protected void setAIGoal(Goal goal) {
@@ -1238,18 +1189,22 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
 
     protected void setBaseMoveSpeedStat(float speed) {
         moveSpeedBase = speed;
-        this.moveSpeed = speed;
+        setMovementSpeed(speed);
     }
 
     public void setMoveSpeedStat(float speed) {
-        this.moveSpeed = speed;
+        setMovementSpeed(speed);
+    }
+
+    @Override
+    public void setMovementSpeed(float movementSpeed) {
+        super.setMovementSpeed(movementSpeed);
         getNavigatorNew().setSpeed(speed);
-        typeser().setMoveSpeed(speed);
     }
 
     public void resetMoveSpeed() {
-        setMoveSpeedStat(this.moveSpeedBase);
-        getNavigatorNew().setSpeed(this.moveSpeedBase);
+        setMoveSpeedStat(moveSpeedBase);
+        getNavigatorNew().setSpeed(moveSpeedBase);
     }
 
     public void setTurnRate(float rate) {
@@ -1271,11 +1226,16 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return BLOCK_TYPES.getOrDefault(block, 0);
     }
 
+    public static Optional<Float> getBlockCost(BlockState state) {
+        return InvasionMod.getConfig().getBlockCost(state.getBlock())
+                .or(() -> Optional.ofNullable(BLOCK_COSTS.get(state.getBlock())));
+    }
+
     public static float getBlockStrength(BlockPos p, BlockState state, WorldView world) {
         BlockSpecial special = SPECIAL_BLOCKS.getOrDefault(state.getBlock(), BlockSpecial.NONE);
         int bonus = 0;
         BlockPos.Mutable pos = p.mutableCopy();
-        float strength = BLOCK_STRENGTHS.getOrDefault(state.getBlock(), DEFAULT_SOFT_STRENGTH);
+        float strength = InvasionMod.getConfig().getBlockStrength(state.getBlock()).orElseGet(() -> BLOCK_STRENGTHS.getOrDefault(state.getBlock(), DEFAULT_SOFT_STRENGTH));
         switch (special) {
             case CONSTRUCTION_1:
                 for (Direction direction : Direction.values()) {
@@ -1298,18 +1258,5 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
             default:
         }
         return strength * (1 + bonus * 0.1F);
-    }
-
-    @Deprecated
-    public static float getBlockStrength(int x, int y, int z, Block block, WorldView world) {
-        return getBlockStrength(new BlockPos(x, y, z), block.getDefaultState(), world);
-    }
-
-    public static void putBlockStrength(Block block, float strength) {
-        BLOCK_STRENGTHS.put(block, strength);
-    }
-
-    public static void putBlockCost(Block block, float cost) {
-        BLOCK_COSTS.put(block, cost);
     }
 }

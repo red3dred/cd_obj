@@ -6,9 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.Nullable;
 
 public class Config {
-    protected Properties properties;
+    private Properties properties;
+    private Set<String> keys;
 
     public void loadConfig(File configFile) {
         mod_Invasion.log("Loading config");
@@ -22,6 +27,7 @@ public class Config {
             } else {
                 try (FileReader configRead = new FileReader(configFile)) {
                     this.properties.load(configRead);
+                    this.keys = properties.keySet().stream().map(i -> i.toString()).collect(Collectors.toSet());
                 }
             }
 
@@ -40,11 +46,13 @@ public class Config {
 
     public void writeProperty(BufferedWriter writer, String key, String comment) throws IOException {
         if (comment != null) {
-            writer.write("# " + comment);
-            writer.newLine();
+            writeLine(writer, "# " + comment);
         }
+        writeLine(writer, key + "=" + properties.getProperty(key));
+    }
 
-        writer.write(key + "=" + this.properties.getProperty(key));
+    protected void writeLine(BufferedWriter writer, String line) throws IOException {
+        writer.write(line);
         writer.newLine();
     }
 
@@ -52,47 +60,51 @@ public class Config {
         this.properties.setProperty(key, value);
     }
 
+    public Set<String> keySet() {
+        return keys;
+    }
+
     public String getProperty(String key, String defaultValue) {
         return this.properties.getProperty(key, defaultValue);
     }
 
     public int getPropertyValueInt(String keyName, int defaultValue) {
-        String property = this.properties.getProperty(keyName, "null");
+        String property = properties.getProperty(keyName, null);
         if (!property.equals("null")) {
             return Integer.parseInt(property);
         }
 
-        this.properties.setProperty(keyName, Integer.toString(defaultValue));
+        properties.setProperty(keyName, Integer.toString(defaultValue));
         return defaultValue;
     }
 
     public float getPropertyValueFloat(String keyName, float defaultValue) {
-        String property = this.properties.getProperty(keyName, "null");
-        if (!property.equals("null")) {
+        @Nullable String property = properties.getProperty(keyName, null);
+        if (property != null) {
             return Float.parseFloat(property);
         }
 
-        this.properties.setProperty(keyName, Float.toString(defaultValue));
+        properties.setProperty(keyName, Float.toString(defaultValue));
         return defaultValue;
     }
 
     public boolean getPropertyValueBoolean(String keyName, boolean defaultValue) {
-        String property = this.properties.getProperty(keyName, "null");
-        if (!property.equals("null")) {
+        @Nullable String property = properties.getProperty(keyName, null);
+        if (property != null) {
             return Boolean.parseBoolean(property);
         }
 
-        this.properties.setProperty(keyName, Boolean.toString(defaultValue));
+        properties.setProperty(keyName, Boolean.toString(defaultValue));
         return defaultValue;
     }
 
     public String getPropertyValueString(String keyName, String defaultValue) {
-        String property = this.properties.getProperty(keyName, "null");
-        if (!property.equals("null")) {
+        @Nullable String property = properties.getProperty(keyName, null);
+        if (property != null) {
             return property;
         }
 
-        this.properties.setProperty(keyName, defaultValue);
+        properties.setProperty(keyName, defaultValue);
         return defaultValue;
     }
 }

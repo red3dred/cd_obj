@@ -44,19 +44,23 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 public class mod_Invasion {
@@ -64,10 +68,10 @@ public class mod_Invasion {
     public static ProxyCommon proxy;
 
     public static String recentNews;
-
+    @Deprecated
     public static GuiHandler guiHandler;
-    public static ConfigInvasion configInvasion;
-    private static File configFile;
+    @Deprecated
+    public static ConfigInvasion configInvasion = InvasionMod.getConfig();
     private static boolean runFlag;
     private static long timer;
     private static long clientElapsed;
@@ -92,7 +96,7 @@ public class mod_Invasion {
      */
 
     // Change this before releasing
-    private static final boolean DEBUG_CONFIG = false;
+
     private static final int DEFAULT_GUI_ID_NEXUS = 76;
     private static final boolean DEFAULT_CRAFT_ITEMS_ENABLED = true;
     private static final boolean DEFAULT_NIGHT_SPAWNS_ENABLED = false;
@@ -119,32 +123,6 @@ public class mod_Invasion {
             1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F
     };
 
-    // NOOB HAUS: Declare them values.. Declare em good
-    private static boolean alreadyNotified;
-    private static boolean updateNotifications;
-    private static boolean destructedBlocksDrop;
-    private static boolean craftItemsEnabled;
-    private static boolean debugMode;
-    private static int guiIdNexus;
-    private static int minContinuousModeDays;
-    private static int maxContinuousModeDays;
-    private static boolean nightSpawnsEnabled;
-    private static int nightMobSightRange;
-    private static int nightMobSenseRange;
-    private static int nightMobSpawnChance;
-    private static int nightMobMaxGroupSize;
-    private static int maxNightMobs;
-    private static float nightMobStatsScaling;
-    private static boolean nightMobsBurnInDay;
-    private static boolean enableLog;
-
-    // mobhealth
-    public static Map<String, Integer> mobHealthNightspawn = new HashMap<>();
-    public static Map<String, Integer> mobHealthInvasion = new HashMap<>();
-    // Creative tab declaration
-    @Deprecated
-    public static CreativeTabInvmod tabInvmod;
-
     // NOOB HAUS: The almighty Nexus Block declaration
     @Deprecated
     public static final BlockNexus blockNexus = InvBlocks.NEXUS_CORE;
@@ -160,63 +138,24 @@ public class mod_Invasion {
         loginFlag = false;
         timer = 0L;
         clientElapsed = 0L;
-        guiHandler = new GuiHandler();
     }
-    // NOOB HAUS: End wtf? I am not certain what this method is for..
 
     //@EventHandler
     public void preInit(/*FMLPreInitializationEvent event*/) {
-        configFile = FabricLoader.getInstance().getConfigDir().resolve("invasion_config.cfg").toFile();
-        alreadyNotified = false;
-
-        configInvasion = new ConfigInvasion();
-        configInvasion.loadConfig(configFile);
-
-        enableLog = configInvasion.getPropertyValueBoolean("enable-log-file", false);
-        destructedBlocksDrop = configInvasion.getPropertyValueBoolean("destructed-blocks-drop", true);
-        updateNotifications = configInvasion.getPropertyValueBoolean("update-messages-enabled", false);
-        // soundsEnabled = configInvasion.getPropertyValueBoolean("sounds-enabled",
-        // true);
-        craftItemsEnabled = configInvasion.getPropertyValueBoolean("craft-items-enabled", true);
-        debugMode = configInvasion.getPropertyValueBoolean("debug", false);
-        guiIdNexus = configInvasion.getPropertyValueInt("guiID-Nexus", 76);
-
-        minContinuousModeDays = configInvasion.getPropertyValueInt("min-days-to-attack", 2);
-        maxContinuousModeDays = configInvasion.getPropertyValueInt("max-days-to-attack", 3);
-
         nightSpawnConfig();
         loadHealthConfig();
-        // NOOB HAUS: Here a HashMap is done up for the block strength (what it takes
-        // for IM mob to dig thru it)
-        HashMap strengthOverrides = new HashMap();
-        for (int i = 1; i < 4096; i++) {
-            String property = configInvasion.getProperty("block" + i + "-strength", "null");
-            if (property != "null") {
-                float strength = Float.parseFloat(property);
-                if (strength > 0.0F) {
-                    strengthOverrides.put(Integer.valueOf(i), Float.valueOf(strength));
-                    EntityIMLiving.putBlockStrength(Block.getBlockById(i), strength);
-                    float pathCost = 1.0F + strength * 0.4F;
-                    EntityIMLiving.putBlockCost(Block.getBlockById(i), pathCost);
-                }
-            }
-
-        }
-
-        configInvasion.saveConfig(configFile, strengthOverrides, DEBUG_CONFIG);
 
         // Load the Things!!
         loadEntities();
     }
 
     public void load(/*FMLInitializationEvent event*/) {
-        NetworkRegistry.INSTANCE.registerGuiHandler(instance, guiHandler);
 
-        if (craftItemsEnabled) {
+        if (configInvasion.craftItemsEnabled) {
             addRecipes();
         }
 
-        if (nightSpawnsEnabled) {
+        if (configInvasion.nightSpawnsEnabled) {
             BiomeGenBase[] biomes = { BiomeGenBase.plains, BiomeGenBase.extremeHills, BiomeGenBase.forest,
                     BiomeGenBase.taiga, BiomeGenBase.swampland, BiomeGenBase.forestHills, BiomeGenBase.taigaHills,
                     BiomeGenBase.extremeHillsEdge, BiomeGenBase.jungle, BiomeGenBase.jungleHills };
@@ -239,7 +178,6 @@ public class mod_Invasion {
                 log(e.getMessage());
             }
         }
-
     }
 
     /*
@@ -249,47 +187,6 @@ public class mod_Invasion {
      * //VersionChecker.checkForUpdates((EntityPlayerMP)event.player); } }
      * catch(Exception e) {} }
      */
-
-    // load mobhealth config
-    private void loadHealthConfig() {
-        // Invasion spawns
-        mobHealthInvasion.put("IMCreeper-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMCreeper-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMVulture-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMVulture-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMImp-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMImp-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMPigManEngineer-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMPigManEngineer-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMSkeleton-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMSkeleton-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMSpider-T1-Spider-invasionSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T1-Spider-invasionSpawn-health", 18));
-        mobHealthInvasion.put("IMSpider-T1-Baby-Spider-invasionSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T1-Baby-Spider-invasionSpawn-health", 3));
-        mobHealthInvasion.put("IMSpider-T2-Jumping-Spider-invasionSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T2-Jumping-Spider-invasionSpawn-health", 18));
-        mobHealthInvasion.put("IMSpider-T2-Mother-Spider-invasionSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T2-Mother-Spider-invasionSpawn-health", 23));
-        mobHealthInvasion.put("IMThrower-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMThrower-T1-invasionSpawn-health", 50));
-        mobHealthInvasion.put("IMThrower-T2-invasionSpawn-health", configInvasion.getPropertyValueInt("IMThrower-T2-invasionSpawn-health", 70));
-        mobHealthInvasion.put("IMZombie-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMZombie-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMZombie-T2-invasionSpawn-health", configInvasion.getPropertyValueInt("IMZombie-T2-invasionSpawn-health", 30));
-        mobHealthInvasion.put("IMZombie-T3-invasionSpawn-health", configInvasion.getPropertyValueInt("IMZombie-T3-invasionSpawn-health", 65));
-        mobHealthInvasion.put("IMZombiePigman-T1-invasionSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T1-invasionSpawn-health", 20));
-        mobHealthInvasion.put("IMZombiePigman-T2-invasionSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T2-invasionSpawn-health", 30));
-        mobHealthInvasion.put("IMZombiePigman-T3-invasionSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T3-invasionSpawn-health", 65));
-
-        // Night spawns
-        mobHealthNightspawn.put("IMCreeper-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMCreeper-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMVulture-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMVulture-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMImp-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMImp-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMPigManEngineer-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMPigManEngineer-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMSkeleton-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMSkeleton-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMSpider-T1-Spider-nightSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T1-Spider-nightSpawn-health", 18));
-        mobHealthNightspawn.put("IMSpider-T1-Baby-Spider-nightSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T1-Baby-Spider-nightSpawn-health", 3));
-        mobHealthNightspawn.put("IMSpider-T2-Jumping-Spider-nightSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T2-Jumping-Spider-nightSpawn-health", 18));
-        mobHealthNightspawn.put("IMSpider-T2-Mother-Spider-nightSpawn-health", configInvasion.getPropertyValueInt("IMSpider-T2-Mother-Spider-nightSpawn-health", 23));
-        mobHealthNightspawn.put("IMThrower-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMThrower-T1-nightSpawn-health", 50));
-        mobHealthNightspawn.put("IMThrower-T2-nightSpawn-health", configInvasion.getPropertyValueInt("IMThrower-T2-nightSpawn-health", 70));
-        mobHealthNightspawn.put("IMZombie-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombie-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMZombie-T2-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombie-T2-nightSpawn-health", 30));
-        mobHealthNightspawn.put("IMZombie-T3-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombie-T3-nightSpawn-health", 65));
-        mobHealthNightspawn.put("IMZombiePigman-T1-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T1-nightSpawn-health", 20));
-        mobHealthNightspawn.put("IMZombiePigman-T2-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T2-nightSpawn-health", 30));
-        mobHealthNightspawn.put("IMZombiePigman-T3-nightSpawn-health", configInvasion.getPropertyValueInt("IMZombiePigman-T3-nightSpawn-health", 65));
-    }
 
     // Load Entities
     protected void loadEntities() {
@@ -602,14 +499,17 @@ public class mod_Invasion {
         }
     }
 
+    @Deprecated
     public static void setNexusClicked(TileEntityNexus nexus) {
         focusNexus = nexus;
     }
 
+    @Deprecated
     public static TileEntityNexus getActiveNexus() {
         return activeNexus;
     }
 
+    @Deprecated
     public static TileEntityNexus getFocusNexus() {
         return focusNexus;
     }
@@ -677,18 +577,17 @@ public class mod_Invasion {
         server.getPlayerManager().sendToAll(new GameMessageS2CPacket(Text.translatable(message).formatted(color), false));
     }
 
-    public static void sendMessageToPlayers(@Nullable HashMap<String, Long> hashMap, Formatting color, String message, Object... formatArgs) {
+    @Deprecated
+    public static void sendMessageToPlayers(World world, @Nullable Map<UUID, Long> hashMap, Formatting color, String message, Object... formatArgs) {
         if (hashMap != null) {
-            // TODO: Refactor
-            MinecraftServer server = null;
-            for (Map.Entry<String, Long> entry : hashMap.entrySet()) {
-                sendMessageToPlayer(server.getPlayerManager().getPlayer(entry.getKey()), color, message, formatArgs);
+            for (Map.Entry<UUID, Long> entry : hashMap.entrySet()) {
+                sendMessageToPlayer(world.getPlayerByUuid(entry.getKey()), color, message, formatArgs);
             }
         }
     }
 
     @Deprecated(since = "Unused")
-    public static void sendMessageToPlayer(ServerPlayerEntity player, Formatting color, String message, Object... formatArgs) {
+    public static void sendMessageToPlayer(@Nullable PlayerEntity player, Formatting color, String message, Object... formatArgs) {
         if (player != null) {
             player.sendMessage(Text.translatable(message, formatArgs).formatted(color));
         }

@@ -318,7 +318,6 @@ public class EntityIMThrower extends EntityIMMob
 		}
 	}
 
-
 	@Override
 	protected void attackEntity(Entity entity, float f) {
 		if ((this.throwTime <= 0) && (f > 4.0F)) {

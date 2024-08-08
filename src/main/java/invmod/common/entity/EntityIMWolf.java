@@ -14,6 +14,7 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -160,13 +161,12 @@ public class EntityIMWolf extends WolfEntity
 
 
 	@Override
-	public void setDead() {
-		this.isDead = true;
+	public void onDeath(DamageSource source) {
 		if (this.nexus != null) {
 			if (this.nexus.getMode() != 0) {
 				respawnAtNexus();
 			} else {
-				super.setDead();
+				super.onDeath(source);
 			}
 		}
 

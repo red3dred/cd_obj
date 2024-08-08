@@ -1,21 +1,12 @@
 package invmod.common.entity;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
-import io.netty.buffer.ByteBuf;
-
 import java.util.Random;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.profiler.Profiler;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class EntityIMBolt extends Entity
-  implements IEntityAdditionalSpawnData
 {
   private int age;
   private int ticksToRender;
@@ -47,7 +38,7 @@ public class EntityIMBolt extends Entity
     setPosition(x, y, z);
   }
 
-  public EntityIMBolt(World world, double x, double y, double z, double x2, double y2, double z2, int ticksToRender, int soundMade)
+  public EntityIMBolt(World world, Vec3d pos, Vec3d targetPos, int ticksToRender, int soundMade)
   {
     this(world, x, y, z);
     this.vecX = ((float)(x2 - x));
@@ -96,7 +87,7 @@ public class EntityIMBolt extends Entity
   {
     long time = System.currentTimeMillis();
     if (time - this.timeCreated > this.ticksToRender * 50) {
-      return (double[][])null;
+      return null;
     }
     if (time - this.lastVertexUpdate >= 75L)
     {
@@ -108,12 +99,14 @@ public class EntityIMBolt extends Entity
     return this.vertices;
   }
 
-  public float getYaw()
+  @Override
+public float getYaw()
   {
     return this.yaw;
   }
 
-  public float getPitch()
+  @Override
+public float getPitch()
   {
     return this.pitch;
   }
@@ -131,7 +124,7 @@ public class EntityIMBolt extends Entity
     }
   }
 
-  
+
   @Override
   public void entityInit()
   {
@@ -207,14 +200,4 @@ public class EntityIMBolt extends Entity
     difference = this.vertices[2][end] - this.vertices[2][begin];
     this.vertices[2][mid] = (this.vertices[2][begin] + difference * yRatio + (this.worldObj.rand.nextFloat() - 0.5D) * yDiffToMid * this.widthVariance);
   }
-
-@Override
-public void writeSpawnData(ByteBuf buffer) {
-	
-}
-
-@Override
-public void readSpawnData(ByteBuf additionalData) {
-	
-}
 }
