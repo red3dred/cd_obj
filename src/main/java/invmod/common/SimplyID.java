@@ -1,5 +1,6 @@
-package invmod.common;
 
+package invmod.common;
+/*
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,9 +15,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.ISaveHandler;
-
+*/
+@Deprecated
 public class SimplyID
 {
+    /*
   private static int nextSimplyID;
   private static Set<String> loadedIDs = new HashSet();
   private static String loadedWorld = null;
@@ -161,4 +164,5 @@ public class SimplyID
 
     deleteID(string, Boolean.valueOf(true));
   }
+  */
 }
