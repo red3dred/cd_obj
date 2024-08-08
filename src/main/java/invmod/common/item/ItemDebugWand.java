@@ -8,6 +8,7 @@ import invmod.common.entity.EntityIMSkeleton;
 import invmod.common.entity.EntityIMSpider;
 import invmod.common.entity.EntityIMThrower;
 import invmod.common.entity.EntityIMZombie;
+import invmod.common.entity.InvEntities;
 import invmod.common.block.InvBlocks;
 import invmod.common.nexus.TileEntityNexus;
 import net.minecraft.block.BlockState;
@@ -57,7 +58,7 @@ class ItemDebugWand extends Item {
         Entity entity1 = new EntityIMPigEngy(world);
         entity1.setPosition(pos.toBottomCenterPos());
 
-        EntityIMZombie zombie = new EntityIMZombie(world, this.nexus);
+        EntityIMZombie zombie = new EntityIMZombie(InvEntities.ZOMBIE, world, this.nexus);
         zombie.setTexture(0);
         zombie.setFlavour(0);
         zombie.setTier(1);
@@ -68,7 +69,7 @@ class ItemDebugWand extends Item {
             Entity entity = new EntityIMPigEngy(world, this.nexus);
             entity.setPosition(pos.toBottomCenterPos());
 
-            zombie = new EntityIMZombie(world, this.nexus);
+            zombie = new EntityIMZombie(InvEntities.ZOMBIE, world, this.nexus);
             zombie.setTexture(0);
             zombie.setFlavour(0);
             zombie.setTier(2);
@@ -88,7 +89,8 @@ class ItemDebugWand extends Item {
 
             spider.setPosition(pos.toBottomCenterPos());
 
-            EntityIMSkeleton skeleton = new EntityIMSkeleton(world, this.nexus);
+            EntityIMSkeleton skeleton = new EntityIMSkeleton(InvEntities.SKELETON, world);
+            skeleton.setNexus(nexus);
             skeleton.setPosition(pos.toBottomCenterPos());
         }
 

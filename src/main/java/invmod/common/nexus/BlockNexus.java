@@ -1,143 +1,110 @@
 package invmod.common.nexus;
 
-import invmod.common.mod_Invasion;
+import invmod.common.item.InvItems;
 
-import java.util.Random;
+import com.mojang.serialization.MapCodec;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
-import net.minecraft.item.Item;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public class BlockNexus extends BlockWithEntity {
+    private static final MapCodec<BlockNexus> CODEC = Block.createCodec(BlockNexus::new);
+    public static final BooleanProperty LIT = BooleanProperty.of("lit");
 
-	@SideOnly(Side.CLIENT)
-	private IIcon sideOn;
+    public BlockNexus(Settings settings) {
+        super(settings);
+        setDefaultState(getDefaultState().with(LIT, false));
+    }
 
-	@SideOnly(Side.CLIENT)
-	private IIcon sideOff;
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
+    }
 
-	@SideOnly(Side.CLIENT)
-	private IIcon topOn;
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        builder.add(LIT);
+    }
 
-	@SideOnly(Side.CLIENT)
-	private IIcon topOff;
+    @Override
+    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (!stack.isOf(InvItems.MATERIAL_PROBE) && !stack.isOf(InvItems.NEXUS_ADJUSTER) && !stack.getRegistryEntry().matchesKey(InvItems.DEBUG_WAND)) {
+            if (world.getBlockEntity(pos) instanceof TileEntityNexus nexus) {
+                player.openHandledScreen(new NamedScreenHandlerFactory() {
+                    @Override
+                    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+                        return new ContainerNexus(syncId, playerInventory, nexus);
+                    }
 
-	@SideOnly(Side.CLIENT)
-	private IIcon botTexture;
+                    @Override
+                    public Text getDisplayName() {
+                        return getName();
+                    }
+                });
+            }
+            return ItemActionResult.SUCCESS;
+        }
 
-	public BlockNexus() {
-		super(Material.rock);
-		this.setResistance(6000000.0F);
-		this.setHardness(3.0F);
-		this.setStepSound(Blocks.glass.stepSound);
-		this.setBlockName("blockNexus");
-		this.setCreativeTab(mod_Invasion.tabInvmod);
-	}
+        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void registerBlockIcons(IIconRegister iconRegister) {
-		this.sideOn = iconRegister.registerIcon("invmod:nexusSideOn");
-		this.sideOff = iconRegister.registerIcon("invmod:nexusSideOff");
-		this.topOn = iconRegister.registerIcon("invmod:nexusTopOn");
-		this.topOff = iconRegister.registerIcon("invmod:nexusTopOff");
-		this.botTexture = iconRegister.registerIcon("obsidian");
-	}
-	@SideOnly(Side.CLIENT)
-	@Override
-	public IIcon getIcon(int side, int meta) {
-		if ((meta & 0x4) == 0) {
-			if (side == 1) {
-				return this.topOff;
-			}
-			return side != 0 ? this.sideOff : this.botTexture;
-		}
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
 
-		if (side == 1) {
-			return this.topOn;
-		}
-		return side != 0 ? this.sideOn : this.botTexture;
-	}
+        if (!state.get(LIT)) {
+            return;
+        }
 
-	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int par6, float par7, float par8, float par9) {
+        for (int i = 0; i < 6; i++) {
+            double y1 = pos.getY() + random.nextFloat();
+            double y2 = (random.nextFloat() - 0.5D) * 0.5D;
 
-		Item item = null;
-		ItemStack equippedItem = entityPlayer.getCurrentEquippedItem();
-		if(equippedItem!=null){
-			item = equippedItem.getItem();
-		}
+            int direction = random.nextInt(2) * 2 - 1;
+            double x2;
+            double x1;
+            double z1;
+            double z2;
+            if (random.nextInt(2) == 0) {
+                z1 = pos.getZ() + 0.5D + 0.25D * direction;
+                z2 = random.nextFloat() * 2.0F * direction;
 
-		if (world.isRemote) {
-			return true;
+                x1 = pos.getX() + random.nextFloat();
+                x2 = (random.nextFloat() - 0.5D) * 0.5D;
+            } else {
+                x1 = pos.getX() + 0.5D + 0.25D * direction;
+                x2 = random.nextFloat() * 2.0F * direction;
+                z1 = pos.getZ() + random.nextFloat();
+                z2 = (random.nextFloat() - 0.5D) * 0.5D;
+            }
 
-		}
-		if ((item != mod_Invasion.itemProbe) && ((!mod_Invasion.isDebug()) || (item != mod_Invasion.itemDebugWand))) {
-			TileEntityNexus tileEntityNexus = (TileEntityNexus) world.getTileEntity(x, y, z);
-			if (tileEntityNexus != null) {
-				mod_Invasion.setNexusClicked(tileEntityNexus);
-				entityPlayer.openGui(mod_Invasion.getLoadedInstance(), mod_Invasion.getGuiIdNexus(), world, x, y, z);
+            world.addParticle(ParticleTypes.PORTAL, x1, y1, z1, x2, y2, z2);
+        }
+    }
 
-			}
-			return true;
-		}
+    @Override
+    public TileEntityNexus createBlockEntity(BlockPos pos, BlockState state) {
+        return new TileEntityNexus(pos, state);
+    }
 
-		return false;
-	}
-
-	@Override
-	public void randomDisplayTick(World world, int x, int y, int z, Random random) {
-		int meta = world.getBlockMetadata(x, y, z);
-		int numberOfParticles;
-		if ((meta & 0x4) == 0)
-			numberOfParticles = 0;
-		else {
-			numberOfParticles = 6;
-		}
-
-		for (int i = 0; i < numberOfParticles; i++) {
-			double y1 = y + random.nextFloat();
-			double y2 = (random.nextFloat() - 0.5D) * 0.5D;
-
-			int direction = random.nextInt(2) * 2 - 1;
-			double x2;
-			double x1;
-			double z1;
-			double z2;
-			if (random.nextInt(2) == 0) {
-				z1 = z + 0.5D + 0.25D * direction;
-				z2 = random.nextFloat() * 2.0F * direction;
-
-				x1 = x + random.nextFloat();
-				x2 = (random.nextFloat() - 0.5D) * 0.5D;
-			} else {
-				x1 = x + 0.5D + 0.25D * direction;
-				x2 = random.nextFloat() * 2.0F * direction;
-				z1 = z + random.nextFloat();
-				z2 = (random.nextFloat() - 0.5D) * 0.5D;
-			}
-
-			world.spawnParticle("portal", x1, y1, z1, x2, y2, z2);
-		}
-	}
-
-	@Override
-	public TileEntity createNewTileEntity(World world, int metadata) {
-		return new TileEntityNexus(world);
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public float getPlayerRelativeBlockHardness(EntityPlayer player, World world, int x, int y, int z){
-
-		TileEntityNexus tile=(TileEntityNexus)world.getTileEntity(x, y, z);
-
-		if(tile.isActive()){
-			return -1.0F;
-		}else{
-			 return ForgeHooks.blockStrength(this, player, world, x, y, z);
-		}
-
-	}
+    @Override
+    protected float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
+        return state.get(LIT) ? -1 : super.calcBlockBreakingDelta(state, player, world, pos);
+    }
 }

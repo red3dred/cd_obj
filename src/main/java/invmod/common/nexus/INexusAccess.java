@@ -4,8 +4,9 @@ import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.ai.AttackerAI;
 import invmod.common.util.IPosition;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import net.minecraft.world.World;
 
@@ -38,5 +39,5 @@ public interface INexusAccess extends IPosition {
 
     void askForRespawn(EntityIMLiving paramEntityIMLiving);
 
-    HashMap<String, Long> getBoundPlayers();
+    Map<UUID, Long> getBoundPlayers();
 }

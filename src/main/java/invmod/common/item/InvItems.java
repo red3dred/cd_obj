@@ -11,6 +11,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -41,6 +43,8 @@ public interface InvItems {
     Item ENGY_HAMMER = register("engy_hammer", new Item(new Item.Settings())); // TODO: has 3d model
     //ItemSpawnEgg SPAWN_EGG;
     // TODO: Spawn eggs
+
+    RegistryKey<Item> DEBUG_WAND = RegistryKey.of(RegistryKeys.ITEM, InvasionMod.id("debug_wand"));
 
     Item NEXUS_CORE = register("nexus_core", new BlockItem(InvBlocks.NEXUS_CORE, new Item.Settings()));
 

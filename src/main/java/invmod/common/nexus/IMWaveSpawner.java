@@ -3,6 +3,7 @@ package invmod.common.nexus;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMZombie;
+import invmod.common.entity.InvEntities;
 import net.minecraft.util.Formatting;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	}
 
 	public void setRadius(int radius) {
+	    // TODO: Why does it not update for radius less than 8? This is going to cause syncing issues
 		if (radius > 8) {
 			this.spawnRadius = radius;
 		}
@@ -220,7 +222,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			}
 
 			mob.updatePositionAndAngles(spawnPoint.getXCoord() + 0.5, spawnPoint.getYCoord() + 0.5, spawnPoint.getZCoord() + 0.5, 0, 0);
-			if (mob.getCanSpawnHere()) {
+			if (mob.canSpawn(nexus.getWorld())) {
 				this.successfulSpawns += 1;
 				this.nexus.getWorld().spawnEntity(mob);
 				if (this.debugMode) {
@@ -238,7 +240,8 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		if (this.nexus.getWorld() == null) {
 			return;
 		}
-		EntityIMZombie zombie = new EntityIMZombie(this.nexus.getWorld(), this.nexus);
+		EntityIMZombie zombie = InvEntities.ZOMBIE.create(nexus.getWorld());
+		zombie.setNexus(nexus);
 		List<SpawnPoint> spawnPoints = new ArrayList<>();
 		int x = this.nexus.getXCoord();
 		int y = this.nexus.getYCoord();
@@ -291,7 +294,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, int x, int y, int z) {
 		entity.updatePositionAndAngles(x + 0.5, y + 0.5, z + 0.5, 0, 0);
-		if (entity.getCanSpawnHere()) {
+		if (entity.canSpawn(nexus.getWorld())) {
 			int angle = (int) (Math.atan2(this.nexus.getZCoord() - z, this.nexus.getXCoord() - x) * 180.0D / 3.141592653589793D);
 			spawnPoints.add(new SpawnPoint(x, y, z, angle, SpawnType.HUMANOID));
 		}

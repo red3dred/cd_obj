@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "on=true": {
+      "model": "invmod:block/nexus_core_on"
+    },
+    "on=false": {
+      "model": "invmod:block/nexus_core_off"
+    }
+  }
+}
