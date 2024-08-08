@@ -11,21 +11,13 @@ import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.CoordsInt;
 import net.minecraft.block.Block;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-public class EntityIMPigEngy extends EntityIMMob implements ICanDig 
+public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 {
 	private static final int MAX_LADDER_TOWER_HEIGHT = 4;
 	private static final int META_ITEM_ID_HELD = 30;
@@ -41,8 +33,8 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 	private TerrainDigger terrainDigger;
 	private TerrainBuilder terrainBuilder;
 	private ItemStack currentItem;
-	
-	public EntityIMPigEngy(World world, INexusAccess nexus) 
+
+	public EntityIMPigEngy(World world, INexusAccess nexus)
 	{
 		super(world, nexus);
 		IPathSource pathSource = getPathSource();
@@ -85,12 +77,12 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 			setCurrentItem(new ItemStack(mod_Invasion.itemEngyHammer,1));
 	}
 
-	public EntityIMPigEngy(World world) 
+	public EntityIMPigEngy(World world)
 	{
 		this(world, null);
 	}
 
-	protected void setAI() 
+	protected void setAI()
 	{
 		this.tasks = new EntityAITasks(this.worldObj.theProfiler);
 		this.tasks.addTask(0, new EntityAISwimming(this));
@@ -114,13 +106,13 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
 	}
 	@Override
-	public void updateAITasks() 
+	public void updateAITasks()
 	{
 		super.updateAITasks();
 		this.terrainModifier.onUpdate();
 	}
 	@Override
-	public void updateAITick() 
+	public void updateAITick()
 	{
 		super.updateAITick();
 		this.terrainBuilder.setBuildRate(1.0F + this.supportThisTick * 0.33F);
@@ -144,18 +136,18 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		}
 	}
 	@Override
-	public void onLivingUpdate() 
+	public void onLivingUpdate()
 	{
 		super.onLivingUpdate();
 		updateAnimation();
 	}
 	@Override
-	public void onPathSet() 
+	public void onPathSet()
 	{
 		this.terrainModifier.cancelTask();
 	}
 	@Override
-	public PathNavigateAdapter getNavigator() 
+	public PathNavigateAdapter getNavigator()
 	{
 		return this.oldNavAdapter;
 	}
@@ -347,7 +339,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 				pathFinder.addNode(currentNode.xCoord, currentNode.yCoord + 1, currentNode.zCoord, PathAction.ladderIndexOrient[i]);
 		}
 	}
-//NOOB HAUS: possible cases?  LADDER_UP_PX, LADDER_UP_NX, LADDER_UP_PZ, LADDER_UP_NZ, LADDER_TOWER_UP_PX, 
+//NOOB HAUS: possible cases?  LADDER_UP_PX, LADDER_UP_NX, LADDER_UP_PZ, LADDER_UP_NZ, LADDER_TOWER_UP_PX,
 //	  LADDER_TOWER_UP_NX, LADDER_TOWER_UP_PZ, LADDER_TOWER_UP_NZ, SCAFFOLD_UP
 	protected boolean continueLadder(IBlockAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder)
   {
@@ -381,28 +373,28 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 
     return false;
   }
-	
+
 	@Override
 	public ItemStack getHeldItem() {
 		return getCurrentItem();
 	}
 	@Override
-	protected void dropFewItems(boolean flag, int bonus) 
+	protected void dropFewItems(boolean flag, int bonus)
 	{
 		super.dropFewItems(flag, bonus);
-		if (this.rand.nextInt(2) == 0) 
+		if (this.rand.nextInt(2) == 0)
 		{
 			entityDropItem(new ItemStack(Items.leather, 1, 0), 0.0F);
-		} 
+		}
 		else if (isBurning())
 			entityDropItem(new ItemStack(Items.cooked_porkchop, 1, 0), 0.0F);
 		else
 			entityDropItem(new ItemStack(Items.porkchop, 1, 0), 0.0F);
 	}
 
-	protected void updateAnimation() 
+	protected void updateAnimation()
 	{
-		if ((!this.worldObj.isRemote) && (this.terrainModifier.isBusy())) 
+		if ((!this.worldObj.isRemote) && (this.terrainModifier.isBusy()))
 		{
 			setSwinging(true);
 			PathAction currentAction = getNavigatorNew().getCurrentWorkingAction();
@@ -421,8 +413,8 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 				this.swingTimer = 0;
 				setSwinging(false);
 			}
-		} 
-		else 
+		}
+		else
 		{
 			this.swingTimer = 0;
 		}
@@ -442,7 +434,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		}else{
 			getDataWatcher().updateObject(31, Byte.valueOf((byte)0));
 		}
-		
+
 	}
 
 	protected int getSwingSpeed()
@@ -467,7 +459,12 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		getDataWatcher().updateObject(30, item);
 	}
 
-	public static boolean canPlaceLadderAt(IBlockAccess map, int x, int y, int z) {
+	public static boolean canPlaceLadderAt(BlockView map, BlockPos pos) {
+	    return canPlaceLadderAt(map, pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	@Deprecated
+	public static boolean canPlaceLadderAt(BlockView map, int x, int y, int z) {
 		if(EntityIMLiving.UNDESTRUCTABLE_BLOCKS.contains(map.getBlock(x, y, z)))
 		{
 		if ((map.getBlock(x + 1, y, z).isNormalCube()) || (map.getBlock(x - 1, y, z).isNormalCube()) || (map.getBlock(x, y, z + 1).isNormalCube()) || (map.getBlock(x, y, z - 1).isNormalCube())) {
@@ -478,12 +475,9 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 	}
 
 	@Override
-	public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3,
-			Block block) {
-		// TODO Auto-generated method stub
-		
+	public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3, Block block) {
 	}
-	
+
 	@Override
 	public String toString()
 	{

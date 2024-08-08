@@ -5,7 +5,7 @@ import invmod.common.entity.PathfinderIM;
 import net.minecraft.world.WorldAccess;
 
 public interface IPathfindable {
-    float getBlockPathCost(PathNode paramPathNode1, PathNode paramPathNode2, WorldAccess paramIBlockAccess);
+    float getBlockPathCost(PathNode startNode, PathNode endNode, WorldAccess world);
 
-    void getPathOptionsFromNode(WorldAccess paramIBlockAccess, PathNode paramPathNode, PathfinderIM paramPathfinderIM);
+    void getPathOptionsFromNode(WorldAccess world, PathNode node, PathfinderIM finder);
 }

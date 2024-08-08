@@ -12,14 +12,18 @@ import invmod.common.entity.PathNode;
 import invmod.common.entity.Scaffold;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.CoordsInt;
-import invmod.common.util.Distance;
 import invmod.common.util.IPosition;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -79,7 +83,7 @@ public class AttackerAI {
         }
         this.nextScaffoldCalcTimer = 200;
         List<Scaffold> newScaffolds = findMinScaffolds(entity, entity.getBlockPos());
-        if (newScaffolds != null && !newScaffolds.isEmpty()) {
+        if (!newScaffolds.isEmpty()) {
             addNewScaffolds(newScaffolds);
             return true;
         }
@@ -104,7 +108,7 @@ public class AttackerAI {
                 Scaffold s = scaffoldPositions.get(i);
                 terrainMap.setData(s.getXCoord(), s.getYCoord(), s.getZCoord(), 200000);
                 Path path = createPath(pather, pos, nexusPos, terrainMap);
-                if (path.getTotalPathCost() < lowestCost && path.getFinalPathPoint().equals(nexus.getXCoord(), nexus.getYCoord(), nexus.getZCoord())) {
+                if (path.getTotalPathCost() < lowestCost && path.getFinalPathPoint().isAt(nexus)) {
                     lowestCostIndex = i;
                 }
             }
@@ -122,9 +126,8 @@ public class AttackerAI {
                         terrainMap.setData(s.getXCoord(), s.getYCoord(), s.getZCoord(), 200000);
                     }
                 }
-                Path path = createPath(pather, pos, nexusPos, terrainMap);
 
-                if (!path.getFinalPathPoint().equals(this.nexus.getXCoord(), this.nexus.getYCoord(), this.nexus.getZCoord())) {
+                if (!createPath(pather, pos, nexusPos, terrainMap).getFinalPathPoint().isAt(nexus)) {
                     costDif.add(s);
                 }
 
@@ -133,15 +136,11 @@ public class AttackerAI {
             return costDif;
         }
 
-        if (scaffoldPositions.size() == 1) {
-            return scaffoldPositions;
-        }
-
-        return null;
+        return scaffoldPositions.size() == 1 ? scaffoldPositions : List.of();
     }
 
     public void addScaffoldDataTo(IBlockAccessExtended terrainMap) {
-        for (Scaffold scaffold : this.scaffolds) {
+        for (Scaffold scaffold : scaffolds) {
             for (int i = 0; i < scaffold.getTargetHeight(); i++) {
                 int data = terrainMap.getLayeredData(scaffold.getXCoord(), scaffold.getYCoord() + i, scaffold.getZCoord());
                 terrainMap.setData(scaffold.getXCoord(), scaffold.getYCoord() + i, scaffold.getZCoord(), data | 0x4000);
@@ -169,28 +168,26 @@ public class AttackerAI {
         scaffolds.forEach(Scaffold::forceStatusUpdate);
     }
 
-    public void readFromNBT(NBTTagCompound nbttagcompound) {
-        // Had to put extra int param in 1.7.2, used 0 not sure why
-        NBTTagList nbtScaffoldList = nbttagcompound.getTagList("scaffolds", 0);
-        for (int i = 0; i < nbtScaffoldList.tagCount(); i++) {
-            Scaffold scaffold = new Scaffold(this.nexus);
-            scaffold.readFromNBT((NBTTagCompound) nbtScaffoldList.getCompoundTagAt(i));
-            this.scaffolds.add(scaffold);
-        }
+    public void readFromNBT(NbtCompound compound) {
+        scaffolds = compound.getList("scaffolds", NbtElement.COMPOUND_TYPE).stream().map(element -> {
+            Scaffold scaffold = new Scaffold(nexus);
+            scaffold.readFromNBT((NbtCompound) element);
+            return scaffold;
+        }).collect(Collectors.toList());
     }
 
-    public void writeToNBT(NBTTagCompound nbttagcompound) {
-        NBTTagList nbttaglist = new NBTTagList();
-        for (Scaffold scaffold : this.scaffolds) {
-            NBTTagCompound nbtscaffold = new NBTTagCompound();
+    public void writeToNBT(NbtCompound compound) {
+        NbtList nbttaglist = new NbtList();
+        for (Scaffold scaffold : scaffolds) {
+            NbtCompound nbtscaffold = new NbtCompound();
             scaffold.writeToNBT(nbtscaffold);
-            nbttaglist.appendTag(nbtscaffold);
+            nbttaglist.add(nbtscaffold);
         }
-        nbttagcompound.setTag("scaffolds", nbttaglist);
+        compound.put("scaffolds", nbttaglist);
     }
 
     private Path createPath(IPathfindable pather, BlockPos p1, BlockPos p2, BlockView terrainMap) {
-        return pathSource.createPath(pather, p1, p2, 1.1F, 12.0F + MathHelper.sqrt((float) p1.getSquaredDistance(p2)), terrainMap);
+        return pathSource.createPath(pather, p1, p2, 1.1F, 12 + MathHelper.sqrt((float) p1.getSquaredDistance(p2)), terrainMap);
     }
 
     private Path createPath(IPathfindable pather, BlockPos p1, BlockPos p2, float axisExpand) {
@@ -237,18 +234,12 @@ public class AttackerAI {
         for (int i = 0; i < 4; i++) {
             int blockCount = 0;
             for (int height = 0; height < scaffold.getYCoord(); height++) {
-                if (terrainMap.getBlockState(
-                        scaffold.getXCoord() + CoordsInt.offsetAdjX[i],
-                        scaffold.getYCoord() + height,
-                        scaffold.getZCoord() + CoordsInt.offsetAdjZ[i]
-                    ).isNormalCube()) {
+                BlockPos pos = scaffold.toBlockPos().add(CoordsInt.offsetAdjX[i], height, CoordsInt.offsetAdjZ[i]);
+                if (terrainMap.getBlockState(pos).isFullCube(terrainMap, pos)) {
                     blockCount++;
                 }
-                if (terrainMap.getBlockState(
-                        scaffold.getXCoord() + CoordsInt.offsetAdjX[i] * 2,
-                        scaffold.getYCoord() + height,
-                        scaffold.getZCoord() + CoordsInt.offsetAdjZ[i] * 2
-                    ).isNormalCube()) {
+                pos = scaffold.toBlockPos().add(CoordsInt.offsetAdjX[i] * 2, height, CoordsInt.offsetAdjZ[i] * 2);
+                if (terrainMap.getBlockState(pos).isFullCube(terrainMap, pos)) {
                     blockCount++;
                 }
             }
@@ -261,26 +252,19 @@ public class AttackerAI {
 
     private void addNewScaffolds(List<Scaffold> newScaffolds) {
         for (Scaffold newScaffold : newScaffolds) {
-            for (Scaffold existingScaffold : this.scaffolds) {
-                if ((existingScaffold.getXCoord() == newScaffold.getXCoord())
-                        && (existingScaffold.getZCoord() == newScaffold.getZCoord())) {
+            for (Scaffold existingScaffold : scaffolds) {
+                if (existingScaffold.getXCoord() == newScaffold.getXCoord() && existingScaffold.getZCoord() == newScaffold.getZCoord()) {
                     if (newScaffold.getYCoord() > existingScaffold.getYCoord()) {
-                        if (newScaffold.getYCoord() < existingScaffold.getYCoord()
-                                + existingScaffold.getTargetHeight()) {
-                            existingScaffold.setHeight(newScaffold.getYCoord() + newScaffold.getTargetHeight()
-                                    - existingScaffold.getYCoord());
+                        if (newScaffold.getYCoord() < existingScaffold.getYCoord() + existingScaffold.getTargetHeight()) {
+                            existingScaffold.setHeight(newScaffold.getYCoord() + newScaffold.getTargetHeight() - existingScaffold.getYCoord());
                             break;
                         }
-
                     } else if (newScaffold.getYCoord() + newScaffold.getTargetHeight() > existingScaffold.getYCoord()) {
-                        existingScaffold.setPosition(newScaffold.getXCoord(), newScaffold.getYCoord(),
-                                newScaffold.getZCoord());
-                        existingScaffold.setHeight(existingScaffold.getYCoord() + existingScaffold.getTargetHeight()
-                                - newScaffold.getYCoord());
+                        existingScaffold.setPosition(newScaffold.getXCoord(), newScaffold.getYCoord(), newScaffold.getZCoord());
+                        existingScaffold.setHeight(existingScaffold.getYCoord() + existingScaffold.getTargetHeight() - newScaffold.getYCoord());
                         break;
                     }
                 }
-
             }
 
             this.scaffolds.add(newScaffold);
@@ -288,29 +272,23 @@ public class AttackerAI {
     }
 
     private void updateScaffolds() {
-        for (int i = 0; i < this.scaffolds.size(); i++) {
-            Scaffold lol = this.scaffolds.get(i);
-            this.nexus.getWorld().spawnParticle("heart",
-                    lol.getXCoord() + 0.2D,
-                    lol.getYCoord() + 0.2D,
-                    lol.getZCoord() + 0.2D,
-                    lol.getXCoord() + 0.5D,
-                    lol.getYCoord() + 0.5D,
-                    lol.getZCoord() + 0.5D
+        scaffolds.removeIf(scaffold -> {
+            nexus.getWorld().addParticle(ParticleTypes.HEART,
+                    scaffold.getXCoord() + 0.2D,
+                    scaffold.getYCoord() + 0.2D,
+                    scaffold.getZCoord() + 0.2D,
+                    0.5D, 0.5D, 0.5D
             );
 
-            this.scaffolds.get(i).forceStatusUpdate();
-            if (this.scaffolds.get(i).getPercentIntactCached() + 0.05F < 0.4F * this.scaffolds.get(i).getPercentCompletedCached()) {
-                this.scaffolds.remove(i);
-            }
-        }
+            scaffold.forceStatusUpdate();
+            return scaffold.getPercentIntactCached() + 0.05F < 0.4F * scaffold.getPercentCompletedCached();
+        });
     }
 
     private void updateDensityData() {
         entityDensityData.clear();
         for (EntityIMLiving mob : nexus.getMobList()) {
-            int coordHash = PathNode.makeHash(mob.getXCoord(), mob.getYCoord(), mob.getZCoord(), PathAction.NONE);
-            entityDensityData.compute(coordHash, (key, old) -> old == null ? 1 : old + 1);
+            entityDensityData.compute(PathNode.makeHash(mob, PathAction.NONE), (key, old) -> old == null ? 1 : old + 1);
         }
     }
 }

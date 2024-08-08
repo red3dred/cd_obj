@@ -1,12 +1,11 @@
 package invmod.common.entity;
 
 import invmod.common.util.IPosition;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 public class PathNode implements IPosition {
-    public final int xCoord;
-    public final int yCoord;
-    public final int zCoord;
+    public BlockPos pos;
 
     public final PathAction action;
 
@@ -28,40 +27,30 @@ public class PathNode implements IPosition {
     public PathNode(int i, int j, int k, PathAction pathAction) {
         this.index = -1;
         this.isFirst = false;
-        this.xCoord = i;
-        this.yCoord = j;
-        this.zCoord = k;
+        this.pos = new BlockPos(i, j, k);
         this.action = pathAction;
         this.hash = makeHash(i, j, k, this.action);
     }
 
     public float distanceTo(PathNode pathpoint) {
-        float f = pathpoint.xCoord - this.xCoord;
-        float f1 = pathpoint.yCoord - this.yCoord;
-        float f2 = pathpoint.zCoord - this.zCoord;
-        return MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
+        return MathHelper.sqrt((float)pos.getSquaredDistance(pathpoint.pos));
     }
 
     public float distanceTo(float x, float y, float z) {
-        float f = x - this.xCoord;
-        float f1 = y - this.yCoord;
-        float f2 = z - this.zCoord;
-        return MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
+        return MathHelper.sqrt((float)pos.getSquaredDistance(x, y, z));
     }
 
     @Override
     public boolean equals(Object obj) {
-        if ((obj instanceof PathNode)) {
-            PathNode node = (PathNode) obj;
-            return (this.hash == node.hash) && (this.xCoord == node.xCoord) && (this.yCoord == node.yCoord)
-                    && (this.zCoord == node.zCoord) && (node.action == this.action);
-        }
+        return obj instanceof PathNode node && hash == node.hash && isAt(node) && node.action == action;
+    }
 
-        return false;
+    public boolean isAt(IPosition position) {
+        return pos.equals(position.toBlockPos());
     }
 
     public boolean equals(int x, int y, int z) {
-        return (this.xCoord == x) && (this.yCoord == y) && (this.zCoord == z);
+        return pos.getX() == x && pos.getY() == y && pos.getZ() == z;
     }
 
     public boolean isAssigned() {
@@ -70,17 +59,22 @@ public class PathNode implements IPosition {
 
     @Override
     public int getXCoord() {
-        return this.xCoord;
+        return pos.getX();
     }
 
     @Override
     public int getYCoord() {
-        return this.yCoord;
+        return pos.getY();
     }
 
     @Override
     public int getZCoord() {
-        return this.zCoord;
+        return pos.getZ();
+    }
+
+    @Override
+    public BlockPos toBlockPos() {
+        return pos;
     }
 
     public PathNode getPrevious() {
@@ -98,11 +92,14 @@ public class PathNode implements IPosition {
 
     @Override
     public String toString() {
-        return this.xCoord + ", " + this.yCoord + ", " + this.zCoord + ", " + this.action;
+        return pos.toShortString() + ", " + this.action;
+    }
+
+    public static int makeHash(IPosition pos, PathAction action) {
+        return makeHash(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), action);
     }
 
     public static int makeHash(int x, int y, int z, PathAction action) {
         return y & 0xFF | (x & 0xFF) << 8 | (z & 0xFF) << 16 | (action.ordinal() & 0xFF) << 24;
     }
-
 }

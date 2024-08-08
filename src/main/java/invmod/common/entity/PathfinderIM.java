@@ -1,13 +1,13 @@
 package invmod.common.entity;
 
 import invmod.common.IPathfindable;
-import net.minecraft.util.IntHashMap;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldAccess;
 
 public class PathfinderIM
 {
   private static PathfinderIM pathfinder = new PathfinderIM();
-  private IBlockAccess worldMap;
+  private WorldAccess worldMap;
   private NodeContainer path;
   private IntHashMap pointMap;
   private PathNode[] pathOptions;
@@ -112,6 +112,11 @@ public class PathfinderIM
     return createEntityPath(start, previousPoint);
   }
 
+  public void addNode(BlockPos pos, PathAction action)
+  {
+    addNode(pos.getX(), pos.getY(), pos.getZ(), action);
+  }
+
   public void addNode(int x, int y, int z, PathAction action)
   {
     PathNode node = openPoint(x, y, z, action);
@@ -119,9 +124,8 @@ public class PathfinderIM
       this.pathOptions[(this.pathsIndex++)] = node;
   }
 
-  private float estimateDistance(PathNode start, PathNode target)
-  {
-    return Math.abs(target.xCoord - start.xCoord) + Math.abs(target.yCoord - start.yCoord) + Math.abs(target.zCoord - start.zCoord) * 1.01F;
+  private float estimateDistance(PathNode start, PathNode target) {
+    return (float)start.pos.getSquaredDistance(target.pos);
   }
 
   protected PathNode openPoint(int x, int y, int z)
