@@ -1,102 +1,100 @@
 package invmod.common.entity.ai;
 
-import invmod.common.entity.EntityIMLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
+import java.util.EnumSet;
 
-public class EntityAIMoveToEntity<T extends EntityLivingBase> extends EntityAIBase 
-{
-	private EntityIMLiving theEntity;
-	private T targetEntity;
-	private Class<? extends T> targetClass;
-	private boolean targetMoves;
-	private double lastX;
-	private double lastY;
-	private double lastZ;
-	private int pathRequestTimer;
+import invmod.common.entity.EntityIMLiving;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.util.math.Vec3d;
+
+public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
+	protected final EntityIMLiving mob;
+	private final Class<? extends T> targetClass;
+
+	private T target;
+	private boolean running;
+	private Vec3d lastTargetPos;
+	private int cooldown;
 	private int pathFailedCount;
 
-	public EntityAIMoveToEntity(EntityIMLiving entity) {
-		this(entity, (Class<? extends T>) EntityLivingBase.class);
+	@SuppressWarnings("unchecked")
+    public EntityAIMoveToEntity(EntityIMLiving entity) {
+		this(entity, (Class<T>)LivingEntity.class);
 	}
 
 	public EntityAIMoveToEntity(EntityIMLiving entity, Class<? extends T> target) {
 		this.targetClass = target;
-		this.theEntity = entity;
-		this.targetMoves = false;
-		this.pathRequestTimer = 0;
-		this.pathFailedCount = 0;
-		setMutexBits(1);
+		this.mob = entity;
+		setControls(EnumSet.of(Control.MOVE, Control.TARGET));
 	}
 
-	public boolean shouldExecute() {
-		if (--this.pathRequestTimer <= 0) {
-			EntityLivingBase target = this.theEntity.getAttackTarget();
-			if ((target != null) && (this.targetClass.isAssignableFrom(this.theEntity.getAttackTarget().getClass()))) {
-				this.targetEntity = (T) ((EntityLivingBase) this.targetClass.cast(target));
+	@Override
+    @SuppressWarnings("unchecked")
+    public boolean canStart() {
+		if (--cooldown <= 0) {
+		    LivingEntity target = mob.getTarget();
+			if (target != null && (targetClass.isAssignableFrom(mob.getTarget().getClass()))) {
+				this.target = (T)target;
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public boolean continueExecuting() {
-		EntityLivingBase target = this.theEntity.getAttackTarget();
-		if ((target != null) && (target == this.targetEntity)) {
-			return true;
-		}
-		return false;
+	@Override
+    public boolean shouldContinue() {
+	    LivingEntity target = mob.getTarget();
+		return target != null && target == this.target;
 	}
 
-	public void startExecuting() {
-		this.targetMoves = true;
+	@Override
+    public void start() {
+		running = true;
 		setPath();
 	}
 
-	public void resetTask() {
-		this.targetMoves = false;
+	@Override
+    public void stop() {
+		running = false;
 	}
 
-	public void updateTask() {
-		if ((--this.pathRequestTimer <= 0) && (!this.theEntity.getNavigatorNew().isWaitingForTask()) && (this.targetMoves) && (this.targetEntity.getDistanceSq(this.lastX, this.lastY, this.lastZ) > 1.8D)) {
+	@Override
+    public void tick() {
+		if (--cooldown <= 0 && (!mob.getNavigatorNew().isWaitingForTask()) && running && target.squaredDistanceTo(lastTargetPos) > 1.8) {
 			setPath();
 		}
-		if (this.pathFailedCount > 3) {
-			this.theEntity.getMoveHelper().setMoveTo(this.targetEntity.posX, this.targetEntity.posY, this.targetEntity.posZ, this.theEntity.getMoveSpeedStat());
+		if (pathFailedCount > 3) {
+			mob.getMoveControl().moveTo(target.getX(), target.getY(), target.getZ(), mob.getMovementSpeed());
 		}
 	}
 
+	@Deprecated
 	protected void setTargetMoves(boolean flag) {
-		this.targetMoves = flag;
-	}
-
-	protected EntityIMLiving getEntity() {
-		return this.theEntity;
+		this.running = flag;
 	}
 
 	protected T getTarget() {
-		return this.targetEntity;
+		return target;
 	}
 
 	protected void setPath() {
-		if (this.theEntity.getNavigatorNew().tryMoveToEntity(this.targetEntity, 0.0F, this.theEntity.getMoveSpeedStat())) {
-			if (this.theEntity.getNavigatorNew().getLastPathDistanceToTarget() > 3.0F) {
-				this.pathRequestTimer = (30 + this.theEntity.worldObj.rand.nextInt(10));
-				if (this.theEntity.getNavigatorNew().getPath().getCurrentPathLength() > 2)
-					this.pathFailedCount = 0;
-				else
-					this.pathFailedCount += 1;
+		if (mob.getNavigatorNew().tryMoveToEntity(target, 0.0F, mob.getMovementSpeed())) {
+			if (mob.getNavigatorNew().getLastPathDistanceToTarget() > 3) {
+				cooldown = 30 + mob.getRandom().nextInt(10);
+				if (mob.getNavigatorNew().getPath().getCurrentPathLength() > 2) {
+					pathFailedCount = 0;
+				} else {
+					pathFailedCount++;
+				}
 			} else {
-				this.pathRequestTimer = (10 + this.theEntity.worldObj.rand.nextInt(10));
-				this.pathFailedCount = 0;
+				cooldown = 10 + mob.getRandom().nextInt(10);
+				pathFailedCount = 0;
 			}
 		} else {
-			this.pathFailedCount += 1;
-			this.pathRequestTimer = (40 * this.pathFailedCount + this.theEntity.worldObj.rand.nextInt(10));
+			pathFailedCount++;
+			cooldown = 40 * pathFailedCount + mob.getRandom().nextInt(10);
 		}
 
-		this.lastX = this.targetEntity.posX;
-		this.lastY = this.targetEntity.posY;
-		this.lastZ = this.targetEntity.posZ;
+		lastTargetPos = target.getPos();
 	}
 }

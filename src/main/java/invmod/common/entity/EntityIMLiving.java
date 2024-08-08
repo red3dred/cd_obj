@@ -6,7 +6,9 @@ import invmod.common.IPathfindable;
 import invmod.common.SparrowAPI;
 import invmod.common.mod_Invasion;
 import invmod.common.item.InvItems;
+import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.INexusAccess;
+import invmod.common.nexus.MobBuilder.BuildableMob;
 import invmod.common.util.CoordsInt;
 import invmod.common.util.Distance;
 import invmod.common.util.IPosition;
@@ -61,7 +63,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class EntityIMLiving extends HostileEntity implements Monster, IPathfindable, IPosition, IHasNexus, SparrowAPI {
+public abstract class EntityIMLiving extends HostileEntity implements Monster, IPathfindable, IPosition, IHasNexus, SparrowAPI, BuildableMob {
     protected static final float DEFAULT_SOFT_STRENGTH = 2.5F;
     protected static final float DEFAULT_HARD_STRENGTH = 5.5F;
     protected static final float DEFAULT_SOFT_COST = 2;
@@ -256,12 +258,13 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         builder.add(LABEL, "");
     }
 
-    public void setNexus(@Nullable INexusAccess nexus) {
+    public EntityIMLiving setNexus(@Nullable INexusAccess nexus) {
         targetNexus = nexus;
         nexusBound = nexus != null;
         burnsInDay = nexusBound && mod_Invasion.getNightMobsBurnInDay();
         aggroRange = nexusBound ? 12 : mod_Invasion.getNightMobSightRange();
         senseRange = nexusBound ? 6 : mod_Invasion.getNightMobSenseRange();
+        return this;
     }
 
     public void setAttackStrength(double attackStrength) {
@@ -284,6 +287,11 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
                 dataTracker.set(ANGLES, packedAngles);
             }
         }
+    }
+
+    @Override
+    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
+        setNexus(nexus);
     }
 
     @Override
@@ -395,12 +403,12 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         }
     }
 
-    public boolean avoidsBlock(Block block) {
-        return block == Blocks.FIRE
-                || block == Blocks.SOUL_FIRE
-                || block == Blocks.BEDROCK
-                || block == Blocks.LAVA
-                || block == Blocks.CACTUS;
+    public boolean avoidsBlock(BlockState block) {
+        return !isInvulnerable()
+                && (!isFireImmune() && (block.isIn(BlockTags.FIRE)
+                        || block.isIn(BlockTags.CAMPFIRES)
+                        || block.getFluidState().isIn(FluidTags.LAVA))
+                || block.isOf(Blocks.BEDROCK) || block.isOf(Blocks.CACTUS));
     }
 
     public boolean ignoresBlock(Block block) {
@@ -413,14 +421,11 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return false;
     }
 
-    public boolean isBlockDestructible(BlockView world, BlockPos pos, Block block) {
-        if (!getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) {
+    public boolean isBlockDestructible(BlockView world, BlockPos pos, BlockState state) {
+        if (state.isAir() || !getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING) || UNDESTRUCTABLE_BLOCKS.contains(state.getBlock()) || blockHasLadder(world, pos)) {
             return false;
         }
-        if (UNDESTRUCTABLE_BLOCKS.contains(block) || block == Blocks.AIR || blockHasLadder(world, pos)) {
-            return false;
-        }
-        return block == Blocks.IRON_DOOR || block == Blocks.OAK_DOOR || block == Blocks.OAK_TRAPDOOR || block.getDefaultState().isSolidBlock(world, pos);
+        return state.isIn(BlockTags.DOORS) || state.isIn(BlockTags.TRAPDOORS) || state.isSolidBlock(world, pos);
     }
 
     public boolean canEntityBeDetected(Entity entity) {
@@ -882,7 +887,7 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
     }
 
     protected void sunlightDamageTick() {
-        setFire(8);
+        setFireTicks(8);
     }
 
     protected boolean onPathBlocked(Path path, INotifyTask asker) {
@@ -910,17 +915,16 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
             multiplier += mobDensity * 3;
         }
 
-        if ((node.yCoord > prevNode.yCoord) && (getCollide(terrainMap, node.xCoord, node.yCoord, node.zCoord) == 2)) {
+        if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
             multiplier += 2.0F;
         }
 
-        if (blockHasLadder(terrainMap, node.xCoord, node.yCoord, node.zCoord)) {
+        if (blockHasLadder(terrainMap, node.pos)) {
             multiplier += 5.0F;
         }
 
         if (node.action == PathAction.SWIM) {
-            multiplier *= ((node.yCoord <= prevNode.yCoord)
-                    && (terrainMap.getBlock(node.xCoord, node.yCoord + 1, node.zCoord) != Blocks.AIR) ? 3.0F : 1.0F);
+            multiplier *= ((node.yCoord <= prevNode.yCoord) && !terrainMap.isAir(node.pos) ? 3.0F : 1.0F);
             return prevNode.distanceTo(node) * 1.3F * multiplier;
         }
 
@@ -1146,36 +1150,36 @@ public abstract class EntityIMLiving extends HostileEntity implements Monster, I
         return false;
     }
 
-    protected int getCollide(WorldAccess terrainMap, int x, int y, int z) {
+    protected int getCollide(BlockView terrainMap, BlockPos pos) {
         boolean destructibleFlag = false;
         boolean liquidFlag = false;
-        for (int xOffset = x; xOffset < x + this.collideSize.getXCoord(); xOffset++) {
-            for (int yOffset = y; yOffset < y + this.collideSize.getYCoord(); yOffset++) {
-                for (int zOffset = z; zOffset < z + this.collideSize.getZCoord(); zOffset++) {
-                    Block block = terrainMap.getBlock(xOffset, yOffset, zOffset);
-                    if (block != Blocks.AIR) {
-                        if ((block == Blocks.WATER) || (block == Blocks.LAVA)) {
-                            liquidFlag = true;
-                        } else if (!block.getBlocksMovement(terrainMap, xOffset, yOffset, zOffset)) {
-                            if (isBlockDestructible(terrainMap, x, y, z, block))
-                                destructibleFlag = true;
-                            else
-                                return 0;
-                        } else if (terrainMap.getBlock(xOffset, yOffset - 1, zOffset) == Blocks.OAK_FENCE) {
-                            if (isBlockDestructible(terrainMap, x, y, z, Blocks.OAK_FENCE)) {
-                                return 3;
-                            }
-                            return 0;
-                        }
 
-                        if (avoidsBlock(block))
-                            return -2;
+        for (BlockPos p : BlockPos.iterate(pos, this.getCollideSize().toBlockPos().add(pos))) {
+            BlockState block = terrainMap.getBlockState(p);
+            if (!block.isAir()) {
+                if (block.isLiquid()) {
+                    liquidFlag = true;
+                } else if (!block.blocksMovement()) {
+                    if (!isBlockDestructible(terrainMap, p, block)) {
+                        return 0;
                     }
+                    destructibleFlag = true;
+                } else if (terrainMap.getBlockState(p.down()).isIn(BlockTags.WOODEN_FENCES)) {
+                    if (isBlockDestructible(terrainMap, pos, Blocks.OAK_FENCE)) {
+                        return 3;
+                    }
+                    return 0;
+                }
+
+                if (avoidsBlock(block)) {
+                    return -2;
                 }
             }
         }
-        if (destructibleFlag)
+
+        if (destructibleFlag) {
             return 2;
+        }
         if (liquidFlag) {
             return -1;
         }

@@ -8,28 +8,16 @@ import invmod.common.entity.ai.EntityAIRandomBoulder;
 import invmod.common.entity.ai.EntityAISimpleTarget;
 import invmod.common.entity.ai.EntityAIThrowerKillEntity;
 import invmod.common.entity.ai.EntityAIWanderIM;
+import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.CoordsInt;
 import invmod.common.util.IPosition;
 import net.minecraft.block.Block;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.item.EntityTNTPrimed;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-public class EntityIMThrower extends EntityIMMob 
+public class EntityIMThrower extends EntityIMMob
 {
 	private int throwTime;
 	private int punchTimer;
@@ -38,16 +26,16 @@ public class EntityIMThrower extends EntityIMMob
 	private INotifyTask clearPointNotifee;
 	private int tier;
 	private byte metaChanged;
-	
-	public EntityIMThrower(World world) 
+
+	public EntityIMThrower(World world)
 	{
 		this(world, null);
 	}
 
-	public EntityIMThrower(World world, INexusAccess nexus) 
+	public EntityIMThrower(World world, INexusAccess nexus)
 	{
 		super(world, nexus);
-		
+
 		setBaseMoveSpeedStat(0.13F);
 		this.attackStrength = 10;
 		this.selfDamage = 0;
@@ -60,12 +48,12 @@ public class EntityIMThrower extends EntityIMMob
 		setDestructiveness(2);
 		setSize(1.8F, 1.95F);
 		setAI();
-		
+
 		DataWatcher dataWatcher = getDataWatcher();
 		dataWatcher.addObject(29, Byte.valueOf(this.metaChanged));
 		dataWatcher.addObject(30, Integer.valueOf(this.tier));
 		dataWatcher.addObject(31, Integer.valueOf(1));
-		
+
 	}
 
 	protected void setAI() {
@@ -93,6 +81,15 @@ public class EntityIMThrower extends EntityIMMob
 		this.targetTasks.addTask(2, new EntityAISimpleTarget(this, EntityPlayer.class, this.getAggroRange(), true));
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
 	}
+
+	@Override
+    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
+	    super.onSpawned(nexus, spawnConditions);
+        setTexture(spawnConditions.tier());
+        setTier(spawnConditions.tier());
+	}
+
+
 @Override
 	public void onUpdate(){
 		super.onUpdate();
@@ -121,9 +118,9 @@ public class EntityIMThrower extends EntityIMMob
 	}
 
 	@Override
-	public void knockBack(Entity par1Entity, float par2, double par3, double par5) 
+	public void knockBack(Entity par1Entity, float par2, double par3, double par5)
 	{
-		if (this.tier == 2) 
+		if (this.tier == 2)
 		{
 			return;
 		}
@@ -137,12 +134,12 @@ public class EntityIMThrower extends EntityIMMob
 		this.motionY += f1;
 		this.motionZ -= par5 / f * f1;
 
-		if (this.motionY > 0.4000000059604645D) 
+		if (this.motionY > 0.4000000059604645D)
 		{
 			this.motionY = 0.4000000059604645D;
 		}
 	}
-	
+
 	@Override
 	public boolean isAIEnabled() {
 		return true;
@@ -163,7 +160,7 @@ public class EntityIMThrower extends EntityIMMob
 		}
 		return false;
 	}
-	
+
 	public void setTier(int tier) {
 		this.tier = tier;
 		getDataWatcher().updateObject(30, Integer.valueOf(tier));
@@ -179,7 +176,7 @@ public class EntityIMThrower extends EntityIMMob
 			setDestructiveness(2);
 			setSize(1.8F, 1.95F);
 			setAI();
-			
+
 		} else if (tier == 2) {
 			setBaseMoveSpeedStat(0.23F);
 			this.attackStrength = 15;
@@ -190,7 +187,7 @@ public class EntityIMThrower extends EntityIMMob
 			setSize(2F, 2F);
 			setAI();
 		}
-		
+
 		if (getDataWatcher().getWatchableObjectInt(31) == 1) {
 			if (tier == 1) {
 				setTexture(1);
@@ -199,7 +196,7 @@ public class EntityIMThrower extends EntityIMMob
 			}
 		}
 	}
-	
+
 	@Override
 	public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
 		nbttagcompound.setInteger("tier", this.tier);
@@ -213,12 +210,12 @@ public class EntityIMThrower extends EntityIMMob
 		this.tier = nbttagcompound.getInteger("tier");
 		setTier(this.tier);
 	}
-	
+
 	@Override
 	public String getSpecies() {
 		return "Zombie";
 	}
-	
+
 	@Override
 	public int getTier() {
 		return this.tier;
@@ -307,7 +304,7 @@ public class EntityIMThrower extends EntityIMMob
 				int meta = this.worldObj.getBlockMetadata(x, y, z);
 				this.worldObj.setBlock(x, y, z, Blocks.air);
 				block.onBlockDestroyedByPlayer(this.worldObj, x, y, z, meta);
-				
+
 				if(mod_Invasion.getDestructedBlocksDrop())
 				{
 				block.dropBlockAsItem(this.worldObj, x, y, z, meta, 0);
@@ -321,14 +318,14 @@ public class EntityIMThrower extends EntityIMMob
 		}
 	}
 
-	
+
 	@Override
 	protected void attackEntity(Entity entity, float f) {
 		if ((this.throwTime <= 0) && (f > 4.0F)) {
 			this.throwTime = 120;
 			//f is the throwdistance
 			if (f < 50.0F) {
-				throwBoulder(entity.posX, entity.posY + entity.getEyeHeight() - 0.7D, entity.posZ, false);			
+				throwBoulder(entity.posX, entity.posY + entity.getEyeHeight() - 0.7D, entity.posZ, false);
 			}
 		} else {
 			super.attackEntity(entity, f);
@@ -355,7 +352,7 @@ public class EntityIMThrower extends EntityIMMob
 			entityBoulder.setBoulderHeading(dX, dY, dZ, launchSpeed, 0.05F);
 			this.worldObj.spawnEntityInWorld(entityBoulder);
 		}
-		
+
 	}
 
 	public void throwBoulder(double entityX, double entityY, double entityZ) {
@@ -377,7 +374,7 @@ public class EntityIMThrower extends EntityIMMob
 		entityBoulder.setBoulderHeading(dX, dY, dZ, launchSpeed, 0.05F);
 		this.worldObj.spawnEntityInWorld(entityBoulder);
 	}
-	
+
 	public void throwTNT(double entityX, double entityY, double entityZ) {
 		this.throwTime = 40;
 		float launchSpeed = 1.0F;
@@ -403,10 +400,10 @@ public class EntityIMThrower extends EntityIMMob
 		super.dropFewItems(flag, bonus);
 		entityDropItem(new ItemStack(mod_Invasion.itemSmallRemnants, 1), 0.0F);
 	}
-	
-	
+
+
 	@Override
-	public String toString() 
+	public String toString()
 	{
 		return "IMThrower-T" + this.tier;
 	}
@@ -414,7 +411,7 @@ public class EntityIMThrower extends EntityIMMob
 	public void setTexture(int textureId) {
 		getDataWatcher().updateObject(31, Integer.valueOf(textureId));
 	}
-	
+
 	public int getTextureId() {
 		return getDataWatcher().getWatchableObjectInt(31);
 	}

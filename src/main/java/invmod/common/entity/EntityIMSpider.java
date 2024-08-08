@@ -16,22 +16,7 @@ import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.IMEntityType;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.block.Block;
-import net.minecraft.block.Block.SoundType;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EnumCreatureAttribute;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
@@ -46,7 +31,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 	private static final int META_TIER = 30;
 	private static final int META_TEXTURE = 31;
 	private static final int META_FLAVOUR = 28;
-	
+
 	public EntityIMSpider(World world) {
 		this(world, null);
 	}
@@ -108,6 +93,14 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 				this.tasks.addTask(3, new EntityAIPounce(this, 0.2F, 1.55F, 18));
 			}
 		}
+	}
+
+	@Override
+    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
+	    super.onSpawned(nexus, spawnConditions);
+        setTexture(spawnConditions.texture());
+        setFlavour(spawnConditions.flavour());
+        setTier(spawnConditions.tier());
 	}
 
 	@Override
@@ -446,7 +439,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 				setAggroRange(18);
 				setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
 			}else if (flavour == 2){
-				
+
 			}
 		}
 	}

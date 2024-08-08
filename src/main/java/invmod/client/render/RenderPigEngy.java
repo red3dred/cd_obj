@@ -1,26 +1,22 @@
 package invmod.client.render;
 
-import net.minecraft.client.model.ModelBiped;
-import net.minecraft.client.renderer.entity.RenderBiped;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import invmod.common.InvasionMod;
+import invmod.common.entity.EntityIMPigEngy;
+import net.minecraft.client.render.entity.BipedEntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory.Context;
+import net.minecraft.client.render.entity.model.BipedEntityModel;
+import net.minecraft.client.render.entity.model.EntityModelLayers;
+import net.minecraft.util.Identifier;
 
-public class RenderPigEngy extends RenderBiped
-{
-  private static final ResourceLocation texture = new ResourceLocation("invmod:textures/pigengT1.png");
+public class RenderPigEngy extends BipedEntityRenderer<EntityIMPigEngy, BipedEntityModel<EntityIMPigEngy>> {
+    private static final Identifier TEXTURE = InvasionMod.id("textures/pigengT1.png");
 
-  public RenderPigEngy(ModelBiped model, float shadowSize)
-  {
-    super(model, shadowSize);
-  }
+    public RenderPigEngy(Context ctx) {
+        super(ctx, new BipedEntityModel<>(ctx.getPart(EntityModelLayers.ZOMBIE)), 0.5F);
+    }
 
-  public RenderPigEngy(ModelBiped model, float shadowSize, float par3)
-  {
-    super(model, shadowSize, par3);
-  }
-
-  protected ResourceLocation getEntityTexture(Entity entity)
-  {
-    return texture;
-  }
+    @Override
+    public Identifier getTexture(EntityIMPigEngy entity) {
+        return TEXTURE;
+    }
 }

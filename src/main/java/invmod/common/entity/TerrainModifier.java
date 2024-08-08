@@ -9,8 +9,7 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;
 
 public class TerrainModifier
@@ -29,7 +28,7 @@ public class TerrainModifier
   private boolean outOfRangeFlag;
   private boolean terrainFailFlag;
 
-  public TerrainModifier(EntityLiving entity, float defaultReach)
+  public TerrainModifier(LivingEntity entity, float defaultReach)
   {
     this.theEntity = entity;
     this.modList = new ArrayList();
@@ -43,7 +42,8 @@ public class TerrainModifier
     taskUpdate();
   }
 
-  public boolean isReadyForTask(INotifyTask asker)
+  @Override
+public boolean isReadyForTask(INotifyTask asker)
   {
     return (this.modList.size() == 0) || (this.taskSetter == asker);
   }
@@ -58,7 +58,8 @@ public class TerrainModifier
     return this.timer > 0;
   }
 
-  public boolean requestTask(ModifyBlockEntry[] entries, INotifyTask onFinished, INotifyTask onBlockChange)
+  @Override
+public boolean requestTask(ModifyBlockEntry[] entries, INotifyTask onFinished, INotifyTask onBlockChange)
   {
     if (isReadyForTask(onFinished))
     {
@@ -72,7 +73,8 @@ public class TerrainModifier
     return false;
   }
 
-  public ModifyBlockEntry getLastBlockModified()
+  @Override
+public ModifyBlockEntry getLastBlockModified()
   {
     return this.lastEntry;
   }
@@ -97,13 +99,13 @@ public class TerrainModifier
 
     if (this.entryIndex < this.modList.size())
     {
-      this.nextEntry = ((ModifyBlockEntry)this.modList.get(this.entryIndex));
+      this.nextEntry = (this.modList.get(this.entryIndex));
       while (isTerrainIdentical(this.nextEntry))
       {
         this.entryIndex += 1;
         if (this.entryIndex < this.modList.size())
         {
-          this.nextEntry = ((ModifyBlockEntry)this.modList.get(this.entryIndex));
+          this.nextEntry = (this.modList.get(this.entryIndex));
         }
         else
         {
@@ -155,7 +157,7 @@ public class TerrainModifier
       if (newBlock == Blocks.air)
       {
     	  oldBlock.onBlockDestroyedByPlayer(this.theEntity.worldObj, entry.getXCoord(), entry.getYCoord(), entry.getZCoord(), oldMeta);
-    	
+
     	  if(mod_Invasion.getDestructedBlocksDrop())
     	  {
     	  oldBlock.dropBlockAsItem(this.theEntity.worldObj, entry.getXCoord(), entry.getYCoord(), entry.getZCoord(), oldMeta, 0);

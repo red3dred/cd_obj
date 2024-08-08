@@ -1,6 +1,7 @@
 package invmod.common.entity;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +14,10 @@ public record ModifyBlockEntry(
         BlockState newBlock,
         int cost
     ) implements IPosition {
+
+    public static ModifyBlockEntry ofDeletion(BlockPos pos, int cost) {
+        return new ModifyBlockEntry(pos, Blocks.AIR.getDefaultState(), cost);
+    }
 
     public ModifyBlockEntry(BlockPos pos, BlockState state, int cost) {
         this(pos, null, state, cost);

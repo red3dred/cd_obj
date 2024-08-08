@@ -1,10 +1,10 @@
 package invmod.common.entity;
 
 import invmod.common.INotifyTask;
+import net.minecraft.util.math.BlockPos;
 
-public abstract interface ITerrainDig
-{
-  public abstract boolean askRemoveBlock(int paramInt1, int paramInt2, int paramInt3, INotifyTask paramINotifyTask, float paramFloat);
+public interface ITerrainDig {
+    boolean askRemoveBlock(BlockPos pos, INotifyTask paramINotifyTask, float paramFloat);
 
-  public abstract boolean askClearPosition(int paramInt1, int paramInt2, int paramInt3, INotifyTask paramINotifyTask, float paramFloat);
+    boolean askClearPosition(BlockPos pos, INotifyTask paramINotifyTask, float paramFloat);
 }

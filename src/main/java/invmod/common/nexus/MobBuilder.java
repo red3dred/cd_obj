@@ -1,56 +1,52 @@
 package invmod.common.nexus;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.mod_Invasion;
 import invmod.common.entity.EntityIMBurrower;
 import invmod.common.entity.EntityIMCreeper;
 import invmod.common.entity.EntityIMImp;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMPigEngy;
-import invmod.common.entity.EntityIMSkeleton;
 import invmod.common.entity.EntityIMSpider;
 import invmod.common.entity.EntityIMThrower;
 import invmod.common.entity.EntityIMZombie;
 import invmod.common.entity.EntityIMZombiePigman;
+import invmod.common.entity.InvEntities;
+import net.minecraft.entity.EntityType;
 import net.minecraft.world.World;
 
 public class MobBuilder {
     public EntityIMLiving createMobFromConstruct(EntityConstruct mobConstruct, World world, INexusAccess nexus) {
-        switch (mobConstruct.entityType()) {
-            case ZOMBIE:
-                EntityIMZombie zombie = new EntityIMZombie(world, nexus);
-                zombie.setTexture(mobConstruct.texture());
-                zombie.setFlavour(mobConstruct.flavour());
-                zombie.setTier(mobConstruct.tier());
-                return zombie;
-            case ZOMBIEPIGMAN:
-                EntityIMZombiePigman zombiePigman = new EntityIMZombiePigman(world, nexus);
-                zombiePigman.setTexture(mobConstruct.texture());
-                zombiePigman.setTier(mobConstruct.tier());
-                return zombiePigman;
-            case SPIDER:
-                EntityIMSpider spider = new EntityIMSpider(world, nexus);
-                spider.setTexture(mobConstruct.texture());
-                spider.setFlavour(mobConstruct.flavour());
-                spider.setTier(mobConstruct.tier());
-                return spider;
-            case SKELETON:
-                return new EntityIMSkeleton(world, nexus);
-            case PIG_ENGINEER:
-                return new EntityIMPigEngy(world, nexus);
-            case THROWER:
-                EntityIMThrower thrower = new EntityIMThrower(world, nexus);
-                thrower.setTexture(mobConstruct.tier());
-                thrower.setTier(mobConstruct.tier());
-                return thrower;
-            case BURROWER:
-                return new EntityIMBurrower(world, nexus);
-            case CREEPER:
-                return new EntityIMCreeper(world, nexus);
-            case IMP:
-                return new EntityIMImp(world, nexus);
-            default:
-                mod_Invasion.log("Missing mob type in MobBuilder: " + mobConstruct.entityType());
-                return null;
+        @Nullable
+        EntityType<? extends EntityIMLiving> type = getType(mobConstruct);
+        if (type == null) {
+            mod_Invasion.log("Missing mob type in MobBuilder: " + mobConstruct.entityType());
+            return null;
         }
+
+        EntityIMLiving entity = type.create(world);
+        entity.onSpawned(nexus, mobConstruct);
+        return entity;
+    }
+
+    @Nullable
+    private EntityType<? extends EntityIMLiving> getType(EntityConstruct mobConstruct) {
+        return switch (mobConstruct.entityType()) {
+            case ZOMBIE -> InvEntities.ZOMBIE;
+            case ZOMBIEPIGMAN -> InvEntities.ZOMBIE_PIGMAN;
+            case SPIDER -> InvEntities.SPIDER;
+            case SKELETON -> InvEntities.SKELETON;
+            case PIG_ENGINEER -> InvEntities.PIGMAN_ENGINEER;
+            case THROWER -> InvEntities.THROWER;
+            case BURROWER -> InvEntities.BURROWER;
+            case CREEPER -> InvEntities.CREEPER;
+            case IMP -> InvEntities.IMP;
+            default -> null;
+        };
+    }
+
+    public interface BuildableMob {
+        void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions);
     }
 }

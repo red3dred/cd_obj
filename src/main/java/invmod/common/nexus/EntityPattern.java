@@ -17,6 +17,21 @@ public class EntityPattern implements IEntityIMPattern {
         this.entityType = entityType;
     }
 
+    public EntityPattern addTier(int tier, float weight) {
+        tierPool.addEntry(tier, weight);
+        return this;
+    }
+
+    public EntityPattern addTexture(int texture, float weight) {
+        texturePool.addEntry(texture, weight);
+        return this;
+    }
+
+    public EntityPattern addFlavour(int flavour, float weight) {
+        flavourPool.addEntry(flavour, weight);
+        return this;
+    }
+
     @Override
     public EntityConstruct generateEntityConstruct() {
         return generateEntityConstruct(-180, 180);
@@ -31,21 +46,6 @@ public class EntityPattern implements IEntityIMPattern {
                 tier == null ? DEFAULT_TIER : tier,
                 texture == null ? OPEN_TEXTURE : texture,
                 flavour == null ? DEFAULT_FLAVOUR : flavour, OPEN_SCALING, minAngle, maxAngle);
-    }
-
-    public EntityPattern addTier(int tier, float weight) {
-        tierPool.addEntry(tier, weight);
-        return this;
-    }
-
-    public EntityPattern addTexture(int texture, float weight) {
-        texturePool.addEntry(texture, weight);
-        return this;
-    }
-
-    public EntityPattern addFlavour(int flavour, float weight) {
-        flavourPool.addEntry(flavour, weight);
-        return this;
     }
 
     @Override

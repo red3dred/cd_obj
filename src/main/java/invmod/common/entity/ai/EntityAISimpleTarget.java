@@ -2,6 +2,7 @@ package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.util.ComparatorDistanceFrom;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,19 +11,19 @@ import java.util.EnumSet;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
-	private final EntityIMLiving theEntity;
+	protected final EntityIMLiving mob;
 	private LivingEntity targetEntity;
-	private Class<T> targetClass;
+	private Class<? extends T> targetClass;
 	private int outOfLosTimer;
 	private float distance;
 	private boolean needsLos;
 
-	public EntityAISimpleTarget(EntityIMLiving entity, Class<T> targetType, float distance) {
+	public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
 		this(entity, targetType, distance, true);
 	}
 
-	public EntityAISimpleTarget(EntityIMLiving entity, Class<T> targetType, float distance, boolean needsLoS) {
-		this.theEntity = entity;
+	public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance, boolean needsLoS) {
+		this.mob = entity;
 		this.targetClass = targetType;
 		this.outOfLosTimer = 0;
 		this.distance = distance;
@@ -31,24 +32,24 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 	}
 
 	public EntityIMLiving getEntity() {
-		return this.theEntity;
+		return this.mob;
 	}
 
 	@Override
     public boolean canStart() {
 		if (targetClass == PlayerEntity.class) {
 		    @SuppressWarnings("unchecked")
-            T entityplayer = (T)theEntity.getWorld().getClosestPlayer(theEntity, distance);
+            T entityplayer = (T)mob.getWorld().getClosestPlayer(mob, distance);
 			if (isValidTarget(entityplayer)) {
 				targetEntity = entityplayer;
 				return true;
 			}
 		}
 
-		targetEntity = theEntity.getWorld()
-		        .<T>getEntitiesByClass(targetClass, theEntity.getBoundingBox().expand(distance, distance / 2F, distance), this::isValidTarget)
+		targetEntity = mob.getWorld()
+		        .getEntitiesByClass(targetClass, mob.getBoundingBox().expand(distance, distance / 2F, distance), this::isValidTarget)
 		        .stream()
-		        .sorted(ComparatorDistanceFrom.ofComparisonEntities(theEntity.getX(), theEntity.getY(), theEntity.getZ()))
+		        .sorted(ComparatorDistanceFrom.ofComparisonEntities(mob.getX(), mob.getY(), mob.getZ()))
 		        .findFirst()
 		        .orElse(null)
         ;
@@ -58,12 +59,12 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 
 	@Override
 	public boolean shouldContinue() {
-		LivingEntity entityliving = theEntity.getTarget();
-		if (entityliving == null || !entityliving.isAlive() || theEntity.squaredDistanceTo(entityliving) > distance * distance) {
+		LivingEntity entityliving = mob.getTarget();
+		if (entityliving == null || !entityliving.isAlive() || mob.squaredDistanceTo(entityliving) > distance * distance) {
 			return false;
 		}
 		if (needsLos) {
-			if (!theEntity.canSee(entityliving)) {
+			if (!mob.canSee(entityliving)) {
 				if (++outOfLosTimer > 60) {
 					return false;
 				}
@@ -77,17 +78,17 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 
 	@Override
 	public void start() {
-		theEntity.setTarget(targetEntity);
+		mob.setTarget(targetEntity);
 		outOfLosTimer = 0;
 	}
 
 	@Override
 	public void stop() {
-		theEntity.setTarget(null);
+		mob.setTarget(null);
 		targetEntity = null;
 	}
 
-	public Class<T> getTargetType() {
+	public Class<? extends T> getTargetType() {
 		return targetClass;
 	}
 
@@ -99,12 +100,12 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 		this.targetEntity = entity;
 	}
 
-	protected boolean isValidTarget(@Nullable T entity) {
+	protected boolean isValidTarget(@Nullable Entity entity) {
 		return !(entity == null
-                || entity == theEntity
+                || entity == mob
                 || !entity.isAlive()
                 || entity instanceof PlayerEntity player && player.getAbilities().creativeMode
-                || (needsLos && (!theEntity.canSee(entity))));
+                || (needsLos && (!mob.canSee(entity))));
 	}
 
 }

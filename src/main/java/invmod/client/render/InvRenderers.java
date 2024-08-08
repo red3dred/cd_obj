@@ -20,17 +20,18 @@ import invmod.common.entity.EntityIMZombiePigman;
 import invmod.common.entity.EntitySFX;
 import invmod.common.entity.InvEntities;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.render.entity.EmptyEntityRenderer;
 import net.minecraft.client.render.entity.model.ZombieEntityModel;
 
 public interface InvRenderers {
 
 
     static void bootstrap() {
-        registerEntityRenderingHandler(EntityIMZombie.class, new RenderIMZombie(new ZombieEntityModel(0, true), 0.5F));
-        registerEntityRenderingHandler(EntityIMZombiePigman.class, new RenderIMZombiePigman(new ModelZombie(0, true), 0.5F));
+        EntityRendererRegistry.register(InvEntities.ZOMBIE, RenderIMZombie::new);
+        EntityRendererRegistry.register(InvEntities.ZOMBIE_PIGMAN, RenderIMZombiePigman::new);
         EntityRendererRegistry.register(InvEntities.SKELETON, RenderIMSkeleton::new);
         registerEntityRenderingHandler(EntityIMSpider.class, new RenderSpiderIM());
-        registerEntityRenderingHandler(EntityIMPigEngy.class, new RenderPigEngy(new ModelBiped(), 0.5F));
+        EntityRendererRegistry.register(InvEntities.PIGMAN_ENGINEER, RenderPigEngy::new);
         EntityRendererRegistry.register(InvEntities.IMP, RenderImp::new);
         registerEntityRenderingHandler(EntityIMThrower.class, new RenderThrower(new ModelThrower(), 1.5F));
         registerEntityRenderingHandler(EntityIMBurrower.class, new RenderBurrower());
@@ -38,8 +39,8 @@ public interface InvRenderers {
         registerEntityRenderingHandler(EntityIMBoulder.class, new RenderBoulder());
         registerEntityRenderingHandler(EntityIMTrap.class, new RenderTrap(new ModelTrap()));
         registerEntityRenderingHandler(EntityIMBolt.class, new RenderBolt());
-        registerEntityRenderingHandler(EntitySFX.class, new RenderInvis());
-        registerEntityRenderingHandler(EntityIMSpawnProxy.class, new RenderInvis());
+        EntityRendererRegistry.register(InvEntities.SFX, EmptyEntityRenderer::new);
+        EntityRendererRegistry.register(InvEntities.SPAWN_PROXY, EmptyEntityRenderer::new);
         registerEntityRenderingHandler(EntityIMEgg.class, new RenderEgg());
 
         registerEntityRenderingHandler(EntityIMCreeper.class, new RenderIMCreeper());

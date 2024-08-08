@@ -155,8 +155,8 @@ public class TerrainBuilder implements ITerrainBuild {
         List<ModifyBlockEntry> modList = new ArrayList<>();
         BlockPos pos = position.toBlockPos();
         if (mob.getWorld().isAir(pos.down())) {
-            if ((mob.avoidsBlock(mob.getWorld().getBlockState(pos.down(2)).getBlock()))
-                || (mob.avoidsBlock(mob.getWorld().getBlockState(pos.down(3)).getBlock()))) {
+            if ((mob.avoidsBlock(mob.getWorld().getBlockState(pos.down(2))))
+                || (mob.avoidsBlock(mob.getWorld().getBlockState(pos.down(3))))) {
                 modList.add(new ModifyBlockEntry(pos.down(1), Blocks.COBBLESTONE.getDefaultState(), (int) (COBBLE_COST / buildRate)));
             } else {
                 modList.add(new ModifyBlockEntry(pos.down(1), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));

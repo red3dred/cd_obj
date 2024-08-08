@@ -1,22 +1,31 @@
 package invmod.common.entity.ai;
 
-import invmod.common.entity.EntityIMLiving;
-import net.minecraft.entity.EntityLivingBase;
+import org.jetbrains.annotations.Nullable;
 
-public class EntityAITargetRetaliate extends EntityAISimpleTarget {
-	public EntityAITargetRetaliate(EntityIMLiving entity, Class<? extends EntityLivingBase> targetType, float distance) {
+import invmod.common.entity.EntityIMLiving;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+
+public class EntityAITargetRetaliate<T extends LivingEntity> extends EntityAISimpleTarget<T> {
+	public EntityAITargetRetaliate(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
 		super(entity, targetType, distance);
 	}
 
-	@Override
-	public boolean shouldExecute() {
-		EntityLivingBase attacker = getEntity().getAITarget();
-		if (attacker != null) {
-			if ((getEntity().getDistanceToEntity(attacker) <= getAggroRange()) && (getTargetType().isAssignableFrom(attacker.getClass()))) {
-				setTarget(attacker);
-				return true;
-			}
-		}
+	@SuppressWarnings("unchecked")
+    @Override
+	public boolean canStart() {
+		LivingEntity target = mob.getTarget();
+		if (isValidTarget(target)) {
+            setTarget((T)target);
+            return true;
+        }
 		return false;
+	}
+
+    @Override
+    protected boolean isValidTarget(@Nullable Entity entity) {
+	    return entity != null && entity.isAlive()
+	            && (mob.squaredDistanceTo(entity) <= getAggroRange())
+	            && getTargetType().isAssignableFrom(entity.getClass());
 	}
 }
