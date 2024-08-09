@@ -3,11 +3,9 @@ package invmod.common.entity.ai;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.Goal;
 import invmod.common.entity.INavigation;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 
-public class EntityAIMeleeFight<T extends EntityLivingBase> extends EntityAIMeleeAttack<T> {
-	private EntityIMLiving theEntity;
+public class EntityAIMeleeFight<T extends LivingEntity> extends EntityAIMeleeAttack<T> {
 	private int time;
 	private float startingHealth;
 	private int damageDealt;
@@ -16,77 +14,76 @@ public class EntityAIMeleeFight<T extends EntityLivingBase> extends EntityAIMele
 
 	public EntityAIMeleeFight(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
 		super(entity, targetClass, attackDelay);
-		this.theEntity = entity;
-		this.time = 0;
-		this.startingHealth = 0.0F;
-		this.damageDealt = 0;
-		this.invulnCount = 0;
 		this.retreatHealthLossPercent = retreatHealthLossPercent;
 	}
 
-	public boolean shouldExecute() {
-		Entity target = this.theEntity.getAttackTarget();
-		return (this.theEntity.getAIGoal() == Goal.MELEE_TARGET) && (target != null) && (target.getClass().isAssignableFrom(getTargetClass()));
+	@Override
+    public boolean canStart() {
+		return mob.getAIGoal() == Goal.MELEE_TARGET && hasValidTarget();
 	}
 
-	public boolean continueExecuting() {
-		return ((this.theEntity.getAIGoal() == Goal.MELEE_TARGET) || (isWaitingForTransition())) && (this.theEntity.getAttackTarget() != null);
+	@Override
+    public boolean shouldContinue() {
+		return (mob.getAIGoal() == Goal.MELEE_TARGET || isWaitingForTransition()) && hasValidTarget();
 	}
 
-	public void startExecuting() {
-		this.time = 0;
-		this.startingHealth = this.theEntity.getHealth();
-		this.damageDealt = 0;
-		this.invulnCount = 0;
+	private boolean hasValidTarget() {
+	    return mob.getTarget() instanceof LivingEntity target
+                && target.isAlive()
+                && target.getClass().isAssignableFrom(getTargetClass());
 	}
 
-	public void updateTask() {
+	@Override
+    public void start() {
+		time = 0;
+		startingHealth = mob.getHealth();
+		damageDealt = 0;
+		invulnCount = 0;
+	}
+
+	@Override
+    public void tick() {
 		updateDisengage();
 		updatePath();
-		super.updateTask();
-		if ((this.damageDealt > 0) || (this.startingHealth - this.theEntity.getHealth() > 0.0F))
-			this.time += 1;
+		super.tick();
+		if (damageDealt > 0 || startingHealth - mob.getHealth() > 0) {
+			time++;
+		}
 	}
 
 	public void updatePath() {
-		INavigation nav = this.theEntity.getNavigatorNew();
-		if (this.theEntity.getAttackTarget() != nav.getTargetEntity()) {
+		INavigation nav = mob.getNavigatorNew();
+		if (mob.getTarget() != nav.getTargetEntity()) {
 			nav.clearPath();
-			nav.autoPathToEntity(this.theEntity.getAttackTarget());
+			nav.autoPathToEntity(mob.getTarget());
 		}
 	}
 
 	protected void updateDisengage() {
-		if ((this.theEntity.getAIGoal() == Goal.MELEE_TARGET) && (shouldLeaveMelee())) {
-			this.theEntity.transitionAIGoal(Goal.LEAVE_MELEE);
+		if (mob.getAIGoal() == Goal.MELEE_TARGET && shouldLeaveMelee()) {
+			mob.transitionAIGoal(Goal.LEAVE_MELEE);
 		}
 	}
 
 	protected boolean isWaitingForTransition() {
-		return (this.theEntity.getAIGoal() == Goal.LEAVE_MELEE) && (this.theEntity.getPrevAIGoal() == Goal.MELEE_TARGET);
+		return mob.getAIGoal() == Goal.LEAVE_MELEE && mob.getPrevAIGoal() == Goal.MELEE_TARGET;
 	}
 
-	protected void attackEntity(EntityLivingBase target) {
+	@Override
+    protected void attackEntity(LivingEntity target) {
 		float h = target.getHealth();
 		super.attackEntity(target);
 		h -= target.getHealth();
-		if (h <= 0.0F) {
-			this.invulnCount += 1;
+		if (h <= 0) {
+			invulnCount++;
 		}
-		this.damageDealt = ((int) (this.damageDealt + h));
+		damageDealt += (int)h;
 	}
 
 	protected boolean shouldLeaveMelee() {
-		float damageReceived = this.startingHealth - this.theEntity.getHealth();
-		if ((this.time > 40) && (damageReceived > this.theEntity.getMaxHealth() * this.retreatHealthLossPercent)) {
-			return true;
-		}
-		if ((this.time > 100) && (damageReceived - this.damageDealt > this.theEntity.getMaxHealth() * 0.66F * this.retreatHealthLossPercent)) {
-			return true;
-		}
-		if (this.invulnCount >= 2) {
-			return true;
-		}
-		return false;
+		float damageReceived = startingHealth - mob.getHealth();
+		return (time > 40 && damageReceived > mob.getMaxHealth() * retreatHealthLossPercent)
+	        || (time > 100 && damageReceived - damageDealt > mob.getMaxHealth() * 0.66F * retreatHealthLossPercent)
+	        || invulnCount >= 2;
 	}
 }

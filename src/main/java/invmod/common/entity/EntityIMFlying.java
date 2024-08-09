@@ -4,10 +4,7 @@ import invmod.common.IBlockAccessExtended;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.MathUtil;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.entity.ai.control.BodyControl;
 import net.minecraft.world.World;
 
 public abstract class EntityIMFlying extends EntityIMLiving {
@@ -16,27 +13,24 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	private static final int META_TARGET_Z = 31;
 	private static final int META_THRUST_DATA = 28;
 	private static final int META_FLYSTATE = 27;
-	private final NavigatorFlying navigatorFlying;
-	private final IMMoveHelperFlying i;
-	private final IMLookHelper h;
-	private final IMBodyHelper bn;
-	private FlyState flyState;
-	private float liftFactor;
-	private float maxPoweredFlightSpeed;
-	private float thrust;
-	private float thrustComponentRatioMin;
-	private float thrustComponentRatioMax;
-	private float maxTurnForce;
-	private float optimalPitch;
-	private float landingSpeedThreshold;
-	private float maxRunSpeed;
+
+	private FlyState flyState = FlyState.GROUNDED;
+	private float liftFactor = 0.4F;
+	private float maxPoweredFlightSpeed = 0.28F;
+	private float thrust = 0.08F;
+	private float thrustComponentRatioMin = 0F;
+	private float thrustComponentRatioMax = 0.1F;
+	private float maxTurnForce = (float)(getGravity() * 3);
+	private float optimalPitch = 52.0F;
+	private float landingSpeedThreshold = (getMoveSpeedStat() * 1.2F);
+	private float maxRunSpeed = 0.45F;
 	private float flightAccelX;
 	private float flightAccelY;
 	private float flightAccelZ;
 	private boolean thrustOn;
-	private float thrustEffort;
-	private boolean flyPathfind;
-	private boolean debugFlying;
+	private float thrustEffort = 1.0F;
+	private boolean flyPathfind = true;
+	private boolean debugFlying = true;
 
 	public EntityIMFlying(World world) {
 		this(world, null);
@@ -44,28 +38,8 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
 	public EntityIMFlying(World world, INexusAccess nexus) {
 		super(world, nexus);
-		this.debugFlying = true;
-		this.flyState = FlyState.GROUNDED;
-		this.maxPoweredFlightSpeed = 0.28F;
-		this.liftFactor = 0.4F;
-		this.thrust = 0.08F;
-		this.thrustComponentRatioMin = 0.0F;
-		this.thrustComponentRatioMax = 0.1F;
-		this.maxTurnForce = (getGravity() * 3.0F);
-		this.optimalPitch = 52.0F;
-		this.landingSpeedThreshold = (getMoveSpeedStat() * 1.2F);
-		this.maxRunSpeed = 0.45F;
-		this.thrustOn = false;
-		this.thrustEffort = 1.0F;
-		this.flyPathfind = true;
-
-		this.i = new IMMoveHelperFlying(this);
-		this.h = new IMLookHelper(this);
-		this.bn = new IMBodyHelper(this);
-		IPathSource pathSource = getPathSource();
-		pathSource.setSearchDepth(800);
-		pathSource.setQuickFailDepth(200);
-		this.navigatorFlying = new NavigatorFlying(this, pathSource);
+		moveControl = new IMMoveHelperFlying(this);
+		lookControl = new IMLookHelper(this);
 
 		this.dataWatcher.addObject(29, Integer.valueOf(0));
 		this.dataWatcher.addObject(30, Integer.valueOf(0));
@@ -73,6 +47,21 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 		this.dataWatcher.addObject(28, Byte.valueOf((byte) 0));
 		this.dataWatcher.addObject(27, Integer.valueOf(this.flyState.ordinal()));
 	}
+
+	@Override
+    protected INavigation createIMNavigation(IPathSource pathSource) {
+	    return new NavigatorFlying(this, pathSource);
+	}
+
+    @Override
+    protected IPathSource createPathSource() {
+        return new PathCreator(800, 200);
+    }
+
+	   @Override
+    protected BodyControl createBodyControl() {
+	        return new IMBodyHelper(this);
+	    }
 
 	@Override
 	public void onUpdate() {
@@ -324,7 +313,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	@Override
 	protected void fall(float par1) {
 	}
-	
+
 	@Override
 	protected void updateFallState(double par1, boolean par3) {
 	}

@@ -3,7 +3,9 @@ package invmod.common.entity;
 import java.util.Iterator;
 
 import invmod.common.INotifyTask;
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAICreeperIMSwell;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -48,7 +50,7 @@ public class EntityIMCreeper extends EntityIMMob
 	    this.setGender(0);
 	    this.tier=1;
 	    setBaseMoveSpeedStat(0.21F);
-	    setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+	    setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 	    setAI();
   }
 
@@ -207,7 +209,7 @@ public class EntityIMCreeper extends EntityIMMob
   public float getBlockPathCost(PathNode prevNode, PathNode node, IBlockAccess terrainMap)
   {
     Block block = terrainMap.getBlock(node.xCoord, node.yCoord, node.zCoord);
-    if ((block !=Blocks.air) && (!block.getBlocksMovement(terrainMap, node.xCoord, node.yCoord, node.zCoord)) && (block != mod_Invasion.blockNexus))
+    if ((block !=Blocks.air) && (!block.getBlocksMovement(terrainMap, node.xCoord, node.yCoord, node.zCoord)) && (block != InvBlocks.NEXUS_CORE))
     {
       return prevNode.distanceTo(node) * 12.0F;
     }

@@ -1,7 +1,9 @@
 package invmod.common.entity;
 
 import invmod.common.INotifyTask;
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.util.Distance;
 
 import java.util.ArrayList;
@@ -145,7 +147,7 @@ public ModifyBlockEntry getLastBlockModified()
     Block oldBlock = this.theEntity.worldObj.getBlock(entry.getXCoord(), entry.getYCoord(), entry.getZCoord());
     int oldMeta = this.theEntity.worldObj.getBlockMetadata(entry.getXCoord(), entry.getYCoord(), entry.getZCoord());
     entry.setOldBlock(oldBlock);
-    if (oldBlock == mod_Invasion.blockNexus)
+    if (oldBlock == InvBlocks.NEXUS_CORE)
     {
       this.terrainFailFlag = true;
       return false;
@@ -158,7 +160,7 @@ public ModifyBlockEntry getLastBlockModified()
       {
     	  oldBlock.onBlockDestroyedByPlayer(this.theEntity.worldObj, entry.getXCoord(), entry.getYCoord(), entry.getZCoord(), oldMeta);
 
-    	  if(mod_Invasion.getDestructedBlocksDrop())
+    	  if(InvasionMod.getConfig().destructedBlocksDrop)
     	  {
     	  oldBlock.dropBlockAsItem(this.theEntity.worldObj, entry.getXCoord(), entry.getYCoord(), entry.getZCoord(), oldMeta, 0);
     	  }

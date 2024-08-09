@@ -8,6 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jetbrains.annotations.Nullable;
+
+import invmod.common.entity.EntityIMLiving;
+import invmod.common.nexus.IEntityIMPattern;
+import invmod.common.nexus.IMWaveBuilder;
+import invmod.common.util.ISelect;
+import invmod.common.util.RandomSelectionPool;
 import net.minecraft.block.Block;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
@@ -33,19 +40,56 @@ public class ConfigInvasion extends Config {
         m.put("IMZombiePigman-T2", 30);
         m.put("IMZombiePigman-T3", 65);
     });
+    private static final String[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS = {
+            "zombie_t1_any", "zombie_t2_any_basic",
+            "zombie_t2_plain", "zombie_t2_tar", "zombie_t2_pigman", "zombie_t3_any",
+            "zombiePigman_t1_any", "zombiePigman_t2_any", "zombiePigman_t3_any",
+            "spider_t1_any", "spider_t2_any", "pigengy_t1_any",
+            "skeleton_t1_any",
+            "thrower_t1", "thrower_t2",
+            "creeper_t1_basic",
+            "imp_t1"
+    };
+    private static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 0.5F, 0, 0, 0, 0, 0, 0, 0
+    };
+    private static final boolean DEFAULT_CRAFT_ITEMS_ENABLED = true;
+    private static final boolean DEFAULT_NIGHT_SPAWNS_ENABLED = false;
+    private static final int DEFAULT_MIN_CONT_MODE_DAYS = 2;
+    private static final int DEFAULT_MAX_CONT_MODE_DAYS = 3;
+    private static final int DEFAULT_NIGHT_MOB_SIGHT_RANGE = 20;
+    private static final int DEFAULT_NIGHT_MOB_SENSE_RANGE = 8;
+    private static final int DEFAULT_NIGHT_MOB_SPAWN_CHANCE = 30;
+    private static final int DEFAULT_NIGHT_MOB_MAX_GROUP_SIZE = 3;
+    private static final int DEFAULT_NIGHT_MOB_LIMIT_OVERRIDE = 70;
+    private static final float DEFAULT_NIGHT_MOB_STATS_SCALING = 1.0F;
+    private static final boolean DEFAULT_NIGHT_MOBS_BURN = true;
 
     private final Map<Identifier, Float> strengthOverrides = new HashMap<>();
 
     public boolean enableLog;
-    public boolean destructedBlocksDrop;
-    public boolean updateNotifications;
-    public boolean craftItemsEnabled;
     public boolean debugMode;
-    public int minContinuousModeDays;
-    public int maxContinuousModeDays;
+    public boolean destructedBlocksDrop = true;
+    public boolean updateNotifications;
+
+    @Deprecated
+    public boolean craftItemsEnabled = DEFAULT_CRAFT_ITEMS_ENABLED;
+    public int minContinuousModeDays = DEFAULT_MIN_CONT_MODE_DAYS;
+    public int maxContinuousModeDays = DEFAULT_MAX_CONT_MODE_DAYS;
+
+    public boolean nightSpawnsEnabled = DEFAULT_NIGHT_SPAWNS_ENABLED;
+    public int nightMobSightRange = DEFAULT_NIGHT_MOB_SIGHT_RANGE;
+    public int nightMobSenseRange = DEFAULT_NIGHT_MOB_SENSE_RANGE;
+    public int nightMobSpawnChance = DEFAULT_NIGHT_MOB_SPAWN_CHANCE;
+    public int nightMobMaxGroupSize = DEFAULT_NIGHT_MOB_MAX_GROUP_SIZE;
+    public int maxNightMobs = DEFAULT_NIGHT_MOB_LIMIT_OVERRIDE;
+    public boolean nightMobsBurnInDay = DEFAULT_NIGHT_MOBS_BURN;
 
     private final Map<String, Integer> mobHealthNightspawn = new HashMap<>();
     private final Map<String, Integer> mobHealthInvasion = new HashMap<>();
+
+    @Nullable
+    private ISelect<IEntityIMPattern> spawnPool;
 
     public Optional<Float> getBlockStrength(Block block) {
         return Optional.ofNullable(strengthOverrides.get(Registries.BLOCK.getId(block)));
@@ -55,8 +99,19 @@ public class ConfigInvasion extends Config {
         return getBlockStrength(block).map(strength -> 1 + strength * 0.4F);
     }
 
-    public Integer getHealth(String mobName, boolean nightTime) {
+    public int getHealth(String mobName, boolean nightTime) {
         return (nightTime ? mobHealthNightspawn : mobHealthInvasion).getOrDefault(mobName, DEFAULT_MOB_HEALTHS.getOrDefault(mobName, 20));
+    }
+
+    public int getHealth(EntityIMLiving mob) {
+        return getHealth(mob.getType(), !mob.hasNexus());
+    }
+
+    public synchronized ISelect<IEntityIMPattern> getSpawnPool() {
+        if (spawnPool == null) {
+            spawnPool = loadSpawnPool();
+        }
+        return spawnPool;
     }
 
     @Override
@@ -100,7 +155,36 @@ public class ConfigInvasion extends Config {
         minContinuousModeDays = getPropertyValueInt("min-days-to-attack", 2);
         maxContinuousModeDays = getPropertyValueInt("max-days-to-attack", 3);
 
+        nightSpawnsEnabled = getPropertyValueBoolean("night-spawns-enabled", false);
+        nightMobSightRange = getPropertyValueInt("night-mob-sight-range", 20);
+        nightMobSenseRange = getPropertyValueInt("night-mob-sense-range", 12);
+        nightMobSpawnChance = getPropertyValueInt("night-mob-spawn-chance", 30);
+        nightMobMaxGroupSize = getPropertyValueInt("night-mob-max-group-size", 3);
+        maxNightMobs = getPropertyValueInt("mob-limit-override", 70);
+        nightMobsBurnInDay = getPropertyValueBoolean("night-mobs-burn-in-day", true);
+        spawnPool = loadSpawnPool();
         saveConfig(file);
+    }
+
+    private ISelect<IEntityIMPattern> loadSpawnPool() {
+        RandomSelectionPool<IEntityIMPattern> pool = new RandomSelectionPool<>();
+        if (DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length == DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS.length) {
+            for (int i = 0; i < DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length; i++) {
+                String pattern = getPropertyValueString("nm-spawnpool1-slot" + (1 + i), DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS[i]);
+                float weight = getPropertyValueFloat("nm-spawnpool1-slot" + (1 + i) + "-weight", DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS[i]);
+
+                if (IMWaveBuilder.isPatternNameValid(pattern)) {
+                    mod_Invasion.log("Added entry for pattern 1 slot " + (i + 1));
+                    pool.addEntry(IMWaveBuilder.getPattern(pattern), weight);
+                } else {
+                    mod_Invasion.log("Pattern 1 slot " + (i + 1) + " in config not recognized. Proceeding as blank.");
+                    setProperty("nm-spawnpool1-slot" + (1 + i), "none");
+                }
+            }
+        } else {
+            mod_Invasion.log("Mob pattern table element mismatch. Ensure each slot has a probability weight");
+        }
+        return pool;
     }
 
     private void saveConfig(File saveFile) {
@@ -161,7 +245,7 @@ public class ConfigInvasion extends Config {
             writeLine(writer, "# Nightime mob spawning tables (also does not affect the nexus)");
             writeLine(writer, "# A spawnpool contains mobs that can possibly spawn, and the probability weight of them spawning.");
             writeLine(writer, "# Expenation: zombie_t2_any_basic has all T2, zombie_t2_plain excludes tar zombies");
-            for (int i = 0; i < mod_Invasion.DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length; i++) {
+            for (int i = 0; i < DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length; i++) {
                 writeProperty(writer, "nm-spawnpool1-slot" + (1 + i));
                 writeProperty(writer, "nm-spawnpool1-slot" + (1 + i) + "-weight");
             }

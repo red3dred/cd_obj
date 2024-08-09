@@ -7,17 +7,15 @@ import invmod.common.mod_Invasion;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
 import net.minecraft.potion.Potion;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public class EntityIMBird extends EntityIMFlying
 {
   private static final int META_ANIMATION_FLAGS = 26;
-  private AnimationState animationRun;
-  private AnimationState animationFlap;
-  private AnimationState animationBeak;
-  private WingController wingController;
-  private LegController legController;
-  private MouthController beakController;
+  private final WingController wingController = AnimationRegistry.instance().getAnimation("wing_flap_2_piece").createState(this, AnimationAction.WINGTUCK, WingController::new);
+  private final LegController legController = AnimationRegistry.instance().getAnimation("bird_run").createState(this, AnimationAction.STAND, LegController::new);
+  private final MouthController beakController = AnimationRegistry.instance().getAnimation("bird_beak").createState(this, AnimationAction.MOUTH_CLOSE, MouthController::new);
   private int animationFlags;
   private float carriedEntityYawOffset;
   private int tier;
@@ -30,20 +28,10 @@ public class EntityIMBird extends EntityIMFlying
   public EntityIMBird(World world, INexusAccess nexus)
   {
 	  super(world, nexus);
-	    this.animationRun = new AnimationState(AnimationRegistry.instance().getAnimation("bird_run"));
-	    this.animationFlap = new AnimationState(AnimationRegistry.instance().getAnimation("wing_flap_2_piece"));
-	    this.animationBeak = new AnimationState(AnimationRegistry.instance().getAnimation("bird_beak"));
-	    this.animationRun.setNewAction(AnimationAction.STAND);
-	    this.animationFlap.setNewAction(AnimationAction.WINGTUCK);
-	    this.animationBeak.setNewAction(AnimationAction.MOUTH_CLOSE);
-	    this.wingController = new WingController(this, this.animationFlap);
-	    this.legController = new LegController(this, this.animationRun);
-	    this.beakController = new MouthController(this, this.animationBeak);
 	    setName("Bird");
 	    setGender(2);
 	    setBaseMoveSpeedStat(1.0F);
 	    setAttackStrength(1);
-	    setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
 	    this.animationFlags = 0;
 	    this.carriedEntityYawOffset = 0.0F;
 	    setGravity(0.025F);
@@ -76,9 +64,9 @@ public class EntityIMBird extends EntityIMFlying
   {
   }
 
-  public AnimationState getWingAnimationState()
+  public AnimationState<?> getWingAnimationState()
   {
-    return this.animationFlap;
+    return wingController.getState();
   }
 
   public float getLegSweepProgress()
@@ -86,14 +74,14 @@ public class EntityIMBird extends EntityIMFlying
     return 1.0F;
   }
 
-  public AnimationState getLegAnimationState()
+  public AnimationState<?> getLegAnimationState()
   {
-    return this.animationRun;
+    return legController.getState();
   }
 
-  public AnimationState getBeakAnimationState()
+  public AnimationState<?> getBeakAnimationState()
   {
-    return this.animationBeak;
+    return beakController.getState();
   }
 
   @Override
@@ -142,7 +130,6 @@ public String getSpecies()
   @Override
   public boolean attackEntityFrom(DamageSource par1DamageSource, float par2)
   {
-    if (ForgeHooks.onLivingAttack(this, par1DamageSource, par2)) return false;
     if (isEntityInvulnerable())
     {
       return false;
@@ -317,11 +304,5 @@ public String getSpecies()
   public int getTier()
   {
 	  return this.tier;
-  }
-
-  @Override
-  public String toString()
-  {
-	  return "IMBird T"+this.getTier();
   }
 }

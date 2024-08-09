@@ -1,7 +1,9 @@
 package invmod.common.entity;
 
 import invmod.common.INotifyTask;
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAIRandomBoulder;
@@ -43,7 +45,7 @@ public class EntityIMThrower extends EntityIMMob
 		this.experienceValue = 20;
 		this.clearingPoint = false;
 		this.tier=1;
-		setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+		setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 		setName("Thrower");
 		setDestructiveness(2);
 		setSize(1.8F, 1.95F);
@@ -171,7 +173,7 @@ public class EntityIMThrower extends EntityIMMob
 			setBaseMoveSpeedStat(0.13F);
 			this.attackStrength = 10;
 			this.experienceValue = 20;
-			setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+			setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 			setName("Thrower");
 			setDestructiveness(2);
 			setSize(1.8F, 1.95F);
@@ -181,7 +183,7 @@ public class EntityIMThrower extends EntityIMMob
 			setBaseMoveSpeedStat(0.23F);
 			this.attackStrength = 15;
 			this.experienceValue = 25;
-			setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+			setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 			setName("Big Thrower");
 			setDestructiveness(4);
 			setSize(2F, 2F);
@@ -297,15 +299,15 @@ public class EntityIMThrower extends EntityIMMob
 		Block block = this.worldObj.getBlock(x, y, z);
 		//if ((block != null) && ((isNexusBound()) || (this.j != null))) {
 		if ((block != null) || (this.j != null)) {
-			if ((block == mod_Invasion.blockNexus) && (this.attackTime == 0) && (x == this.targetNexus.getXCoord()) && (y == this.targetNexus.getYCoord()) && (z == this.targetNexus.getZCoord())) {
-				this.targetNexus.attackNexus(5);
+			if ((block == InvBlocks.NEXUS_CORE) && (this.attackTime == 0) && (x == getNexus().getXCoord()) && (y == getNexus().getYCoord()) && (z == getNexus().getZCoord())) {
+				getNexus().attackNexus(5);
 				this.attackTime = 60;
-			} else if (block != mod_Invasion.blockNexus) {
+			} else if (block != InvBlocks.NEXUS_CORE) {
 				int meta = this.worldObj.getBlockMetadata(x, y, z);
 				this.worldObj.setBlock(x, y, z, Blocks.air);
 				block.onBlockDestroyedByPlayer(this.worldObj, x, y, z, meta);
 
-				if(mod_Invasion.getDestructedBlocksDrop())
+				if(InvasionMod.getConfig().destructedBlocksDrop)
 				{
 				block.dropBlockAsItem(this.worldObj, x, y, z, meta, 0);
 				}

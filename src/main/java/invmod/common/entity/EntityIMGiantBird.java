@@ -1,5 +1,6 @@
 package invmod.common.entity;
 
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIBirdFight;
 import invmod.common.entity.ai.EntityAIBoP;
@@ -12,11 +13,7 @@ import invmod.common.entity.ai.EntityAIStabiliseFlying;
 import invmod.common.entity.ai.EntityAISwoop;
 import invmod.common.entity.ai.EntityAIWatchTarget;
 import invmod.common.nexus.INexusAccess;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.world.World;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class EntityIMGiantBird extends EntityIMBird
 {
@@ -28,7 +25,7 @@ public class EntityIMGiantBird extends EntityIMBird
   private static final byte TRIGGER_SCREECH = 10;
   private static final byte TRIGGER_DEATHSOUND = 10;
   private int tier;
-  
+
   public EntityIMGiantBird(World world)
   {
     this(world, null);
@@ -50,7 +47,7 @@ public class EntityIMGiantBird extends EntityIMBird
     setThrustComponentRatioMin(0.0F);
     setThrustComponentRatioMax(0.5F);
     setMaxTurnForce(getGravity() * 8.0F);
-    setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+    setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
     setBaseMoveSpeedStat(0.4F);
     setAI();
     setDebugMode(1);
@@ -158,19 +155,6 @@ public class EntityIMGiantBird extends EntityIMBird
   }
 
   @Override
-  protected void onDebugChange()
-  {
-    if (getDebugMode() == 1)
-    {
-      setShouldRenderLabel(true);
-    }
-    else
-    {
-      setShouldRenderLabel(false);
-    }
-  }
-
-  @Override
   @SideOnly(Side.CLIENT)
   public void handleHealthUpdate(byte b)
   {
@@ -226,13 +210,13 @@ public class EntityIMGiantBird extends EntityIMBird
 
     this.targetTasks.addTask(2, new EntityAISimpleTarget(this, EntityZombie.class, 58.0F, true));
   }
-  
+
   @Override
   public int getTier()
   {
 	  return this.tier;
   }
-  
+
   @Override
   public String toString()
   {

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
 public interface INexusAccess extends IPosition {
@@ -40,4 +41,15 @@ public interface INexusAccess extends IPosition {
     void askForRespawn(EntityIMLiving paramEntityIMLiving);
 
     Map<UUID, Long> getBoundPlayers();
+
+
+    default void sendWarning(String translationKey, Object...params) {
+        sendMessage(Formatting.RED, translationKey, params);
+    }
+
+    default void sendNotice(String translationKey, Object...params) {
+        sendMessage(Formatting.DARK_GREEN, translationKey, params);
+    }
+
+    void sendMessage(Formatting color, String translationKey, Object...params);
 }

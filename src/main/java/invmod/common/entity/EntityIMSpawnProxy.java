@@ -1,7 +1,9 @@
 package invmod.common.entity;
 
-import invmod.common.mod_Invasion;
+import java.util.function.Consumer;
 
+import invmod.common.ConfigInvasion;
+import invmod.common.InvasionMod;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
@@ -19,11 +21,10 @@ public class EntityIMSpawnProxy extends MobEntity {
     @Override
     public void tick() {
         if (!getWorld().isClient) {
-            Entity[] entities = mod_Invasion.getNightMobSpawns1(getWorld());
-            for (Entity entity : entities) {
+            generateMobGroup(getWorld(), entity -> {
                 entity.updatePositionAndAngles(getX(), getY(), getZ(), getYaw(), getPitch());
                 getWorld().spawnEntity(entity);
-            }
+            });
         }
         discard();
     }
@@ -42,5 +43,14 @@ public class EntityIMSpawnProxy extends MobEntity {
 
     public float getBlockPathWeight(WorldAccess world, BlockPos pos) {
         return 0.5F - getWorld().getLightLevel(pos);
+    }
+
+    public static void generateMobGroup(World world, Consumer<Entity> spawner) {
+        ConfigInvasion config = InvasionMod.getConfig();
+        int numberOfMobs = world.getRandom().nextInt(config.nightMobMaxGroupSize) + 1;
+        for (int i = 0; i < numberOfMobs; i++) {
+            EntityIMLiving mob = config.getSpawnPool().selectNext().generateEntityConstruct().createMob(world, null);
+            spawner.accept(mob);
+        }
     }
 }

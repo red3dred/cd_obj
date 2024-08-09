@@ -1,9 +1,8 @@
 package invmod.common.entity;
 
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
 public class EntityIMEgg extends EntityIMLiving
@@ -14,7 +13,7 @@ public class EntityIMEgg extends EntityIMLiving
   private boolean hatched;
   private Entity parent;
   private Entity[] contents;
-  
+
   public EntityIMEgg(World world)
   {
     super(world);
@@ -34,7 +33,7 @@ public class EntityIMEgg extends EntityIMLiving
 
     getDataWatcher().addObject(META_HATCHED, Byte.valueOf((byte)0));
 
-    setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+    setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
     setName("Spider Egg");
     setGender(0);
     setPosition(parent.posX, parent.posY, parent.posZ);
@@ -121,7 +120,7 @@ public class EntityIMEgg extends EntityIMLiving
       }
     }
   }
-  
+
   @Override
   public String toString()
   {

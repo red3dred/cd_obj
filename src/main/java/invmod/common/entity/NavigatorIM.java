@@ -5,13 +5,8 @@ import invmod.common.nexus.INexusAccess;
 import invmod.common.util.CoordsInt;
 import invmod.common.util.Distance;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkCache;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.chunk.ChunkCache;
 
 public class NavigatorIM implements INotifyTask, INavigation {
 	protected static final int XZPATH_HORIZONTAL_SEARCH = 1;
@@ -47,19 +42,12 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		this.noSunPathfind = false;
 		this.lastPos = Vec3.createVectorHelper(0.0D, 0.0D, 0.0D);
 		this.pathEndEntityLastPos = Vec3.createVectorHelper(0.0D, 0.0D, 0.0D);
-		this.lastDistance = 0.0D;
-		this.ticksStuck = 0;
-		this.canSwim = false;
-		this.waitingForNotify = false;
 		this.actionCleared = true;
 		this.nodeActionFinished = true;
-		this.maintainPosOnWait = false;
-		this.haltMovement = false;
-		this.lastActionResult = 0;
-		this.autoPathToEntity = false;
 	}
 
-	public PathAction getCurrentWorkingAction() {
+	@Override
+    public PathAction getCurrentWorkingAction() {
 		if ((!this.nodeActionFinished) && (!noPath())) {
 			return this.activeNode.action;
 		}
@@ -79,7 +67,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		this.maintainPosOnWait = true;
 	}
 
-	public void setSpeed(float par1) {
+	@Override
+    public void setSpeed(float par1) {
 		this.moveSpeed = par1;
 	}
 
@@ -87,18 +76,21 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return this.autoPathToEntity;
 	}
 
-	public Entity getTargetEntity() {
+	@Override
+    public Entity getTargetEntity() {
 		return this.pathEndEntity;
 	}
 
-	public Path getPathToXYZ(double x, double y, double z, float targetRadius) {
+	@Override
+    public Path getPathToXYZ(double x, double y, double z, float targetRadius) {
 		if (!canNavigate()) {
 			return null;
 		}
 		return createPath(this.theEntity, MathHelper.floor_double(x), (int) y, MathHelper.floor_double(z), targetRadius);
 	}
 
-	public boolean tryMoveToXYZ(double x, double y, double z, float targetRadius, float speed) {
+	@Override
+    public boolean tryMoveToXYZ(double x, double y, double z, float targetRadius, float speed) {
 		this.ticksStuck = 0;
 		Path newPath = getPathToXYZ(MathHelper.floor_double(x), (int) y, MathHelper.floor_double(z), targetRadius);
 		if (newPath != null) {
@@ -107,7 +99,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return false;
 	}
 
-	public Path getPathTowardsXZ(double x, double z, int min, int max, int verticalRange) {
+	@Override
+    public Path getPathTowardsXZ(double x, double z, int min, int max, int verticalRange) {
 		if (canNavigate()) {
 			Vec3 target = findValidPointNear(x, z, min, max, verticalRange);
 			if (target != null) {
@@ -119,7 +112,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return null;
 	}
 
-	public boolean tryMoveTowardsXZ(double x, double z, int min, int max, int verticalRange, float speed) {
+	@Override
+    public boolean tryMoveTowardsXZ(double x, double z, int min, int max, int verticalRange, float speed) {
 		this.ticksStuck = 0;
 		Path newPath = getPathTowardsXZ(MathHelper.floor_double(x), MathHelper.floor_double(z), min, max, verticalRange);
 		if (newPath != null) {
@@ -128,14 +122,16 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return false;
 	}
 
-	public Path getPathToEntity(Entity targetEntity, float targetRadius) {
+	@Override
+    public Path getPathToEntity(Entity targetEntity, float targetRadius) {
 		if (!canNavigate()) {
 			return null;
 		}
 		return createPath(this.theEntity, MathHelper.floor_double(targetEntity.posX), MathHelper.floor_double(targetEntity.boundingBox.minY), MathHelper.floor_double(targetEntity.posZ), targetRadius);
 	}
 
-	public boolean tryMoveToEntity(Entity targetEntity, float targetRadius, float speed) {
+	@Override
+    public boolean tryMoveToEntity(Entity targetEntity, float targetRadius, float speed) {
 		Path newPath = getPathToEntity(targetEntity, targetRadius);
 		if (newPath != null) {
 			if (setPath(newPath, speed)) {
@@ -150,12 +146,14 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return false;
 	}
 
-	public void autoPathToEntity(Entity target) {
+	@Override
+    public void autoPathToEntity(Entity target) {
 		this.autoPathToEntity = true;
 		this.pathEndEntity = target;
 	}
 
-	public boolean setPath(Path newPath, float speed) {
+	@Override
+    public boolean setPath(Path newPath, float speed) {
 		if (newPath == null) {
 			this.path = null;
 			this.theEntity.onPathSet();
@@ -199,7 +197,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	                	//NEVER USE BREAKS! unless you are retarded like me and don't know how to convert a float width to double getDistance
 	                	break;
 	                }
-				
+
 			}
 
 		}
@@ -212,15 +210,18 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return true;
 	}
 
-	public Path getPath() {
+	@Override
+    public Path getPath() {
 		return this.path;
 	}
 
-	public boolean isWaitingForTask() {
+	@Override
+    public boolean isWaitingForTask() {
 		return this.waitingForNotify;
 	}
 
-	public void onUpdateNavigation() {
+	@Override
+    public void onUpdateNavigation() {
 		this.totalTicks += 1;
 		if (this.autoPathToEntity) {
 			updateAutoPathToEntity();
@@ -285,24 +286,29 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		}
 	}
 
-	public void notifyTask(int result) {
+	@Override
+    public void notifyTask(int result) {
 		this.waitingForNotify = false;
 		this.lastActionResult = result;
 	}
 
-	public int getLastActionResult() {
+	@Override
+    public int getLastActionResult() {
 		return this.lastActionResult;
 	}
 
-	public boolean noPath() {
+	@Override
+    public boolean noPath() {
 		return (this.path == null) || (this.path.isFinished());
 	}
 
-	public int getStuckTime() {
+	@Override
+    public int getStuckTime() {
 		return this.ticksStuck;
 	}
 
-	public float getLastPathDistanceToTarget() {
+	@Override
+    public float getLastPathDistanceToTarget() {
 		if (noPath()) {
 			if ((this.path != null) && (this.path.getIntendedTarget() != null)) {
 				PathNode node = this.path.getIntendedTarget();
@@ -314,17 +320,20 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return this.path.getFinalPathPoint().distanceTo(this.path.getIntendedTarget());
 	}
 
-	public void clearPath() {
+	@Override
+    public void clearPath() {
 		this.path = null;
 		this.autoPathToEntity = false;
 		resetStatus();
 	}
 
-	public void haltForTick() {
+	@Override
+    public void haltForTick() {
 		this.haltMovement = true;
 	}
 
-	public String getStatus() {
+	@Override
+    public String getStatus() {
 		String s = "";
 		if (this.autoPathToEntity) {
 			s = s + "Auto:";

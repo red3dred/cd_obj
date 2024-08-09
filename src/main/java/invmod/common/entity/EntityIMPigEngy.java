@@ -2,7 +2,9 @@ package invmod.common.entity;
 
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAIKillEntity;
@@ -60,7 +62,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		this.dataWatcher.addObject(30, new ItemStack(Items.iron_pickaxe,1));
 		this.dataWatcher.addObject(31, Byte.valueOf((byte) 0));
 
-		setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+		setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 		setName("Pigman Engineer");
 		setGender(1);
 		setDestructiveness(2);
@@ -120,12 +122,12 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		this.supportThisTick = 0.0F;
 
 		this.askForScaffoldTimer -= 1;
-		if (this.targetNexus != null) {
+		if (getNexus() != null) {
 			int weight = 1;
-            if (this.targetNexus.getYCoord() - this.getYCoord() > 1) {
-                weight = Math.max(6000 / this.targetNexus.getYCoord() - getYCoord(), 1);
+            if (getNexus().getYCoord() - this.getYCoord() > 1) {
+                weight = Math.max(6000 / getNexus().getYCoord() - getYCoord(), 1);
             }
-			if ((this.currentGoal == Goal.BREAK_NEXUS) && (((getNavigatorNew().getLastPathDistanceToTarget() > 2.0F) && (this.askForScaffoldTimer <= 0)) || (this.rand.nextInt(weight) == 0))) {
+			if ((this.currentGoal == Goal.BREAK_NEXUS) && (((getNavigatorNew().getLastPathDistanceToTarget() > 2.0F) && (this.askForScaffoldTimer <= 0)) || (getRandom().nextInt(weight) == 0))) {
 				if (this.targetNexus.getAttackerAI().askGenerateScaffolds(this)) {
 					getNavigatorNew().clearPath();
 					this.askForScaffoldTimer = 60;
@@ -196,11 +198,11 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		return this.tier;
 	}
 	@Override
-	public float getBlockRemovalCost(int x, int y, int z) {
-		return getBlockStrength(x, y, z) * 20.0F;
+	public float getBlockRemovalCost(BlockPos pos) {
+		return getBlockStrength(pos) * 20;
 	}
 	@Override
-	public boolean canClearBlock(int x, int y, int z) {
+	public boolean canClearBlock(BlockPos pos) {
 		Block block = this.worldObj.getBlock(x, y, z);
 		return (block == Blocks.air) || (isBlockDestructible(this.worldObj, x, y, z, block));
 	}
@@ -252,7 +254,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		if (block == Blocks.ladder) {
 			return prevNode.distanceTo(node) * 1.0F * 0.7F * multiplier;
 		}
-		if ((!block.getBlocksMovement(terrainMap, node.xCoord, node.yCoord, node.zCoord)) && (block != mod_Invasion.blockNexus)) {
+		if ((!block.getBlocksMovement(terrainMap, node.xCoord, node.yCoord, node.zCoord)) && (block != InvBlocks.NEXUS_CORE)) {
 			return prevNode.distanceTo(node) * 3.2F;
 		}
 

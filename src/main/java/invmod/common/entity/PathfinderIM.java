@@ -1,174 +1,122 @@
 package invmod.common.entity;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.IPathfindable;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.world.BlockView;
 
-public class PathfinderIM
-{
-  private static PathfinderIM pathfinder = new PathfinderIM();
-  private WorldAccess worldMap;
-  private NodeContainer path;
-  private IntHashMap pointMap;
-  private PathNode[] pathOptions;
-  private PathNode finalTarget;
-  private float targetRadius;
-  private int pathsIndex;
-  private float searchRange;
-  private int nodeLimit;
-  private int nodesOpened;
+public class PathfinderIM {
+    public static final PathfinderIM INSTANCE = new PathfinderIM();
+    private BlockView worldMap;
+    private final NodeContainer path = new NodeContainer();
+    private final Int2ObjectMap<PathNode> pointMap = new Int2ObjectOpenHashMap<>();
+    private final PathNode[] pathOptions = new PathNode[32];
+    private PathNode finalTarget;
+    private float targetRadius;
+    private int pathsIndex;
+    private float searchRange;
+    private int nodeLimit;
+    private int nodesOpened;
 
-  public static synchronized Path createPath(IPathfindable entity, int x, int y, int z, int x2, int y2, int z2, float targetRadius, float maxSearchRange, IBlockAccess iblockaccess, int searchDepth, int quickFailDepth)
-  {
-    return pathfinder.createEntityPathTo(entity, x, y, z, x2, y2, z2, targetRadius, maxSearchRange, iblockaccess, searchDepth, quickFailDepth);
-  }
+    @Nullable
+    public synchronized Path createPath(IPathfindable entity, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView iblockaccess, int searchDepth, int quickFailDepth) {
+        worldMap = iblockaccess;
+        nodeLimit = searchDepth;
+        nodesOpened = 1;
+        searchRange = maxSearchRange;
+        path.clearPath();
+        pointMap.clear();
+        PathNode start = openPoint(from);
+        PathNode target = openPoint(to);
+        finalTarget = target;
+        this.targetRadius = targetRadius;
+        return addToPath(entity, start, target);
+    }
 
-  public PathfinderIM()
-  {
-    this.path = new NodeContainer();
-    this.pointMap = new IntHashMap();
-    this.pathOptions = new PathNode[32];
-  }
+    @Nullable
+    private Path addToPath(IPathfindable entity, PathNode start, PathNode target) {
+        start.totalPathDistance = 0;
+        start.distanceToNext = start.distanceTo(target);
+        start.distanceToTarget = start.distanceToNext;
 
-  public Path createEntityPathTo(IPathfindable entity, int x, int y, int z, int x2, int y2, int z2, float targetRadius, float maxSearchRange, IBlockAccess iblockaccess, int searchDepth, int quickFailDepth)
-  {
-    this.worldMap = iblockaccess;
-    this.nodeLimit = searchDepth;
-    this.nodesOpened = 1;
-    this.searchRange = maxSearchRange;
-    this.path.clearPath();
-    this.pointMap.clearMap();
-    PathNode start = openPoint(x, y, z);
-    PathNode target = openPoint(x2, y2, z2);
-    this.finalTarget = target;
-    this.targetRadius = targetRadius;
-    Path pathentity = addToPath(entity, start, target);
+        path.clearPath();
+        path.addPoint(start);
+        PathNode previousPoint = start;
 
-    return pathentity;
-  }
+        while (!path.isPathEmpty()) {
+            if (nodesOpened > nodeLimit) {
+                return new Path(start.getPath(), previousPoint);
+            }
+            PathNode examiningPoint = path.dequeue();
+            float distanceToTarget = examiningPoint.distanceTo(target);
+            if (distanceToTarget < this.targetRadius + 0.1F) {
+                return new Path(start.getPath(), examiningPoint);
+            }
+            if (distanceToTarget < previousPoint.distanceTo(target)) {
+                previousPoint = examiningPoint;
+            }
+            examiningPoint.isFirst = true;
 
-  private Path addToPath(IPathfindable entity, PathNode start, PathNode target)
-  {
-    start.totalPathDistance = 0.0F;
-    start.distanceToNext = start.distanceTo(target);
-    start.distanceToTarget = start.distanceToNext;
-    this.path.clearPath();
-    this.path.addPoint(start);
-    PathNode previousPoint = start;
+            int i = findPathOptions(entity, examiningPoint, target);
 
-    int loops = 0;
+            int j = 0;
+            while (j < i) {
+                PathNode newPoint = pathOptions[j];
 
-    long elapsed = 0L;
-    while (!this.path.isPathEmpty())
-    {
-      if (this.nodesOpened > this.nodeLimit)
-      {
-        return createEntityPath(start, previousPoint);
-      }
-      PathNode examiningPoint = this.path.dequeue();
-      float distanceToTarget = examiningPoint.distanceTo(target);
-      if (distanceToTarget < this.targetRadius + 0.1F)
-      {
-        return createEntityPath(start, examiningPoint);
-      }
-      if (distanceToTarget < previousPoint.distanceTo(target))
-      {
-        previousPoint = examiningPoint;
-      }
-      examiningPoint.isFirst = true;
+                float actualCost = examiningPoint.totalPathDistance + entity.getBlockPathCost(examiningPoint, newPoint, this.worldMap);
 
-      int i = findPathOptions(entity, examiningPoint, target);
+                if (!newPoint.isAssigned() || actualCost < newPoint.totalPathDistance) {
+                    newPoint.setPrevious(examiningPoint);
+                    newPoint.totalPathDistance = actualCost;
+                    newPoint.distanceToNext = estimateDistance(newPoint, target);
 
-      int j = 0;
-      while (j < i)
-      {
-        PathNode newPoint = this.pathOptions[j];
-
-        float actualCost = examiningPoint.totalPathDistance + entity.getBlockPathCost(examiningPoint, newPoint, this.worldMap);
-
-        if ((!newPoint.isAssigned()) || (actualCost < newPoint.totalPathDistance))
-        {
-          newPoint.setPrevious(examiningPoint);
-          newPoint.totalPathDistance = actualCost;
-          newPoint.distanceToNext = estimateDistance(newPoint, target);
-
-          if (newPoint.isAssigned())
-          {
-            this.path.changeDistance(newPoint, newPoint.totalPathDistance + newPoint.distanceToNext);
-          }
-          else
-          {
-            newPoint.distanceToTarget = (newPoint.totalPathDistance + newPoint.distanceToNext);
-            this.path.addPoint(newPoint);
-          }
+                    if (newPoint.isAssigned()) {
+                        path.changeDistance(newPoint, newPoint.totalPathDistance + newPoint.distanceToNext);
+                    } else {
+                        newPoint.distanceToTarget = newPoint.totalPathDistance + newPoint.distanceToNext;
+                        path.addPoint(newPoint);
+                    }
+                }
+                j++;
+            }
         }
-        j++;
-      }
+
+        return previousPoint == start ? null : new Path(previousPoint.getPath(), finalTarget);
     }
 
-    if (previousPoint == start) {
-      return null;
-    }
-    return createEntityPath(start, previousPoint);
-  }
-
-  public void addNode(BlockPos pos, PathAction action)
-  {
-    addNode(pos.getX(), pos.getY(), pos.getZ(), action);
-  }
-
-  public void addNode(int x, int y, int z, PathAction action)
-  {
-    PathNode node = openPoint(x, y, z, action);
-    if ((node != null) && (!node.isFirst) && (node.distanceTo(this.finalTarget) < this.searchRange))
-      this.pathOptions[(this.pathsIndex++)] = node;
-  }
-
-  private float estimateDistance(PathNode start, PathNode target) {
-    return (float)start.pos.getSquaredDistance(target.pos);
-  }
-
-  protected PathNode openPoint(int x, int y, int z)
-  {
-    return openPoint(x, y, z, PathAction.NONE);
-  }
-
-  protected PathNode openPoint(int x, int y, int z, PathAction action)
-  {
-    int hash = PathNode.makeHash(x, y, z, action);
-    PathNode pathpoint = (PathNode)this.pointMap.lookup(hash);
-    if (pathpoint == null)
-    {
-      pathpoint = new PathNode(x, y, z, action);
-      this.pointMap.addKey(hash, pathpoint);
-      this.nodesOpened += 1;
+    public void addNode(BlockPos pos, PathAction action) {
+        PathNode node = openPoint(pos, action);
+        if (node != null && !node.isFirst && node.distanceTo(finalTarget) < searchRange) {
+            pathOptions[pathsIndex++] = node;
+        }
     }
 
-    return pathpoint;
-  }
-
-  private int findPathOptions(IPathfindable entity, PathNode pathpoint, PathNode target)
-  {
-    this.pathsIndex = 0;
-    entity.getPathOptionsFromNode(this.worldMap, pathpoint, this);
-    return this.pathsIndex;
-  }
-
-  private Path createEntityPath(PathNode pathpoint, PathNode pathpoint1)
-  {
-    int i = 1;
-    for (PathNode pathpoint2 = pathpoint1; pathpoint2.getPrevious() != null; pathpoint2 = pathpoint2.getPrevious())
-    {
-      i++;
+    private float estimateDistance(PathNode start, PathNode target) {
+        return (float) start.pos.getSquaredDistance(target.pos);
     }
 
-    PathNode[] apathpoint = new PathNode[i];
-    PathNode pathpoint3 = pathpoint1;
-    for (apathpoint[(--i)] = pathpoint3; pathpoint3.getPrevious() != null; apathpoint[(--i)] = pathpoint3)
-    {
-      pathpoint3 = pathpoint3.getPrevious();
+    protected PathNode openPoint(BlockPos pos) {
+        return openPoint(pos, PathAction.NONE);
     }
 
-    return new Path(apathpoint, this.finalTarget);
-  }
+    protected PathNode openPoint(BlockPos pos, PathAction action) {
+        int hash = PathNode.makeHash(pos, action);
+        PathNode pathpoint = pointMap.get(hash);
+        if (pathpoint == null) {
+            pathpoint = new PathNode(pos, action);
+            pointMap.put(hash, pathpoint);
+            nodesOpened++;
+        }
+
+        return pathpoint;
+    }
+
+    private int findPathOptions(IPathfindable entity, PathNode pathpoint, PathNode target) {
+        pathsIndex = 0;
+        entity.getPathOptionsFromNode(worldMap, pathpoint, this);
+        return pathsIndex;
+    }
 }

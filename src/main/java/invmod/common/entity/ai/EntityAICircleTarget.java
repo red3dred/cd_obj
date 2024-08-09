@@ -1,76 +1,60 @@
 package invmod.common.entity.ai;
 
-
 import invmod.common.entity.EntityIMFlying;
 import invmod.common.entity.Goal;
 import invmod.common.entity.INavigationFlying;
-import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.Entity;
 
+public class EntityAICircleTarget extends net.minecraft.entity.ai.goal.Goal {
+    private static final int ATTACK_SEARCH_TIME = 400;
+    private EntityIMFlying mob;
 
-public class EntityAICircleTarget extends EntityAIBase
-{
-  private static final int ATTACK_SEARCH_TIME = 400;
-  private EntityIMFlying theEntity;
-  private int time;
-  private int patienceTime;
-  private int patience;
-  private float preferredHeight;
-  private float preferredRadius;
+    private int patienceTime;
+    private int patience;
+    private float preferredHeight;
+    private float preferredRadius;
 
-  public EntityAICircleTarget(EntityIMFlying entity, int patience, float preferredHeight, float preferredRadius)
-  {
-    this.theEntity = entity;
-    this.time = 0;
-    this.patienceTime = 0;
-    this.patience = patience;
-    this.preferredHeight = preferredHeight;
-    this.preferredRadius = preferredRadius;
-  }
-
-  public boolean shouldExecute()
-  {
-    return (this.theEntity.getAIGoal() == Goal.STAY_AT_RANGE) && (this.theEntity.getAttackTarget() != null);
-  }
-
-  public boolean continueExecuting()
-  {
-    return ((this.theEntity.getAIGoal() == Goal.STAY_AT_RANGE) || (isWaitingForTransition())) && (this.theEntity.getAttackTarget() != null);
-  }
-
-  public void startExecuting()
-  {
-    INavigationFlying nav = this.theEntity.getNavigatorNew();
-    nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
-    nav.setCirclingPath(this.theEntity.getAttackTarget(), this.preferredHeight, this.preferredRadius);
-    this.time = 0;
-    int extraTime = (int)(4.0F * nav.getDistanceToCirclingRadius());
-    if (extraTime < 0) {
-      extraTime = 0;
+    public EntityAICircleTarget(EntityIMFlying entity, int patience, float preferredHeight, float preferredRadius) {
+        mob = entity;
+        this.patience = patience;
+        this.preferredHeight = preferredHeight;
+        this.preferredRadius = preferredRadius;
     }
-    this.patienceTime = (extraTime + this.theEntity.worldObj.rand.nextInt(this.patience) + this.patience / 3);
-  }
 
-  public void updateTask()
-  {
-    this.time += 1;
-    if (this.theEntity.getAIGoal() == Goal.STAY_AT_RANGE)
-    {
-      this.patienceTime -= 1;
-      if (this.patienceTime <= 0)
-      {
-        this.theEntity.transitionAIGoal(Goal.FIND_ATTACK_OPPORTUNITY);
-        this.patienceTime = 400;
-      }
+    @Override
+    public boolean canStart() {
+        return mob.hasGoal(Goal.STAY_AT_RANGE) && hasValidTarget();
     }
-    else if (isWaitingForTransition())
-    {
-      this.patienceTime -= 1;
-      if (this.patienceTime > 0);
-    }
-  }
 
-  protected boolean isWaitingForTransition()
-  {
-    return (this.theEntity.getPrevAIGoal() == Goal.STAY_AT_RANGE) && (this.theEntity.getAIGoal() == Goal.FIND_ATTACK_OPPORTUNITY);
-  }
+    @Override
+    public boolean shouldContinue() {
+        return mob.hasOrIsBetweenGoals(Goal.STAY_AT_RANGE, Goal.FIND_ATTACK_OPPORTUNITY) && hasValidTarget();
+    }
+
+    private boolean hasValidTarget() {
+        Entity target = mob.getTarget();
+        return target != null && target.isAlive();
+    }
+
+    @Override
+    public void start() {
+        INavigationFlying nav = mob.getNavigatorNew();
+        nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
+        nav.setCirclingPath(mob.getTarget(), this.preferredHeight, this.preferredRadius);
+
+        int extraTime = Math.max(0, (int) (4 * nav.getDistanceToCirclingRadius()));
+        this.patienceTime = (extraTime + mob.getRandom().nextInt(this.patience) + this.patience / 3);
+    }
+
+    @Override
+    public void tick() {
+        if (mob.hasGoal(Goal.STAY_AT_RANGE)) {
+            if (--patienceTime <= 0) {
+                mob.transitionAIGoal(Goal.FIND_ATTACK_OPPORTUNITY);
+                patienceTime = ATTACK_SEARCH_TIME;
+            }
+        } else if (mob.isBetweenGoals(Goal.STAY_AT_RANGE, Goal.FIND_ATTACK_OPPORTUNITY)) {
+            patienceTime--;
+        }
+    }
 }

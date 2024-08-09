@@ -1,9 +1,12 @@
 package invmod.common;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
 public interface IBlockAccessExtended extends BlockView {
-    int getLayeredData(int paramInt1, int paramInt2, int paramInt3);
+    int MOB_DENSITY_FLAG = 0x7;
 
-    void setData(int paramInt1, int paramInt2, int paramInt3, Integer paramInteger);
+    void setData(BlockPos pos, Integer data);
+
+    int getData(BlockPos pos);
 }

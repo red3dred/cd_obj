@@ -5,7 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.ServerCommandSource;
 
-public class InvasionCommand extends CommandBase {
+public class InvasionCommand {
 
     public static LiteralArgumentBuilder<ServerCommandSource> create(CommandRegistryAccess registries) {
         //TODO:

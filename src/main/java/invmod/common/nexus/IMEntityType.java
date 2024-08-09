@@ -1,5 +1,6 @@
 package invmod.common.nexus;
 
+@Deprecated
 public enum IMEntityType {
     ZOMBIE,
     ZOMBIEPIGMAN,

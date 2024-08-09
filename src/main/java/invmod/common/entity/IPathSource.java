@@ -1,34 +1,69 @@
 package invmod.common.entity;
 
 import invmod.common.IPathfindable;
+import invmod.common.util.CoordsInt;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 
 public interface IPathSource {
-    Path createPath(IPathfindable paramIPathfindable, BlockPos from, BlockPos to, float paramFloat1, float paramFloat2, BlockView world);
-
-    Path createPath(EntityIMLiving paramEntityIMLiving, Entity paramEntity, float paramFloat1, float paramFloat2, BlockView world);
-
-    Path createPath(EntityIMLiving paramEntityIMLiving, int paramInt1, int paramInt2, int paramInt3, float paramFloat1, float paramFloat2, BlockView world);
-
-    void createPath(IPathResult paramIPathResult, IPathfindable paramIPathfindable, int paramInt1, int paramInt2, int paramInt3, int paramInt4, int paramInt5, int paramInt6, float paramFloat, BlockView paramIBlockAccess);
-
-    void createPath(IPathResult paramIPathResult, EntityIMLiving paramEntityIMLiving, Entity paramEntity, float paramFloat, BlockView world);
-
-    void createPath(IPathResult paramIPathResult, EntityIMLiving paramEntityIMLiving, int paramInt1, int paramInt2, int paramInt3, float paramFloat, BlockView world);
 
     int getSearchDepth();
 
+    void setSearchDepth(int depth);
+
     int getQuickFailDepth();
 
-    void setSearchDepth(int paramInt);
+    void setQuickFailDepth(int depth);
 
-    void setQuickFailDepth(int paramInt);
+    Path createPath(IPathfindable findable, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView world);
 
-    boolean canPathfindNice(PathPriority paramPathPriority, float paramFloat, int paramInt1, int paramInt2);
+    default Path createPath(EntityIMLiving entity, Entity target, float targetRadius, float maxSearchRange, BlockView terrainMap) {
+        return createPath(entity, getPathingPosition(entity, target), targetRadius, maxSearchRange, terrainMap);
+    }
+
+    default Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius, float maxSearchRange, BlockView terrainMap) {
+        return createPath(entity,
+                getPathBegin(entity),
+                pos.add(MathHelper.floor(0.5F - entity.getWidth() / 2.0F), 0, MathHelper.floor(0.5F - entity.getWidth() / 2.0F)),
+                targetRadius, maxSearchRange, terrainMap);
+    }
+
+    default void createPath(IPathResult path, IPathfindable findable, BlockPos from, BlockPos to, float maxSearchRange, BlockView world) {
+
+    }
+
+    default void createPath(IPathResult path, EntityIMLiving entity, Entity target, float maxSearchRange, BlockView world) {
+
+    }
+
+    default void createPath(IPathResult path, EntityIMLiving entity, BlockPos pos, float maxSearchRange, BlockView world) {
+
+    }
+
+    default boolean canPathfindNice(PathPriority priority, float maxSearchRange, int searchDepth, int quickFailDepth) {
+        return true;
+    }
 
     public enum PathPriority {
         LOW, MEDIUM, HIGH
+    }
+
+    static BlockPos getPathingPosition(Entity entity, Entity target) {
+        return new BlockPos(
+                MathHelper.floor(target.getX() + 0.5D - entity.getWidth() * 0.5F),
+                MathHelper.floor(target.getY()),
+                MathHelper.floor(target.getZ() + 0.5D - entity.getWidth() * 0.5F)
+        );
+    }
+
+    static BlockPos getPathBegin(EntityIMLiving entity) {
+        CoordsInt size = entity.getCollideSize();
+        if (size.getXCoord() <= 1 && size.getZCoord() <= 1) {
+            return entity.getBlockPos();
+        }
+
+        return BlockPos.ofFloored(entity.getBoundingBox().getMinPos());
     }
 }

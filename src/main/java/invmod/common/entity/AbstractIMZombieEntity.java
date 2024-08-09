@@ -10,6 +10,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -34,17 +35,11 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     protected final TerrainModifier terrainModifier;
     protected final TerrainDigger terrainDigger;
 
-    protected float dropChance;
-
-    protected ItemStack defaultHeldItem;
-    protected Item itemDrop;
-
     protected int swingTimer;
 
     protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, INexusAccess nexus, float diggingSpeed) {
         super(type, world, nexus);
         floatsInWater = true;
-        metaChanged = world.isClient ? (byte)1 : (byte)0;
         terrainModifier = new TerrainModifier(this, diggingSpeed);
         terrainDigger = new TerrainDigger(this, terrainModifier, 1);
         setAttributes(getTier(), getFlavour());
@@ -77,27 +72,28 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     @Override
-    public int getTier() {
+    public final int getTier() {
         return dataTracker.get(TIER);
     }
 
-    public void setTier(int tier) {
+    public final void setTier(int tier) {
         tier = Math.max(1, tier);
         dataTracker.set(TIER, tier);
         setAttributes(tier, getFlavour());
+        updateTexture();
         reInitGoals();
-        if (getTextureId() == 0) {
-            updateTexture();
-        }
+
     }
 
-    public int getFlavour() {
+    public final int getFlavour() {
         return dataTracker.get(FLAVOUR);
     }
 
-    public void setFlavour(int flavour) {
+    public final void setFlavour(int flavour) {
         dataTracker.set(FLAVOUR, flavour);
         setAttributes(getTier(), flavour);
+        updateTexture();
+        reInitGoals();
     }
 
     protected boolean isSwinging() {
@@ -136,18 +132,13 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     @Override
-    public ItemStack getHeldItem() {
-        return this.defaultHeldItem;
-    }
-
-    @Override
     public boolean isPushable() {
-        return tier != 3;
+        return super.getTier() != 3;
     }
 
     @Override
     protected int getNextAirUnderwater(int air) {
-        if (tier == 2 && flavour == 2) {
+        if (getTier() == 2 && getFlavour() == 2) {
             return this.getNextAirOnLand(air);
         }
         return super.getNextAirUnderwater(air);
@@ -155,13 +146,13 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     public boolean tryAttack(Entity entity) {
-        return (this.tier == 3) && (isSprinting()) ? chargeAttack(entity) : super.tryAttack(entity);
+        return getTier() == 3 && isSprinting() ? chargeAttack(entity) : super.tryAttack(entity);
     }
 
     protected boolean chargeAttack(Entity entity) {
         int knockback = 4;
         entity.damage(getDamageSources().mobAttack(this), (float)getAttackStrength() + 3);
-        float yaw = this.getYaw() * MathHelper.PI / 180.0F;
+        float yaw = getYaw() * MathHelper.RADIANS_PER_DEGREE;
         if (entity instanceof LivingEntity l) {
             l.takeKnockback(knockback, MathHelper.sin(yaw), MathHelper.cos(yaw));
         }
@@ -172,7 +163,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     public void takeKnockback(double strength, double x, double z) {
-        if (this.tier != 3) {
+        if (getTier() != 3) {
             super.takeKnockback(strength, x, z);
         }
     }
@@ -184,9 +175,9 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     protected abstract void setAttributes(int tier, int flavour);
 
     public float scaleAmount() {
-        if (this.tier == 2)
+        if (getTier() == 2)
             return 1.12F;
-        if (this.tier == 3) {
+        if (getTier() == 3) {
             return 1.21F;
         }
         return 1.0F;
@@ -225,15 +216,14 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     public float getBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
-        if ((this.tier == 2) && (this.flavour == 2) && (node.action == PathAction.SWIM)) {
-            float multiplier = 1.0F;
-            if ((terrainMap instanceof IBlockAccessExtended)) {
-                int mobDensity = ((IBlockAccessExtended) terrainMap).getLayeredData(node.getXCoord(), node.getYCoord(), node.getZCoord()) & 0x7;
-                multiplier += mobDensity * 3;
+        if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
+            float multiplier = 1;
+            if ((terrainMap instanceof IBlockAccessExtended i)) {
+                multiplier += (i.getData(node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
             }
 
             if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
-                multiplier += 2.0F;
+                multiplier += 2;
             }
 
             return prevNode.distanceTo(node) * 1.2F * multiplier;
@@ -250,7 +240,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     @Override
-    public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3, Block block) {
+    public void onBlockRemoved(BlockPos pos, BlockState state) {
     }
 
     @Override
@@ -268,7 +258,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     public void writeCustomDataToNbt(NbtCompound compound) {
         super.writeCustomDataToNbt(compound);
         compound.putInt("tier", getTier());
-        compound.putInt("flavour", this.flavour);
+        compound.putInt("flavour", getFlavour());
         compound.putInt("textureId", getTextureId());
     }
 

@@ -1,6 +1,7 @@
 package invmod.common.entity;
 
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.nexus.TileEntityNexus;
 import invmod.common.util.ExplosionUtil;
 
@@ -8,18 +9,6 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityTNTPrimed;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 
 public class EntityIMPrimedTNT extends EntityTNTPrimed{
@@ -37,7 +26,7 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 	  private int ticksInGround;
 	  private int ticksInAir;
 	  public boolean arrowCritical;
-	  
+
 	public EntityIMPrimedTNT(World par1World) {
 		super(par1World);
 		  this.xTile = -1;
@@ -53,7 +42,7 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 		    this.arrowCritical = false;
 		    setSize(1.0F, 1.0F);
 	}
-	
+
 	  public EntityIMPrimedTNT(World world, double d, double d1, double d2)
 	  {
 	    super(world);
@@ -101,13 +90,13 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 	    this.motionY = (-MathHelper.sin(this.rotationPitch / 180.0F * 3.141593F));
 	    setBoulderHeading(this.motionX, this.motionY, this.motionZ, f, 1.0F);
 	  }
-	  
+
 	 @Override
 	  public void onCollideWithPlayer(EntityPlayer entityplayer)
 	  {
 	    if (this.worldObj.isRemote);
 	  }
-	 
+
 	  @Override
 	  public void writeEntityToNBT(NBTTagCompound nbttagcompound)
 	  {
@@ -273,7 +262,7 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 	        this.arrowCritical = false;
 
 	        Block block2 = this.worldObj.getBlock(this.xTile, this.yTile, this.zTile);
-	        if (block2 == mod_Invasion.blockNexus)
+	        if (block2 == InvBlocks.NEXUS_CORE)
 	        {
 	          TileEntityNexus tileEntityNexus = (TileEntityNexus)this.worldObj.getTileEntity(this.xTile, this.yTile, this.zTile);
 	          if (tileEntityNexus != null)
@@ -283,21 +272,21 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 	        }
 	        else if (block2 != Blocks.bedrock)
 	        {
-	          if ((block2 != null) && (block2 != mod_Invasion.blockNexus) && (block2 != Blocks.chest))
+	          if ((block2 != null) && (block2 != InvBlocks.NEXUS_CORE) && (block2 != Blocks.chest))
 	          {
 	            if ((EntityIMLiving.getBlockSpecial(block2) == BlockSpecial.DEFLECTION_1) && (this.rand.nextInt(2) == 0))
 	            {
 	              setDead();
 	              return;
 	            }
-	            
+
 	            //check if mobgriefing is enabled
 	    		boolean mobgriefing = this.worldObj.getGameRules().getGameRuleBooleanValue("mobGriefing");
-	    		
+
 //	    		if(!this.worldObj.isRemote)
 //	    		{
 	            //this.worldObj.createExplosion(null, this.xTile, this.yTile, this.zTile, 1.0F, true);
-	            
+
 	    			 Explosion explosion = new Explosion(this.worldObj, this, this.xTile, this.yTile, this.zTile, 4.0F);
 	    	            explosion.isFlaming = false;
 	    	            explosion.isSmoking = mobgriefing;
@@ -305,8 +294,8 @@ public class EntityIMPrimedTNT extends EntityTNTPrimed{
 	    	            explosion.doExplosionB(true);
 	    	            //ExplosionUtil.doExplosionB(this.worldObj,explosion,false);
 //	    		}
-	            
-	          
+
+
 	          }
 	        }
 	      }

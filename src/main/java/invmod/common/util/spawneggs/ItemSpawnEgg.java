@@ -1,18 +1,15 @@
 package invmod.common.util.spawneggs;
 
-import invmod.common.mod_Invasion;
-
-import java.util.List;
-import java.util.Set;
-
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
+@Deprecated
 public class ItemSpawnEgg extends Item {
 
+    public ItemSpawnEgg(Settings settings) {
+        super(settings);
+        // TODO Auto-generated constructor stub
+    }
+/*
 	private IIcon overlay;
 
 	public ItemSpawnEgg() {
@@ -216,5 +213,5 @@ public class ItemSpawnEgg extends Item {
 	public static String attemptToTranslate(String key, String _default) {
 		String result = StatCollector.translateToLocal(key);
 		return (result.equals(key)) ? _default : result;
-	}
+	}*/
 }

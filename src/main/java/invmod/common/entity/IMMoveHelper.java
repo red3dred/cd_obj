@@ -1,167 +1,142 @@
 package invmod.common.entity;
 
+import java.util.Optional;
+
+import org.joml.Vector3f;
+
 import invmod.common.util.IPosition;
-import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.control.MoveControl;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 
 public class IMMoveHelper extends MoveControl {
-	protected EntityIMLiving a;
-	protected double b;
-	protected double c;
-	protected double d;
-	protected double setSpeed;
-	protected double targetSpeed;
-	protected boolean needsUpdate;
-	protected boolean isRunning;
+    protected final EntityIMLiving entity;
 
-	public IMMoveHelper(EntityIMLiving par1EntityLiving) {
-		super(par1EntityLiving);
-		this.needsUpdate = false;
-		this.a = par1EntityLiving;
-		this.b = par1EntityLiving.posX;
-		this.c = par1EntityLiving.posY;
-		this.d = par1EntityLiving.posZ;
-		this.setSpeed = (this.targetSpeed = 0.0D);
-	}
+    protected double targetSpeed;
+    protected boolean needsUpdate;
+    protected boolean isRunning;
 
-	public boolean isUpdating() {
-		return this.needsUpdate;
-	}
+    public IMMoveHelper(EntityIMLiving par1EntityLiving) {
+        super(par1EntityLiving);
+        this.needsUpdate = false;
+        this.entity = par1EntityLiving;
 
-	@Override
-    public double getSpeed() {
-		return this.setSpeed;
-	}
+        this.speed = (this.targetSpeed = 0.0D);
+    }
 
-	public void setMoveSpeed(float speed) {
-		this.setSpeed = speed;
-	}
+    public boolean isUpdating() {
+        return this.needsUpdate;
+    }
 
-	public void setMoveTo(IPosition pos, float speed) {
-		setMoveTo(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), speed);
-	}
+    public void setMoveSpeed(float speed) {
+        this.speed = speed;
+    }
 
-	public void setMoveTo(double x, double y, double z, double speed) {
-		this.b = x;
-		this.c = y;
-		this.d = z;
-		this.setSpeed = speed;
-		this.needsUpdate = true;
-	}
+    @Deprecated
+    public void setMoveTo(IPosition pos, float speed) {
+        moveTo(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), speed);
+    }
 
-	public void onUpdateMoveHelper() {
-		if (!this.needsUpdate) {
-			this.a.setMoveForward(0.0F);
-			this.a.setMoveState(MoveState.STANDING);
-			return;
-		}
+    public void moveTo(IPosition pos, float speed) {
+        moveTo(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), speed);
+    }
 
-		MoveState result = doGroundMovement();
-		this.a.setMoveState(result);
-	}
+    @Deprecated
+    public void setMoveTo(double x, double y, double z, double speed) {
+        moveTo(x, y, z, speed);
+    }
 
-	protected MoveState doGroundMovement() {
-		this.needsUpdate = false;
-		this.targetSpeed = this.setSpeed;
-		boolean isInLiquid = (this.a.isInWater()) || (this.a.handleLavaMovement());
-		double dX = this.b - this.a.posX;
-		double dZ = this.d - this.a.posZ;
-		double dY = this.c - (!isInLiquid ? MathHelper.floor_double(this.a.boundingBox.minY + 0.5D) : this.a.posY);
+    @Override
+    public void moveTo(double x, double y, double z, double speed) {
+        super.moveTo(x, y, z, speed);
+        this.needsUpdate = true;
+    }
 
-		float newYaw = (float) (Math.atan2(dZ, dX) * 180.0D / 3.141592653589793D) - 90.0F;
-		int ladderPos = -1;
-		if ((Math.abs(dX) < 0.8D) && (Math.abs(dZ) < 0.8D) && ((dY > 0.0D) || (this.a.isHoldingOntoLadder()))) {
-			ladderPos = getClimbFace(this.a.posX, this.a.posY, this.a.posZ);
-			if (ladderPos == -1) {
-				ladderPos = getClimbFace(this.a.posX, this.a.posY + 1.0D, this.a.posZ);
-			}
+    @Override
+    public void strafeTo(float forward, float sideways) {
+        super.strafeTo(forward, sideways);
+        this.needsUpdate = true;
+    }
 
-			switch (ladderPos) {
-			case 0:
-				newYaw = (float) (Math.atan2(dZ, dX + 1.0D) * 180.0D / 3.141592653589793D) - 90.0F;
-				break;
-			case 1:
-				newYaw = (float) (Math.atan2(dZ, dX - 1.0D) * 180.0D / 3.141592653589793D) - 90.0F;
-				break;
-			case 2:
-				newYaw = (float) (Math.atan2(dZ + 1.0D, dX) * 180.0D / 3.141592653589793D) - 90.0F;
-				break;
-			case 3:
-				newYaw = (float) (Math.atan2(dZ - 1.0D, dX) * 180.0D / 3.141592653589793D) - 90.0F;
-			}
-		}
+    @Override
+    public void tick() {
+        if (!needsUpdate) {
+            entity.setForwardSpeed(0);
+            entity.setMoveState(MoveState.STANDING);
+            return;
+        }
 
-		double dXZSq = dX * dX + dZ * dZ;
-		double distanceSquared = dXZSq + dY * dY;
-		if ((distanceSquared < 0.01D) && (ladderPos == -1)) {
-			return MoveState.STANDING;
-		}
+        this.entity.setMoveState(doGroundMovement());
+    }
 
-		if ((dXZSq > 0.04D) || (ladderPos != -1)) {
-			this.a.rotationYaw = correctRotation(this.a.rotationYaw, newYaw, this.a.getTurnRate());
-			double moveSpeed;
-			if ((distanceSquared >= 0.064D) || (this.a.isSprinting()))
-				moveSpeed = this.targetSpeed;
-			else {
-				moveSpeed = this.targetSpeed * 0.5D;
-			}
-			if ((this.a.isInWater()) && (moveSpeed < 0.6D)) {
-				moveSpeed = 0.6000000238418579D;
-			}
-			this.a.setAIMoveSpeed((float) moveSpeed);
-		}
+    protected MoveState doGroundMovement() {
+        needsUpdate = false;
+        targetSpeed = speed;
+        boolean isInLiquid = entity.isInsideWaterOrBubbleColumn() || entity.isInLava();
+        double dX = targetX - entity.getX();
+        double dZ = targetZ - entity.getZ();
+        double dY = targetY - (!isInLiquid ? MathHelper.floor(entity.getBoundingBox().minY + 0.5D) : entity.getY());
 
-		double w = Math.max(this.a.width * 0.5F + 1.0F, 1.0D);
-		w = this.a.width * 0.5F + 1.0F;
-		if ((dY > 0.0D) && ((dX * dX + dZ * dZ <= w * w) || (isInLiquid))) {
-			this.a.getJumpHelper().setJumping();
-			if (ladderPos != -1)
-				return MoveState.CLIMBING;
-		}
-		return MoveState.RUNNING;
-	}
+        Optional<Direction> ladderPos = Optional.empty();
+        if (Math.abs(dX) < 0.8D && Math.abs(dZ) < 0.8D && (dY > 0 || entity.isHoldingOntoLadder())) {
+            ladderPos = getClimbFace(entity.getBlockPos());
+            if (ladderPos.isEmpty()) {
+                ladderPos = getClimbFace(entity.getBlockPos().up());
+            }
+        }
 
-	protected float correctRotation(float currentYaw, float newYaw, float turnSpeed) {
-		float dYaw = newYaw - currentYaw;
-		while (dYaw < -180.0F)
-			dYaw += 360.0F;
-		while (dYaw >= 180.0F)
-			dYaw -= 360.0F;
-		if (dYaw > turnSpeed)
-			dYaw = turnSpeed;
-		if (dYaw < -turnSpeed) {
-			dYaw = -turnSpeed;
-		}
-		return currentYaw + dYaw;
-	}
+        double dXZSq = dX * dX + dZ * dZ;
+        double distanceSquared = dXZSq + dY * dY;
+        if ((distanceSquared < 0.01D) && ladderPos.isEmpty()) {
+            return MoveState.STANDING;
+        }
 
-	protected int getClimbFace(double x, double y, double z) {
-		int mobX = MathHelper.floor_double(x);
-		int mobY = MathHelper.floor_double(y);
-		int mobZ = MathHelper.floor_double(z);
+        if (dXZSq > 0.04D || ladderPos.isPresent()) {
+            float newYaw = (float) (Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN) - 90;
 
-		Block block = this.a.worldObj.getBlock(mobX, mobY, mobZ);
-		if (block == Blocks.ladder) {
-			int meta = this.a.worldObj.getBlockMetadata(mobX, mobY, mobZ);
-			if (meta == 2)
-				return 2;
-			if (meta == 3)
-				return 3;
-			if (meta == 4)
-				return 0;
-			if (meta == 5)
-				return 1;
-		} else if (block == Blocks.vine) {
-			int meta = this.a.worldObj.getBlockMetadata(mobX, mobY, mobZ);
-			if (meta == 1)
-				return 2;
-			if (meta == 4)
-				return 3;
-			if (meta == 2)
-				return 1;
-			if (meta == 8)
-				return 0;
-		}
-		return -1;
-	}
+            if (ladderPos.isPresent()) {
+                Vector3f orientation = ladderPos.get().getUnitVector();
+                newYaw = (float) (Math.atan2(dZ + orientation.x, dX + orientation.z) * MathHelper.DEGREES_PER_RADIAN)
+                        - 90;
+            }
+            entity.setYaw(correctRotation(entity.getYaw(), newYaw, this.entity.getTurnRate()));
+            double moveSpeed;
+            if (distanceSquared >= 0.064D || entity.isSprinting()) {
+                moveSpeed = targetSpeed;
+            } else {
+                moveSpeed = targetSpeed * 0.5D;
+            }
+            if ((entity.isTouchingWater()) && (moveSpeed < 0.6D)) {
+                moveSpeed = 0.6000000238418579D;
+            }
+            entity.setMovementSpeed((float) moveSpeed);
+        }
+
+        double w = Math.max(entity.getWidth() * 0.5F + 1, 1);
+        // TODO: Was this added by the modder?
+        w = entity.getWidth() * 0.5F + 1;
+        if (dY > 0 && (dX * dX + dZ * dZ <= MathHelper.square(w) || isInLiquid)) {
+            entity.getJumpControl().setActive();
+            if (ladderPos.isPresent()) {
+                return MoveState.CLIMBING;
+            }
+        }
+        return MoveState.RUNNING;
+    }
+
+    protected float correctRotation(float currentYaw, float newYaw, float turnSpeed) {
+        return currentYaw + MathHelper.clamp(MathHelper.subtractAngles(newYaw, currentYaw), -turnSpeed, turnSpeed);
+    }
+
+    protected Optional<Direction> getClimbFace(BlockPos pos) {
+        BlockState state = entity.getWorld().getBlockState(pos);
+        if (state.isIn(BlockTags.CLIMBABLE)) {
+            return state.getOrEmpty(Properties.HORIZONTAL_FACING);
+        }
+        return Optional.empty();
+    }
 }

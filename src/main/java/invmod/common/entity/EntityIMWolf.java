@@ -1,6 +1,7 @@
 package invmod.common.entity;
 
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.nexus.SpawnPoint;
 import invmod.common.nexus.SpawnType;
@@ -296,7 +297,7 @@ public class EntityIMWolf extends WolfEntity
   {
     if ((this.worldObj != null) && (this.dataWatcher.getWatchableObjectByte(30) == 1))
     {
-      if (this.worldObj.getBlock(this.nexusX, this.nexusY, this.nexusZ) == mod_Invasion.blockNexus) {
+      if (this.worldObj.getBlock(this.nexusX, this.nexusY, this.nexusZ) == InvBlocks.NEXUS_CORE) {
         this.nexus = ((TileEntityNexus)this.worldObj.getTileEntity(this.nexusX, this.nexusY, this.nexusZ));
       }
       if (this.nexus == null)
@@ -316,7 +317,7 @@ public class EntityIMWolf extends WolfEntity
       {
         for (int k = -7; k < 8; k++)
         {
-          if (this.worldObj.getBlock(x + i, y + j, z + k) == mod_Invasion.blockNexus)
+          if (this.worldObj.getBlock(x + i, y + j, z + k) == InvBlocks.NEXUS_CORE)
           {
             nexus = (TileEntityNexus)this.worldObj.getTileEntity(x + i, y + j, z + k);
             break;

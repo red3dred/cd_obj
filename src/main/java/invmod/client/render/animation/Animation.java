@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.entity.Entity;
 
 public record Animation<T extends Enum<T>>(
         Class<T> skeletonType,
@@ -35,5 +37,9 @@ public record Animation<T extends Enum<T>>(
 
     public ModelAnimator<T> createAnimator(Map<T, ModelPart> parts) {
         return new ModelAnimator<>(parts, this);
+    }
+
+    public <E extends Entity, K extends AnimationController> K createState(E entity, AnimationAction initialAction, BiFunction<E, AnimationState<T>, K> controllerFactory) {
+        return controllerFactory.apply(entity, new AnimationState<>(this).setNewAction(initialAction));
     }
 }

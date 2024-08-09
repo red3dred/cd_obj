@@ -1,10 +1,6 @@
 package invmod.common.entity;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.EntityJumpHelper;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class IMMoveHelperFlying extends IMMoveHelper {
@@ -22,14 +18,15 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		double x = this.a.posX + Math.sin(yaw / 180.0F * 3.141592653589793D) * idealSpeed * time;
 		double y = this.a.posY + Math.sin(pitch / 180.0F * 3.141592653589793D) * idealSpeed * time;
 		double z = this.a.posZ + Math.cos(yaw / 180.0F * 3.141592653589793D) * idealSpeed * time;
-		setMoveTo(x, y, z, idealSpeed);
+		moveTo(x, y, z, idealSpeed);
 	}
 
 	public void setWantsToBeFlying(boolean flag) {
 		this.wantsToBeFlying = flag;
 	}
 
-	public void onUpdateMoveHelper() {
+	@Override
+    public void tick() {
 		this.a.setMoveForward(0.0F);
 		this.a.setFlightAccelerationVector(0.0F, 0.0F, 0.0F);
 		if ((!this.needsUpdate) && (this.a.getMoveState() != MoveState.FLYING)) {
@@ -82,7 +79,8 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		}
 	}
 
-	protected MoveState doGroundMovement() {
+	@Override
+    protected MoveState doGroundMovement() {
 		this.a.setGroundFriction(0.6F);
 		this.a.setRotationRoll(correctRotation(this.a.getRotationRoll(), 0.0F, 6.0F));
 		this.targetSpeed = this.a.getMoveSpeedStat();
@@ -91,16 +89,16 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 	}
 
 	protected FlyState doFlying() {
-		this.targetFlySpeed = this.setSpeed;
+		this.targetFlySpeed = this.speed;
 		return fly();
 	}
 
 	protected FlyState fly() {
 		this.a.setGroundFriction(1.0F);
 		boolean isInLiquid = (this.a.isInWater()) || (this.a.handleLavaMovement());
-		double dX = this.b - this.a.posX;
-		double dZ = this.d - this.a.posZ;
-		double dY = this.c - this.a.posY;
+		double dX = this.targetX - this.a.posX;
+		double dZ = this.targetZ - this.a.posZ;
+		double dY = this.targetY - this.a.posY;
 
 		double dXZSq = dX * dX + dZ * dZ;
 		double dXZ = Math.sqrt(dXZSq);
@@ -301,7 +299,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		for (int i = 1; i < 5; i++) {
 			if (this.a.worldObj.getBlock(x, y - i, z) != Blocks.air)
 				break;
-			this.targetFlySpeed = (this.setSpeed * (0.66F - (0.4F - (i - 1) * 0.133F)));
+			this.targetFlySpeed = (this.speed * (0.66F - (0.4F - (i - 1) * 0.133F)));
 		}
 
 		FlyState result = fly();
@@ -336,7 +334,6 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		double xAccel = hThrust * -Math.sin(this.a.rotationYaw / 180.0F * 3.141592653589793D);
 		double yAccel = vThrust;
 		double zAccel = hThrust * Math.cos(this.a.rotationYaw / 180.0F * 3.141592653589793D);
-		//Vec3 vec = this.a.worldObj.getWorldVec3Pool().getVecFromPool(xAccel, yAccel, zAccel);
 		Vec3 vec = Vec3.createVectorHelper(xAccel, yAccel, zAccel);
 		return vec;
 	}

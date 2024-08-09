@@ -5,8 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 public class PathNode implements IPosition {
-    public BlockPos pos;
-
+    public final BlockPos pos;
     public final PathAction action;
 
     private final int hash;
@@ -20,16 +19,16 @@ public class PathNode implements IPosition {
 
     public boolean isFirst;
 
-    public PathNode(int i, int j, int k) {
-        this(i, j, k, PathAction.NONE);
+    public PathNode(BlockPos pos) {
+        this(pos, PathAction.NONE);
     }
 
-    public PathNode(int i, int j, int k, PathAction pathAction) {
+    public PathNode(BlockPos pos, PathAction pathAction) {
         this.index = -1;
         this.isFirst = false;
-        this.pos = new BlockPos(i, j, k);
+        this.pos = pos;
         this.action = pathAction;
-        this.hash = makeHash(i, j, k, this.action);
+        this.hash = makeHash(pos, action);
     }
 
     public float distanceTo(PathNode pathpoint) {
@@ -40,13 +39,17 @@ public class PathNode implements IPosition {
         return MathHelper.sqrt((float)pos.getSquaredDistance(x, y, z));
     }
 
+    public float distanceTo(BlockPos pos) {
+        return MathHelper.sqrt((float)this.pos.getSquaredDistance(pos));
+    }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof PathNode node && hash == node.hash && isAt(node) && node.action == action;
     }
 
     public boolean isAt(IPosition position) {
-        return pos.equals(position.toBlockPos());
+        return equals(position.getXCoord(), position.getYCoord(), position.getZCoord());
     }
 
     public boolean equals(int x, int y, int z) {
@@ -54,7 +57,7 @@ public class PathNode implements IPosition {
     }
 
     public boolean isAssigned() {
-        return this.index >= 0;
+        return index >= 0;
     }
 
     @Override
@@ -85,20 +88,41 @@ public class PathNode implements IPosition {
         this.previous = previous;
     }
 
+    public PathNode[] getPath() {
+        int i = 1;
+        for (PathNode node = this;
+                node.getPrevious() != null;
+                node = node.getPrevious()) {
+            i++;
+        }
+        PathNode[] nodes = new PathNode[i];
+        PathNode node = this;
+        for (nodes[(--i)] = node; node.getPrevious() != null; nodes[(--i)] = node) {
+            node = node.getPrevious();
+        }
+
+        return nodes;
+    }
+
     @Override
     public int hashCode() {
-        return this.hash;
+        return hash;
     }
 
     @Override
     public String toString() {
-        return pos.toShortString() + ", " + this.action;
+        return pos.toShortString() + ", " + action;
     }
 
     public static int makeHash(IPosition pos, PathAction action) {
         return makeHash(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), action);
     }
 
+    public static int makeHash(BlockPos pos, PathAction action) {
+        return makeHash(pos.getX(), pos.getY(), pos.getZ(), action);
+    }
+
+    @Deprecated
     public static int makeHash(int x, int y, int z, PathAction action) {
         return y & 0xFF | (x & 0xFF) << 8 | (z & 0xFF) << 16 | (action.ordinal() & 0xFF) << 24;
     }

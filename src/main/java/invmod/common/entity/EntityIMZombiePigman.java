@@ -1,8 +1,11 @@
 package invmod.common.entity;
 
+import invmod.common.ConfigInvasion;
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
+import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAICharge;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -40,6 +43,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
@@ -75,8 +79,8 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
         goalSelector.add(9, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, mod_Invasion.getNightMobSightRange()));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, mod_Invasion.getNightMobSightRange(), true));
+        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, getAggroRange()));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
         targetSelector.add(5, new RevengeGoal(this));
 
         if (getTier() == 3) {
@@ -84,7 +88,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             goalSelector.add(1, new EntityAICharge<>(this, PlayerEntity.class, 0.75F));
         } else {
             // track players from sensing them
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, mod_Invasion.getNightMobSenseRange(), false));
+            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), false));
             targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
         }
     }
@@ -159,9 +163,9 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
 
                             if (block.getMaterial() != Material.air) {
                                 if (isBlockDestructible(this.worldObj, j, i, k, block)
-                                        && block != mod_Invasion.blockNexus) {
+                                        && block != InvBlocks.NEXUS_CORE) {
                                     this.playSound("random.explode", 0.2F, 0.5F);
-                                    if (mod_Invasion.getDestructedBlocksDrop()) {
+                                    if (InvasionMod.getConfig().destructedBlocksDrop) {
                                         block.dropBlockAsItem(this.worldObj, j, i, k, meta, 0);
                                     }
                                     worldObj.setBlock(j, i, k, Blocks.air);
@@ -226,7 +230,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             this.isImmuneToFire = true;
             this.defaultHeldItem = new ItemStack(Items.golden_sword, 1);
             setDestructiveness(2);
-            setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 
         } else if (tier == 2) {
             setName("Zombie Pigman");
@@ -237,7 +241,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             this.isImmuneToFire = true;
 
             setDestructiveness(2);
-            setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 
             if (this.rand.nextInt(5) == 1) {
                 this.setCurrentItemOrArmor(1, new ItemStack(Items.golden_helmet, 1));
@@ -265,7 +269,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             this.maxDestructiveness = 2;
             this.isImmuneToFire = true;
             setDestructiveness(2);
-            setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         }
     }
 }

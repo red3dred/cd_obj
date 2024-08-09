@@ -13,26 +13,27 @@ import net.minecraft.world.BlockView;
 public class TerrainDataLayer implements IBlockAccessExtended {
     public static final int EXT_DATA_SCAFFOLD_METAPOSITION = 16384;
 
-    private final BlockView world;
     private final Int2IntMap dataLayer = new Int2IntOpenHashMap();
+    private final BlockView world;
 
     public TerrainDataLayer(BlockView world) {
         this.world = world;
     }
 
-    @Override
-    public void setData(int x, int y, int z, Integer data) {
-        dataLayer.put(PathNode.makeHash(x, y, z, PathAction.NONE), data.intValue());
+    @Deprecated
+    public TerrainDataLayer(BlockView world, Int2IntMap dataLayer) {
+        this.world = world;
+        this.dataLayer.putAll(dataLayer);
     }
 
     @Override
-    public int getLayeredData(int x, int y, int z) {
-        return dataLayer.get(PathNode.makeHash(x, y, z, PathAction.NONE));
+    public void setData(BlockPos pos, Integer data) {
+        dataLayer.put(PathNode.makeHash(pos, PathAction.NONE), data.intValue());
     }
 
-    public void setAllData(Int2IntMap data) {
-        dataLayer.clear();
-        dataLayer.putAll(data);
+    @Override
+    public int getData(BlockPos pos) {
+        return dataLayer.get(PathNode.makeHash(pos, PathAction.NONE));
     }
 
     @Override

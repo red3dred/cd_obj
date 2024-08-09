@@ -1,143 +1,109 @@
 package invmod.common.entity.ai;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMZombiePigman;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
-	public class EntityAICharge<T extends EntityLivingBase> extends EntityAIMoveToEntity<T> 
-	{
-	  protected EntityCreature charger;
-	  protected EntityLivingBase chargeTarget;
-	  protected double chargeX;
-	  protected double chargeY;
-	  protected double chargeZ;
-	  protected float speed;
-	  protected int windup;
-	  protected boolean hasAttacked;
-	  protected int chargeDelay;
-	  protected int runTime;
-	  
-		public EntityAICharge(EntityIMLiving entity, Class<? extends T> targetClass, float f)
-		{
-			super(entity, targetClass);
-			 this.charger = entity;
-			 this.speed = f;
-			    this.windup = 0;
-			    this.hasAttacked = false;
-			    this.chargeDelay=100;
-			    this.runTime=15;
-		}
+public class EntityAICharge<T extends LivingEntity> extends EntityAIMoveToEntity<T> {
+    @Nullable
+    protected LivingEntity target;
 
-	  
-		@Override
-	  public boolean shouldExecute()
-	  {
-		  
-		    if(chargeDelay>0){
-		    	this.chargeDelay--;
-		    	return false;
-		    }
-		  
-	    this.chargeTarget = this.charger.getAttackTarget();
-	    if (this.chargeTarget == null) {
-	      return false;
-	      
-	    }
-	    double distance = Math.sqrt(this.charger.getDistanceSqToEntity(this.chargeTarget));
-	    if ((distance < 5.0D) || (distance > 20.0D)) {
-	      return false;
-	    }
-	    if (!this.charger.onGround) {
-	      return false;
-	    }
-	    Vec3 chargePos = findChargePoint(this.charger, this.chargeTarget, 6.0D);
-	    if (chargePos == null){
-	      return false;
-	    }
-	    
+    protected Vec3d chargePos = Vec3d.ZERO;
 
-	    this.chargeX = chargePos.xCoord;
-	    this.chargeY = chargePos.yCoord;
-	    this.chargeZ = chargePos.zCoord;
+    protected float speed;
+    protected int windup;
+    protected boolean hasAttacked;
 
-	    return this.charger.getRNG().nextInt(1) == 0;
-	  }
-	  
-		@Override
-	  public void startExecuting()
-	  {
-		  
-	    this.windup = (15 + this.charger.getRNG().nextInt(25));
-	  }
-	  
-		@Override
-	  public boolean continueExecuting()
-	  {
-		  if(this.windup==0&&this.runTime>0){
-			 this.runTime--; 
-		  }
-		  
-	 return (this.windup>0) || (this.runTime>0);
-	  }
-	  
-		@Override
-	  public void updateTask()
-	  {
-	    this.charger.getLookHelper().setLookPosition(this.chargeX, this.chargeY - 1.0D, this.chargeZ, 10.0F, this.charger.getVerticalFaceSpeed());
-	    if (this.windup > 0) {
-	      if (--this.windup == 0)
-	      {
-	        this.charger.getNavigator().tryMoveToXYZ(this.chargeX, this.chargeY, this.chargeZ, this.speed);
-	      }
-	      else
-	      {
-	        EntityCreature tmp90_87 = this.charger;
-	        tmp90_87.limbSwingAmount = ((float)(tmp90_87.limbSwingAmount + 0.8D));
-	        if ((this.charger instanceof EntityIMZombiePigman)) {
-	          ((EntityIMZombiePigman)this.charger).setCharging(true);
-	        }
-	      }
-	    }
-	    double var1 = this.charger.width * 2.1F * this.charger.width * 2.1F;
-	    if (this.charger.getDistanceSq(this.chargeTarget.posX, this.chargeTarget.boundingBox.minY, this.chargeTarget.posZ) <= var1) {
-	      if (!this.hasAttacked)
-	      {
-	        this.hasAttacked = true;
-	        this.charger.attackEntityAsMob(this.chargeTarget);
-	      }
-	    }
-	  }
-	  
-		@Override
-	  public void resetTask()
-	  {
-	    this.windup = 0;
-	    this.chargeTarget = null;
-	    this.hasAttacked = false;
-	    this.chargeDelay=100;
-	    this.runTime=15;
-	    if ((this.charger instanceof EntityIMZombiePigman)) {
-	      ((EntityIMZombiePigman)this.charger).setCharging(false);
-	    }
-	  }
-	  
-	  protected Vec3 findChargePoint(Entity attacker, Entity target, double overshoot)
-	  {
-	    double vecx = target.posX - attacker.posX;
-	    double vecz = target.posZ - attacker.posZ;
-	    float rangle = (float)Math.atan2(vecz, vecx);
-	    
-	    double distance = MathHelper.sqrt_double(vecx * vecx + vecz * vecz);
+    protected int chargeDelay = 100;
+    protected int runTime = 15;
 
-		double dx = MathHelper.cos(rangle) * (distance + overshoot);
-		double dz = MathHelper.sin(rangle) * (distance + overshoot);
+    public EntityAICharge(EntityIMLiving entity, Class<? extends T> targetClass, float f) {
+        super(entity, targetClass);
+        this.speed = f;
+    }
 
-	    return Vec3.createVectorHelper((attacker.posX + dx), target.posY, (attacker.posZ + dz));
-	  }
-	}
+    @Override
+    public boolean canStart() {
 
+        if (chargeDelay > 0) {
+            chargeDelay--;
+            return false;
+        }
+
+        target = mob.getTarget();
+        if (target == null || target.isRemoved() || target.isDead() || !mob.isOnGround()) {
+            return false;
+        }
+        double distance = Math.sqrt(mob.squaredDistanceTo(target));
+        if (distance < 5 || distance > 20) {
+            return false;
+        }
+
+        chargePos = findChargePoint(mob, target, 6);
+
+        return mob.getRandom().nextInt(1) == 0;
+    }
+
+    @Override
+    public void start() {
+        windup = (15 + mob.getRandom().nextInt(25));
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        if (windup == 0 && runTime > 0) {
+            runTime--;
+        }
+        return windup > 0 || runTime > 0;
+    }
+
+    @Override
+    public void tick() {
+        mob.getLookControl().lookAt(chargePos.add(0, -1, 0));//, 10.0F, mob.getTurnRate());
+        if (windup > 0) {
+            if (--windup == 0) {
+                mob.getNavigation().startMovingTo(chargePos.getX(), chargePos.getY(), chargePos.getZ(), speed);
+            } else {
+                mob.limbAnimator.setSpeed(mob.limbAnimator.getSpeed() + 0.8F);
+                if (mob instanceof EntityIMZombiePigman pig) {
+                    pig.setCharging(true);
+                }
+            }
+        }
+
+        if (!hasAttacked && mob.squaredDistanceTo(chargePos) <= MathHelper.square(mob.getWidth() * 2.1F)) {
+            hasAttacked = true;
+            mob.tryAttack(target);
+        }
+    }
+
+    @Override
+    public void stop() {
+        windup = 0;
+        target = null;
+        hasAttacked = false;
+        chargeDelay = 100;
+        runTime = 15;
+        if (mob instanceof EntityIMZombiePigman pig) {
+            pig.setCharging(false);
+        }
+    }
+
+    protected Vec3d findChargePoint(Entity attacker, Entity target, double overshoot) {
+        Vec3d pos = mob.getPos();
+        Vec3d delta = target.getPos().subtract(pos).multiply(1, 0, 1);
+        float theta = (float) Math.atan2(delta.getX(), delta.getZ());
+        double distance = delta.length() + overshoot;
+        // Cylindrical to Cartesian
+        return pos.add(
+                distance * MathHelper.cos(theta),
+                0,
+                distance * MathHelper.sin(theta)
+        );
+    }
+}

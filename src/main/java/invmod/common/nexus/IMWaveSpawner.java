@@ -21,7 +21,6 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	@Nullable
 	private INexusAccess nexus;
-	private final MobBuilder mobBuilder = new MobBuilder();
 	//private final Random rand = new Random();
 	@Nullable
 	private Wave currentWave;
@@ -161,7 +160,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		if (this.debugMode) {
 			mod_Invasion.log(message);
 		}
-		mod_Invasion.sendMessageToPlayers(this.nexus.getBoundPlayers(), color, message);
+		nexus.sendMessage(color, message);
 	}
 
 	@Override
@@ -187,17 +186,11 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	@Override
 	public boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle) {
-		if (this.nexus.getWorld() == null) {
-			if (this.spawnMode) {
-				return false;
-			}
-		}
-		EntityIMLiving mob = this.mobBuilder.createMobFromConstruct(mobConstruct, this.nexus.getWorld(), this.nexus);
-		if (mob == null) {
-			mod_Invasion.log("Invalid entity construct");
+		if (this.nexus.getWorld() == null && this.spawnMode) {
 			return false;
 		}
 
+		EntityIMLiving mob = mobConstruct.createMob(nexus);
 		int spawnTries = getNumberOfPointsInRange(minAngle, maxAngle, SpawnType.HUMANOID);
 		if (spawnTries > MAX_SPAWN_TRIES) {
 			spawnTries = MAX_SPAWN_TRIES;

@@ -3,13 +3,15 @@ package invmod.common.entity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeNavigator;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 public class PathNavigateAdapter extends EntityNavigation {
-    private NavigatorIM navigator;
+    private final INavigation navigator;
 
-    public PathNavigateAdapter(NavigatorIM navigator) {
-        super(navigator.getEntity(), navigator.getEntity().getWorld());
+    public PathNavigateAdapter(MobEntity entity, World world, INavigation navigator) {
+        super(entity, world);
         this.navigator = navigator;
     }
 
@@ -78,25 +80,18 @@ public class PathNavigateAdapter extends EntityNavigation {
         return null;
     }
 
-    public PathEntity getPath() {
-        return null;
-    }
-
     @Override
     protected PathNodeNavigator createPathNodeNavigator(int range) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     protected Vec3d getPos() {
-        // TODO Auto-generated method stub
-        return null;
+        return entity.getPos();
     }
 
     @Override
     protected boolean isAtValidPosition() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 }

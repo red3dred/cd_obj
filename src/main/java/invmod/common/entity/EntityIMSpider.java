@@ -1,5 +1,6 @@
 package invmod.common.entity;
 
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -15,6 +16,7 @@ import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.IMEntityType;
 import invmod.common.nexus.INexusAccess;
+import invmod.common.nexus.MobBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
@@ -301,7 +303,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 			EntityConstruct template = new EntityConstruct(IMEntityType.SPIDER, 1, 0, 1, 1.0F, 0, 0);
 			Entity[] offSpring = new Entity[6];
 			for (int i = 0; i < offSpring.length; i++) {
-				offSpring[i] = mod_Invasion.getMobBuilder().createMobFromConstruct(template, this.worldObj, getNexus());
+				offSpring[i] = template.createMob(getWorld(), getNexus());
 			}
 			return offSpring;
 		}
@@ -400,7 +402,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 				this.maxDestructiveness = 0;
 				setDestructiveness(0);
 				setAggroRange(10);
-				setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 			} else if (flavour == 1) {
 				setName("Baby-Spider");
 				setSize(0.42F, 0.3F);
@@ -411,7 +413,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 				this.maxDestructiveness = 0;
 				setDestructiveness(0);
 				setAggroRange(10);
-				setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 			}
 		} else if (tier == 2) {
 			if (flavour == 0) {
@@ -425,7 +427,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 				setAggroRange(18);
 				setGravity(0.043F);
 
-				setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 			} else if (flavour == 1) {
 				setName("Mother-Spider");
 				setGender(2);
@@ -437,7 +439,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 				this.maxDestructiveness = 0;
 				setDestructiveness(0);
 				setAggroRange(18);
-				setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 			}else if (flavour == 2){
 
 			}

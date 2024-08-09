@@ -29,12 +29,13 @@ public class AnimationState<T extends Enum<T>> {
         this.setAction = this.nextTransition.newAction();
     }
 
-    public void setNewAction(AnimationAction action) {
+    public AnimationState<T> setNewAction(AnimationAction action) {
         this.setAction = action;
         updateTransition(action);
         this.pauseAtTransition = false;
         this.pauseAfterSetAction = false;
         this.isPaused = false;
+        return this;
     }
 
     public void setNewAction(AnimationAction action, float animationSpeedFactor, boolean pauseAfterAction) {

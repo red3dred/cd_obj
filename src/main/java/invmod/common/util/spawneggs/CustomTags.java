@@ -3,6 +3,7 @@ package invmod.common.util.spawneggs;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 
+@Deprecated
 public interface CustomTags {
 
 	static NbtCompound poweredCreeper() {

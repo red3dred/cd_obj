@@ -2,6 +2,7 @@ package invmod.common.entity;
 
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -24,10 +25,19 @@ import java.util.List;
 import com.google.common.base.Predicates;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,6 +45,8 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -53,31 +65,30 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     @Override
     protected void initGoals() {
         // added EntityAISwimming and increased all other tasks order numbers with 1
-        goalSelector.add(0, new EntityAISwimming(this));
-        goalSelector.add(1, new EntityAIKillEntity(this, PlayerEntity.class, 40));
-        goalSelector.add(1, new EntityAIKillEntity(this, ServerPlayerEntity.class, 40));
-        goalSelector.add(1, new EntityAIKillEntity(this, EntityGolem.class, 30));
+        goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
+        goalSelector.add(1, new EntityAIKillEntity<>(this, ServerPlayerEntity.class, 40));
+        goalSelector.add(1, new EntityAIKillEntity<>(this, IronGolemEntity.class, 30));
         goalSelector.add(2, new EntityAIAttackNexus(this));
         goalSelector.add(3, new EntityAIWaitForEngy(this, 4.0F, true));
-        goalSelector.add(4, new EntityAIKillEntity(this, EntityLiving.class, 40));
+        goalSelector.add(4, new EntityAIKillEntity<>(this, AnimalEntity.class, 40));
         goalSelector.add(5, new EntityAIGoToNexus(this));
         goalSelector.add(6, new EntityAIWanderIM(this));
-        goalSelector.add(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-        goalSelector.add(8, new EntityAIWatchClosest(this, EntityIMCreeper.class, 12.0F));
-        goalSelector.add(8, new EntityAILookIdle(this));
+        goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+        goalSelector.add(8, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
+        goalSelector.add(8, new LookAroundGoal(this));
 
+        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, getAggroRange()));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
+        targetSelector.add(5, new RevengeGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate(this, EntityLiving.class, mod_Invasion.getNightMobSightRange()));
-        targetSelector.add(2, new EntityAISimpleTarget(this, EntityPlayer.class, mod_Invasion.getNightMobSightRange(), true));
-        targetSelector.add(5, new EntityAIHurtByTarget(this, false));
-
-        if (this.tier == 3) {
+        if (getTier() == 3) {
             goalSelector.add(4, new EntityAIStoop(this));
             goalSelector.add(3, new EntityAISprint(this));
         } else {
             // track players from sensing them
-            targetSelector.add(1, new EntityAISimpleTarget(this, EntityPlayer.class, mod_Invasion.getNightMobSenseRange(), false));
-            targetSelector.add(3, new EntityAITargetOnNoNexusPath(this, EntityIMPigEngy.class, 3.5F));
+            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, getSenseRange(), false));
+            targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
         }
     }
 
@@ -99,16 +110,16 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
     @Override
     protected void updateTexture() {
-        if (tier == 1) {
+        if (getTier() == 1) {
             int r = random.nextInt(2);
             if (r == 0)
                 setTexture(0);
             else if (r == 1)
                 setTexture(1);
-        } else if (tier == 2) {
-            if (this.flavour == 2) {
+        } else if (getTier() == 2) {
+            if (getFlavour() == 2) {
                 setTexture(5);
-            } else if (this.flavour == 3) {
+            } else if (getFlavour() == 3) {
                 setTexture(3);
             } else {
                 int r = random.nextInt(2);
@@ -117,25 +128,14 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 else if (r == 1)
                     setTexture(4);
             }
-        } else if (tier == 3) {
+        } else if (getTier() == 3) {
             setTexture(6);
         }
     }
 
     @Override
-    public ItemStack getHeldItem() {
-        return this.defaultHeldItem;
-    }
-
-    @Override
     public boolean isBigRenderTempHack() {
-        return this.tier == 3;
-    }
-
-
-    @Override
-    public boolean canBePushed() {
-        return this.tier != 3;
+        return getFlavour() == 3;
     }
 
     @Override
@@ -145,13 +145,13 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
     @Override
     public int getTier() {
-        return this.tier < 3 ? 2 : 3;
+        return super.getTier() < 3 ? 2 : 3;
     }
 
     @Override
     protected void sunlightDamageTick() {
-        if (tier == 2 && flavour == 2) {
-            damageEntity(DamageSource.generic, 3.0F);
+        if (getTier() == 2 && getFlavour() == 2) {
+            damage(getDamageSources().generic(), 3);
         } else {
             super.sunlightDamageTick();
         }
@@ -159,28 +159,26 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
     @Override
     public void updateAnimation(boolean override) {
-        if ((!getWorld().isRemote) && ((this.terrainModifier.isBusy()) || override)) {
+        if (!getWorld().isClient && (terrainModifier.isBusy() || override)) {
             setSwinging(true);
         }
         int swingSpeed = getSwingSpeed();
         if (isSwinging()) {
-            this.swingTimer += 1;
-            if (this.swingTimer >= swingSpeed) {
-                this.swingTimer = 0;
+            if (++swingTimer >= swingSpeed) {
+                swingTimer = 0;
                 setSwinging(false);
             }
         } else {
-            this.swingTimer = 0;
+            swingTimer = 0;
         }
-        this.swingProgress = (float) this.swingTimer / (float) swingSpeed;
+        handSwingProgress = (float) swingTimer / (float) swingSpeed;
     }
 
     @Override
     protected void updateSound() {
-        if (this.terrainModifier.isBusy()) {
-            if (--this.throttled2 <= 0) {
-                getWorld().playSoundAtEntity(this, "invmod:scrape" + (rand.nextInt(3) + 1), 0.85F,
-                        1.0F / (this.rand.nextFloat() * 0.5F + 1.0F));
+        if (terrainModifier.isBusy()) {
+            if (--throttled2 <= 0) {
+                playSound("invmod:scrape" + (getRandom().nextInt(3) + 1), 0.85F, 1.0F / (getRandom().nextFloat() * 0.5F + 1.0F));
                 this.throttled2 = (45 + this.rand.nextInt(20));
             }
         }
@@ -192,12 +190,12 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
 
     @Override
-    protected String getLivingSound() {
-        if (this.tier == 3) {
-            return this.rand.nextInt(3) == 0 ? "invmod:bigzombie1" : null;
+    public SoundEvent getAmbientSound() {
+        if (super.getTier() == 3) {
+            return getRandom().nextInt(3) == 0 ? "invmod:bigzombie1" : null;
         }
 
-        return "mob.zombie.say";
+        return SoundEvents.ENTITY_ZOMBIE_AMBIENT;
     }
 
     @Override
@@ -210,142 +208,106 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         return SoundEvents.ENTITY_ZOMBIE_DEATH;
     }
 
-    @Override
-    protected Item getDropItem() {
-        return Items.rotten_flesh;
-    }
-
-    @Override
-    protected void dropFewItems(boolean flag, int bonus) {
-        super.dropFewItems(flag, bonus);
-        if (this.rand.nextFloat() < 0.35F) {
-            dropItem(Items.rotten_flesh, 1);
-        }
-
-        if ((this.itemDrop != null) && (this.rand.nextFloat() < this.dropChance)) {
-            entityDropItem(new ItemStack(this.itemDrop, 1, 0), 0.0F);
-        }
-    }
-
     private void doFireball() {
-        int x = MathHelper.floor_double(this.posX);
-        int y = MathHelper.floor_double(this.posY);
-        int z = MathHelper.floor_double(this.posZ);
-        int ii;
-        for (ii = -1; ii < 2; ii++) {
-            for (int j = -1; j < 2; j++) {
-                for (int k = -1; k < 2; k++) {
-                    if ((getWorld().getBlock(x + ii, y + j, z + k) == Blocks.air)
-                            || (getWorld().getBlock(x + ii, y + j, z + k).getMaterial().getCanBurn())) {
-                        getWorld().setBlock(x + ii, y + j, z + k, Blocks.fire);
-                    }
-                }
+        for (BlockPos pos : BlockPos.iterateOutwards(getBlockPos(), 2, 2, 2)) {
+            if (getWorld().isAir(pos) && getWorld().getBlockState(pos.down()).isBurnable()) {
+                getWorld().setBlockState(pos, Blocks.FIRE.getDefaultState());
             }
         }
 
-        List entities = getWorld().getOtherEntities(this, getBoundingBox().expand(1.5D, 1.5D, 1.5D));
+        List<Entity> entities = getWorld().getOtherEntities(this, getBoundingBox().expand(1.5, 1.5, 1.5));
         for (int el = entities.size() - 1; el >= 0; el--) {
-            Entity entity = (Entity) entities.get(el);
-            entity.setFire(8);
+            entities.get(el).setFireTicks(8);
         }
-        attackEntityFrom(DamageSource.inFire, 500.0F);
+        damage(getDamageSources().explosion(this, this), 500);
     }
 
     @Override
     protected void setAttributes(int tier, int flavour) {
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         if (tier == 1) {
-            this.tier = 1;
             if (flavour == 0) {
                 setName("Zombie");
                 setGender(1);
                 setBaseMoveSpeedStat(0.19F);
-                this.setAttackStrength(4);
-                this.selfDamage = 3;
-                this.maxSelfDamage = 6;
-                this.maxDestructiveness = 2;
-                this.flammability = 3;
+                setAttackStrength(4);
+                selfDamage = 3;
+                maxSelfDamage = 6;
+                maxDestructiveness = 2;
+                flammability = 3;
                 setDestructiveness(2);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             } else if (flavour == 1) {
                 setName("Zombie");
                 setGender(1);
                 setBaseMoveSpeedStat(0.19F);
-                this.setAttackStrength(6);
-                this.selfDamage = 3;
-                this.maxSelfDamage = 6;
-                this.maxDestructiveness = 0;
-                this.flammability = 3;
-                this.defaultHeldItem = Items.WOODEN_SWORD.getDefaultStack();
-                this.itemDrop = Items.WOODEN_SWORD;
-                this.dropChance = 0.2F;
+                setAttackStrength(6);
+                selfDamage = 3;
+                maxSelfDamage = 6;
+                maxDestructiveness = 0;
+                flammability = 3;
+                setStackInHand(Hand.MAIN_HAND, Items.WOODEN_SWORD.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
                 setDestructiveness(0);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             }
         } else if (tier == 2) {
-            this.tier = 2;
             if (flavour == 0) {
                 setName("Zombie");
                 setGender(1);
                 setBaseMoveSpeedStat(0.19F);
-                this.setAttackStrength(7);
-                this.selfDamage = 4;
-                this.maxSelfDamage = 12;
-                this.maxDestructiveness = 2;
-                this.flammability = 4;
-                this.itemDrop = Items.IRON_CHESTPLATE;
-                this.dropChance = 0.25F;
+                setAttackStrength(7);
+                selfDamage = 4;
+                maxSelfDamage = 12;
+                maxDestructiveness = 2;
+                flammability = 4;
+                equipStack(EquipmentSlot.CHEST, Items.IRON_CHESTPLATE.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
                 setDestructiveness(2);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             } else if (flavour == 1) {
                 setName("Zombie");
                 setGender(1);
                 setBaseMoveSpeedStat(0.19F);
-                this.attackStrength = 10;
-                this.selfDamage = 3;
-                this.maxSelfDamage = 9;
-                this.maxDestructiveness = 0;
-                this.itemDrop = Items.IRON_SWORD;
-                this.dropChance = 0.25F;
-                this.defaultHeldItem = Items.IRON_SWORD.getDefaultStack();
+                setAttackStrength(10);
+                selfDamage = 3;
+                maxSelfDamage = 9;
+                maxDestructiveness = 0;
+                setStackInHand(Hand.MAIN_HAND, Items.IRON_SWORD.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.25F);
                 setDestructiveness(0);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             } else if (flavour == 2) {
                 setName("Tar Zombie");
                 setGender(1);
                 setBaseMoveSpeedStat(0.19F);
-                this.attackStrength = 5;
-                this.selfDamage = 3;
-                this.maxSelfDamage = 9;
-                this.maxDestructiveness = 2;
-                this.flammability = 30;
-                this.floatsInWater = false;
+                setAttackStrength(5);
+                selfDamage = 3;
+                maxSelfDamage = 9;
+                maxDestructiveness = 2;
+                flammability = 30;
+                floatsInWater = false;
                 setDestructiveness(2);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             } else if (flavour == 3) {
                 setName("Zombie Pigman");
                 setGender(1);
                 setBaseMoveSpeedStat(0.25F);
-                this.attackStrength = 8;
-                this.maxDestructiveness = 2;
-                this.isImmuneToFire = true;
-                this.defaultHeldItem = Items.GOLDEN_SWORD.getDefaultStack();
+                setAttackStrength(8);
+                maxDestructiveness = 2;
+                setFireImmune(true);
+                setStackInHand(Hand.MAIN_HAND, Items.GOLDEN_SWORD.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
                 setDestructiveness(2);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             }
         } else if (tier == 3) {
-            this.tier = 3;
             if (flavour == 0) {
                 setName("Zombie Brute");
                 setGender(1);
                 setBaseMoveSpeedStat(0.17F);
-                this.attackStrength = 18;
-                this.selfDamage = 4;
-                this.maxSelfDamage = 20;
-                this.maxDestructiveness = 2;
-                this.flammability = 4;
-                this.dropChance = 0.0F;
+                setAttackStrength(18);
+                selfDamage = 4;
+                maxSelfDamage = 20;
+                maxDestructiveness = 2;
+                flammability = 4;
+                equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
                 setDestructiveness(2);
-                setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
             }
         }
     }

@@ -4,14 +4,11 @@ import invmod.common.INotifyTask;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.PosRotate3D;
 import net.minecraft.block.Block;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.init.Blocks;
-import net.minecraft.pathfinding.PathPoint;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 //NOOB HAUS: This one is done I think...
-public class EntityIMBurrower extends EntityIMMob implements ICanDig 
+public class EntityIMBurrower extends EntityIMMob implements ICanDig
 {
 	public static final int NUMBER_OF_SEGMENTS = 16;
 	private final NavigatorBurrower bo;
@@ -28,12 +25,12 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	protected float prevRotY;
 	protected float prevRotZ;
 
-	public EntityIMBurrower(World world) 
+	public EntityIMBurrower(World world)
 	{
 		this(world, null);
 	}
 
-	public EntityIMBurrower(World world, INexusAccess nexus) 
+	public EntityIMBurrower(World world, INexusAccess nexus)
 	{
 		super(world, nexus);
 
@@ -113,12 +110,12 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	}
 
 	@Override
-	public float getBlockRemovalCost(int x, int y, int z) {
-		return getBlockStrength(x, y, z) * 20.0F;
+	public float getBlockRemovalCost(BlockPos pos) {
+		return getBlockStrength(pos) * 20;
 	}
 
 	@Override
-	public boolean canClearBlock(int x, int y, int z) {
+	public boolean canClearBlock(BlockPos pos) {
 		Block block = this.worldObj.getBlock(x, y, z);
 		return (block == Blocks.air) || (isBlockDestructible(this.worldObj, x, y, z, block));
 	}
@@ -131,11 +128,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	@Override
 	public int getTier() {
 		return 3;
-	}
-
-	@Override
-	public PathNavigateAdapter getNavigator() {
-		return this.oldNavAdapter;
 	}
 
 	@Override
@@ -280,14 +272,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	}
 
 	@Override
-	public void updateAITick() {
-		super.updateAITick();
-	}
-
-	@Override
-	public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3,
-			Block block) {
-		// TODO Auto-generated method stub
-		
+	public void onBlockRemoved(BlockPos pos, BlockState state) {
 	}
 }

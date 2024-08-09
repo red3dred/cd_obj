@@ -13,8 +13,8 @@ import net.minecraft.block.FluidBlock;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 
 public class Scaffold implements IPathfindable, IPosition {
     private static final int MIN_SCAFFOLD_HEIGHT = 4;
@@ -197,7 +197,7 @@ public class Scaffold implements IPathfindable, IPosition {
 
     @SuppressWarnings("deprecation")
     @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
+    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         float materialMultiplier = terrainMap.getBlockState(node.pos).isSolid() ? 2.2F : 1.0F;
         if (node.action == PathAction.SCAFFOLD_UP) {
             if (prevNode.action != PathAction.SCAFFOLD_UP) {
@@ -226,7 +226,7 @@ public class Scaffold implements IPathfindable, IPosition {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void getPathOptionsFromNode(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         if (pathfindBase != null) {
             pathfindBase.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
         }
@@ -251,7 +251,7 @@ public class Scaffold implements IPathfindable, IPosition {
         if (block.isAir() && terrainMap.getBlockState(currentNode.pos.down(2)).isSolid()) {
             boolean flag = false;
             for (int i = 1; i < MIN_SCAFFOLD_HEIGHT; i++) {
-                if (terrainMap.isAir(currentNode.pos.up(i))) {
+                if (terrainMap.getBlockState(currentNode.pos.up(i)).isAir()) {
                     flag = true;
                     break;
                 }

@@ -1,5 +1,6 @@
 package invmod.common.entity;
 
+import invmod.common.ConfigInvasion;
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
 import invmod.common.IPathfindable;
@@ -8,8 +9,8 @@ import invmod.common.SparrowAPI;
 import invmod.common.mod_Invasion;
 import invmod.common.item.InvItems;
 import invmod.common.nexus.EntityConstruct;
+import invmod.common.nexus.EntityConstruct.BuildableMob;
 import invmod.common.nexus.INexusAccess;
-import invmod.common.nexus.MobBuilder.BuildableMob;
 import invmod.common.util.CoordsInt;
 import invmod.common.util.Distance;
 import invmod.common.util.IPosition;
@@ -31,6 +32,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -56,7 +58,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IPosition, IHasNexus, SparrowAPI, BuildableMob {
+public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IPosition, IHasNexus, SparrowAPI, IHasAiGoals, BuildableMob {
     protected static final float DEFAULT_SOFT_STRENGTH = 2.5F;
     protected static final float DEFAULT_HARD_STRENGTH = 5.5F;
     protected static final float DEFAULT_SOFT_COST = 2;
@@ -170,51 +172,59 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> CLINGING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
 
-    private final NavigatorIM bo;
-    private final PathNavigateAdapter oldNavAdapter;
-    private PathCreator pathSource;
+    private INavigation newNavigation;
+    private IPathSource pathSource;
+
     protected Goal currentGoal = Goal.NONE;
     protected Goal prevGoal = Goal.NONE;
 
     private float rotationRoll;
-    private float rotationYawHeadIM;
-    private float rotationPitchHead;
     private float prevRotationRoll;
-    private float prevRotationYawHeadIM;
-    private float prevRotationPitchHead;
-    private int debugMode = mod_Invasion.isDebug() ? 1 : 0;
+
     private float airResistance = 0.9995F;
     private float groundFriction = 0.546F;
     private float gravityAcel = 0.08F;
     private float moveSpeedBase = 0.26F;
-    private float turnRate = 30.0F;
-    private float pitchRate = 2.0F;
+
+    private float turnRate = 30;
+    private float pitchRate = 2;
+
     private int rallyCooldown;
+
     private IPosition currentTargetPos = new CoordsInt(0, 0, 0);
     private IPosition lastBreathExtendPos = new CoordsInt(0, 0, 0);
+
     private String simplyID = "needID";
-    private boolean shouldRenderLabel = mod_Invasion.isDebug();
+
+    private boolean shouldRenderLabel = InvasionMod.getConfig().debugMode;
     private int gender;
+
     private boolean isHostile = true;
     private boolean creatureRetaliates = true;
+
     protected INexusAccess targetNexus;
-    protected float attackRange;
-    private float maxHealth;
+
+    private float attackRange;
+
     protected int selfDamage = 2;
     protected int maxSelfDamage = 6;
     protected int maxDestructiveness;
     protected float blockRemoveSpeed = 1.0F;
     protected boolean floatsInWater = true;
+
     private CoordsInt collideSize = new CoordsInt(
-            MathHelper.floor(getWidth() + 1),
-            MathHelper.floor(getHeight() + 1),
-            MathHelper.floor(getWidth() + 1)
+            MathHelper.ceil(getWidth()),
+            MathHelper.ceil(getHeight()),
+            MathHelper.ceil(getWidth())
     );
+
     private boolean canClimb;
     private boolean canDig = true;
-    private boolean nexusBound;
+
     private boolean alwaysIndependent;
     private boolean burnsInDay;
+    private boolean fireImmune;
+
     private int jumpHeight = 1;
     private int aggroRange;
     private int senseRange;
@@ -225,18 +235,43 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     protected int destructionTimer;
     protected int flammability = 2;
     protected int destructiveness;
+
     protected Entity j;
 
     public EntityIMLiving(EntityType<? extends EntityIMLiving> type, World world, @Nullable INexusAccess nexus) {
         super(type, world);
         moveControl = new IMMoveHelper(this);
-        pathSource = new PathCreator(700, 50);
-        bo = new NavigatorIM(this, this.pathSource);
-        oldNavAdapter = new PathNavigateAdapter(this.bo);
         setNexus(nexus);
         setAttackStrength(2);
         setMovementSpeed(0.26F);
-        setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+    }
+
+    @Override
+    protected EntityNavigation createNavigation(World world) {
+        return new PathNavigateAdapter(this, world, getNavigatorNew());
+    }
+
+    public final INavigation getNavigatorNew() {
+        if (newNavigation == null) {
+            newNavigation = createIMNavigation(getPathSource());
+        }
+        return newNavigation;
+    }
+
+    protected INavigation createIMNavigation(IPathSource pathSource) {
+        return new NavigatorIM(this, pathSource);
+    }
+
+    public final IPathSource getPathSource() {
+        if (pathSource == null) {
+            pathSource = createPathSource();
+        }
+        return this.pathSource;
+    }
+
+    protected IPathSource createPathSource() {
+        return new PathCreator(700, 50);
     }
 
     @Override
@@ -246,17 +281,27 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         builder.add(JUMPING, false);
         builder.add(CLIMBING, false);
         builder.add(CLINGING, false);
-        builder.add(ANGLES, MathUtil.packAnglesDeg(this.rotationRoll, this.rotationYawHeadIM, this.rotationPitchHead, 0.0F));
+        builder.add(ANGLES, MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0));
         builder.add(LABEL, "");
     }
 
-    public EntityIMLiving setNexus(@Nullable INexusAccess nexus) {
+    @Override
+    public void setNexus(@Nullable INexusAccess nexus) {
         targetNexus = nexus;
-        nexusBound = nexus != null;
-        burnsInDay = nexusBound && mod_Invasion.getNightMobsBurnInDay();
-        aggroRange = nexusBound ? 12 : mod_Invasion.getNightMobSightRange();
-        senseRange = nexusBound ? 6 : mod_Invasion.getNightMobSenseRange();
-        return this;
+        burnsInDay = nexus != null && InvasionMod.getConfig().nightMobsBurnInDay;
+        aggroRange = nexus != null ? 12 : InvasionMod.getConfig().nightMobSightRange;
+        senseRange = nexus != null ? 6 : InvasionMod.getConfig().nightMobSenseRange;
+    }
+
+    @Override
+    public boolean isAlwaysIndependant() {
+        return alwaysIndependent;
+    }
+
+    @Override
+    public void setEntityIndependent() {
+        setNexus(null);
+        alwaysIndependent = true;
     }
 
     public void setAttackStrength(double attackStrength) {
@@ -270,11 +315,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     @Override
     public void tickMovement() {
         super.tickMovement();
-        this.prevRotationRoll = this.rotationRoll;
-        this.prevRotationYawHeadIM = this.rotationYawHeadIM;
-        this.prevRotationPitchHead = this.rotationPitchHead;
         if (!getWorld().isClient) {
-            int packedAngles = MathUtil.packAnglesDeg(rotationRoll, rotationYawHeadIM, rotationPitchHead, 0);
+            int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
             if (packedAngles != dataTracker.get(ANGLES)) {
                 dataTracker.set(ANGLES, packedAngles);
             }
@@ -282,8 +324,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
+    public void onSpawned(@Nullable INexusAccess nexus, EntityConstruct spawnConditions) {
         setNexus(nexus);
+        if (nexus == null) {
+            setEntityIndependent();
+        }
     }
 
     @Override
@@ -309,7 +354,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     @Override
     public void baseTick() {
-        if (!nexusBound) {
+        if (!hasNexus()) {
             @SuppressWarnings("deprecation")
             float brightness = getBrightnessAtEyes();
             if (brightness > 0.5F || getY() < 55) {
@@ -332,9 +377,9 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         super.onTrackedDataSet(data);
         if (data == ANGLES) {
             int packedAngles = dataTracker.get(ANGLES);
-            rotationRoll = MathUtil.unpackAnglesDeg_1(packedAngles);
-            rotationYawHeadIM = MathUtil.unpackAnglesDeg_2(packedAngles);
-            rotationPitchHead = MathUtil.unpackAnglesDeg_3(packedAngles);
+            setBodyYaw(MathUtil.unpackAnglesDeg_1(packedAngles));
+            setHeadYaw(MathUtil.unpackAnglesDeg_2(packedAngles));
+            setPitch(MathUtil.unpackAnglesDeg_3(packedAngles));
         }
         if (data == JUMPING) {
             super.setJumping(dataTracker.get(JUMPING));
@@ -386,7 +431,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public void onBlockRemoved(int x, int y, int z, int id) {
-        if (getHealth() > maxHealth - maxSelfDamage) {
+        if (getHealth() > getMaxHealth() - maxSelfDamage) {
             damage(getDamageSources().generic(), selfDamage);
         }
 
@@ -407,6 +452,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
                 || block.isOf(Blocks.BEDROCK) || block.isOf(Blocks.CACTUS));
     }
 
+    public boolean ignoresBlock(BlockState state) {
+        return ignoresBlock(state.getBlock());
+    }
+
+    @Deprecated
     public boolean ignoresBlock(Block block) {
         if ((block == Blocks.TALL_GRASS) || (block == Blocks.DEAD_BUSH) || (block == Blocks.POPPY)
                 || (block == Blocks.DANDELION) || (block == Blocks.BROWN_MUSHROOM)
@@ -431,7 +481,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public double findDistanceToNexus() {
-        if (targetNexus == null) {
+        if (getNexus() == null) {
             return 1.7976931348623157E+308D;
         }
         double x = targetNexus.getXCoord() + 0.5D - getX();
@@ -457,44 +507,49 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    public void writeCustomDataToNbt(NbtCompound nbttagcompound) {
-        super.writeCustomDataToNbt(nbttagcompound);
-        nbttagcompound.putBoolean("alwaysIndependent", this.alwaysIndependent);
+    public void writeCustomDataToNbt(NbtCompound compound) {
+        super.writeCustomDataToNbt(compound);
+        compound.putBoolean("alwaysIndependent", alwaysIndependent);
     }
 
     @Override
-    public void readCustomDataFromNbt(NbtCompound nbttagcompound) {
-        super.readCustomDataFromNbt(nbttagcompound);
-        alwaysIndependent = nbttagcompound.getBoolean("alwaysIndependent");
+    public void readCustomDataFromNbt(NbtCompound compound) {
+        super.readCustomDataFromNbt(compound);
+        alwaysIndependent = compound.getBoolean("alwaysIndependent");
         if (alwaysIndependent) {
-            setAggroRange(mod_Invasion.getNightMobSightRange());
-            setSenseRange(mod_Invasion.getNightMobSenseRange());
-            setBurnsInDay(mod_Invasion.getNightMobsBurnInDay());
+            ConfigInvasion config = InvasionMod.getConfig();
+            setAggroRange(config.nightMobSightRange);
+            setSenseRange(config.nightMobSenseRange);
+            setBurnsInDay(config.nightMobsBurnInDay);
         }
     }
 
     public float getPrevRotationRoll() {
-        return this.prevRotationRoll;
+        return prevRotationRoll;
     }
 
     public float getRotationRoll() {
-        return this.rotationRoll;
+        return rotationRoll;
     }
 
+    @Deprecated
     public float getPrevRotationYawHeadIM() {
-        return this.prevRotationYawHeadIM;
+        return prevHeadYaw;
     }
 
+    @Deprecated
     public float getRotationYawHeadIM() {
-        return this.rotationYawHeadIM;
+        return getHeadYaw();
     }
 
+    @Deprecated
     public float getPrevRotationPitchHead() {
-        return this.prevRotationPitchHead;
+        return prevPitch;
     }
 
+    @Deprecated
     public float getRotationPitchHead() {
-        return this.rotationPitchHead;
+        return getPitch();
     }
 
     @Override
@@ -517,7 +572,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public void setMaxHealth(float health) {
-        this.maxHealth = health;
         getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(health);
     }
 
@@ -528,7 +582,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     @Override
     public boolean canSpawn(WorldAccess world, SpawnReason spawnReason) {
-        return canSpawn(world) && (nexusBound || getLightLevelBelow8()) && getWorld().isTopSolid(getBlockPos(), this);
+        return canSpawn(world) && (hasNexus() || getLightLevelBelow8()) && getWorld().isTopSolid(getBlockPos(), this);
     }
 
     @Deprecated
@@ -550,16 +604,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     public float getBlockStrength(BlockPos pos, BlockState state) {
         return getBlockStrength(pos, state, getWorld());
-    }
-
-    @Deprecated
-    public final float getBlockStrength(int x, int y, int z) {
-        return getBlockStrength(new BlockPos(x, y, z));
-    }
-
-    @Deprecated
-    public final float getBlockStrength(int x, int y, int z, Block block) {
-        return getBlockStrength(new BlockPos(x, y, z), block.getDefaultState(), getWorld());
     }
 
     public boolean getCanClimb() {
@@ -608,69 +652,33 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public CoordsInt getCollideSize() {
-        return this.collideSize;
+        return collideSize;
     }
 
-    public static BlockSpecial getBlockSpecial(Block block2) {
-        if (SPECIAL_BLOCKS.containsKey(block2)) {
-            return SPECIAL_BLOCKS.get(block2);
-        }
-        return BlockSpecial.NONE;
-    }
-
+    @Override
     public Goal getAIGoal() {
         return this.currentGoal;
     }
 
+    @Override
     public Goal getPrevAIGoal() {
         return this.prevGoal;
     }
 
     @Override
-    public PathNavigateAdapter getNavigation() {
-        return this.oldNavAdapter;
-    }
-
-    public INavigation getNavigatorNew() {
-        return this.bo;
-    }
-
-    public IPathSource getPathSource() {
-        return this.pathSource;
+    public Goal transitionAIGoal(Goal newGoal) {
+        this.prevGoal = currentGoal;
+        this.currentGoal = newGoal;
+        return newGoal;
     }
 
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
-        return nexusBound ? 0 : 0.5F - world.getLightLevel(pos);
-    }
-
-    @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
-        return calcBlockPathCost(prevNode, node, terrainMap);
-    }
-
-    @Override
-    public void getPathOptionsFromNode(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-        calcPathOptions(terrainMap, currentNode, pathFinder);
+        return hasNexus() ? 0 : 0.5F - world.getLightLevel(pos);
     }
 
     public IPosition getCurrentTargetPos() {
         return this.currentTargetPos;
-    }
-
-    public IPosition[] getBlockRemovalOrder(int x, int y, int z) {
-        if (getBlockPos().getY() >= y) {
-            return new IPosition[] {
-                    new CoordsInt(x, y, z),
-                    new CoordsInt(x, y + 1, z)
-            };
-        }
-
-        return new IPosition[] {
-            new CoordsInt(x, y + 1, z),
-            new CoordsInt(getBlockPos().up(this.collideSize.getYCoord())),
-            new CoordsInt(x, y, z)
-        };
     }
 
     @Override
@@ -682,8 +690,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return dataTracker.get(LABEL);
     }
 
-    public int getDebugMode() {
-        return this.debugMode;
+    public final boolean getDebugMode() {
+        return InvasionMod.getConfig().debugMode;
     }
 
     @Override
@@ -757,29 +765,15 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public boolean shouldRenderLabel() {
-        return this.shouldRenderLabel;
-    }
-
-    @Override
-    public void acquiredByNexus(INexusAccess nexus) {
-        if ((this.targetNexus == null) && (!this.alwaysIndependent)) {
-            this.targetNexus = nexus;
-            this.nexusBound = true;
-        }
+        return shouldRenderLabel;
     }
 
     @Override
     public void onDeath(DamageSource source) {
         super.onDeath(source);
-        if (getHealth() <= 0 && targetNexus != null) {
-            targetNexus.registerMobDied();
+        if (getHealth() <= 0 && getNexus() != null) {
+            getNexus().registerMobDied();
         }
-    }
-
-    public void setEntityIndependent() {
-        this.targetNexus = null;
-        this.nexusBound = false;
-        this.alwaysIndependent = true;
     }
 
     @Override
@@ -811,15 +805,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         dataTracker.set(LABEL, label);
     }
 
-    public void setShouldRenderLabel(boolean flag) {
-        this.shouldRenderLabel = flag;
-    }
-
-    public void setDebugMode(int mode) {
-        this.debugMode = mode;
-        onDebugChange();
-    }
-
     @Override
     public void mobTick() {
         getNavigatorNew().onUpdateNavigation();
@@ -828,7 +813,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
         if (getTarget() != null) {
             currentGoal = Goal.TARGET_ENTITY;
-        } else if (targetNexus != null) {
+        } else if (getNexus() != null) {
             currentGoal = Goal.BREAK_NEXUS;
         } else {
             currentGoal = Goal.CHILL;
@@ -836,30 +821,36 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    public boolean isAiDisabled() {
-        return false;
+    public final boolean canImmediatelyDespawn(double distanceSquared) {
+        return !hasNexus();
     }
 
     @Override
-    public boolean canImmediatelyDespawn(double distanceSquared) {
-        return !nexusBound;
+    public final boolean cannotDespawn() {
+        return hasNexus() || super.cannotDespawn();
     }
 
     @Override
-    public boolean cannotDespawn() {
-        return this.nexusBound || super.cannotDespawn();
+    public boolean isFireImmune() {
+        return fireImmune || super.isFireImmune();
+    }
+
+    protected void setFireImmune(boolean fireImmune) {
+        this.fireImmune = fireImmune;
     }
 
     protected void setRotationRoll(float roll) {
         this.rotationRoll = roll;
     }
 
+    @Deprecated
     public void setRotationYawHeadIM(float yaw) {
-        this.rotationYawHeadIM = yaw;
+        setHeadYaw(yaw);
     }
 
+    @Deprecated
     protected void setRotationPitchHead(float pitch) {
-        this.rotationPitchHead = pitch;
+        setPitch(pitch);
     }
 
     protected void setAttackRange(float range) {
@@ -882,16 +873,16 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     protected void dropLoot(DamageSource damageSource, boolean causedByPlayer) {
         super.dropLoot(damageSource, causedByPlayer);
         if (random.nextInt(4) == 0) {
-            dropStack(InvItems.SMALL_REMNANTS.getDefaultStack(), 0.0F);
+            dropStack(InvItems.SMALL_REMNANTS.getDefaultStack(), 0);
         }
     }
 
+    @Override
     @SuppressWarnings("deprecation")
-    protected float calcBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
+    public float getBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
         float multiplier = 1.0F;
         if ((terrainMap instanceof IBlockAccessExtended i)) {
-            int mobDensity = i.getLayeredData(node.getXCoord(), node.getYCoord(), node.getZCoord()) & 0x7;
-            multiplier += mobDensity * 3;
+            multiplier += (i.getData(node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
         }
 
         if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
@@ -903,7 +894,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
 
         if (node.action == PathAction.SWIM) {
-            multiplier *= ((node.getYCoord() <= prevNode.getYCoord()) && !terrainMap.isAir(node.pos) ? 3.0F : 1.0F);
+            multiplier *= ((node.getYCoord() <= prevNode.getYCoord()) && !terrainMap.isAir(node.pos) ? 3 : 1);
             return prevNode.distanceTo(node) * 1.3F * multiplier;
         }
 
@@ -911,7 +902,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return prevNode.distanceTo(node) * getBlockCost(block).orElse(block.isSolid() ? 3.2F : 1) * multiplier;
     }
 
-    protected void calcPathOptions(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    @Override
+    public void getPathOptionsFromNode(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         if (getWorld().isOutOfHeightLimit(currentNode.getYCoord())) {
             return;
         }
@@ -988,7 +980,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
     }
 
-    protected void calcPathOptionsVertical(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    protected final void calcPathOptionsVertical(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         int collideUp = getCollide(terrainMap, currentNode.pos.up());
         if (collideUp > 0) {
             BlockState state = terrainMap.getBlockState(currentNode.pos.up());
@@ -1035,7 +1027,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
     }
 
-    protected void addAdjacent(WorldAccess terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
+    protected final void addAdjacent(WorldAccess terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
         if (getCollide(terrainMap, pos) <= 0) {
             return;
         }
@@ -1049,7 +1041,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @SuppressWarnings("deprecation")
-    protected boolean isAdjacentSolidBlock(WorldAccess terrainMap, BlockPos pos) {
+    protected final boolean isAdjacentSolidBlock(WorldAccess terrainMap, BlockPos pos) {
         for (BlockPos offset : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
                 : collideSize.getXCoord() == 2 && collideSize.getZCoord() == 2 ? CoordsInt.OFFSET_ADJACENT_2
                 : CoordsInt.ZERO) {
@@ -1061,7 +1053,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return false;
     }
 
-    protected int getNextLowestSafeYOffset(BlockView world, BlockPos pos, int maxOffsetMagnitude) {
+    protected final int getNextLowestSafeYOffset(BlockView world, BlockPos pos, int maxOffsetMagnitude) {
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (int i = 0; i + pos.getY() > world.getBottomY() && i < maxOffsetMagnitude; i--) {
             mutable.set(pos).move(Direction.UP, i);
@@ -1073,7 +1065,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @SuppressWarnings("deprecation")
-    protected boolean canStandAt(BlockView world, BlockPos pos) {
+    protected final boolean canStandAt(BlockView world, BlockPos pos) {
         boolean isSolidBlock = false;
         pos = pos.down();
         for (BlockPos p : BlockPos.iterate(pos, pos.add(collideSize.toBlockPos()))) {
@@ -1087,6 +1079,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
             }
         }
         return isSolidBlock;
+    }
+
+    @Override
+    public final BlockPos toBlockPos() {
+        return getBlockPos();
     }
 
     protected boolean canStandAtAndIsValid(BlockView world, BlockPos pos) {
@@ -1144,19 +1141,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         BlockPos pos = getBlockPos();
         return getWorld().getLightLevel(LightType.SKY, pos) <= random.nextInt(32)
             && getWorld().getLightLevel(LightType.BLOCK, pos) <= random.nextInt(8);
-    }
-
-    protected void setAIGoal(Goal goal) {
-        this.currentGoal = goal;
-    }
-
-    protected void setPrevAIGoal(Goal goal) {
-        this.prevGoal = goal;
-    }
-
-    public void transitionAIGoal(Goal newGoal) {
-        this.prevGoal = this.currentGoal;
-        this.currentGoal = newGoal;
     }
 
     public MoveState getMoveState() {
@@ -1220,6 +1204,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     protected void onDebugChange() {
+    }
+
+    public static BlockSpecial getBlockSpecial(Block block2) {
+        return SPECIAL_BLOCKS.getOrDefault(block2, BlockSpecial.NONE);
     }
 
     public static int getBlockType(Block block) {

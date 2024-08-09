@@ -1,9 +1,26 @@
 package invmod.common.entity;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.nexus.INexusAccess;
 
 public interface IHasNexus {
-  INexusAccess getNexus();
+    @Nullable
+    INexusAccess getNexus();
 
-  void acquiredByNexus(INexusAccess paramINexusAccess);
+    void setNexus(@Nullable INexusAccess nexus);
+
+    boolean isAlwaysIndependant();
+
+    void setEntityIndependent();
+
+    default boolean hasNexus() {
+        return getNexus() != null;
+    }
+
+    default void acquiredByNexus(INexusAccess nexus) {
+        if (hasNexus() && !isAlwaysIndependant()) {
+            setNexus(nexus);
+        }
+    }
 }

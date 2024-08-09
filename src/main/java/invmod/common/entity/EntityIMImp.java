@@ -1,5 +1,6 @@
 package invmod.common.entity;
 
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -13,14 +14,6 @@ import invmod.common.entity.ai.EntityAIWaitForEngy;
 import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAITasks;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 
 
@@ -34,12 +27,12 @@ private int tier;
     setBaseMoveSpeedStat(0.3F);
     this.attackStrength = 3;
     this.tier=1;
-    setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+    setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
     setName("Imp");
     setGender(1);
     setJumpHeight(1);
     setCanClimb(true);
-    
+
     setAI();
   }
 
@@ -59,8 +52,8 @@ private int tier;
   {
     return this.tier;
   }
-  
-  protected void setAI() 
+
+  protected void setAI()
 	{
 		//added entityaiswimming and increased all other tasksordernumers with 1
 		this.tasks = new EntityAITasks(this.worldObj.theProfiler);
@@ -75,7 +68,7 @@ private int tier;
 		this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
 		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityIMCreeper.class, 12.0F));
 		this.tasks.addTask(8, new EntityAILookIdle(this));
-		
+
 
 		this.targetTasks = new EntityAITasks(this.worldObj.theProfiler);
 		this.targetTasks.addTask(0, new EntityAITargetRetaliate(this, EntityLiving.class, this.getAggroRange()));
@@ -83,16 +76,16 @@ private int tier;
 		this.targetTasks.addTask(2, new EntityAISimpleTarget(this, EntityPlayer.class, this.getAggroRange(), true));
 		this.targetTasks.addTask(5, new EntityAIHurtByTarget(this, false));
 		this.targetTasks.addTask(3, new EntityAITargetOnNoNexusPath(this, EntityIMPigEngy.class, 3.5F));
-		
+
 	}
-  
+
   @Override
-	public boolean attackEntityAsMob(Entity entity) 
+	public boolean attackEntityAsMob(Entity entity)
 	{
 	  	entity.setFire(3);
 		return  super.attackEntityAsMob(entity);
 	}
-  
+
   @Override
   public String toString()
   {

@@ -1,11 +1,10 @@
 package invmod.common.entity;
 
-import net.minecraft.entity.EntityBodyHelper;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.LivingEntity;
 
 public class IMBodyHelper extends EntityBodyHelper
 {
-  public IMBodyHelper(EntityLiving par1EntityLiving)
+  public IMBodyHelper(LivingEntity par1EntityLiving)
   {
     super(par1EntityLiving);
   }

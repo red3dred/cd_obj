@@ -2,6 +2,7 @@ package invmod.common.entity;
 
 import org.jetbrains.annotations.Nullable;
 
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -28,7 +29,7 @@ import net.minecraft.world.World;
 public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
     public EntityIMSkeleton(EntityType<EntityIMSkeleton> type, World world) {
         super(type, world, null);
-        setMaxHealthAndHealth(mod_Invasion.getMobHealth(this));
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         setBaseMoveSpeedStat(0.21F);
     }
 

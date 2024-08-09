@@ -31,9 +31,9 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.chunk.ChunkCache;
 
 public class AttackerAI {
-    private INexusAccess nexus;
-    private IPathSource pathSource = new PathCreator();
-    private Int2IntMap entityDensityData = new Int2IntOpenHashMap();
+    private final INexusAccess nexus;
+    private final IPathSource pathSource = new PathCreator();
+    private final Int2IntMap entityDensityData = new Int2IntOpenHashMap();
     private List<Scaffold> scaffolds = new ArrayList<>();
     private int scaffoldLimit;
     private int minDistanceBetweenScaffolds;
@@ -48,29 +48,28 @@ public class AttackerAI {
     }
 
     public void update() {
-        this.nextScaffoldCalcTimer -= 1;
-        if (--this.updateScaffoldTimer <= 0) {
-            this.updateScaffoldTimer = 40;
+        nextScaffoldCalcTimer -= 1;
+        if (--updateScaffoldTimer <= 0) {
+            updateScaffoldTimer = 40;
             updateScaffolds();
 
-            this.scaffoldLimit = (2 + this.nexus.getCurrentWave() / 2);
-            this.minDistanceBetweenScaffolds = (90 / (this.nexus.getCurrentWave() + 10));
+            scaffoldLimit = (2 + nexus.getCurrentWave() / 2);
+            minDistanceBetweenScaffolds = (90 / (nexus.getCurrentWave() + 10));
         }
 
-        if (--this.nextEntityDensityUpdate <= 0) {
-            this.nextEntityDensityUpdate = 20;
+        if (--nextEntityDensityUpdate <= 0) {
+            nextEntityDensityUpdate = 20;
             updateDensityData();
         }
     }
 
+    @Deprecated
     public IBlockAccessExtended wrapEntityData(BlockView terrainMap) {
-        TerrainDataLayer newTerrain = new TerrainDataLayer(terrainMap);
-        newTerrain.setAllData(this.entityDensityData);
-        return newTerrain;
+        return new TerrainDataLayer(terrainMap, entityDensityData);
     }
 
     public int getMinDistanceBetweenScaffolds() {
-        return this.minDistanceBetweenScaffolds;
+        return minDistanceBetweenScaffolds;
     }
 
     public List<Scaffold> getScaffolds() {
@@ -101,12 +100,12 @@ public class AttackerAI {
         }
         List<Scaffold> scaffoldPositions = extractScaffolds(basePath);
         if (scaffoldPositions.size() > 1) {
-            float lowestCost = (1.0F / 1.0F);
+            float lowestCost = 1;
             int lowestCostIndex = -1;
             for (int i = 0; i < scaffoldPositions.size(); i++) {
-                TerrainDataLayer terrainMap = new TerrainDataLayer(getChunkCache(pos, nexusPos, 12));
+                IBlockAccessExtended terrainMap = getChunkCache(pos, nexusPos, 12);
                 Scaffold s = scaffoldPositions.get(i);
-                terrainMap.setData(s.getXCoord(), s.getYCoord(), s.getZCoord(), 200000);
+                terrainMap.setData(s.toBlockPos(), 200000);
                 Path path = createPath(pather, pos, nexusPos, terrainMap);
                 if (path.getTotalPathCost() < lowestCost && path.getFinalPathPoint().isAt(nexus)) {
                     lowestCostIndex = i;
@@ -119,11 +118,11 @@ public class AttackerAI {
 
             List<Scaffold> costDif = new ArrayList<>(scaffoldPositions.size());
             for (int i = 0; i < scaffoldPositions.size(); i++) {
-                TerrainDataLayer terrainMap = new TerrainDataLayer(getChunkCache(pos, nexusPos, 12));
+                IBlockAccessExtended terrainMap = getChunkCache(pos, nexusPos, 12);
                 Scaffold s = scaffoldPositions.get(i);
                 for (int j = 0; j < scaffoldPositions.size(); j++) {
                     if (j != i) {
-                        terrainMap.setData(s.getXCoord(), s.getYCoord(), s.getZCoord(), 200000);
+                        terrainMap.setData(s.toBlockPos(), 200000);
                     }
                 }
 
@@ -141,9 +140,9 @@ public class AttackerAI {
 
     public void addScaffoldDataTo(IBlockAccessExtended terrainMap) {
         for (Scaffold scaffold : scaffolds) {
+            BlockPos pos = scaffold.toBlockPos();
             for (int i = 0; i < scaffold.getTargetHeight(); i++) {
-                int data = terrainMap.getLayeredData(scaffold.getXCoord(), scaffold.getYCoord() + i, scaffold.getZCoord());
-                terrainMap.setData(scaffold.getXCoord(), scaffold.getYCoord() + i, scaffold.getZCoord(), data | 0x4000);
+                terrainMap.setData(pos, terrainMap.getData(pos) | 0x4000);
             }
         }
     }
@@ -191,17 +190,17 @@ public class AttackerAI {
     }
 
     private Path createPath(IPathfindable pather, BlockPos p1, BlockPos p2, float axisExpand) {
-        TerrainDataLayer terrainMap = new TerrainDataLayer(getChunkCache(p1, p2, axisExpand));
+        IBlockAccessExtended terrainMap = getChunkCache(p1, p2, axisExpand);
         addScaffoldDataTo(terrainMap);
         return createPath(pather, p1, p2, terrainMap);
     }
 
-    private ChunkCache getChunkCache(BlockPos p1, BlockPos p2, float axisExpand) {
+    private IBlockAccessExtended getChunkCache(BlockPos p1, BlockPos p2, float axisExpand) {
         BlockBox box = BlockBox.create(p1, p2).expand((int) axisExpand);
-        return new ChunkCache(this.nexus.getWorld(),
+        return new TerrainDataLayer(new ChunkCache(this.nexus.getWorld(),
                 new BlockPos(box.getMinX(), box.getMinY(), box.getMinZ()),
                 new BlockPos(box.getMaxX(), box.getMaxY(), box.getMaxZ())
-        );
+        ));
     }
 
     private List<Scaffold> extractScaffolds(Path path) {
