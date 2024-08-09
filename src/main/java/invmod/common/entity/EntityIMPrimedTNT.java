@@ -9,9 +9,10 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.TntEntity;
 import net.minecraft.world.World;
 
-public class EntityIMPrimedTNT extends EntityTNTPrimed{
+public class EntityIMPrimedTNT extends TntEntity {
 
 	  private int xTile;
 	  private int yTile;
