@@ -1,5 +1,6 @@
 package invmod.common.entity;
 
+import invmod.common.InvasionMod;
 import invmod.common.mod_Invasion;
 import invmod.common.block.InvBlocks;
 import invmod.common.nexus.INexusAccess;
@@ -212,7 +213,7 @@ public class EntityIMWolf extends WolfEntity
         return true;
       }
     }
-    mod_Invasion.log("No respawn spot for wolf");
+    InvasionMod.LOGGER.warn("No respawn spot for wolf");
     return false;
   }
 

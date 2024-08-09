@@ -1,6 +1,6 @@
 package invmod.common.nexus;
 
-import invmod.common.mod_Invasion;
+import invmod.common.InvasionMod;
 import invmod.common.util.ISelect;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
@@ -107,8 +107,7 @@ public class WaveEntry {
                             this.spawnList.add(mobConstruct);
                         }
                     } else {
-                        mod_Invasion.log("A selection pool in wave entry " + toString() + " returned empty");
-                        mod_Invasion.log("Pool: " + mobPool.toString());
+                        InvasionMod.log("A selection pool in wave entry " + toString() + " returned empty. Pool: " + mobPool.toString());
                     }
                 }
             }
@@ -182,14 +181,14 @@ public class WaveEntry {
         }
 
         if (minPointsInRange > 1) {
-            mod_Invasion.log("Can't find a direction with enough spawn points: " + minPointsInRange + ". Lowering requirement.");
+            InvasionMod.LOGGER.warn("Can't find a direction with enough spawn points: " + minPointsInRange + ". Lowering requirement.");
             this.minPointsInRange = 1;
         } else if (maxAngle - minAngle < MAX_ANGLE) {
-            mod_Invasion.log("Can't find a direction with enough spawn points: " + minPointsInRange + ". Switching to 360 degree mode for this entry");
+            InvasionMod.LOGGER.warn("Can't find a direction with enough spawn points: " + minPointsInRange + ". Switching to 360 degree mode for this entry");
             minAngle = -MAX_VALID_ANGLE;
             maxAngle = MAX_VALID_ANGLE;
         } else {
-            mod_Invasion.log("Wave entry cannot find a single spawn point");
+            InvasionMod.log("Wave entry cannot find a single spawn point");
             spawner.noSpawnPointNotice();
         }
     }

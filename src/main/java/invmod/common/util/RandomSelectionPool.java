@@ -1,7 +1,6 @@
 package invmod.common.util;
 
-import invmod.common.mod_Invasion;
-
+import invmod.common.InvasionMod;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -33,7 +32,7 @@ public class RandomSelectionPool<T> implements ISelect<T> {
         }
 
         if (pool.size() > 0) {
-            mod_Invasion.log("RandomSelectionPool invalid setup or rounding error. Failing safe.");
+            InvasionMod.log("RandomSelectionPool invalid setup or rounding error. Failing safe.");
             return pool.get(0).value().selectNext();
         }
         return null;

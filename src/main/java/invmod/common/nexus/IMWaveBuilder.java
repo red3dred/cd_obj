@@ -1,6 +1,6 @@
 package invmod.common.nexus;
 
-import invmod.common.mod_Invasion;
+import invmod.common.InvasionMod;
 import invmod.common.entity.InvEntities;
 import invmod.common.util.FiniteSelectionPool;
 import invmod.common.util.ISelect;
@@ -146,7 +146,7 @@ public class IMWaveBuilder {
 
     public static IEntityIMPattern getPattern(String s) {
         if (!isPatternNameValid(s)) {
-            mod_Invasion.log("Non-existing pattern name in wave definition: " + s);
+            InvasionMod.LOGGER.warn("Non-existing pattern name in wave definition: " + s);
             return DEFAULT_PATTERN;
         }
 

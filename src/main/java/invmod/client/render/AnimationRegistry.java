@@ -5,7 +5,7 @@ import invmod.client.render.animation.AnimationAction;
 import invmod.client.render.animation.AnimationPhaseInfo;
 import invmod.client.render.animation.BonesWings;
 import invmod.client.render.animation.Transition;
-import invmod.common.mod_Invasion;
+import invmod.common.InvasionMod;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -27,18 +27,16 @@ public final class AnimationRegistry {
     }
 
     public <T extends Enum<T>> void registerAnimation(String name, Animation<T> animation) {
-        if (!this.animationMap.containsKey(name)) {
-            this.animationMap.put(name, animation);
-            return;
+        if (animationMap.put(name, animation) != null) {
+            InvasionMod.LOGGER.warn("Register animation: Name \"" + name + "\" already assigned");
         }
-        mod_Invasion.log("Register animation: Name \"" + name + "\" already assigned");
     }
 
     public <T extends Enum<T>> Animation<T> getAnimation(String name) {
         @SuppressWarnings("unchecked")
         Animation<T> animation = (Animation<T>)animationMap.getOrDefault(name, emptyAnim);
         if (animation == emptyAnim) {
-            mod_Invasion.log("Tried to use animation \"" + name + "\" but it doesn't exist");
+            InvasionMod.LOGGER.warn("Tried to use animation \"" + name + "\" but it doesn't exist");
         }
 
         return animation;

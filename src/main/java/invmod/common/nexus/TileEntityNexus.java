@@ -267,8 +267,8 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                 if (mode == 2 && continuousAttack) {
                     if (resumeSpawnerContinuous()) {
                         mobsLeftInWave = (lastMobsLeftInWave += acquireEntities());
-                        mod_Invasion.log("mobsLeftInWave: " + mobsLeftInWave);
-                        mod_Invasion.log("mobsToKillInWave: " + mobsToKillInWave);
+                        InvasionMod.log("mobsLeftInWave: " + mobsLeftInWave);
+                        InvasionMod.log("mobsToKillInWave: " + mobsToKillInWave);
                     }
                 } else {
                     resumeSpawnerInvasion();
@@ -290,8 +290,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                     doContinuous(50);
                 }
             } catch (WaveSpawnerException e) {
-                mod_Invasion.log(e.getMessage());
-                e.printStackTrace();
+                InvasionMod.LOGGER.error("Exception occured whilst updating invasion", e);
                 stop();
             }
         }
@@ -303,13 +302,13 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                 stop();
                 markDirty();
                 markRemoved();
-                mod_Invasion.log("Stranded Nexus entity trying to delete itself...");
+                InvasionMod.LOGGER.warn("Stranded Nexus entity trying to delete itself...");
             }
         }
     }
 
     public void emergencyStop() {
-        mod_Invasion.log("Nexus manually stopped by command");
+        InvasionMod.LOGGER.info("Nexus manually stopped by command");
         stop();
         killAllMobs();
     }
@@ -387,7 +386,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 
     @Override
     public void askForRespawn(EntityIMLiving entity) {
-        mod_Invasion.log("Stuck entity asking for respawn: " + entity);
+        InvasionMod.LOGGER.warn("Stuck entity asking for respawn: " + entity);
         this.waveSpawner.askForRespawn(entity);
     }
 
@@ -458,14 +457,14 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                     playSoundForBoundPlayers("invmod:rumble1");
                 } catch (WaveSpawnerException e) {
                     stop();
-                    mod_Invasion.log(e.getMessage());
+                    InvasionMod.log(e.getMessage());
                     sendNotice(e.getMessage());
                 }
             } else {
-                mod_Invasion.log("Wave spawner is not in ready state");
+                InvasionMod.log("Wave spawner is not in ready state");
             }
         } else {
-            mod_Invasion.log("Tried to activate Nexus while already active");
+            InvasionMod.log("Tried to activate Nexus while already active");
         }
     }
 
@@ -581,7 +580,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                     sendWarning("invmod.message.nexus.destabilizing");
                     playSoundForBoundPlayers("invmod:rumble1");
                 } catch (WaveSpawnerException e) {
-                    mod_Invasion.log(e.getMessage());
+                    InvasionMod.log(e.getMessage());
                     e.printStackTrace();
                     stop();
                 }
@@ -620,8 +619,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
             try {
                 this.waveSpawner.spawn(elapsed);
             } catch (WaveSpawnerException e) {
-                mod_Invasion.log(e.getMessage());
-                e.printStackTrace();
+                InvasionMod.LOGGER.error("Exception occured whilst spawning wave", e);
                 stop();
             }
         }
@@ -780,7 +778,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         for (EntityIMLiving entity : entities) {
             entity.acquiredByNexus(this);
         }
-        mod_Invasion.log("Acquired " + entities.size() + " entities after state restore");
+        InvasionMod.log("Acquired " + entities.size() + " entities after state restore");
         return entities.size();
     }
 
@@ -878,8 +876,8 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
             this.waveSpawner.resumeFromState(this.currentWave, this.spawnerElapsedRestore, this.spawnRadius);
             return true;
         } catch (WaveSpawnerException e) {
-            mod_Invasion.log("Error resuming spawner: " + e.getMessage());
-            this.waveSpawner.stop();
+            InvasionMod.LOGGER.error("Error resuming spawner", e);
+            stop();
             return false;
         } finally {
             mod_Invasion.setInvasionEnded(this);
@@ -888,14 +886,14 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 
     @Override
     protected void readNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
-        mod_Invasion.log("Restoring TileEntityNexus from NBT");
+        InvasionMod.log("Restoring TileEntityNexus from NBT");
         super.readNbt(compound, lookup);
         nexusItemStacks.readNbtList(compound.getList("Items", NbtElement.COMPOUND_TYPE), lookup);
         boundPlayers.clear();
         compound.getList("boundPlayers", NbtElement.COMPOUND_TYPE).forEach(tag -> {
             NbtCompound nbt = (NbtCompound)tag;
             boundPlayers.put(nbt.getUuid("uuid"), nbt.getLong("time"));
-            mod_Invasion.log("Added bound player: " + nbt.getUuid("uuid"));
+            InvasionMod.log("Added bound player: " + nbt.getUuid("uuid"));
         });
 
         activationTimer = compound.getInt("activationTimer");
@@ -929,10 +927,10 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 
 
         if (mode == 1 || mode == 3 || (mode == 2 && continuousAttack)) {
-            mod_Invasion.log("Nexus is active; flagging for restore");
+            InvasionMod.log("Nexus is active; flagging for restore");
             resumedFromNBT = true;
             spawnerElapsedRestore = compound.getLong("spawnerElapsed");
-            mod_Invasion.log("spawnerElapsed = " + spawnerElapsedRestore);
+            InvasionMod.log("spawnerElapsed = " + spawnerElapsedRestore);
         }
 
         attackerAI.readFromNBT(compound);

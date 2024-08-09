@@ -2,7 +2,6 @@ package invmod.common;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -16,13 +15,13 @@ public class Config {
     private Set<String> keys;
 
     public void loadConfig(File configFile) {
-        mod_Invasion.log("Loading config");
-        this.properties = new Properties();
+        InvasionMod.log("Loading config");
+        properties = new Properties();
         try {
             if (!configFile.exists()) {
-                mod_Invasion.log("Config not found. Creating file 'invasion_config.txt' in minecraft directory");
+                InvasionMod.LOGGER.info("Config not found. Creating file '" + configFile.getName() + "' in minecraft directory");
                 if (!configFile.createNewFile()) {
-                    mod_Invasion.log("Unable to create new config file.");
+                    InvasionMod.LOGGER.info("Unable to create new config file.");
                 }
             } else {
                 try (FileReader configRead = new FileReader(configFile)) {
@@ -31,12 +30,8 @@ public class Config {
                 }
             }
 
-        } catch (FileNotFoundException e) {
-            mod_Invasion.log(e.getMessage());
-            mod_Invasion.log("Proceeding with default config");
         } catch (IOException e) {
-            mod_Invasion.log(e.getMessage());
-            mod_Invasion.log("Proceeding with default config");
+            InvasionMod.LOGGER.error("Proceeding with default config", e);
         }
     }
 

@@ -174,15 +174,15 @@ public class ConfigInvasion extends Config {
                 float weight = getPropertyValueFloat("nm-spawnpool1-slot" + (1 + i) + "-weight", DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS[i]);
 
                 if (IMWaveBuilder.isPatternNameValid(pattern)) {
-                    mod_Invasion.log("Added entry for pattern 1 slot " + (i + 1));
+                    InvasionMod.log("Added entry for pattern 1 slot " + (i + 1));
                     pool.addEntry(IMWaveBuilder.getPattern(pattern), weight);
                 } else {
-                    mod_Invasion.log("Pattern 1 slot " + (i + 1) + " in config not recognized. Proceeding as blank.");
+                    InvasionMod.LOGGER.warn("Pattern 1 slot " + (i + 1) + " in config not recognized. Proceeding as blank.");
                     setProperty("nm-spawnpool1-slot" + (1 + i), "none");
                 }
             }
         } else {
-            mod_Invasion.log("Mob pattern table element mismatch. Ensure each slot has a probability weight");
+            InvasionMod.LOGGER.warn("Mob pattern table element mismatch. Ensure each slot has a probability weight");
         }
         return pool;
     }
@@ -251,7 +251,7 @@ public class ConfigInvasion extends Config {
             }
             writer.flush();
         } catch (IOException e) {
-            mod_Invasion.log(e.getMessage());
+            InvasionMod.LOGGER.error("Could not save config", e);
         }
     }
 }

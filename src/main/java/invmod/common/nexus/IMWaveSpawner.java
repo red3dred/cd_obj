@@ -1,6 +1,6 @@
 package invmod.common.nexus;
 
-import invmod.common.mod_Invasion;
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.EntityIMZombie;
 import invmod.common.entity.InvEntities;
@@ -58,8 +58,8 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	public void beginNextWave(Wave wave) throws WaveSpawnerException {
 		if (!this.active) {
 			generateSpawnPoints();
-		} else if (this.debugMode) {
-			mod_Invasion.log("Successful spawns of last wave: " + this.successfulSpawns);
+		} else if (debugMode) {
+		    InvasionMod.log("Successful spawns of last wave: " + this.successfulSpawns);
 		}
 
 		wave.resetWave();
@@ -69,8 +69,9 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		this.elapsed = 0L;
 		this.successfulSpawns = 0;
 
-		if (this.debugMode)
-			mod_Invasion.log("Defined mobs this wave: " + getTotalDefinedMobsThisWave());
+		if (debugMode) {
+		    InvasionMod.log("Defined mobs this wave: " + getTotalDefinedMobsThisWave());
+		}
 	}
 
 	public void spawn(int elapsedMillis) throws WaveSpawnerException {
@@ -158,7 +159,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	@Override
     public void sendSpawnAlert(String message, Formatting color) {
 		if (this.debugMode) {
-			mod_Invasion.log(message);
+		    InvasionMod.log(message);
 		}
 		nexus.sendMessage(color, message);
 	}
@@ -208,7 +209,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			if (!this.spawnMode) {
 				this.successfulSpawns += 1;
 				if (this.debugMode) {
-					mod_Invasion.log("[Spawn] Time: " + this.currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + spawnPoint.getXCoord() + ", " + spawnPoint.getYCoord() + ", " + spawnPoint.getZCoord() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.log("[Spawn] Time: " + this.currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + spawnPoint.getXCoord() + ", " + spawnPoint.getYCoord() + ", " + spawnPoint.getZCoord() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
 				}
 
 				return true;
@@ -219,13 +220,13 @@ public class IMWaveSpawner implements ISpawnerAccess {
 				this.successfulSpawns += 1;
 				this.nexus.getWorld().spawnEntity(mob);
 				if (this.debugMode) {
-					mod_Invasion.log("[Spawn] Time: " + this.currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.log("[Spawn] Time: " + this.currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
 				}
 
 				return true;
 			}
 		}
-		mod_Invasion.log("Could not find valid spawn for '" + mob.getName().getString() + "' after " + spawnTries + " tries");
+		InvasionMod.log("Could not find valid spawn for '" + mob.getName().getString() + "' after " + spawnTries + " tries");
 		return false;
 	}
 
@@ -282,7 +283,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 		}
 
-		mod_Invasion.log("Num. Spawn Points: " + Integer.toString(this.spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID)));
+		InvasionMod.log("Num. Spawn Points: " + Integer.toString(this.spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID)));
 	}
 
 	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, int x, int y, int z) {
