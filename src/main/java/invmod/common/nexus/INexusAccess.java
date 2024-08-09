@@ -20,15 +20,7 @@ public interface INexusAccess extends IPosition {
 
     int getMode();
 
-    int getActivationTimer();
-
     int getSpawnRadius();
-
-    int getNexusKills();
-
-    int getGeneration();
-
-    int getNexusLevel();
 
     int getCurrentWave();
 

@@ -1,6 +1,6 @@
 package invmod.common.nexus;
 
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -9,16 +9,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 
 public class ContainerNexus extends ScreenHandler {
-    private TileEntityNexus nexus;
-    private int activationTimer;
-    private int currentWave;
-    private int nexusLevel;
-    private int nexusKills;
-    private int spawnRadius;
-    private int generation;
-    private int powerLevel;
-    private int cookTime;
-    private int mode;
+    private final TileEntityNexus nexus;
 
     public ContainerNexus(int syncId, PlayerInventory inventoryplayer, TileEntityNexus tileEntityNexus) {
         // TODO: Screen handler type
@@ -26,120 +17,114 @@ public class ContainerNexus extends ScreenHandler {
         nexus = tileEntityNexus;
         addSlot(new Slot(tileEntityNexus, 0, 32, 33));
         addSlot(new SlotOutput(tileEntityNexus, 1, 102, 33));
-        for (int i = 0; i < 3; i++) {
-            for (int k = 0; k < 9; k++) {
-                addSlot(new Slot(inventoryplayer, k + i * 9 + 9, 8 + k * 18, 84 + i * 18));
+
+        // inventory
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                addSlot(new Slot(inventoryplayer, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
             }
-
         }
 
-        for (int j = 0; j < 9; j++) {
-            addSlot(new Slot(inventoryplayer, j, 8 + j * 18, 142));
+        // hotbar
+        for (int col = 0; col < 9; col++) {
+            addSlot(new Slot(inventoryplayer, col, 8 + col * 18, 142));
         }
+
+        addProperties(nexus.properties);
+
     }
 
-    @Override
-    public void detectAndSendChanges() {
-        super.detectAndSendChanges();
-        for (int i = 0; i < this.crafters.size(); i++) {
-            ICrafting icrafting = (ICrafting) this.crafters.get(i);
-            if (this.activationTimer != this.nexus.getActivationTimer()) {
-                icrafting.sendProgressBarUpdate(this, 0, this.nexus.getActivationTimer());
-            }
-            if (this.mode != this.nexus.getMode()) {
-                icrafting.sendProgressBarUpdate(this, 1, this.nexus.getMode());
-            }
-            if (this.currentWave != this.nexus.getCurrentWave()) {
-                icrafting.sendProgressBarUpdate(this, 2, this.nexus.getCurrentWave());
-            }
-            if (this.nexusLevel != this.nexus.getNexusLevel()) {
-                icrafting.sendProgressBarUpdate(this, 3, this.nexus.getNexusLevel());
-            }
-            if (this.nexusKills != this.nexus.getNexusKills()) {
-                icrafting.sendProgressBarUpdate(this, 4, this.nexus.getNexusKills());
-            }
-            if (this.spawnRadius != this.nexus.getSpawnRadius()) {
-                icrafting.sendProgressBarUpdate(this, 5, this.nexus.getSpawnRadius());
-            }
-            if (this.generation != this.nexus.getGeneration()) {
-                icrafting.sendProgressBarUpdate(this, 6, this.nexus.getGeneration());
-            }
-            if (this.generation != this.nexus.getNexusPowerLevel()) {
-                icrafting.sendProgressBarUpdate(this, 7, this.nexus.getNexusPowerLevel());
-            }
-            if (this.generation != this.nexus.getCookTime()) {
-                icrafting.sendProgressBarUpdate(this, 9, this.nexus.getCookTime());
-            }
-        }
-
-        this.activationTimer = this.nexus.getActivationTimer();
-        this.mode = this.nexus.getMode();
-        this.currentWave = this.nexus.getCurrentWave();
-        this.nexusLevel = this.nexus.getNexusLevel();
-        this.nexusKills = this.nexus.getNexusKills();
-        this.spawnRadius = this.nexus.getSpawnRadius();
-        this.generation = this.nexus.getGeneration();
-        this.powerLevel = this.nexus.getNexusPowerLevel();
-        this.cookTime = this.nexus.getCookTime();
+    public TileEntityNexus getNexus() {
+        return nexus;
     }
 
-    @Override
-    public void updateProgressBar(int i, int j) {
-        if (i == 0) {
-            this.nexus.setActivationTimer(j);
-        } else if (i == 1) {
-            this.nexus.setMode(j);
-        } else if (i == 2) {
-            this.nexus.setWave(j);
-        } else if (i == 3) {
-            this.nexus.setNexusLevel(j);
-        } else if (i == 4) {
-            this.nexus.setNexusKills(j);
-        } else if (i == 5) {
-            this.nexus.setSpawnRadius(j);
-        } else if (i == 6) {
-            this.nexus.setGeneration(j);
-        } else if (i == 7) {
-            this.nexus.setNexusPowerLevel(j);
-        } else if (i == 8) {
-            this.nexus.setCookTime(j);
-        }
+    public int getActivationTimer() {
+        return nexus.properties.get(0);
+    }
+
+    public int getMode() {
+        return nexus.properties.get(1);
+    }
+
+    public int getCurrentWave() {
+        return nexus.properties.get(2);
+    }
+
+    public int getLevel() {
+        return nexus.properties.get(3);
+    }
+
+    public int getKills() {
+        return nexus.properties.get(4);
+    }
+
+    public int getSpawnRadius() {
+        return nexus.properties.get(5);
+    }
+
+    public int getGeneration() {
+        return nexus.properties.get(6);
+    }
+
+    public int getPowerLevel() {
+        return nexus.properties.get(7);
+    }
+
+    public int getCookTime() {
+        return nexus.properties.get(8);
+    }
+
+    public int getActivationProgressScaled(int i) {
+        return getActivationTimer() * i / 400;
+    }
+
+    public int getGenerationProgressScaled(int i) {
+        return getGeneration() * i / 3000;
+    }
+
+    public int getCookProgressScaled(int i) {
+        return getCookTime() * i / 1200;
     }
 
     @Override
     public boolean canUse(PlayerEntity entityplayer) {
-        return this.nexus.canPlayerUse(entityplayer);
+        return nexus.canPlayerUse(entityplayer);
     }
 
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer player, int i) {
-        ItemStack itemstack = null;
-        Slot slot = (Slot) this.inventorySlots.get(i);
-        if ((slot != null) && (slot.getHasStack())) {
-            ItemStack itemstack1 = slot.getStack();
-            itemstack = itemstack1.copy();
-            if (i == 1) {
-                if (!mergeItemStack(itemstack1, 2, 38, true)) {
-                    return null;
-                }
-            } else if ((i >= 2) && (i < 38)) {
-                if (!mergeItemStack(itemstack1, 0, 1, false)) {
-                    return null;
-                }
-            } else if (!mergeItemStack(itemstack1, 2, 38, false)) {
-                return null;
-            }
-            if (itemstack1.stackSize == 0) {
-                slot.putStack(null);
-            } else {
-                slot.onSlotChanged();
-            }
-            if (itemstack1.stackSize != itemstack.stackSize) {
-                slot.onPickupFromSlot(player, itemstack1);
-            } else {
-                return null;
-            }
+    public ItemStack quickMove(PlayerEntity player, int index) {
+        @Nullable
+        Slot slot = slots.get(index);
+        if (slot == null || !slot.hasStack()) {
+            return ItemStack.EMPTY;
         }
-        return itemstack;
+
+        ItemStack stack = slot.getStack();
+        ItemStack remainder = stack.copy();
+
+        if (index == 1) {
+            if (!insertItem(stack, 2, 38, true)) {
+                return ItemStack.EMPTY;
+            }
+        } else if ((index >= 2) && (index < 38)) {
+            if (!insertItem(stack, 0, 1, false)) {
+                return ItemStack.EMPTY;
+            }
+        } else if (!insertItem(stack, 2, 38, false)) {
+            return ItemStack.EMPTY;
+        }
+
+        if (stack.isEmpty()) {
+            slot.setStack(ItemStack.EMPTY);
+        } else {
+            slot.markDirty();
+        }
+
+        if (stack.getCount() == remainder.getCount()) {
+            return ItemStack.EMPTY;
+        }
+
+        slot.onTakeItem(player, stack);
+        return remainder;
     }
 }

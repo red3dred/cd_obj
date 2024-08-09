@@ -32,6 +32,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -47,6 +48,12 @@ import net.minecraft.world.World;
 public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedInventory {
     private static final int[] SLOTS = {0, 1};
     public static final long BIND_EXPIRE_TIME = 300000L;
+    public static final long TICKS_PER_DAY = World.field_30969;//24000
+    public static final long SUNSET_TIME = 12000L;
+    public static final long HALF_DAY_TIME = 14000L;
+    public static final long NIGHT_TIME = 16000L;
+
+    public static final int WAVE_DURATION = 240;
 
     private int activationTimer;
     private int currentWave;
@@ -91,6 +98,52 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 
     private Box boundingBoxToRadius;
 
+    final PropertyDelegate properties = new PropertyDelegate() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> activationTimer;
+                case 1 -> getMode();
+                case 2 -> getCurrentWave();
+                case 3 -> nexusLevel;
+                case 4 -> nexusKills;
+                case 5 -> getSpawnRadius();
+                case 6 -> generation;
+                case 7 -> powerLevel;
+                case 8 -> cookTime;
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int j) {
+            if (index == 0) {
+                activationTimer = j;
+            } else if (index == 1) {
+                setMode(j);
+            } else if (index == 2) {
+                currentWave = j;
+            } else if (index == 3) {
+                nexusLevel = j;
+            } else if (index == 4) {
+                nexusKills = j;
+            } else if (index == 5) {
+                setSpawnRadius(j);
+            } else if (index == 6) {
+                generation = j;
+            } else if (index == 7) {
+                powerLevel = j;
+            } else if (index == 8) {
+                cookTime = j;
+            }
+        }
+
+        @Override
+        public int size() {
+            return 9;
+        }
+    };
+
     public TileEntityNexus(BlockPos pos, BlockState state) {
         super(InvBlockEntities.NEXUS, pos, state);
         boundingBoxToRadius = computeSpawnArea();
@@ -119,46 +172,14 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         return (activationTimer > 0) && (activationTimer < 400);
     }
 
-    public int getHp() {
-        return hp;
-    }
-
     @Override
     public int getMode() {
         return mode;
     }
 
     @Override
-    public int getActivationTimer() {
-        return activationTimer;
-    }
-
-    @Override
     public int getSpawnRadius() {
         return spawnRadius;
-    }
-
-    @Override
-    public int getNexusKills() {
-        return nexusKills;
-    }
-
-    @Override
-    public int getGeneration() {
-        return generation;
-    }
-
-    @Override
-    public int getNexusLevel() {
-        return nexusLevel;
-    }
-
-    public int getPowerLevel() {
-        return powerLevel;
-    }
-
-    public int getCookTime() {
-        return cookTime;
     }
 
     @Override
@@ -179,22 +200,6 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
     @Override
     public List<EntityIMLiving> getMobList() {
         return mobList;
-    }
-
-    public int getActivationProgressScaled(int i) {
-        return activationTimer * i / 400;
-    }
-
-    public int getGenerationProgressScaled(int i) {
-        return generation * i / 3000;
-    }
-
-    public int getCookProgressScaled(int i) {
-        return cookTime * i / 1200;
-    }
-
-    public int getNexusPowerLevel() {
-        return powerLevel;
     }
 
     @Override
@@ -395,34 +400,6 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         return this.attackerAI;
     }
 
-    protected void setActivationTimer(int i) {
-        this.activationTimer = i;
-    }
-
-    protected void setNexusLevel(int i) {
-        this.nexusLevel = i;
-    }
-
-    protected void setNexusKills(int i) {
-        this.nexusKills = i;
-    }
-
-    protected void setGeneration(int i) {
-        this.generation = i;
-    }
-
-    protected void setNexusPowerLevel(int i) {
-        this.powerLevel = i;
-    }
-
-    protected void setCookTime(int i) {
-        this.cookTime = i;
-    }
-
-    protected void setWave(int wave) {
-        this.currentWave = wave;
-    }
-
     private void startInvasion(int startWave) {
         this.boundingBoxToRadius = computeSpawnArea();
         if (mode == 2 && continuousAttack) {
@@ -476,8 +453,8 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
             lastHp = maxHp;
             lastPowerLevel = powerLevel;
             lastWorldTime = getWorld().getTime();
-            nextAttackTime = ((int) (lastWorldTime / 24000L * 24000L) + 14000);
-            if ((this.lastWorldTime % 24000L > 12000L) && (lastWorldTime % 24000L < 16000L)) {
+            nextAttackTime = (int) ((lastWorldTime / TICKS_PER_DAY * TICKS_PER_DAY) + HALF_DAY_TIME);
+            if (lastWorldTime % TICKS_PER_DAY > SUNSET_TIME && lastWorldTime % TICKS_PER_DAY < NIGHT_TIME) {
                 sendWarning("invmod.message.nexus.nightlooming");
             } else {
                 sendWarning("invmod.message.nexus.activatedandstable");
@@ -553,28 +530,26 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 
         if (!this.continuousAttack) {
             long currentTime = getWorld().getTime();
-            int timeOfDay = (int) (this.lastWorldTime % 24000L);
-            if ((timeOfDay < 12000) && (currentTime % 24000L >= 12000L) && (currentTime + 12000L > this.nextAttackTime)) {
+            int timeOfDay = (int) (this.lastWorldTime % TICKS_PER_DAY);
+            if (timeOfDay < SUNSET_TIME && currentTime % TICKS_PER_DAY >= SUNSET_TIME && currentTime + SUNSET_TIME > nextAttackTime) {
                 sendWarning("invmod.message.nexus.nightlooming");
             }
-            if (this.lastWorldTime > currentTime) {
-                this.nextAttackTime = ((int) (this.nextAttackTime - (this.lastWorldTime - currentTime)));
+            if (lastWorldTime > currentTime) {
+                nextAttackTime = ((int) (nextAttackTime - (lastWorldTime - currentTime)));
             }
             this.lastWorldTime = currentTime;
 
-            if (this.lastWorldTime >= this.nextAttackTime) {
-                float difficulty = 1.0F + this.powerLevel / 4500;
-                float tierLevel = 1.0F + this.powerLevel / 4500;
-                int timeSeconds = 240;
+            if (lastWorldTime >= this.nextAttackTime) {
                 try {
-                    Wave wave = this.waveBuilder.generateWave(difficulty, tierLevel, timeSeconds);
-                    this.mobsLeftInWave = (this.lastMobsLeftInWave = this.mobsToKillInWave = (int) (wave
-                            .getTotalMobAmount() * 0.8F));
-                    this.waveSpawner.beginNextWave(wave);
-                    this.continuousAttack = true;
+                    float difficulty = 1 + powerLevel / 4500;
+                    float tierLevel = 1 + powerLevel / 4500;
+                    Wave wave = waveBuilder.generateWave(difficulty, tierLevel, WAVE_DURATION);
+                    mobsLeftInWave = (lastMobsLeftInWave = mobsToKillInWave = (int) (wave.getTotalMobAmount() * 0.8F));
+                    waveSpawner.beginNextWave(wave);
+                    continuousAttack = true;
                     int days = getWorld().getRandom().nextBetween(config.minContinuousModeDays, config.maxContinuousModeDays);
-                    this.nextAttackTime = ((int) (currentTime / 24000L * 24000L) + 14000 + days * 24000);
-                    this.hp = (this.lastHp = 100);
+                    this.nextAttackTime = (int) ((currentTime / TICKS_PER_DAY * TICKS_PER_DAY) + HALF_DAY_TIME + days * TICKS_PER_DAY);
+                    this.hp = lastHp = 100;
                     this.zapTimer = 0;
                     this.waveDelayTimer = -1L;
                     sendWarning("invmod.message.nexus.destabilizing");
@@ -608,16 +583,16 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                 }
             }
 
-            this.zapTimer -= 1;
-            if (this.mobsLeftInWave <= 0) {
-                if ((this.zapTimer <= 0) && (zapEnemy(1))) {
+            zapTimer--;
+            if (mobsLeftInWave <= 0) {
+                if (zapTimer <= 0 && zapEnemy(1)) {
                     zapEnemy(0);
-                    this.zapTimer = 23;
+                    zapTimer = 23;
                 }
             }
         } else {
             try {
-                this.waveSpawner.spawn(elapsed);
+                waveSpawner.spawn(elapsed);
             } catch (WaveSpawnerException e) {
                 InvasionMod.LOGGER.error("Exception occured whilst spawning wave", e);
                 stop();
@@ -731,7 +706,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         if (mode == 3) {
             setMode(2);
             int days = getWorld().getRandom().nextBetween(config.minContinuousModeDays, config.maxContinuousModeDays);
-            this.nextAttackTime = ((int) (getWorld().getTime() / 24000L * 24000L) + 14000 + days * 24000);
+            this.nextAttackTime = (int) ((getWorld().getTime() / TICKS_PER_DAY * TICKS_PER_DAY) + HALF_DAY_TIME + days * TICKS_PER_DAY);
         } else {
             setMode(0);
         }
@@ -762,14 +737,11 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         this.mobsSorted = false;
     }
 
-    protected void setMode(int i) {
-        this.mode = i;
-        setActive(mode != 0);
-    }
+    protected void setMode(int mode) {
+        this.mode = mode;
 
-    private void setActive(boolean flag) {
         if (getWorld() instanceof ServerWorld sw) {
-            sw.setBlockState(getPos(), getCachedState().with(BlockNexus.LIT, flag));
+            sw.setBlockState(getPos(), getCachedState().with(BlockNexus.LIT, mode != 0));
         }
     }
 
@@ -811,11 +783,11 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
             player.getWorld().playSound(null, player.getBlockPos(), SoundEvents.ENTITY_ENDER_DRAGON_DEATH, SoundCategory.AMBIENT, 4, 1);
         }
         killAllMobs();
-        this.waveSpawner.stop();
-        this.powerLevel = ((int) ((this.powerLevel - (this.powerLevel - this.lastPowerLevel)) * 0.7F));
-        this.lastPowerLevel = this.powerLevel;
-        if (this.powerLevel < 0) {
-            this.powerLevel = 0;
+        waveSpawner.stop();
+        powerLevel = ((int) ((powerLevel - (powerLevel - lastPowerLevel)) * 0.7F));
+        lastPowerLevel = powerLevel;
+        if (powerLevel < 0) {
+            powerLevel = 0;
             stop();
         }
     }
@@ -854,16 +826,15 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
             mod_Invasion.tryGetInvasionPermission(this);
             float difficulty = 1 + powerLevel / 4500F;
             float tierLevel = 1 + powerLevel / 4500F;
-            int timeSeconds = 240;
-            Wave wave = waveBuilder.generateWave(difficulty, tierLevel, timeSeconds);
+            Wave wave = waveBuilder.generateWave(difficulty, tierLevel, WAVE_DURATION);
             this.mobsToKillInWave = ((int) (wave.getTotalMobAmount() * 0.8F));
-            mod_Invasion.log("Original mobs to kill: " + mobsToKillInWave);
+            InvasionMod.log("Original mobs to kill: " + mobsToKillInWave);
             lastMobsLeftInWave = mobsToKillInWave - waveSpawner.resumeFromState(wave, spawnerElapsedRestore, spawnRadius);
             mobsLeftInWave = lastMobsLeftInWave;
             return true;
         } catch (WaveSpawnerException e) {
-            mod_Invasion.log("Error resuming spawner: " + e.getMessage());
-            this.waveSpawner.stop();
+            InvasionMod.LOGGER.error("Error resuming spawner", e);
+            stop();
             return false;
         } finally {
             mod_Invasion.setInvasionEnded(this);
@@ -873,7 +844,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
     private boolean resumeSpawnerInvasion() {
         try {
             mod_Invasion.tryGetInvasionPermission(this);
-            this.waveSpawner.resumeFromState(this.currentWave, this.spawnerElapsedRestore, this.spawnRadius);
+            waveSpawner.resumeFromState(currentWave, spawnerElapsedRestore, spawnRadius);
             return true;
         } catch (WaveSpawnerException e) {
             InvasionMod.LOGGER.error("Error resuming spawner", e);
@@ -914,16 +885,16 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         continuousAttack = compound.getBoolean("continuousAttack");
         activated = compound.getBoolean("activated");
 
-        mod_Invasion.log("activationTimer = " + this.activationTimer);
-        mod_Invasion.log("mode = " + this.mode);
-        mod_Invasion.log("currentWave = " + this.currentWave);
-        mod_Invasion.log("spawnRadius = " + this.spawnRadius);
-        mod_Invasion.log("nexusLevel = " + this.nexusLevel);
-        mod_Invasion.log("hp = " + this.hp);
-        mod_Invasion.log("nexusKills = " + this.nexusKills);
-        mod_Invasion.log("powerLevel = " + this.powerLevel);
-        mod_Invasion.log("lastPowerLevel = " + this.lastPowerLevel);
-        mod_Invasion.log("nextAttackTime = " + this.nextAttackTime);
+        InvasionMod.log("activationTimer = " + activationTimer);
+        InvasionMod.log("mode = " + mode);
+        InvasionMod.log("currentWave = " + currentWave);
+        InvasionMod.log("spawnRadius = " + spawnRadius);
+        InvasionMod.log("nexusLevel = " + nexusLevel);
+        InvasionMod.log("hp = " + hp);
+        InvasionMod.log("nexusKills = " + nexusKills);
+        InvasionMod.log("powerLevel = " + powerLevel);
+        InvasionMod.log("lastPowerLevel = " + lastPowerLevel);
+        InvasionMod.log("nextAttackTime = " + nextAttackTime);
 
 
         if (mode == 1 || mode == 3 || (mode == 2 && continuousAttack)) {
@@ -938,20 +909,20 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
 
     @Override
     public void writeNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
-        if (this.mode != 0) {
+        if (mode != 0) {
             mod_Invasion.setNexusUnloaded(this);
         }
         super.writeNbt(compound, lookup);
-        compound.putInt("activationTimer", getActivationTimer());
+        compound.putInt("activationTimer", activationTimer);
         compound.putInt("currentWave", getCurrentWave());
         compound.putInt("spawnRadius", getSpawnRadius());
-        compound.putInt("nexusLevel", getNexusLevel());
-        compound.putInt("hp", getHp());
-        compound.putInt("nexusKills", getNexusKills());
-        compound.putInt("generation", getGeneration());
+        compound.putInt("nexusLevel", nexusLevel);
+        compound.putInt("hp", hp);
+        compound.putInt("nexusKills", nexusKills);
+        compound.putInt("generation", generation);
         compound.putLong("spawnerElapsed", waveSpawner.getElapsedTime());
         compound.putInt("mode", getMode());
-        compound.putInt("powerLevel", getPowerLevel());
+        compound.putInt("powerLevel", powerLevel);
         compound.putInt("lastPowerLevel", lastPowerLevel);
         compound.putInt("nextAttackTime", nextAttackTime);
         compound.putInt("daysToAttack", daysToAttack);
@@ -960,7 +931,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         compound.put("Items", nexusItemStacks.toNbtList(lookup));
 
         NbtList boundPlayers = new NbtList();
-        for (Map.Entry<UUID, Long> entry : this.boundPlayers.entrySet()) {
+        for (Map.Entry<UUID, Long> entry : getBoundPlayers().entrySet()) {
             NbtCompound c = new NbtCompound();
             c.putUuid("uuid", entry.getKey());
             c.putLong("time", entry.getValue());
