@@ -45,7 +45,9 @@ public interface SparrowAPI {
         return false;
     }
 
-    boolean isNPC();
+    default boolean isNPC() {
+        return false;
+    }
 
     default int isPet() {
         return 0;

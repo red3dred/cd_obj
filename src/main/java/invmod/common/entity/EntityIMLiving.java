@@ -707,13 +707,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    public Entity getAttackingTarget() {
-        return getAttacking();
-    }
-
-    @Override
-    public boolean isNPC() {
-        return false;
+    public final Entity getAttackingTarget() {
+        return getTarget();
     }
 
     @Override

@@ -8,6 +8,8 @@ import invmod.common.nexus.SpawnPointContainer;
 import invmod.common.nexus.SpawnType;
 import invmod.common.nexus.Wave;
 import invmod.common.nexus.WaveSpawnerException;
+import net.minecraft.util.math.BlockPos;
+
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -24,10 +26,10 @@ public class Tester {
         DummyNexus nexus = new DummyNexus();
         SpawnPointContainer spawnPoints = new SpawnPointContainer();
         for (int i = -170; i < -100; i += 3) {
-            spawnPoints.addSpawnPointXZ(new SpawnPoint(i, 0, 0, i, SpawnType.HUMANOID));
+            spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
         for (int i = 90; i < 180; i += 3) {
-            spawnPoints.addSpawnPointXZ(new SpawnPoint(i, 0, 0, i, SpawnType.HUMANOID));
+            spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
         LOGGER.info("Setting radius to 45");
         IMWaveSpawner spawner = new IMWaveSpawner(nexus, 45);
@@ -66,10 +68,10 @@ public class Tester {
         DummyNexus nexus = new DummyNexus();
         SpawnPointContainer spawnPoints = new SpawnPointContainer();
         for (int i = -170; i < -100; i += 3) {
-            spawnPoints.addSpawnPointXZ(new SpawnPoint(i, 0, 0, i, SpawnType.HUMANOID));
+            spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
         for (int i = 90; i < 180; i += 3) {
-            spawnPoints.addSpawnPointXZ(new SpawnPoint(i, 0, 0, i, SpawnType.HUMANOID));
+            spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
         LOGGER.info("Setting radius to 45");
         IMWaveSpawner spawner = new IMWaveSpawner(nexus, 45);
@@ -104,7 +106,7 @@ public class Tester {
         LOGGER.info("Filling with spawn points...");
         SpawnPointContainer spawnPoints = new SpawnPointContainer();
         for (int i = -180; i < 180; i += this.rand.nextInt(3)) {
-            spawnPoints.addSpawnPointXZ(new SpawnPoint(i, 0, 0, i, SpawnType.HUMANOID));
+            spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
         LOGGER.info(spawnPoints.getNumberOfSpawnPoints(SpawnType.HUMANOID) + " random points in container");
 

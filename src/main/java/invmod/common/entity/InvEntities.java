@@ -44,39 +44,38 @@ public interface InvEntities {
             .dimensions(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3d(0.0, 0.81875, -0.0625)).maxTrackingRange(10));
 
     EntityType<EntityIMEgg> SPIDER_EGG = register("spider_egg", EntityType.Builder.<EntityIMEgg>create(EntityIMEgg::new, SpawnGroup.MISC)
-            .dimensions(0.5F, 0.8F).eyeHeight(0.5F).passengerAttachments(new Vec3d(0.0, 0.81875, -0.0625)).maxTrackingRange(10));
+            .dimensions(0.5F, 0.8F).eyeHeight(0.5F).maxTrackingRange(10));
 
     EntityType<EntityIMTrap> TRAP = register("trap", EntityType.Builder.<EntityIMTrap>create(EntityIMTrap::new, SpawnGroup.MISC)
-            .dimensions(0.5F, 0.28F).maxTrackingRange(10));
+            .dimensions(0.5F, 0.28F).makeFireImmune().maxTrackingRange(10).disableSummon());
 
     @Deprecated
     EntityType<EntitySFX> SFX = register("sfx", EntityType.Builder.<EntitySFX>create(EntitySFX::new, SpawnGroup.MISC)
-            .dimensions(0.5F, 0.5F).maxTrackingRange(8));
+            .dimensions(0.5F, 0.5F).maxTrackingRange(8).disableSummon().disableSaving());
     EntityType<EntityIMSpawnProxy> SPAWN_PROXY = register("spawn_proxy", EntityType.Builder.<EntityIMSpawnProxy>create(EntityIMSpawnProxy::new, SpawnGroup.MONSTER)
-            .dimensions(0.5F, 0.5F).maxTrackingRange(8));
+            .dimensions(0.5F, 0.5F).maxTrackingRange(8).disableSummon().disableSaving());
     EntityType<EntityIMBolt> BOLT = register("bolt", EntityType.Builder.<EntityIMBolt>create(EntityIMBolt::new, SpawnGroup.MISC)
-            .dimensions(0.5F, 0.5F).maxTrackingRange(8));
+            .dimensions(0.5F, 0.5F).maxTrackingRange(8).disableSummon().disableSaving());
     EntityType<EntityIMBoulder> BOULDER = register("boulder", EntityType.Builder.<EntityIMBoulder>create(EntityIMBoulder::new, SpawnGroup.MISC)
             .dimensions(0.5F, 0.5F).maxTrackingRange(8));
     EntityType<EntityIMPrimedTNT> TNT = register("tnt", EntityType.Builder.<EntityIMPrimedTNT>create(EntityIMPrimedTNT::new, SpawnGroup.MISC)
             .makeFireImmune().dimensions(0.98F, 0.98F).eyeHeight(0.15F).maxTrackingRange(10).trackingTickInterval(10));
 
-    RegistryKey<EntityType<?>> BIRD = RegistryKey.of(RegistryKeys.ENTITY_TYPE, InvasionMod.id("bird"));
-    RegistryKey<EntityType<?>> GIANT_BIRD = RegistryKey.of(RegistryKeys.ENTITY_TYPE, InvasionMod.id("giant_bird"));
+    EntityType<EntityIMBird> BIRD = register("bird", betaFeature(EntityType.Builder.<EntityIMBird>create(EntityIMBird::new, SpawnGroup.MONSTER)
+            .dimensions(1, 1).maxTrackingRange(10).trackingTickInterval(10)));
+    EntityType<EntityIMGiantBird> GIANT_BIRD = register("giant_bird", betaFeature(EntityType.Builder.<EntityIMGiantBird>create(EntityIMGiantBird::new, SpawnGroup.MONSTER)
+            .dimensions(1.9F, 2.8F).maxTrackingRange(10).trackingTickInterval(10)));
 
     private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> builder) {
         return Registry.register(Registries.ENTITY_TYPE, InvasionMod.id(name), builder.build());
     }
 
+    private static <T extends Entity> EntityType.Builder<T> betaFeature(EntityType.Builder<T> builder) {
+        return InvasionMod.getConfig().debugMode ? builder : builder.disableSummon().disableSaving();
+    }
+
     static void bootstrap() {
         ConfigInvasion config = InvasionMod.getConfig();
-
-        if (config.debugMode) {
-            register("bird", EntityType.Builder.<EntityIMBird>create(EntityIMBird::new, SpawnGroup.MONSTER)
-                    .dimensions(1, 1).maxTrackingRange(10).trackingTickInterval(10));
-            register("giant_bird", EntityType.Builder.<EntityIMGiantBird>create(EntityIMGiantBird::new, SpawnGroup.MONSTER)
-                    .dimensions(1.9F, 2.8F).maxTrackingRange(10).trackingTickInterval(10));
-        }
 
         if (config.nightSpawnsEnabled) {
             BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER), SPAWN_PROXY.getSpawnGroup(), SPAWN_PROXY, config.nightMobSpawnChance, 1, 1);

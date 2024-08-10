@@ -1,129 +1,102 @@
 package invmod.common.entity;
 
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
-public class EntityIMEgg extends EntityIMLiving
-{
-  private static int META_HATCHED = 30;
-  private int hatchTime;
-  private int ticks;
-  private boolean hatched;
-  private Entity parent;
-  private Entity[] contents;
+public class EntityIMEgg extends EntityIMLiving {
+    private static final TrackedData<Boolean> HATCHED = DataTracker.registerData(EntityIMEgg.class, TrackedDataHandlerRegistry.BOOLEAN);
 
-  public EntityIMEgg(World world)
-  {
-    super(world);
-    getDataWatcher().addObject(META_HATCHED, Byte.valueOf((byte)0));
-  }
+    private int hatchTime;
+    private int ticks;
 
-  public EntityIMEgg(Entity parent, Entity[] contents, int hatchTime)
-  {
-    super(parent.worldObj);
-    this.parent = parent;
-    this.contents = contents;
-    this.hatchTime = hatchTime;
-    this.setBurnsInDay(false);
-    this.hatched = false;
-    this.ticks = 0;
-    setBaseMoveSpeedStat(0.01F);
+    private Entity[] contents;
 
-    getDataWatcher().addObject(META_HATCHED, Byte.valueOf((byte)0));
-
-    setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-    setName("Spider Egg");
-    setGender(0);
-    setPosition(parent.posX, parent.posY, parent.posZ);
-    setSize(0.5F, 0.8F);
-  }
-
-  @Override
-  public String getSpecies()
-  {
-    return null;
-  }
-
-  @Override
-  public int getTier()
-  {
-    return 0;
-  }
-
-  @Override
-  public boolean isHostile()
-  {
-    return false;
-  }
-
-  @Override
-  public boolean isNeutral()
-  {
-    return false;
-  }
-
-  @Override
-  public boolean isThreatTo(Entity entity)
-  {
-    if ((entity instanceof EntityPlayer)) {
-      return true;
+    public EntityIMEgg(EntityType<EntityIMEgg> type, World world) {
+        super(type, world, null);
     }
-    return false;
-  }
 
-  @Override
-  public Entity getAttackingTarget()
-  {
-    return null;
-  }
+    public EntityIMEgg(Entity parent, Entity[] contents, int hatchTime) {
+        super(InvEntities.SPIDER_EGG, parent.getWorld(), null);
+        this.contents = contents;
+        this.hatchTime = hatchTime;
+        setBurnsInDay(false);
+        setBaseMoveSpeedStat(0.01F);
 
-  @Override
-  public void onEntityUpdate()
-  {
-    super.onEntityUpdate();
-    if (!this.worldObj.isRemote)
-    {
-      this.ticks += 1;
-      if (this.hatched)
-      {
-        if (this.ticks > this.hatchTime + 40)
-          setDead();
-      }
-      else if (this.ticks > this.hatchTime)
-      {
-        hatch();
-      }
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+        setName("Spider Egg");
+        setGender(0);
+        setPosition(parent.getPos());
     }
-    else if ((!this.hatched) && (getDataWatcher().getWatchableObjectByte(META_HATCHED) == 1))
-    {
-      this.worldObj.playSoundAtEntity(this, "invmod:egghatch"+(rand.nextInt(1)+(Integer)1), 1.0F, 1.0F);
-      this.hatched = true;
-    }
-  }
 
-  private void hatch()
-  {
-    this.worldObj.playSoundAtEntity(this, "invmod:egghatch"+(rand.nextInt(1)+(Integer)1), 1.0F, 1.0F);
-    this.hatched = true;
-    if (!this.worldObj.isRemote)
-    {
-      getDataWatcher().updateObject(META_HATCHED, Byte.valueOf((byte)1));
-      if (this.contents != null)
-      {
-        for (Entity entity : this.contents)
-        {
-          entity.setPosition(this.posX, this.posY, this.posZ);
-          this.worldObj.spawnEntityInWorld(entity);
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(HATCHED, false);
+    }
+
+    @Override
+    public String getSpecies() {
+        return null;
+    }
+
+    @Override
+    public boolean isHostile() {
+        return false;
+    }
+
+    @Override
+    public boolean isNeutral() {
+        return false;
+    }
+
+    @Override
+    public boolean isThreatTo(Entity entity) {
+        return entity instanceof PlayerEntity;
+    }
+
+    public boolean isHatched() {
+        return dataTracker.get(HATCHED);
+    }
+
+    public void setHatched(boolean hatched) {
+        dataTracker.set(HATCHED, hatched);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (!getWorld().isClient) {
+            ticks++;
+            if (isHatched()) {
+                if (ticks > hatchTime + 40)
+                    discard();
+            } else if (ticks > hatchTime) {
+                hatch();
+            }
         }
-      }
     }
-  }
 
-  @Override
-  public String toString()
-  {
-	  return "IMSpider-egg";
-  }
+    private void hatch() {
+        playSound("invmod:egghatch" + (getRandom().nextInt(1) + 1), 1, 1);
+        setHatched(true);
+        if (!getWorld().isClient) {
+            if (contents != null) {
+                for (Entity entity : contents) {
+                    entity.setPosition(getPos());
+                    getWorld().spawnEntity(entity);
+                }
+            }
+        }
+    }
+
+    @Override
+    public String getLegacyName() {
+        return "IMSpider-egg";
+    }
 }

@@ -2,6 +2,7 @@ package invmod.common.item;
 
 import invmod.common.entity.EntityIMWolf;
 import invmod.common.entity.IHasNexus;
+import invmod.common.entity.InvEntities;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +37,8 @@ class ItemStrangeBone extends Item {
             return ActionResult.FAIL;
         }
 
-        EntityIMWolf newWolf = new EntityIMWolf(wolf, nexus);
+        EntityIMWolf newWolf = wolf.convertTo(InvEntities.WOLF, true);
+        newWolf.setNexus(nexus);
 
         wolf.getWorld().spawnEntity(newWolf);
         wolf.discard();

@@ -27,7 +27,7 @@ public class SpawnPointContainer {
         for (int i = 0; i < spawnList.size(); i++) {
             SpawnPoint oldPoint = spawnList.get(i);
             if (oldPoint.columnEquals(spawnPoint)) {
-                if (oldPoint.y() > spawnPoint.getYCoord()) {
+                if (oldPoint.pos().getY() > spawnPoint.getYCoord()) {
                     spawnList.set(i, spawnPoint);
                 }
                 foundMatch = true;
