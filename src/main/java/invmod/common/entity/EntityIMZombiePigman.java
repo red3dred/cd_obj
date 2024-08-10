@@ -4,7 +4,6 @@ import invmod.common.ConfigInvasion;
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAICharge;
@@ -56,7 +55,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
 
     public EntityIMZombiePigman(EntityType<EntityIMZombiePigman> type, World world, INexusAccess nexus) {
         super(type, world, nexus, 0.75F);
-        dropChance = 0.35F;
     }
 
     @Override

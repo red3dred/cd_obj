@@ -250,9 +250,10 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 		return getDataWatcher().getWatchableObjectInt(31);
 	}
 
+	@Deprecated
 	@Override
-	public String toString() {
-		return "IMSpider-T" + this.tier+"-"+this.getName();
+    public String getLegacyName() {
+	    return String.format("%s-T%d-%s", getClass().getName().replace("Entity", ""), getTier(), getDisplayName());
 	}
 
 	@Override

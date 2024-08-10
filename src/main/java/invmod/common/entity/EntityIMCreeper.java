@@ -232,12 +232,6 @@ public boolean shouldRenderOverlay() {
   }
 
   @Override
-  public String toString()
-  {
-	  return "IMCreeper-T" + this.getTier();
-  }
-
-  @Override
   protected void dropFewItems(boolean flag, int amount)
   {
     entityDropItem(new ItemStack(Items.gunpowder, 1, 1), 0.0F);

@@ -104,7 +104,8 @@ public class ConfigInvasion extends Config {
     }
 
     public int getHealth(EntityIMLiving mob) {
-        return getHealth(mob.getType(), !mob.hasNexus());
+        // TODO:
+        return getHealth(mob.getLegacyName(), !mob.hasNexus());
     }
 
     public synchronized ISelect<IEntityIMPattern> getSpawnPool() {

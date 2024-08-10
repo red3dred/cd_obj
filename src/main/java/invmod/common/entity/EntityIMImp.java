@@ -86,9 +86,4 @@ private int tier;
 		return  super.attackEntityAsMob(entity);
 	}
 
-  @Override
-  public String toString()
-  {
-	  return "IMImp-T" + this.getTier();
-  }
 }

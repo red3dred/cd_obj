@@ -402,13 +402,6 @@ public class EntityIMThrower extends EntityIMMob
 		entityDropItem(new ItemStack(mod_Invasion.itemSmallRemnants, 1), 0.0F);
 	}
 
-
-	@Override
-	public String toString()
-	{
-		return "IMThrower-T" + this.tier;
-	}
-
 	public void setTexture(int textureId) {
 		getDataWatcher().updateObject(31, Integer.valueOf(textureId));
 	}

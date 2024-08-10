@@ -200,7 +200,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     private boolean isHostile = true;
     private boolean creatureRetaliates = true;
 
-    protected INexusAccess targetNexus;
+    @Nullable
+    private INexusAccess targetNexus;
 
     private float attackRange;
 
@@ -794,6 +795,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         dataTracker.set(JUMPING, jumping);
     }
 
+    @Deprecated
     public void setRenderLabel(String label) {
         dataTracker.set(LABEL, label);
     }
@@ -1197,6 +1199,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     protected void onDebugChange() {
+    }
+
+    @Deprecated
+    public String getLegacyName() {
+        return String.format("%s-T%d", getClass().getName().replace("Entity", ""), getTier());
     }
 
     public static BlockSpecial getBlockSpecial(Block block2) {
