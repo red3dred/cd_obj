@@ -19,7 +19,14 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class RenderIMZombie extends BipedEntityRenderer<AbstractIMZombieEntity, BipedEntityModel<AbstractIMZombieEntity>> {
+/**
+ * Replicates the rendering code from ZombieBaseEntityRenderer and ZombieEntityRenderer
+ * and adds model swapping for the big and normal modes.
+ *
+ * @see net.minecraft.client.render.entity.ZombieEntityRenderer
+ * @see net.minecraft.client.render.entity.ZombieBaseEntityRenderer
+ */
+class RenderIMZombie extends BipedEntityRenderer<AbstractIMZombieEntity, BipedEntityModel<AbstractIMZombieEntity>> {
     static final List<Identifier> TEXTURES = Stream.of(
             "textures/zombie_old.png", "textures/zombieT1a.png",
             "textures/zombieT2.png", "textures/pigzombie64x32.png",

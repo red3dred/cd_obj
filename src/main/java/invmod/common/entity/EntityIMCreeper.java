@@ -18,18 +18,21 @@ import invmod.common.nexus.INexusAccess;
 import invmod.common.util.ExplosionUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.SkinOverlayOwner;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.world.World;
+import net.minecraft.world.World.ExplosionSourceType;
+import net.minecraft.world.explosion.Explosion;
 
 //NOOB HAUS  this.c.addTask(0, new EntityAISwimming(this));   c = this.tasks...
 //Noob HAUS  this.d.addTask(2, new EntityAIHurtByTarget(this, false));   d = this.targetTasks
 
 //public class EntityIMCreeper extends EntityIMMob implements ILeader
-public class EntityIMCreeper extends EntityIMMob
+public class EntityIMCreeper extends EntityIMMob implements SkinOverlayOwner
 {
   private int timeSinceIgnited;
   private int lastActiveTime;
@@ -136,7 +139,7 @@ public class EntityIMCreeper extends EntityIMMob
           getMoveHelper().setMoveTo(this.posX + invmod.common.util.CoordsInt.offsetAdjX[this.explodeDirection], this.posY, this.posZ + invmod.common.util.CoordsInt.offsetAdjZ[this.explodeDirection], 0.0D);
         }
         if (this.timeSinceIgnited == 0) {
-          this.worldObj.playSoundAtEntity(this, "creeper.primed", 1.0F, 0.5F);
+          this.getWorld().playSoundAtEntity(this, "creeper.primed", 1.0F, 0.5F);
         }
       }
       this.timeSinceIgnited += state;
@@ -184,6 +187,12 @@ public class EntityIMCreeper extends EntityIMMob
   }
 
   @Override
+public boolean shouldRenderOverlay() {
+      return getTier() > 1;
+  }
+
+
+  @Override
   public void onDeath(DamageSource par1DamageSource)
   {
     super.onDeath(par1DamageSource);
@@ -200,6 +209,11 @@ public class EntityIMCreeper extends EntityIMMob
     return true;
   }
 
+  public float getClientFuseTime(float tickDelta) {
+      return setCreeperFlashTime(tickDelta);
+  }
+
+  @Deprecated
   public float setCreeperFlashTime(float par1)
   {
     return (this.lastActiveTime + (this.timeSinceIgnited - this.lastActiveTime) * par1) / 28.0F;
@@ -231,14 +245,7 @@ public class EntityIMCreeper extends EntityIMMob
 
   protected void doExplosion()
   {
-      Explosion explosion = new Explosion(this.worldObj,this, posX, posY, posZ, 2.1F);
-      explosion.isFlaming = false;
-      explosion.isSmoking = true;
-      if(!worldObj.isRemote)
-      {
-      explosion.doExplosionA();
-      }
-      ExplosionUtil.doExplosionB(worldObj,explosion,true);
+      getWorld().createExplosion(this, getX(), getY(), getZ(), 2.1F * Math.max(getTier(), 1), false, ExplosionSourceType.MOB);
   }
 
   public int getCreeperState()

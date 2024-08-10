@@ -11,6 +11,12 @@ import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.EntityModelPartNames;
 import net.minecraft.entity.LivingEntity;
 
+/**
+ * Enlarged version of a normal biped.
+ * Has a slightly bigger head and torso and wider-set limbs.
+ *
+ * @param <T> The entity type
+ */
 public class ModelBigBiped<T extends LivingEntity> extends BipedEntityModel<T> {
   public ModelBigBiped(ModelPart root) {
     super(root);

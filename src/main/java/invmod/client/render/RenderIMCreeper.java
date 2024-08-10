@@ -1,86 +1,80 @@
 package invmod.client.render;
 
 import invmod.common.entity.EntityIMCreeper;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelCreeper;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.feature.CreeperChargeFeatureRenderer;
+import net.minecraft.client.render.entity.feature.EnergySwirlOverlayFeatureRenderer;
+import net.minecraft.client.render.entity.feature.FeatureRendererContext;
+import net.minecraft.client.render.entity.model.CreeperEntityModel;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.render.entity.model.EntityModelLayers;
+import net.minecraft.client.render.entity.model.EntityModelLoader;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 
-import org.lwjgl.opengl.GL11;
+/**
+ * Copy of CreeperEntityRenderer modified to use different textures
+ *
+ * @see net.minecraft.client.render.entity.CreeperEntityRenderer
+ */
+public class RenderIMCreeper extends LivingEntityRenderer<EntityIMCreeper, CreeperEntityModel<EntityIMCreeper>> {
+    private static final Identifier TEXTURE = Identifier.ofVanilla("textures/entity/creeper/creeper.png");
 
-public class RenderIMCreeper extends RenderLiving {
-	private static final ResourceLocation texture = new ResourceLocation("textures/entity/creeper/creeper.png");
-	private ModelBase field_27008_a;
+	public RenderIMCreeper(EntityRendererFactory.Context context) {
+        super(context, new CreeperEntityModel<>(context.getPart(EntityModelLayers.CREEPER)), 0.5F);
+        this.addFeature(new ChargeFeature(this, context.getModelLoader()));
+    }
 
-	public RenderIMCreeper() {
-		super(new ModelCreeper(), 0.5F);
-		this.field_27008_a = new ModelCreeper(2.0F);
-	}
+    @Override
+    protected void scale(EntityIMCreeper creeperEntity, MatrixStack matrices, float tickDelta) {
+        float fuseTime = creeperEntity.getClientFuseTime(tickDelta);
+        float magnitude = 1 + MathHelper.sin(fuseTime * 100) * fuseTime * 0.01F;
+        fuseTime = (float)Math.pow(MathHelper.clamp(fuseTime, 0, 1), 3);
+        float horScale = (1 + fuseTime * 0.4F) * magnitude;
+        float verScale = (1 + fuseTime * 0.1F) / magnitude;
+        matrices.scale(horScale, verScale, horScale);
+    }
 
-	protected void updateCreeperScale(EntityIMCreeper par1EntityCreeper, float par2) {
-		EntityIMCreeper entitycreeper = par1EntityCreeper;
-		float f = entitycreeper.setCreeperFlashTime(par2);
-		float f1 = 1.0F + MathHelper.sin(f * 100.0F) * f * 0.01F;
+    @Override
+    protected float getAnimationCounter(EntityIMCreeper creeperEntity, float tickDelta) {
+        float fuseTime = creeperEntity.getClientFuseTime(tickDelta);
+        return (int)(fuseTime * 10) % 2 == 0 ? 0 : MathHelper.clamp(fuseTime, 0.5F, 1);
+    }
 
-		if (f < 0.0F) {
-			f = 0.0F;
-		}
+    @Override
+    public Identifier getTexture(EntityIMCreeper creeperEntity) {
+        return TEXTURE;
+    }
 
-		if (f > 1.0F) {
-			f = 1.0F;
-		}
+    /**
+     * Copy of {@link CreeperChargeFeatureRenderer}
+     *
+     * @see net.minecraft.client.render.entity.feature.CreeperChargeFeatureRenderer
+     */
+    private static final class ChargeFeature extends EnergySwirlOverlayFeatureRenderer<EntityIMCreeper, CreeperEntityModel<EntityIMCreeper>> {
+        private static final Identifier SKIN = Identifier.ofVanilla("textures/entity/creeper/creeper_armor.png");
+        private final CreeperEntityModel<EntityIMCreeper> model;
 
-		f *= f;
-		f *= f;
-		float f2 = (1.0F + f * 0.4F) * f1;
-		float f3 = (1.0F + f * 0.1F) / f1;
-		GL11.glScalef(f2, f3, f2);
-	}
+        public ChargeFeature(FeatureRendererContext<EntityIMCreeper, CreeperEntityModel<EntityIMCreeper>> context, EntityModelLoader loader) {
+            super(context);
+            model = new CreeperEntityModel<>(loader.getModelPart(EntityModelLayers.CREEPER_ARMOR));
+        }
 
-	protected int updateCreeperColorMultiplier(EntityIMCreeper par1EntityCreeper, float par2, float par3) {
-		EntityIMCreeper entitycreeper = par1EntityCreeper;
-		float f = entitycreeper.setCreeperFlashTime(par3);
+        @Override
+        protected float getEnergySwirlX(float partialAge) {
+            return partialAge * 0.01F;
+        }
 
-		if ((int) (f * 10.0F) % 2 == 0) {
-			return 0;
-		}
+        @Override
+        protected Identifier getEnergySwirlTexture() {
+            return SKIN;
+        }
 
-		int i = (int) (f * 0.2F * 255.0F);
-
-		if (i < 0) {
-			i = 0;
-		}
-
-		if (i > 255) {
-			i = 255;
-		}
-
-		char c = 'a';
-		char c1 = 'b';
-		char c2 = 'c';
-		return i << 24 | c << '\020' | c1 << '\b' | c2;
-	}
-
-	protected int func_27007_b(EntityIMCreeper par1EntityCreeper, int par2, float par3) {
-		return -1;
-	}
-
-	protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-		updateCreeperScale((EntityIMCreeper) par1EntityLiving, par2);
-	}
-
-	protected int getColorMultiplier(EntityLivingBase par1EntityLiving, float par2, float par3) {
-		return updateCreeperColorMultiplier((EntityIMCreeper) par1EntityLiving, par2, par3);
-	}
-
-	protected int inheritRenderPass(EntityLivingBase par1EntityLiving, int par2, float par3) {
-		return func_27007_b((EntityIMCreeper) par1EntityLiving, par2, par3);
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return texture;
-	}
+        @Override
+        protected EntityModel<EntityIMCreeper> getEnergySwirlModel() {
+            return model;
+        }
+    }
 }

@@ -2,21 +2,17 @@ package invmod.client.render;
 
 import invmod.common.entity.EntityIMBird;
 import invmod.common.util.MathUtil;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
-
 import org.lwjgl.opengl.GL11;
 
-public class RenderGiantBird extends RenderIMLiving {
+public class RenderGiantBird extends LivingEntityRenderer<EntityIMBird, ModelVulture> {
 	private static final ResourceLocation texture = new ResourceLocation("invmod:textures/vulture.png");
 	private ModelVulture modelBird;
 
-	public RenderGiantBird() {
-		super(new ModelVulture(), 0.4F);
+	public RenderGiantBird(EntityRendererFactory.Context ctx) {
+		super(ctx, new ModelVulture(), 0.4F);
 		this.modelBird = ((ModelVulture) this.mainModel);
 	}
 

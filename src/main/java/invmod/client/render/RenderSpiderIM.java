@@ -1,87 +1,42 @@
 package invmod.client.render;
 
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMSpider;
-import net.minecraft.client.model.ModelSpider;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.feature.SpiderEyesFeatureRenderer;
+import net.minecraft.client.render.entity.model.EntityModelLayers;
+import net.minecraft.client.render.entity.model.SpiderEntityModel;
+import net.minecraft.util.Identifier;
 
-import org.lwjgl.opengl.GL11;
+import java.util.List;
 
-public class RenderSpiderIM extends RenderLiving {
-	private static final ResourceLocation t_eyes = new ResourceLocation("textures/entity/spider_eyes.png");
-	private static final ResourceLocation t_spider = new ResourceLocation("textures/entity/spider/spider.png");
-	private static final ResourceLocation t_jumping = new ResourceLocation("invmod:textures/spiderT2.png");
-	private static final ResourceLocation t_mother = new ResourceLocation("invmod:textures/spiderT2b.png");
+/**
+ * Copy of SpiderEntityRenderer modified to use different textures
+ *
+ * @see net.minecraft.client.render.entity.SpiderEntityRenderer
+ */
+public class RenderSpiderIM extends LivingEntityRenderer<EntityIMSpider, SpiderEntityModel<EntityIMSpider>> {
+    private static final Identifier NORMAL = Identifier.ofVanilla("textures/entity/spider/spider.png");
 
-	public RenderSpiderIM() {
-		super(new ModelSpider(), 1.0F);
-		setRenderPassModel(new ModelSpider());
-	}
+	private static final Identifier JUMPER = InvasionMod.id("textures/spiderT2.png");
+	private static final Identifier MOTHER = InvasionMod.id("textures/spiderT2b.png");
 
-	protected float setSpiderDeathMaxRotation(EntityIMSpider entityspider) {
-		return 180.0F;
-	}
+	private static final List<Identifier> TEXTURES = List.of(NORMAL, JUMPER, MOTHER);
 
-	protected int setSpiderEyeBrightness(EntityIMSpider entityspider, int i, float f) {
-		if (i != 0) {
-			return -1;
-		}
+    public RenderSpiderIM(EntityRendererFactory.Context context) {
+        super(context, new SpiderEntityModel<>(context.getPart(EntityModelLayers.SPIDER)), 0.8F);
+        addFeature(new SpiderEyesFeatureRenderer<>(this));
+    }
 
-		bindTexture(t_eyes);
-		float f1 = 1.0F;
-		GL11.glEnable(3042);
-		GL11.glDisable(3008);
-		GL11.glBlendFunc(1, 1);
+    @Override
+    protected float getLyingAngle(EntityIMSpider entity) {
+        return 180;
+    }
 
-		if (entityspider.isInvisible()) {
-			GL11.glDepthMask(false);
-		} else {
-			GL11.glDepthMask(true);
-		}
-
-		char c0 = 61680;
-		int j = c0 % 65536;
-		int k = c0 / 65536;
-		OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j / 1.0F, k / 1.0F);
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, f1);
-		return 1;
-	}
-
-	protected void scaleSpider(EntityIMSpider entityspider, float f) {
-		float f1 = entityspider.spiderScaleAmount();
-		this.shadowSize = f1;
-		GL11.glScalef(f1, f1, f1);
-	}
-
-	protected void preRenderCallback(EntityLivingBase entityliving, float f) {
-		scaleSpider((EntityIMSpider) entityliving, f);
-	}
-
-	protected float getDeathMaxRotation(EntityLivingBase entityliving) {
-		return setSpiderDeathMaxRotation((EntityIMSpider) entityliving);
-	}
-
-	protected int shouldRenderPass(EntityLivingBase entityliving, int i, float f) {
-		return setSpiderEyeBrightness((EntityIMSpider) entityliving, i, f);
-	}
-
-	protected ResourceLocation getTexture(EntityIMSpider entity) {
-		switch (entity.getTextureId()) {
-		case 0:
-			return t_spider;
-		case 1:
-			return t_jumping;
-		case 2:
-			return t_mother;
-		}
-		return t_spider;
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return getTexture((EntityIMSpider) entity);
-	}
+    @Override
+    public Identifier getTexture(EntityIMSpider entity) {
+        int id = entity.getTextureId();
+        return TEXTURES.get(id < 0 || id >= TEXTURES.size() ? 0 : id);
+    }
 }

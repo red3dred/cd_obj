@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class RenderIMZombiePigman extends RenderIMZombie {
+class RenderIMZombiePigman extends RenderIMZombie {
     static final List<Identifier> TEXTURES = Stream.of(
             "textures/pigzombie64x32.png",
             "textures/pigzombie64x32.png",

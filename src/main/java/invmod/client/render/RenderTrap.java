@@ -1,38 +1,35 @@
 package invmod.client.render;
 
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMTrap;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.RotationAxis;
 
-import org.lwjgl.opengl.GL11;
+public class RenderTrap extends EntityRenderer<EntityIMTrap> {
+	private static final Identifier TEXTURE = InvasionMod.id("textures/trap.png");
 
-public class RenderTrap extends Render {
-	private static final ResourceLocation texture = new ResourceLocation("invmod:textures/trap.png");
-	private ModelTrap modelTrap;
+	private final ModelTrap model;
 
-	public RenderTrap(ModelTrap model) {
-		this.modelTrap = model;
+	public RenderTrap(EntityRendererFactory.Context ctx) {
+	    super(ctx);
+	    model = new ModelTrap(ModelTrap.getTexturedModelData().createModel());
 	}
 
-	public void renderTrap(EntityIMTrap entityTrap, double d, double d1, double d2, float f, float f1) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef((float) d, (float) d1, (float) d2);
-
-		GL11.glRotatef(180.0F, 1.0F, 0.0F, 0.0F);
-		GL11.glEnable(32826);
-		GL11.glScalef(1.3F, 1.3F, 1.3F);
-		bindEntityTexture(entityTrap);
-		this.modelTrap.render(entityTrap, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F, entityTrap.isEmpty(), entityTrap.getTrapType());
-		GL11.glDisable(32826);
-		GL11.glPopMatrix();
+	@Override
+    public void render(EntityIMTrap entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertices, int light) {
+	    matrices.push();
+	    matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(180));
+	    matrices.scale(1.3F, 1.3F, 1.3F);
+	    model.render(matrices, vertices.getBuffer(model.getLayer(getTexture(entity))), light, 0);
+	    matrices.pop();
 	}
 
-	public void doRender(Entity entity, double d, double d1, double d2, float f, float f1) {
-		renderTrap((EntityIMTrap) entity, d, d1, d2, f, f1);
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return texture;
+	@Override
+    public Identifier getTexture(EntityIMTrap entity) {
+		return TEXTURE;
 	}
 }
