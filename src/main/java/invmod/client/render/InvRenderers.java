@@ -1,15 +1,10 @@
 package invmod.client.render;
 
-import invmod.common.entity.EntityIMBird;
-import invmod.common.entity.EntityIMGiantBird;
 import invmod.common.entity.InvEntities;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
 
 public interface InvRenderers {
-    @SuppressWarnings("unchecked")
     static void bootstrap() {
         EntityRendererRegistry.register(InvEntities.ZOMBIE, RenderIMZombie::new);
         EntityRendererRegistry.register(InvEntities.ZOMBIE_PIGMAN, RenderIMZombiePigman::new);
@@ -26,13 +21,8 @@ public interface InvRenderers {
         EntityRendererRegistry.register(InvEntities.SFX, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(InvEntities.SPAWN_PROXY, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(InvEntities.SPIDER_EGG, RenderEgg::new);
-
         EntityRendererRegistry.register(InvEntities.CREEPER, RenderIMCreeper::new);
-        Registries.ENTITY_TYPE.getOrEmpty(InvEntities.BIRD).ifPresent(type -> {
-            EntityRendererRegistry.register((EntityType<EntityIMBird>)type, RenderB::new);
-        });
-        Registries.ENTITY_TYPE.getOrEmpty(InvEntities.GIANT_BIRD).ifPresent(type -> {
-            EntityRendererRegistry.register((EntityType<EntityIMGiantBird>)type, RenderGiantBird::new);
-        });
+        EntityRendererRegistry.register(InvEntities.BIRD, RenderB::new);
+        EntityRendererRegistry.register(InvEntities.GIANT_BIRD, RenderGiantBird::new);
     }
 }

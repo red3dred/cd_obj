@@ -1,215 +1,94 @@
 package invmod.client.render;
 
-import net.minecraft.entity.Entity;
+import invmod.common.entity.EntityIMImp;
+import net.minecraft.client.model.ModelData;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPartBuilder;
+import net.minecraft.client.model.ModelPartData;
+import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.EntityModelPartNames;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.util.math.MathHelper;
 
-public class ModelImp extends ModelBase
-{
-  ModelRenderer head;
-  ModelRenderer body;
-  ModelRenderer rightarm;
-  ModelRenderer leftarm;
-  ModelRenderer rightleg;
-  ModelRenderer leftleg;
-  ModelRenderer rshin;
-  ModelRenderer rfoot;
-  ModelRenderer lshin;
-  ModelRenderer lfoot;
-  ModelRenderer rhorn;
-  ModelRenderer lhorn;
-  ModelRenderer bodymid;
-  ModelRenderer neck;
-  ModelRenderer bodychest;
-  ModelRenderer tail;
-  ModelRenderer tail2;
+public class ModelImp extends SinglePartEntityModel<EntityIMImp> {
+    private final ModelPart root;
 
-  public ModelImp()
-  {
-    this(0.0F);
-  }
+    private final ModelPart head;
 
-  public ModelImp(float f)
-  {
-    this(f, 0.0F);
-  }
+    private final ModelPart rightArm;
+    private final ModelPart leftArm;
 
-  public ModelImp(float f, float f1)
-  {
-    this.head = new ModelRenderer(this, 44, 0);
-    this.head.addBox(-2.733333F, -3.0F, -2.0F, 5, 3, 4);
-    this.head.setRotationPoint(-0.4F, 9.8F, -3.3F);
-    this.head.rotateAngleX = 0.15807F;
-    this.head.rotateAngleY = 0.0F;
-    this.head.rotateAngleZ = 0.0F;
-    this.head.mirror = false;
-    this.body = new ModelRenderer(this, 23, 1);
-    this.body.addBox(-4.0F, 0.0F, -4.0F, 7, 4, 3);
-    this.body.setRotationPoint(0.0F, 9.1F, -0.8666667F);
-    this.body.rotateAngleX = 0.64346F;
-    this.body.rotateAngleY = 0.0F;
-    this.body.rotateAngleZ = 0.0F;
-    this.body.mirror = false;
-    this.rightarm = new ModelRenderer(this, 26, 9);
-    this.rightarm.addBox(-2.0F, -0.7333333F, -1.133333F, 2, 7, 2);
-    this.rightarm.setRotationPoint(-4.0F, 10.8F, -2.066667F);
-    this.rightarm.rotateAngleX = 0.0F;
-    this.rightarm.rotateAngleY = 0.0F;
-    this.rightarm.rotateAngleZ = 0.0F;
-    this.rightarm.mirror = false;
-    this.leftarm = new ModelRenderer(this, 18, 9);
-    this.leftarm.addBox(0.0F, -0.8666667F, -1.0F, 2, 7, 2);
-    this.leftarm.setRotationPoint(3.0F, 10.8F, -2.1F);
-    this.leftarm.rotateAngleX = 0.0F;
-    this.leftarm.rotateAngleY = 0.0F;
-    this.leftarm.rotateAngleZ = 0.0F;
-    this.leftarm.mirror = false;
-    this.rightleg = new ModelRenderer(this, 0, 17);
-    this.rightleg.addBox(-1.0F, 0.0F, -2.0F, 2, 4, 3);
-    this.rightleg.setRotationPoint(-2.0F, 16.9F, -1.0F);
-    this.rightleg.rotateAngleX = -0.15807F;
-    this.rightleg.rotateAngleY = 0.0F;
-    this.rightleg.rotateAngleZ = 0.0F;
-    this.rightleg.mirror = false;
-    this.leftleg = new ModelRenderer(this, 0, 24);
-    this.leftleg.addBox(-1.0F, 0.0F, -2.0F, 2, 4, 3);
-    this.leftleg.setRotationPoint(1.0F, 17.0F, -1.0F);
-    this.leftleg.rotateAngleX = -0.15919F;
-    this.leftleg.rotateAngleY = 0.0F;
-    this.leftleg.rotateAngleZ = 0.0F;
-    this.leftleg.mirror = false;
-    this.rshin = new ModelRenderer(this, 10, 17);
-    this.rshin.addBox(-2.0F, 0.6F, -4.4F, 2, 3, 2);
-    this.rshin.setRotationPoint(-1.0F, 16.9F, -1.0F);
-    this.rshin.rotateAngleX = 0.82623F;
-    this.rshin.rotateAngleY = 0.0F;
-    this.rshin.rotateAngleZ = 0.0F;
-    this.rshin.mirror = false;
-    this.rfoot = new ModelRenderer(this, 18, 18);
-    this.rfoot.addBox(-2.0F, 4.2F, -1.0F, 2, 3, 2);
-    this.rfoot.setRotationPoint(-1.0F, 16.9F, -1.0F);
-    this.rfoot.rotateAngleX = -0.01403F;
-    this.rfoot.rotateAngleY = 0.0F;
-    this.rfoot.rotateAngleZ = 0.0F;
-    this.rfoot.mirror = false;
-    this.lshin = new ModelRenderer(this, 10, 22);
-    this.lshin.addBox(-1.0F, 0.6F, -4.433333F, 2, 3, 2);
-    this.lshin.setRotationPoint(1.0F, 17.0F, -1.0F);
-    this.lshin.rotateAngleX = 0.82461F;
-    this.lshin.rotateAngleY = 0.0F;
-    this.lshin.rotateAngleZ = 0.0F;
-    this.lshin.mirror = false;
-    this.lfoot = new ModelRenderer(this, 10, 27);
-    this.lfoot.addBox(-1.0F, 4.2F, -1.0F, 2, 3, 2);
-    this.lfoot.setRotationPoint(1.0F, 17.0F, -1.0F);
-    this.lfoot.rotateAngleX = -0.01214F;
-    this.lfoot.rotateAngleY = 0.0F;
-    this.lfoot.rotateAngleZ = 0.0F;
-    this.lfoot.mirror = false;
+    private final ModelPart rightLeg;
+    private final ModelPart leftLeg;
 
-    this.rhorn = new ModelRenderer(this, 0, 0);
-    this.rhorn.addBox(1.0F, -4.0F, 1.5F, 1, 1, 1);
-    this.rhorn.setRotationPoint(-0.4F, 0F, -3.3F);
-    this.rhorn.mirror = false;
+    private final ModelPart rightShin;
+    private final ModelPart leftShin;
 
-    this.lhorn = new ModelRenderer(this, 0, 2);
-    this.lhorn.addBox(-1.0F, -4.0F, 1.5F, 1, 1, 1);
-    this.lhorn.setRotationPoint(-0.4F, 0F, -3.3F);
-    this.lhorn.mirror = false;
+    private final ModelPart rightFoot;
+    private final ModelPart leftFoot;
 
-    this.bodymid = new ModelRenderer(this, 1, 1);
-    this.bodymid.addBox(0.0F, 0.0F, 0.0F, 7, 5, 3);
-    this.bodymid.setRotationPoint(-4.0F, 12.46667F, -2.266667F);
-    this.bodymid.rotateAngleX = -0.15807F;
-    this.bodymid.rotateAngleY = 0.0F;
-    this.bodymid.rotateAngleZ = 0.0F;
-    this.bodymid.mirror = false;
-    this.neck = new ModelRenderer(this, 44, 7);
-    this.neck.addBox(0.0F, 0.0F, 0.0F, 3, 2, 2);
-    this.neck.setRotationPoint(-2.0F, 9.6F, -4.033333F);
-    this.neck.rotateAngleX = 0.27662F;
-    this.neck.rotateAngleY = 0.0F;
-    this.neck.rotateAngleZ = 0.0F;
-    this.neck.mirror = false;
-    this.bodychest = new ModelRenderer(this, 0, 9);
-    this.bodychest.addBox(0.0F, -1.0F, 0.0F, 7, 6, 2);
-    this.bodychest.setRotationPoint(-4.0F, 12.36667F, -3.8F);
-    this.bodychest.rotateAngleX = 0.31614F;
-    this.bodychest.rotateAngleY = 0.0F;
-    this.bodychest.rotateAngleZ = 0.0F;
-    this.bodychest.mirror = false;
-    this.tail = new ModelRenderer(this, 18, 23);
-    this.tail.addBox(0.0F, 0.0F, 0.0F, 1, 8, 1);
-    this.tail.setRotationPoint(-1.0F, 15.0F, -0.6666667F);
-    this.tail.rotateAngleX = 0.47304F;
-    this.tail.rotateAngleY = 0.0F;
-    this.tail.rotateAngleZ = 0.0F;
-    this.tail.mirror = false;
-    this.tail2 = new ModelRenderer(this, 22, 23);
-    this.tail2.addBox(0.0F, 0.0F, 0.0F, 1, 4, 1);
-    this.tail2.setRotationPoint(-1.0F, 22.1F, 2.9F);
-    this.tail2.rotateAngleX = 1.38309F;
-    this.tail2.rotateAngleY = 0.0F;
-    this.tail2.rotateAngleZ = 0.0F;
-    this.tail2.mirror = false;
+    public ModelImp(ModelPart root) {
+        this.root = root;
+        head = root.getChild(EntityModelPartNames.HEAD);
+        rightArm = root.getChild(EntityModelPartNames.RIGHT_ARM);
+        leftArm = root.getChild(EntityModelPartNames.LEFT_ARM);
+        rightLeg = root.getChild(EntityModelPartNames.RIGHT_LEG);
+        leftLeg = root.getChild(EntityModelPartNames.LEFT_LEG);
+        rightShin = root.getChild("right_shin");
+        leftShin = root.getChild("left_shin");
+        rightFoot = root.getChild("right_foot");
+        leftFoot = root.getChild("left_foot");
+    }
 
-    this.head.addChild(lhorn);
-    this.head.addChild(rhorn);
-  }
+    public static TexturedModelData getTexturedModelData() {
+        ModelData data = new ModelData();
+        ModelPartData root = data.getRoot();
+        root.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(44, 0).cuboid(-2.733333F, -3, -2, 5, 3, 4), ModelTransform.of(-0.4F, 9.8F, -3.3F, 0.15807F, 0, 0))
+            .addChild("right_horn", ModelPartBuilder.create().uv(0, 0).cuboid(1, -4, 1.5F, 1, 1, 1), ModelTransform.pivot(-0.4F, 0F, -3.3F))
+            .addChild("left_horn", ModelPartBuilder.create().uv(0, 2).cuboid(-1, -4, 1.5F, 1, 1, 1), ModelTransform.pivot(-0.4F, 0F, -3.3F));
+        root.addChild(EntityModelPartNames.BODY, ModelPartBuilder.create().uv(23, 1).cuboid(-4, 0, -4, 7, 4, 3), ModelTransform.of(0, 9.1F, -0.8666667F, 0.64346F, 0, 0));
+        root.addChild(EntityModelPartNames.RIGHT_ARM, ModelPartBuilder.create().uv(26, 9).cuboid(-2, -0.7333333F, -1.133333F, 2, 7, 2), ModelTransform.pivot(-4, 10.8F, -2.066667F));
+        root.addChild(EntityModelPartNames.LEFT_ARM, ModelPartBuilder.create().uv(18, 9).cuboid(0, -0.8666667F, -1, 2, 7, 2), ModelTransform.pivot(3, 10.8F, -2.1F));
+        root.addChild(EntityModelPartNames.RIGHT_LEG, ModelPartBuilder.create().uv(0, 17).cuboid(-1, 0, -2, 2, 4, 3), ModelTransform.of(-2, 16.9F, -1, -0.15807F, 0, 0));
+        root.addChild(EntityModelPartNames.LEFT_LEG, ModelPartBuilder.create().uv(0, 24).cuboid(-1, 0, -2, 2, 4, 3), ModelTransform.of(1, 17, -1, -0.15919F, 0, 0));
+        root.addChild("right_shin", ModelPartBuilder.create().uv(10, 17).cuboid(-2, 0.6F, -4.4F, 2, 3, 2), ModelTransform.of(-1, 16.9F, -1, 0.82623F, 0, 0));
+        root.addChild("right_foot", ModelPartBuilder.create().uv(18, 18).cuboid(-2, 4.2F, -1, 2, 3, 2), ModelTransform.of(-1, 16.9F, -1, -0.01403F, 0, 0));
+        root.addChild("left_shin", ModelPartBuilder.create().uv(10, 22).cuboid(-1, 0.6F, -4.433333F, 2, 3, 2), ModelTransform.of(1, 17, -1, 0.82461F, 0, 0));
+        root.addChild("left_foot", ModelPartBuilder.create().uv(10, 27).cuboid(-1, 4.2F, -1, 2, 3, 2), ModelTransform.of(1, 17, -1, -0.01214F, 0, 0));
+        root.addChild("stomach", ModelPartBuilder.create().uv(1, 1).cuboid(0, 0, 0, 7, 5, 3), ModelTransform.of(-4, 12.46667F, -2.266667F, -0.15807F, 0, 0));
+        root.addChild("neck", ModelPartBuilder.create().uv(44, 7).cuboid(0, 0, 0, 3, 2, 2), ModelTransform.of(-2, 9.6F, -4.033333F, 0.27662F, 0, 0));
+        root.addChild("chest", ModelPartBuilder.create().uv(0, 9).cuboid(0, -1, 0, 7, 6, 2), ModelTransform.of(-4, 12.36667F, -3.8F, 0.31614F, 0, 0));
+        root.addChild("tail", ModelPartBuilder.create().uv(18, 23).cuboid(0, 0, 0, 1, 8, 1), ModelTransform.of(-1, 15, -0.6666667F, 0.47304F, 0, 0));
+        root.addChild("tail_tip", ModelPartBuilder.create().uv(22, 23).cuboid(0, 0, 0, 1, 4, 1), ModelTransform.of(-1, 22.1F, 2.9F, 1.38309F, 0, 0));
+        return TexturedModelData.of(data, 64, 32);
+    }
 
-  public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5)
-  {
-    super.render(entity, f, f1, f2, f3, f4, f5);
-    setRotationAngles(f, f1, f2, f3, f4, f5, entity);
-    this.head.render(f5);
-    this.body.render(f5);
-    this.rightarm.render(f5);
-    this.leftarm.render(f5);
-    this.rightleg.render(f5);
-    this.leftleg.render(f5);
-    this.rshin.render(f5);
-    this.rfoot.render(f5);
-    this.lshin.render(f5);
-    this.lfoot.render(f5);
-//    this.rhorn.render(f5);
-//    this.lhorn.render(f5);
-    this.bodymid.render(f5);
-    this.neck.render(f5);
-    this.bodychest.render(f5);
-    this.tail.render(f5);
-    this.tail2.render(f5);
-  }
+    @Override
+    public ModelPart getPart() {
+        return root;
+    }
 
-  public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity)
-  {
-    this.head.rotateAngleY = (f3 / 57.29578F);
-    this.head.rotateAngleX = (f4 / 57.29578F);
+    @Override
+    public void setAngles(EntityIMImp entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+        head.yaw = headYaw / 57.29578F;
+        head.pitch = headPitch / 57.29578F;
 
-    this.rightarm.rotateAngleX = (MathHelper.cos(f * 0.6662F + 3.141593F) * 2.0F * f1 * 0.5F);
-    this.leftarm.rotateAngleX = (MathHelper.cos(f * 0.6662F) * 2.0F * f1 * 0.5F);
-    this.rightarm.rotateAngleZ = 0.0F;
-    this.leftarm.rotateAngleZ = 0.0F;
+        float armPitch = MathHelper.sin(animationProgress * 0.067F) * 0.05F;
+        float armRoll = MathHelper.cos(animationProgress * 0.09F) * 0.05F + 0.05F;
 
-    this.rightleg.rotateAngleX = (MathHelper.cos(f * 0.6662F) * 1.4F * f1 - 0.158F);
-    this.rshin.rotateAngleX = (MathHelper.cos(f * 0.6662F) * 1.4F * f1 + 0.82623F);
-    this.rfoot.rotateAngleX = (MathHelper.cos(f * 0.6662F) * 1.4F * f1 - 0.01403F);
+        float cosA = MathHelper.cos(limbAngle * 0.6662F);
+        float cosB = MathHelper.cos(limbAngle * 0.6662F + MathHelper.PI);
 
-    this.leftleg.rotateAngleX = (MathHelper.cos(f * 0.6662F + 3.141593F) * 1.4F * f1 - 0.15919F);
-    this.lshin.rotateAngleX = (MathHelper.cos(f * 0.6662F + 3.141593F) * 1.4F * f1 + 0.82461F);
-    this.lfoot.rotateAngleX = (MathHelper.cos(f * 0.6662F + 3.141593F) * 1.4F * f1 - 0.01214F);
+        rightArm.setAngles((cosB * limbDistance) + armPitch, 0, armRoll);
+        leftArm.setAngles((cosA * limbDistance) - armPitch, 0, -armRoll);
 
-    this.rightleg.rotateAngleY = 0.0F;
-    this.rshin.rotateAngleY = 0.0F;
-    this.rfoot.rotateAngleY = 0.0F;
+        rightLeg.pitch = cosA * 1.4F * limbDistance - 0.158F;
+        leftLeg.pitch = cosB * 1.4F * limbDistance - 0.15919F;
 
-    this.leftleg.rotateAngleY = 0.0F;
-    this.lshin.rotateAngleY = 0.0F;
-    this.lfoot.rotateAngleY = 0.0F;
-
-    this.rightarm.rotateAngleY = 0.0F;
-    this.leftarm.rotateAngleY = 0.0F;
-
-    this.rightarm.rotateAngleZ += MathHelper.cos(f2 * 0.09F) * 0.05F + 0.05F;
-    this.leftarm.rotateAngleZ -= MathHelper.cos(f2 * 0.09F) * 0.05F + 0.05F;
-    this.rightarm.rotateAngleX += MathHelper.sin(f2 * 0.067F) * 0.05F;
-    this.leftarm.rotateAngleX -= MathHelper.sin(f2 * 0.067F) * 0.05F;
-  }
+        rightShin.pitch = cosA * 1.4F * limbDistance + 0.82623F;
+        leftShin.pitch = cosB * 1.4F * limbDistance + 0.82461F;
+        rightFoot.pitch = cosA * 1.4F * limbDistance - 0.01403F;
+        leftFoot.pitch = cosB * 1.4F * limbDistance - 0.01214F;
+    }
 }
