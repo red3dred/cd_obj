@@ -3,7 +3,6 @@ package invmod.common.entity;
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAIKillEntity;

@@ -6,26 +6,26 @@ import invmod.client.render.animation.AnimationState;
 
 public class WingController implements AnimationController {
     private final EntityIMBird entity;
-    private final AnimationState<?> animationFlap;
+    private final AnimationState<?> state;
 
     private int timeAttacking;
     private float flapEffort = 1;
     private final float[] flapEffortSamples = { 1, 1, 1, 1, 1, 1 };
     private int sampleIndex;
 
-    public WingController(EntityIMBird entity, AnimationState<?> stateObject) {
+    public WingController(EntityIMBird entity, AnimationState<?> state) {
         this.entity = entity;
-        this.animationFlap = stateObject;
+        this.state = state;
     }
 
     @Override
     public AnimationState<?> getState() {
-        return animationFlap;
+        return state;
     }
 
     @Override
     public void update() {
-        AnimationAction currAnimation = animationFlap.getCurrentAction();
+        AnimationAction currAnimation = state.getCurrentAction();
         boolean wingAttack = entity.isAttackingWithWings();
         if (!wingAttack)
             timeAttacking = 0;
@@ -57,8 +57,8 @@ public class WingController implements AnimationController {
                     ensureAnimation(AnimationAction.WINGSPREAD, 2.2F, true);
                 } else {
                     ensureAnimation(AnimationAction.WINGFLAP, 1, false);
-                    if (!wingAttack && currAnimation == AnimationAction.WINGSPREAD && animationFlap.getCurrentAnimationPercent() >= 0.65F) {
-                        this.animationFlap.setPaused(true);
+                    if (!wingAttack && currAnimation == AnimationAction.WINGSPREAD && state.getCurrentAnimationPercent() >= 0.65F) {
+                        state.setPaused(true);
                     }
                 }
                 wingsActive = true;
@@ -73,6 +73,6 @@ public class WingController implements AnimationController {
                 ensureAnimation(AnimationAction.WINGTUCK, 1.8F, true);
             }
         }
-        this.animationFlap.update();
+        state.update();
     }
 }

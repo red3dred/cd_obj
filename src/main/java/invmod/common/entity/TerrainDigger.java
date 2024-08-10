@@ -32,10 +32,8 @@ public class TerrainDigger implements ITerrainDig, INotifyTask {
     public boolean askClearPosition(BlockPos pos, INotifyTask onFinished, float costMultiplier) {
         return this.modifier.requestTask(onFinished, this, Arrays.stream(digger.getBlockRemovalOrder(pos)).map(IPosition::toBlockPos).map(removal -> {
             BlockState state = digger.getTerrain().getBlockState(removal);
-            if (!state.isAir() && !state.blocksMovement()) {
-                if (digger.canClearBlock(removal)) {
-                    return ModifyBlockEntry.ofDeletion(removal, (int) (costMultiplier * digger.getBlockRemovalCost(removal) / digRate));
-                }
+            if (!state.isAir() && !state.blocksMovement() && digger.canClearBlock(removal)) {
+                return ModifyBlockEntry.ofDeletion(removal, (int) (costMultiplier * digger.getBlockRemovalCost(removal) / digRate));
             }
 
             return null;
