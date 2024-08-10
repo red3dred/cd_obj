@@ -1,5 +1,7 @@
 package invmod.common.entity;
 
+import org.joml.Vector3f;
+
 import invmod.common.INotifyTask;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.PosRotate3D;
@@ -15,15 +17,12 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	private final PathNavigateAdapter oldNavAdapter;
 	private TerrainModifier terrainModifier;
 	private TerrainDigger terrainDigger;
-	private EntityAITasks goals;
+
 	private PosRotate3D[] segments3D;
 	private PosRotate3D[] segments3DLastTick;
-	private float rotX;
-	private float rotY;
-	private float rotZ;
-	protected float prevRotX;
-	protected float prevRotY;
-	protected float prevRotZ;
+
+	protected final Vector3f rot = new Vector3f();
+	protected final Vector3f prevRot = new Vector3f();
 
 	public EntityIMBurrower(World world)
 	{
@@ -142,28 +141,12 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 		return false;
 	}
 
-	public float getRotX() {
-		return this.rotX;
+	public Vector3f getRotation() {
+	    return rot;
 	}
 
-	public float getRotY() {
-		return this.rotY;
-	}
-
-	public float getRotZ() {
-		return this.rotZ;
-	}
-
-	public float getPrevRotX() {
-		return this.prevRotX;
-	}
-
-	public float getPrevRotY() {
-		return this.prevRotY;
-	}
-
-	public float getPrevRotZ() {
-		return this.prevRotZ;
+	public Vector3f getPrevRotation() {
+	    return prevRot;
 	}
 
 	public PosRotate3D[] getSegments3D() {
@@ -182,12 +165,8 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	}
 
 	public void setHeadRotation(PosRotate3D pos) {
-		this.prevRotX = this.rotX;
-		this.prevRotY = this.rotY;
-		this.prevRotZ = this.rotZ;
-		this.rotX = pos.getRotX();
-		this.rotY = pos.getRotY();
-		this.rotZ = pos.getRotZ();
+	    prevRot.set(rot);
+	    rot.set(pos.rotation());
 	}
 
 	@Override

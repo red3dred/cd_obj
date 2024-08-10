@@ -1,246 +1,110 @@
 package invmod.client.render;
 
-import invmod.client.render.animation.InterpType;
-import invmod.client.render.animation.KeyFrame;
+import invmod.client.render.animation.BonesWings;
 import invmod.client.render.animation.ModelAnimator;
-import java.util.ArrayList;
-import java.util.List;
-import net.minecraft.entity.Entity;
+import invmod.common.entity.EntityIMBird;
 
-public class ModelBird extends ModelBase
-{
-  private ModelAnimator animationWingFlap;
-  private ModelRenderer body;
-  private ModelRenderer rightwing1;
-  private ModelRenderer leftwing1;
-  private ModelRenderer head;
-  private ModelRenderer beak;
-  private ModelRenderer leftwing2;
-  private ModelRenderer rightwing2;
-  private ModelRenderer tail;
-  private ModelRenderer legR;
-  private ModelRenderer ltoeR;
-  private ModelRenderer btoeR;
-  private ModelRenderer rtoeR;
-  private ModelRenderer thighR;
-  private ModelRenderer legL;
-  private ModelRenderer ltoeL;
-  private ModelRenderer btoeL;
-  private ModelRenderer rtoeL;
-  private ModelRenderer thighL;
+import java.util.Map;
 
-  public ModelBird()
-  {
-    this.textureWidth = 64;
-    this.textureHeight = 32;
+import net.minecraft.client.model.ModelData;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPartBuilder;
+import net.minecraft.client.model.ModelPartData;
+import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.util.math.MathHelper;
 
-    this.body = new ModelRenderer(this, 24, 0);
-    this.body.addBox(-3.5F, 0.0F, -3.5F, 7, 12, 7);
-    this.body.setRotationPoint(3.5F, 7.0F, 3.5F);
-    this.body.setTextureSize(64, 32);
-    this.body.mirror = true;
-    setRotation(this.body, 0.0F, 0.0F, 0.0F);
-    this.rightwing1 = new ModelRenderer(this, 0, 22);
-    this.rightwing1.addBox(-7.0F, -1.0F, -1.0F, 7, 9, 1);
-    this.rightwing1.setRotationPoint(-3.5F, 2.0F, 3.5F);
-    this.rightwing1.setTextureSize(64, 32);
-    this.rightwing1.mirror = false;
-    setRotation(this.rightwing1, 0.0F, 0.0F, 0.0F);
-    this.rightwing2 = new ModelRenderer(this, 16, 24);
-    this.rightwing2.addBox(-14.0F, -1.0F, -0.5F, 14, 7, 1);
-    this.rightwing2.setRotationPoint(-7.0F, 0.0F, -0.5F);
-    this.rightwing2.setTextureSize(64, 32);
-    this.rightwing2.mirror = false;
-    setRotation(this.rightwing2, 0.0F, 0.0F, 0.0F);
-    this.rightwing1.addChild(this.rightwing2);
-    this.leftwing1 = new ModelRenderer(this, 0, 22);
-    this.leftwing1.addBox(0.0F, -1.0F, -1.0F, 7, 9, 1);
-    this.leftwing1.setRotationPoint(3.5F, 2.0F, 3.5F);
-    this.leftwing1.setTextureSize(64, 32);
-    this.leftwing1.mirror = true;
-    setRotation(this.leftwing1, 0.0F, 0.0F, 0.0F);
-    this.leftwing2 = new ModelRenderer(this, 16, 24);
-    this.leftwing2.addBox(0.0F, -1.0F, -0.5F, 14, 7, 1);
-    this.leftwing2.setRotationPoint(7.0F, 0.0F, -0.5F);
-    this.leftwing2.setTextureSize(64, 32);
-    this.leftwing2.mirror = true;
-    setRotation(this.leftwing2, 0.0F, 0.0F, 0.0F);
-    this.leftwing1.addChild(this.leftwing2);
-    this.head = new ModelRenderer(this, 2, 0);
-    this.head.addBox(-2.5F, -5.0F, -4.0F, 5, 6, 6);
-    this.head.setRotationPoint(0.0F, 0.5F, 1.5F);
-    this.head.setTextureSize(64, 32);
-    this.head.mirror = true;
-    setRotation(this.head, 0.0F, 0.0F, 0.0F);
-    this.beak = new ModelRenderer(this, 19, 0);
-    this.beak.addBox(-0.5F, 0.0F, -2.0F, 1, 2, 2);
-    this.beak.setRotationPoint(0.0F, -3.0F, -4.0F);
-    this.beak.setTextureSize(64, 32);
-    this.beak.mirror = true;
-    setRotation(this.beak, 0.0F, 0.0F, 0.0F);
-    this.head.addChild(this.beak);
-    this.tail = new ModelRenderer(this, 0, 12);
-    this.tail.addBox(-3.0F, 0.0F, 0.0F, 5, 9, 1);
-    this.tail.setRotationPoint(0.5F, 12.0F, 2.5F);
-    this.tail.setTextureSize(64, 32);
-    this.tail.mirror = true;
-    setRotation(this.tail, 0.446143F, 0.0F, 0.0F);
-    this.legR = new ModelRenderer(this, 13, 12);
-    this.legR.addBox(-0.5F, 0.0F, -0.5F, 1, 5, 1);
-    this.legR.setRotationPoint(0.0F, 0.0F, 0.0F);
-    this.legR.setTextureSize(64, 32);
-    this.legR.mirror = false;
-    setRotation(this.legR, 0.0F, 0.0F, 0.0F);
-    this.ltoeR = new ModelRenderer(this, 0, 0);
-    this.ltoeR.addBox(0.0F, 0.0F, -2.0F, 1, 1, 2);
-    this.ltoeR.setRotationPoint(0.2F, 4.0F, 0.0F);
-    this.ltoeR.setTextureSize(64, 32);
-    this.ltoeR.mirror = false;
-    setRotation(this.ltoeR, 0.0F, -0.1396263F, 0.0F);
-    this.legR.addChild(this.ltoeR);
-    this.btoeR = new ModelRenderer(this, 0, 0);
-    this.btoeR.addBox(-0.5F, 0.0F, 0.0F, 1, 1, 2);
-    this.btoeR.setRotationPoint(0.0F, 4.0F, 0.0F);
-    this.btoeR.setTextureSize(64, 32);
-    this.btoeR.mirror = false;
-    setRotation(this.btoeR, -0.349066F, 0.0F, 0.0F);
-    this.legR.addChild(this.btoeR);
-    this.rtoeR = new ModelRenderer(this, 0, 0);
-    this.rtoeR.addBox(-1.0F, 0.0F, -2.0F, 1, 1, 2);
-    this.rtoeR.setRotationPoint(-0.2F, 4.0F, 0.0F);
-    this.rtoeR.setTextureSize(64, 32);
-    this.rtoeR.mirror = false;
-    setRotation(this.rtoeR, 0.0F, 0.1396263F, 0.0F);
-    this.legR.addChild(this.rtoeR);
-    this.thighR = new ModelRenderer(this, 13, 18);
-    this.thighR.addBox(-1.0F, 0.0F, -1.0F, 2, 2, 2);
-    this.thighR.setRotationPoint(-1.5F, 12.0F, -1.0F);
-    this.thighR.setTextureSize(64, 32);
-    this.thighR.mirror = false;
-    setRotation(this.thighR, 0.0F, 0.0F, 0.0F);
-    this.thighR.addChild(this.legR);
-    this.legL = new ModelRenderer(this, 13, 12);
-    this.legL.addBox(-0.5F, 0.0F, -0.5F, 1, 5, 1);
-    this.legL.setRotationPoint(0.0F, 0.0F, 0.0F);
-    this.legL.setTextureSize(64, 32);
-    this.legL.mirror = true;
-    setRotation(this.legL, 0.0F, 0.0F, 0.0F);
-    this.ltoeL = new ModelRenderer(this, 0, 0);
-    this.ltoeL.addBox(0.0F, 0.0F, -2.0F, 1, 1, 2);
-    this.ltoeL.setRotationPoint(0.2F, 4.0F, 0.0F);
-    this.ltoeL.setTextureSize(64, 32);
-    this.ltoeL.mirror = true;
-    setRotation(this.ltoeL, 0.0F, -0.1396263F, 0.0F);
-    this.legL.addChild(this.ltoeL);
-    this.btoeL = new ModelRenderer(this, 0, 0);
-    this.btoeL.addBox(-0.5F, 0.0F, 0.0F, 1, 1, 2);
-    this.btoeL.setRotationPoint(0.0F, 4.0F, 0.0F);
-    this.btoeL.setTextureSize(64, 32);
-    this.btoeL.mirror = true;
-    setRotation(this.btoeL, -0.349066F, 0.0F, 0.0F);
-    this.legL.addChild(this.btoeL);
-    this.rtoeL = new ModelRenderer(this, 0, 0);
-    this.rtoeL.addBox(-1.0F, 0.0F, -2.0F, 1, 1, 2);
-    this.rtoeL.setRotationPoint(-0.2F, 4.0F, 0.0F);
-    this.rtoeL.setTextureSize(64, 32);
-    this.rtoeL.mirror = true;
-    setRotation(this.rtoeL, 0.0F, 0.1396263F, 0.0F);
-    this.legL.addChild(this.rtoeL);
-    this.thighL = new ModelRenderer(this, 13, 18);
-    this.thighL.addBox(-1.0F, 0.0F, -1.0F, 2, 2, 2);
-    this.thighL.setRotationPoint(1.5F, 12.0F, -1.0F);
-    this.thighL.setTextureSize(64, 32);
-    this.thighL.mirror = true;
-    setRotation(this.thighL, 0.0F, 0.0F, 0.0F);
-    this.thighL.addChild(this.legL);
-    this.body.addChild(this.thighL);
-    this.body.addChild(this.thighR);
-    this.body.addChild(this.head);
-    this.body.addChild(this.tail);
-    this.body.addChild(this.rightwing1);
-    this.body.addChild(this.leftwing1);
+public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
+    private ModelAnimator<BonesWings> animationWingFlap;
+    private final ModelPart root;
 
-    this.animationWingFlap = new ModelAnimator();
+    private final ModelPart head;
+    private final ModelPart body;
+    private final ModelPart tail;
 
-    float frameUnit = 0.01666667F;
-    List innerWingFrames = new ArrayList(12);
-    innerWingFrames.add(new KeyFrame(0.0F, 2.0F, -43.5F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(5.0F * frameUnit, 4.0F, -38.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(10.0F * frameUnit, 5.5F, -27.5F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(15.0F * frameUnit, 5.5F, -7.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(20.0F * frameUnit, 5.5F, 15.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(25.0F * frameUnit, 4.5F, 30.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(30.0F * frameUnit, 2.0F, 38.0F, 9.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(35.0F * frameUnit, 1.0F, 20.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(40.0F * frameUnit, 1.0F, 3.5F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(45.0F * frameUnit, 1.0F, -19.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(50.0F * frameUnit, -3.0F, -38.0F, 0.0F, InterpType.LINEAR));
-    innerWingFrames.add(new KeyFrame(55.0F * frameUnit, -1.0F, -48.0F, 0.0F, InterpType.LINEAR));
-    this.animationWingFlap.addPart(this.rightwing1, innerWingFrames);
-    List copy = KeyFrame.mirrorFramesX(innerWingFrames);
+    private final ModelPart leftThigh;
+    private final ModelPart rightThigh;
 
-    this.animationWingFlap.addPart(this.leftwing1, copy);
+    private final ModelPart[] legParts;
 
-    List outerWingFrames = List.of(
-            new KeyFrame(0.0F, 2.0F, 34.5F, 0.0F, InterpType.LINEAR),
-            new KeyFrame(5.0F * frameUnit, 5.0F, 13.0F, -7.0F, InterpType.LINEAR),
-            new KeyFrame(10.0F * frameUnit, 7.0F, 8.5F, -10.0F, InterpType.LINEAR),
-            new KeyFrame(15.0F * frameUnit, 7.5F, -2.5F, -10.0F, InterpType.LINEAR),
-            new KeyFrame(25.0F * frameUnit, 5.0F, 7.0F, -10.0F, InterpType.LINEAR),
-            new KeyFrame(30.0F * frameUnit, 2.0F, 15.0F, 0.0F, InterpType.LINEAR),
-            new KeyFrame(35.0F * frameUnit, -3.0F, 37.0F, 12.0F, InterpType.LINEAR),
-            new KeyFrame(40.0F * frameUnit, -9.0F, 56.0F, 27.0F, InterpType.LINEAR),
-            new KeyFrame(45.0F * frameUnit, -13.0F, 68.0F, 28.0F, InterpType.LINEAR),
-            new KeyFrame(50.0F * frameUnit, -13.5F, 70.0F, 31.5F, InterpType.LINEAR),
-            new KeyFrame(53.0F * frameUnit, -9.0F, 71.0F, 31.0F, InterpType.LINEAR),
-            new KeyFrame(55.0F * frameUnit, -3.5F, 65.5F, 22.0F, InterpType.LINEAR),
-            new KeyFrame(58.0F * frameUnit, 0.0F, 52.0F, 8.0F, InterpType.LINEAR));
-    this.animationWingFlap.addPart(this.rightwing2, outerWingFrames);
-    this.animationWingFlap.addPart(this.leftwing2, KeyFrame.mirrorFramesX(outerWingFrames));
-  }
+    public ModelBird(ModelPart root) {
+        this.root = root;
+        head = root.getChild("head");
+        body = root.getChild("body");
+        tail = root.getChild("tail");
+        leftThigh = body.getChild("left_thigh");
+        rightThigh = body.getChild("right_thigh");
+        ModelPart leftLeg = leftThigh.getChild("leg");
+        ModelPart rightLeg = rightThigh.getChild("leg");
+        legParts = new ModelPart[] {
+                leftThigh, rightThigh,
+                leftLeg, rightLeg,
+                leftLeg.getChild("left_toe"), leftLeg.getChild("right_toe"), leftLeg.getChild("back_toe"),
+                rightLeg.getChild("left_toe"), rightLeg.getChild("right_toe"), rightLeg.getChild("back_toe")
+        };
+        animationWingFlap = AnimationRegistry.instance().<BonesWings>getAnimation("bird_wing_flap").createAnimator(Map.of(
+                BonesWings.RIGHT_SHOULDER, body.getChild("right_wing_1"),
+                BonesWings.LEFT_SHOULDER, body.getChild("left_wing_1"),
+                BonesWings.RIGHT_ELBOW, body.getChild("right_wing_1").getChild("right_wing_2"),
+                BonesWings.LEFT_ELBOW, body.getChild("left_wing_1").getChild("left_wing_2")
+        ));
+    }
 
-  public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5)
-  {
-    super.render(entity, f, f1, f2, f3, f4, f5);
-    setRotationAngles(f, f1, f2, f3, f4, f5, entity);
-    this.body.render(f5);
-  }
+    public static TexturedModelData getTexturedModelData() {
+        ModelData data = new ModelData();
+        ModelPartData root = data.getRoot();
+        ModelPartData body = root.addChild("body", ModelPartBuilder.create().uv(24, 0).mirrored().cuboid(-3.5F, 0, -3.5F, 7, 12, 7), ModelTransform.pivot(3.5F, 7, 3.5F));
+        body.addChild("right_wing_1", ModelPartBuilder.create().uv(0, 22).cuboid(-7, -1, -1, 7, 9, 1), ModelTransform.pivot(-3.5F, 2, 3.5F))
+            .addChild("right_wing_2", ModelPartBuilder.create().uv(16, 24).cuboid(-14, -1, -0.5F, 14, 7, 1), ModelTransform.pivot(-7, 0, -0.5F));
+        body.addChild("left_wing_1", ModelPartBuilder.create().uv(0, 22).mirrored().cuboid(0, -1, -1, 7, 9, 1), ModelTransform.pivot(3.5F, 2, 3.5F))
+            .addChild("left_wing_2", ModelPartBuilder.create().uv(16, 24).mirrored().cuboid(0, -1, -0.5F, 14, 7, 1), ModelTransform.pivot(7, 0, -0.5F));
+        body.addChild("head", ModelPartBuilder.create().uv(2, 0).mirrored().cuboid(-2.5F, -5, -4, 5, 6, 6), ModelTransform.pivot(0, 0.5F, 1.5F))
+            .addChild("beak", ModelPartBuilder.create().uv(19, 0).mirrored().cuboid(-0.5F, 0, -2, 1, 2, 2), ModelTransform.pivot(0, -3, -4));
+        body.addChild("tail", ModelPartBuilder.create().uv(0, 12).cuboid(-3, 0, 0, 5, 9, 1), ModelTransform.of(0.5F, 12, 2.5F, 0.446143F, 0, 0));
 
-  public void setFlyingAnimations(float flapProgress, float legSweepProgress, float roll)
-  {
-    this.animationWingFlap.updateAnimation(flapProgress);
+        ModelPartData rightLeg = body
+                .addChild("right_thigh", ModelPartBuilder.create().uv(13, 18).cuboid(-1, 0, -1, 2, 2, 2), ModelTransform.pivot(-1.5F, 12, -1))
+                .addChild("leg", ModelPartBuilder.create().uv(13, 12).cuboid(-0.5F, 0, -0.5F, 1, 5, 1), ModelTransform.NONE);
+        rightLeg.addChild("left_toe", ModelPartBuilder.create().uv(0, 0).cuboid(0, 0, -2, 1, 1, 2), ModelTransform.of(0.2F, 4, 0, 0, -0.1396263F, 0));
+        rightLeg.addChild("back_toe", ModelPartBuilder.create().uv(0, 0).cuboid(-0.5F, 0, 0, 1, 1, 2), ModelTransform.of(0, 4, 0, -0.349066F, 0, 0));
+        rightLeg.addChild("right_toe", ModelPartBuilder.create().uv(0, 0).cuboid(-1, 0, -2, 1, 1, 2), ModelTransform.of(-0.2F, 4, 0, 0, 0.1396263F, 0));
 
-    this.body.rotateAngleY = (this.body.rotateAngleX = 0.0F);
-    this.body.rotateAngleZ = (-roll / 180.0F * 3.141593F);
+        ModelPartData leftLeg = body
+                .addChild("left_thigh", ModelPartBuilder.create().uv(13, 18).mirrored().cuboid(-1, 0, -1, 2, 2, 2), ModelTransform.pivot(1.5F, 12, -1))
+                .addChild("leg", ModelPartBuilder.create().uv(13, 12).mirrored().cuboid(-0.5F, 0, -0.5F, 1, 5, 1), ModelTransform.NONE);
+        leftLeg.addChild("left_toe", ModelPartBuilder.create().uv(0, 0).mirrored().cuboid(0, 0, -2, 1, 1, 2), ModelTransform.of(0.2F, 4, 0, 0, -0.1396263F, 0));
+        leftLeg.addChild("back_toe", ModelPartBuilder.create().uv(0, 0).mirrored().cuboid(-0.5F, 0, 0, 1, 1, 2), ModelTransform.of(0, 4, 0, -0.349066F, 0, 0));
+        leftLeg.addChild("right_toe", ModelPartBuilder.create().uv(0, 0).mirrored().cuboid(-1, 0, -2, 1, 1, 2), ModelTransform.of(-0.2F, 4, 0, 0, 0.1396263F, 0));
+        return TexturedModelData.of(data, 64, 32);
+    }
 
-    this.thighR.rotateAngleX = (0.08726647F * legSweepProgress);
-    this.thighL.rotateAngleX = (0.08726647F * legSweepProgress);
-    this.legR.rotateAngleX = (0.08726647F * legSweepProgress);
-    this.legL.rotateAngleX = (0.08726647F * legSweepProgress);
-    this.ltoeR.rotateAngleX = (0.8726647F * legSweepProgress);
-    this.rtoeR.rotateAngleX = (0.8726647F * legSweepProgress);
-    this.btoeR.rotateAngleX = (-0.3490659F + 0.0F * legSweepProgress);
-    this.ltoeL.rotateAngleX = (0.8726647F * legSweepProgress);
-    this.rtoeL.rotateAngleX = (0.8726647F * legSweepProgress);
-    this.btoeL.rotateAngleX = (-0.3490659F + 0.0F * legSweepProgress);
+    @Override
+    public ModelPart getPart() {
+        return root;
+    }
 
-    this.body.rotationPointY = (7.0F + MathHelper.cos(flapProgress * 3.141593F * 2.0F) * 1.4F);
-    ModelRenderer tmp190_187 = this.thighR; tmp190_187.rotateAngleX = ((float)(tmp190_187.rotateAngleX + MathHelper.cos(flapProgress * 3.141593F * 2.0F) * 0.08726646324990228D));
-    ModelRenderer tmp218_215 = this.thighL; tmp218_215.rotateAngleX = ((float)(tmp218_215.rotateAngleX + MathHelper.cos(flapProgress * 3.141593F * 2.0F) * 0.08726646324990228D));
-    this.tail.rotateAngleX = ((float)(0.2617993956013792D + MathHelper.cos(flapProgress * 3.141593F * 2.0F) * 0.03490658588512815D));
-    this.head.rotateAngleX = ((float)(-0.3141592700403172D - MathHelper.cos(flapProgress * 3.141593F * 2.0F) * 0.03490658588512815D));
-  }
+    @Override
+    public void setAngles(EntityIMBird entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+        body.pitch = 1.570796F - headPitch * MathHelper.RADIANS_PER_DEGREE;
+        body.yaw = 0;
+        body.roll = -entity.getRotationRoll() * MathHelper.RADIANS_PER_DEGREE;
+    }
 
-  private void setRotation(ModelRenderer model, float x, float y, float z)
-  {
-    model.rotateAngleX = x;
-    model.rotateAngleY = y;
-    model.rotateAngleZ = z;
-  }
+    @Override
+    public void animateModel(EntityIMBird entity, float limbAngle, float limbDistance, float tickDelta) {
+        float legSweepProgress = entity.getLegSweepProgress();
+        float flapProgress = entity.getWingAnimationState().getCurrentAnimationTimeInterp(tickDelta);
+        animationWingFlap.updateAnimation(flapProgress);
 
-  public void setRotationAngles(float limbPeriod, float limbMaxMovement, float ticksExisted, float headYaw, float entityPitch, float unitScale, Entity entity)
-  {
-    super.setRotationAngles(limbPeriod, limbMaxMovement, ticksExisted, headYaw, entityPitch, unitScale, entity);
-    this.body.rotateAngleX = (1.570796F - entityPitch / 180.0F * 3.141593F);
-  }
+        for (ModelPart i : legParts) {
+            i.pitch = 0.08726647F * legSweepProgress;
+        }
+
+        body.pivotY = (7 + MathHelper.cos(flapProgress * MathHelper.TAU) * 1.4F);
+        rightThigh.pitch += MathHelper.cos(flapProgress * MathHelper.TAU) * 0.08726646324990228D;
+        leftThigh.pitch += MathHelper.cos(flapProgress * MathHelper.TAU) * 0.08726646324990228D;
+        tail.pitch = ((float)(0.2617993956013792D + MathHelper.cos(flapProgress * MathHelper.TAU) * 0.03490658588512815D));
+        head.pitch = ((float)(-0.3141592700403172D - MathHelper.cos(flapProgress * MathHelper.TAU) * 0.03490658588512815D));
+    }
 }

@@ -69,7 +69,7 @@ public class EntityIMCreeper extends EntityIMMob
 	    this.tasks.addTask(9, new EntityAIWatchClosest(this, EntityPlayer.class, 4.8F));
 	    this.tasks.addTask(9, new EntityAILookIdle(this));
 	    this.targetTasks.addTask(0, new EntityAITargetRetaliate(this, EntityLiving.class, 12.0F));
-		if(this.isNexusBound())
+		if(this.hasNexus())
 		{
 			this.targetTasks.addTask(1, new EntityAISimpleTarget(this, EntityPlayer.class, 20.0F, true));
 		}else{

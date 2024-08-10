@@ -201,7 +201,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     protected boolean onPathBlocked(Path path, INotifyTask notifee) {
-        if ((!path.isFinished()) && ((isNexusBound()) || getAttacking() != null)) {
+        if (!path.isFinished() && (hasNexus() || getAttacking() != null)) {
             if (path.getFinalPathPoint().distanceTo(path.getIntendedTarget()) > 2.2D && (path.getCurrentPathIndex() + 2) >= (path.getCurrentPathLength() / 2)) {
                 return false;
             }
@@ -215,7 +215,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
+    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
             float multiplier = 1;
             if ((terrainMap instanceof IBlockAccessExtended i)) {

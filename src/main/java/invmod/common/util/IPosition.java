@@ -1,6 +1,7 @@
 package invmod.common.util;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 
 public interface IPosition {
     int getXCoord();
@@ -18,9 +19,9 @@ public interface IPosition {
     }
 
     default double squareDistanceTo(IPosition other) {
-        return Math.pow(getXCoord() - other.getXCoord(), 2)
-            + Math.pow(getYCoord() - other.getYCoord(), 2)
-            + Math.pow(getZCoord() - other.getZCoord(), 2);
+        return MathHelper.square(getXCoord() - other.getXCoord())
+            + MathHelper.square(getYCoord() - other.getYCoord())
+            + MathHelper.square(getZCoord() - other.getZCoord());
     }
 
     default double getInclinationTo(BlockPos pos) {
@@ -28,8 +29,6 @@ public interface IPosition {
         if (delta.getY() <= 0) {
             return 0;
         }
-        int dX = delta.getX();
-        int dZ = delta.getZ();
-        return (delta.getY() + 8) / (Math.sqrt(dX * dX + dZ * dZ) + 1.E-005D);
+        return (delta.getY() + 8) / (Math.sqrt(MathHelper.square(delta.getX()) + MathHelper.square(delta.getZ())) + MathHelper.EPSILON);
     }
 }

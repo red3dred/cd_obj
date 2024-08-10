@@ -23,9 +23,48 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
     @Override
     public void reload(ResourceManager manager) {
         AnimationRegistry.instance().clear();
+        AnimationRegistry.instance().registerAnimation("bird_wing_flap", createBirdWingFlap());
         AnimationRegistry.instance().registerAnimation("bird_run", createBirdRun());
         AnimationRegistry.instance().registerAnimation("wing_flap_2_piece", createWingFlap2Piece());
         AnimationRegistry.instance().registerAnimation("bird_beak", createBirdBeak());
+    }
+
+    static Animation<BonesWings> createBirdWingFlap() {
+        float frameUnit = 0.01666667F;
+        List<KeyFrame> innerWingFrames = List.of(
+                new KeyFrame(0, 2, -43.5F, 0, InterpType.LINEAR),
+                new KeyFrame(5 * frameUnit, 4, -38, 0, InterpType.LINEAR),
+                new KeyFrame(10 * frameUnit, 5.5F, -27.5F, 0, InterpType.LINEAR),
+                new KeyFrame(15 * frameUnit, 5.5F, -7, 0, InterpType.LINEAR),
+                new KeyFrame(20 * frameUnit, 5.5F, 15, 0, InterpType.LINEAR),
+                new KeyFrame(25 * frameUnit, 4.5F, 30, 0, InterpType.LINEAR),
+                new KeyFrame(30 * frameUnit, 2, 38, 9, InterpType.LINEAR),
+                new KeyFrame(35 * frameUnit, 1, 20, 0, InterpType.LINEAR),
+                new KeyFrame(40 * frameUnit, 1, 3.5F, 0, InterpType.LINEAR),
+                new KeyFrame(45 * frameUnit, 1, -19, 0, InterpType.LINEAR),
+                new KeyFrame(50 * frameUnit, -3, -38, 0, InterpType.LINEAR),
+                new KeyFrame(55 * frameUnit, -1, -48, 0, InterpType.LINEAR)
+        );
+        List<KeyFrame> outerWingFrames = List.of(
+                new KeyFrame(0, 2, 34.5F, 0, InterpType.LINEAR),
+                new KeyFrame(5 * frameUnit, 5, 13, -7, InterpType.LINEAR),
+                new KeyFrame(10 * frameUnit, 7, 8.5F, -10, InterpType.LINEAR),
+                new KeyFrame(15 * frameUnit, 7.5F, -2.5F, -10, InterpType.LINEAR),
+                new KeyFrame(25 * frameUnit, 5, 7, -10, InterpType.LINEAR),
+                new KeyFrame(30 * frameUnit, 2, 15, 0, InterpType.LINEAR),
+                new KeyFrame(35 * frameUnit, -3, 37, 12, InterpType.LINEAR),
+                new KeyFrame(40 * frameUnit, -9, 56, 27, InterpType.LINEAR),
+                new KeyFrame(45 * frameUnit, -13, 68, 28, InterpType.LINEAR),
+                new KeyFrame(50 * frameUnit, -13.5F, 70, 31.5F, InterpType.LINEAR),
+                new KeyFrame(53 * frameUnit, -9, 71, 31, InterpType.LINEAR),
+                new KeyFrame(55 * frameUnit, -3.5F, 65.5F, 22, InterpType.LINEAR),
+                new KeyFrame(58 * frameUnit, 0, 52, 8, InterpType.LINEAR));
+        return new Animation<>(BonesWings.class, 1, 0.04651163F, new EnumMap<>(Map.of(
+                BonesWings.RIGHT_SHOULDER, innerWingFrames,
+                BonesWings.LEFT_SHOULDER, KeyFrame.mirrorFramesX(innerWingFrames),
+                BonesWings.RIGHT_ELBOW, outerWingFrames,
+                BonesWings.LEFT_ELBOW, KeyFrame.mirrorFramesX(outerWingFrames)
+        )), List.of());
     }
 
     static Animation<BonesBirdLegs> createBirdRun() {

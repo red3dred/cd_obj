@@ -22,10 +22,12 @@ import invmod.common.entity.InvEntities;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
 import net.minecraft.client.render.entity.model.ZombieEntityModel;
+import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 
 public interface InvRenderers {
-
-
+    @SuppressWarnings("unchecked")
     static void bootstrap() {
         EntityRendererRegistry.register(InvEntities.ZOMBIE, RenderIMZombie::new);
         EntityRendererRegistry.register(InvEntities.ZOMBIE_PIGMAN, RenderIMZombiePigman::new);
@@ -34,17 +36,21 @@ public interface InvRenderers {
         EntityRendererRegistry.register(InvEntities.PIGMAN_ENGINEER, RenderPigEngy::new);
         EntityRendererRegistry.register(InvEntities.IMP, RenderImp::new);
         registerEntityRenderingHandler(EntityIMThrower.class, new RenderThrower(new ModelThrower(), 1.5F));
-        registerEntityRenderingHandler(EntityIMBurrower.class, new RenderBurrower());
-        registerEntityRenderingHandler(EntityIMWolf.class, new RenderIMWolf());
-        registerEntityRenderingHandler(EntityIMBoulder.class, new RenderBoulder());
+        EntityRendererRegistry.register(InvEntities.BOULDER, RenderBoulder::new);
+        EntityRendererRegistry.register(InvEntities.WOLF, RenderIMWolf::new);
+        EntityRendererRegistry.register(InvEntities.BOULDER, RenderBoulder::new);
         registerEntityRenderingHandler(EntityIMTrap.class, new RenderTrap(new ModelTrap()));
-        registerEntityRenderingHandler(EntityIMBolt.class, new RenderBolt());
+        EntityRendererRegistry.register(InvEntities.BOLT, RenderBolt::new);
         EntityRendererRegistry.register(InvEntities.SFX, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(InvEntities.SPAWN_PROXY, EmptyEntityRenderer::new);
-        registerEntityRenderingHandler(EntityIMEgg.class, new RenderEgg());
+        EntityRendererRegistry.register(InvEntities.SPIDER_EGG, RenderEgg::new);
 
-        registerEntityRenderingHandler(EntityIMCreeper.class, new RenderIMCreeper());
-        registerEntityRenderingHandler(EntityIMBird.class, new RenderB());
-        registerEntityRenderingHandler(EntityIMGiantBird.class, new RenderGiantBird());
+        EntityRendererRegistry.register(InvEntities.CREEPER, RenderIMCreeper::new);
+        Registries.ENTITY_TYPE.getOrEmpty(InvEntities.BIRD).ifPresent(type -> {
+            EntityRendererRegistry.register((EntityType<EntityIMBird>)type, RenderB::new);
+        });
+        Registries.ENTITY_TYPE.getOrEmpty(InvEntities.GIANT_BIRD).ifPresent(type -> {
+            EntityRendererRegistry.register((EntityType<EntityIMGiantBird>)type, RenderGiantBird::new);
+        });
     }
 }

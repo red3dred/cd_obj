@@ -1,39 +1,24 @@
 package invmod.client.render;
 
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMBird;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.util.Identifier;
 
-import org.lwjgl.opengl.GL11;
+public class RenderB extends LivingEntityRenderer<EntityIMBird, ModelBird> {
+	private static final Identifier TEXTURE = InvasionMod.id("textures/bird_tx1.png");
 
-public class RenderB extends RenderLiving {
-	private ModelBird modelBird;
-	private static final ResourceLocation texture = new ResourceLocation("invmod:textures/bird_tx1.png");
-
-	public RenderB() {
-		super(new ModelBird(), 0.4F);
-		this.modelBird = ((ModelBird) this.mainModel);
+	public RenderB(EntityRendererFactory.Context ctx) {
+		super(ctx, new ModelBird(ModelBird.getTexturedModelData().createModel()), 0.4F);
 	}
 
-	public void renderBz(EntityIMBird entityBird, double renderX, double renderY, double renderZ, float interpYaw, float partialTick) {
-		if (entityBird.hasFlyingDebug()) {
-			renderNavigationVector(entityBird, renderX, renderY, renderZ);
-		}
+    @Override
+    public Identifier getTexture(EntityIMBird entity) {
+        return TEXTURE;
+    }
 
-		float flapProgress = entityBird.getWingAnimationState().getCurrentAnimationTimeInterp(partialTick);
-		this.modelBird.setFlyingAnimations(flapProgress, entityBird.getLegSweepProgress(), entityBird.getRotationRoll());
-		super.doRender(entityBird, renderX, renderY, renderZ, interpYaw, partialTick);
-	}
-
-	public void doRender(Entity entity, double d, double d1, double d2, float f, float f1) {
-		renderBz((EntityIMBird) entity, d, d1, d2, f, f1);
-	}
-
-	private void renderNavigationVector(EntityIMBird entityBird, double entityRenderOffsetX, double entityRenderOffsetY, double entityRenderOffsetZ) {
+	/*private void renderNavigationVector(EntityIMBird entityBird, double entityRenderOffsetX, double entityRenderOffsetY, double entityRenderOffsetZ) {
 		Tessellator tessellator = Tessellator.instance;
 		GL11.glPushMatrix();
 
@@ -66,9 +51,5 @@ public class RenderB extends RenderLiving {
 		GL11.glEnable(3553);
 
 		GL11.glPopMatrix();
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return texture;
-	}
+	}*/
 }

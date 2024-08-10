@@ -1,4 +1,4 @@
-package invmod.client.render;
+/*package invmod.client.render;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
@@ -54,4 +54,4 @@ public class ModelTest extends ModelBase
     setRotation(this.Shape2, f, f1, f2);
     setRotation(this.Shape3, f, f1, f2);
   }
-}
+}*/

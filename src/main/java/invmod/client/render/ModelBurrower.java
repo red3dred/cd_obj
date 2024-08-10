@@ -1,73 +1,84 @@
 package invmod.client.render;
 
+import org.joml.Vector3f;
+
+import invmod.common.entity.EntityIMBurrower;
 import invmod.common.util.PosRotate3D;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.model.ModelData;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPartBuilder;
+import net.minecraft.client.model.ModelPartData;
+import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Vec3d;
 
-public class ModelBurrower extends ModelBase
-{
-  ModelRenderer head;
-  ModelRenderer seg1;
-  ModelRenderer seg2;
-  ModelRenderer seg3;
+public class ModelBurrower extends EntityModel<EntityIMBurrower> {
+    private static final double POSITION_SCALE = 7.269999980926514D;
+    private static final Vec3d POSITION_TRANSFORM = new Vec3d(-POSITION_SCALE, -POSITION_SCALE, POSITION_SCALE);
 
-  public ModelBurrower()
-  {
-    this.textureWidth = 64;
-    this.textureHeight = 32;
+    private final ModelPart head;
+    private final ModelPart evenSegment;
+    private final ModelPart oddSegment;
 
-    this.head = new ModelRenderer(this, 0, 0);
-    this.head.addBox(-2.0F, -2.5F, -2.5F, 4, 5, 5);
-    this.head.setRotationPoint(0.0F, 0.0F, 0.0F);
-    this.head.setTextureSize(64, 32);
-    this.head.mirror = true;
-    setRotation(this.head, 0.0F, 0.0F, 0.0F);
-    this.seg1 = new ModelRenderer(this, 0, 0);
-    this.seg1.addBox(-2.0F, -2.5F, -2.5F, 4, 5, 5);
-    this.seg1.setRotationPoint(-4.0F, 0.0F, 0.0F);
-    this.seg1.setTextureSize(64, 32);
-    this.seg1.mirror = true;
-    setRotation(this.seg1, 0.0F, 0.0F, 0.0F);
-    this.seg2 = new ModelRenderer(this, 0, 0);
-    this.seg2.addBox(-2.0F, -2.5F, -2.5F, 4, 5, 5);
-    this.seg2.setRotationPoint(-8.0F, 0.0F, 0.0F);
-    this.seg2.setTextureSize(64, 32);
-    this.seg2.mirror = true;
-    setRotation(this.seg2, 0.0F, 0.0F, 0.0F);
-    this.seg3 = new ModelRenderer(this, 0, 0);
-    this.seg3.addBox(-2.0F, -2.5F, -2.5F, 4, 5, 5);
-    this.seg3.setRotationPoint(-12.0F, 0.0F, 0.0F);
-    this.seg3.setTextureSize(64, 32);
-    this.seg3.mirror = true;
-    setRotation(this.seg3, 0.0F, 0.0F, 0.0F);
-  }
+    private PosRotate3D[] segments = {};
 
-  public void render(Entity entity, float partialTick, PosRotate3D[] pos, float modelScale)
-  {
-    super.render(entity, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, modelScale);
-
-    if (pos.length >= 16)
-    {
-      this.head.setRotationPoint((float)pos[0].getPosX(), (float)pos[0].getPosY(), (float)pos[0].getPosZ());
-      setRotation(this.head, pos[0].getRotX(), pos[0].getRotY(), pos[0].getRotZ());
-      this.seg1.setRotationPoint((float)pos[1].getPosX(), (float)pos[1].getPosY(), (float)pos[1].getPosZ());
-      setRotation(this.seg1, pos[1].getRotX(), pos[1].getRotY(), pos[1].getRotZ());
-      this.seg2.setRotationPoint((float)pos[2].getPosX(), (float)pos[2].getPosY(), (float)pos[2].getPosZ());
-      setRotation(this.seg2, pos[2].getRotX(), pos[2].getRotY(), pos[2].getRotZ());
-      this.seg3.setRotationPoint((float)pos[3].getPosX(), (float)pos[3].getPosY(), (float)pos[3].getPosZ());
-      setRotation(this.seg3, pos[3].getRotX(), pos[3].getRotY(), pos[3].getRotZ());
-      this.head.render(modelScale);
-      this.seg1.render(modelScale);
-      this.seg2.render(modelScale);
-      this.seg3.render(modelScale);
+    public ModelBurrower(ModelPart root) {
+        head = root.getChild(root.hasChild("head") ? "head" : "segment");
+        evenSegment = root.hasChild("even_segment") ? root.getChild("even_segment") : head;
+        oddSegment = root.hasChild("odd_segment") ? root.getChild("odd_segment") : head;
     }
-  }
 
-  private void setRotation(ModelRenderer model, float x, float y, float z)
-  {
-    model.rotateAngleX = x;
-    model.rotateAngleY = y;
-    model.rotateAngleZ = z;
-  }
+    public static TexturedModelData getTexturedModelData() {
+        ModelData data = new ModelData();
+        ModelPartData root = data.getRoot();
+        root.addChild("segment", ModelPartBuilder.create().cuboid(-2, -2.5F, -2.5F, 4, 5, 5).mirrored(), ModelTransform.NONE);
+        return TexturedModelData.of(data, 64, 32);
+    }
+
+    public static TexturedModelData getTexturedModelData2() {
+        ModelData data = new ModelData();
+        ModelPartData root = data.getRoot();
+        root.addChild("head", ModelPartBuilder.create().cuboid(-1, -3, -3, 2, 6, 6).mirrored(), ModelTransform.NONE);
+        root.addChild("even_segment", ModelPartBuilder.create().cuboid(-0.5F, -3.5F, -3.5F, 2, 7, 7).mirrored(), ModelTransform.NONE);
+        root.addChild("odd_segment", ModelPartBuilder.create().cuboid(-0.5F, -2.5F, -2.5F, 2, 5, 5).mirrored(), ModelTransform.NONE);
+        return TexturedModelData.of(data, 64, 32);
+    }
+
+    @Override
+    public void animateModel(EntityIMBurrower entity, float limbAngle, float limbDistance, float tickDelta) {
+        segments = new PosRotate3D[17];
+
+        segments[0] = new PosRotate3D(
+            entity.getPos().multiply(POSITION_TRANSFORM),
+            PosRotate3D.lerp(tickDelta, entity.getPrevRotation(), entity.getRotation(), new Vector3f())
+        );
+
+        for (int i = 0; i < 16; i++) {
+            segments[(i + 1)] = entity.getSegments3DLastTick()[i].lerp(tickDelta, entity.getSegments3D()[i]).multiplyPosition(POSITION_TRANSFORM);
+        }
+    }
+
+    protected ModelPart getPart(int i) {
+        if (i == 0) {
+            return head;
+        }
+        return i % 2 == 0 ? evenSegment : oddSegment;
+    }
+
+    @Override
+    public void setAngles(EntityIMBurrower entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+    }
+
+    @Override
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+        for (int i = 0; i < segments.length; i++) {
+            ModelPart segment = getPart(i);
+            segment.setPivot((float) segments[i].position().x, (float) segments[i].position().y, (float) segments[i].position().z);
+            segment.setAngles(segments[i].rotation().x(), segments[i].rotation().y(), segments[i].rotation().z());
+            segment.render(matrices, vertices, light, overlay, color);
+        }
+    }
 }

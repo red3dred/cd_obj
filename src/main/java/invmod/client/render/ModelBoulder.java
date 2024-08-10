@@ -1,35 +1,37 @@
 package invmod.client.render;
 
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import invmod.common.entity.EntityIMBoulder;
+import net.minecraft.client.model.ModelData;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.ModelPartBuilder;
+import net.minecraft.client.model.ModelPartData;
+import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.TexturedModelData;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 
-public class ModelBoulder extends ModelBase
-{
-  ModelRenderer boulder;
+public class ModelBoulder extends SinglePartEntityModel<EntityIMBoulder> {
+    private final ModelPart root;
 
-  public ModelBoulder()
-  {
-    this.boulder = new ModelRenderer(this, 0, 0);
-    this.boulder.addBox(-4.0F, -4.0F, -4.0F, 8, 8, 8);
-    this.boulder.setRotationPoint(0.0F, 0.0F, 0.0F);
-    this.boulder.rotateAngleX = 0.0F;
-    this.boulder.rotateAngleY = 0.0F;
-    this.boulder.rotateAngleZ = 0.0F;
-    this.boulder.mirror = false;
-  }
+    public ModelBoulder(ModelPart root) {
+        this.root = root;
+    }
 
-  public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float f5)
-  {
-    super.render(entity, f, f1, f2, f3, f4, f5);
-    setRotationAngles(f, f1, f2, f3, f4, f5, entity);
-    this.boulder.render(f5);
-  }
+    public static TexturedModelData getTexturedModelData() {
+        ModelData data = new ModelData();
+        ModelPartData root = data.getRoot();
+        root.addChild("boulder", ModelPartBuilder.create().cuboid(-4, -4, -4, 8, 8, 8), ModelTransform.NONE);
+        return TexturedModelData.of(data, 64, 64);
+    }
 
-  public void setRotationAngles(float f, float f1, float f2, float f3, float f4, float f5, Entity entity)
-  {
-    this.boulder.rotateAngleX = f;
-    this.boulder.rotateAngleY = f1;
-    this.boulder.rotateAngleZ = f2;
-  }
+    @Override
+    public ModelPart getPart() {
+        return root;
+    }
+
+    @Override
+    public void setAngles(EntityIMBoulder entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+        root.roll = animationProgress;
+        root.pitch = headPitch;
+        root.yaw = headYaw;
+    }
 }

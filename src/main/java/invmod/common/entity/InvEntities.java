@@ -2,9 +2,10 @@ package invmod.common.entity;
 
 import java.lang.reflect.Field;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.ConfigInvasion;
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.entity.Entity;
@@ -14,6 +15,8 @@ import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.biome.BiomeKeys;
@@ -40,7 +43,7 @@ public interface InvEntities {
     EntityType<EntityIMWolf> WOLF = register("wolf", EntityType.Builder.<EntityIMWolf>create(EntityIMWolf::new, SpawnGroup.CREATURE)
             .dimensions(0.6F, 0.85F).eyeHeight(0.68F).passengerAttachments(new Vec3d(0.0, 0.81875, -0.0625)).maxTrackingRange(10));
 
-    EntityType<EntityIMEgg> EGG = register("egg", EntityType.Builder.<EntityIMEgg>create(EntityIMEgg::new, SpawnGroup.MISC)
+    EntityType<EntityIMEgg> SPIDER_EGG = register("spider_egg", EntityType.Builder.<EntityIMEgg>create(EntityIMEgg::new, SpawnGroup.MISC)
             .dimensions(0.5F, 0.8F).eyeHeight(0.5F).passengerAttachments(new Vec3d(0.0, 0.81875, -0.0625)).maxTrackingRange(10));
 
     EntityType<EntityIMTrap> TRAP = register("trap", EntityType.Builder.<EntityIMTrap>create(EntityIMTrap::new, SpawnGroup.MISC)
@@ -57,6 +60,9 @@ public interface InvEntities {
             .dimensions(0.5F, 0.5F).maxTrackingRange(8));
     EntityType<EntityIMPrimedTNT> TNT = register("tnt", EntityType.Builder.<EntityIMPrimedTNT>create(EntityIMPrimedTNT::new, SpawnGroup.MISC)
             .makeFireImmune().dimensions(0.98F, 0.98F).eyeHeight(0.15F).maxTrackingRange(10).trackingTickInterval(10));
+
+    RegistryKey<EntityType<?>> BIRD = RegistryKey.of(RegistryKeys.ENTITY_TYPE, InvasionMod.id("bird"));
+    RegistryKey<EntityType<?>> GIANT_BIRD = RegistryKey.of(RegistryKeys.ENTITY_TYPE, InvasionMod.id("giant_bird"));
 
     private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> builder) {
         return Registry.register(Registries.ENTITY_TYPE, InvasionMod.id(name), builder.build());

@@ -98,7 +98,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 		this.tasks.addTask(9, new EntityAILookIdle(this));
 
 		this.targetTasks = new EntityAITasks(this.worldObj.theProfiler);
-		if(this.isNexusBound())
+		if(this.hasNexus())
 		{
 			this.targetTasks.addTask(1, new EntityAISimpleTarget(this, EntityPlayer.class, 3.0F, true));
 		}else{

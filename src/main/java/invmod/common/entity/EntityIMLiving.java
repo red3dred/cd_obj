@@ -6,7 +6,6 @@ import invmod.common.INotifyTask;
 import invmod.common.IPathfindable;
 import invmod.common.InvasionMod;
 import invmod.common.SparrowAPI;
-import invmod.common.mod_Invasion;
 import invmod.common.item.InvItems;
 import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.EntityConstruct.BuildableMob;
@@ -196,7 +195,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     private String simplyID = "needID";
 
-    private boolean shouldRenderLabel = InvasionMod.getConfig().debugMode;
     private int gender;
 
     private boolean isHostile = true;
@@ -480,14 +478,12 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return distance <= getSenseRange() || (super.canSee(entity) && distance <= getAggroRange());
     }
 
+    @Override
     public double findDistanceToNexus() {
-        if (getNexus() == null) {
-            return 1.7976931348623157E+308D;
+        if (!hasNexus()) {
+            return Double.MAX_VALUE;
         }
-        double x = targetNexus.getXCoord() + 0.5D - getX();
-        double y = targetNexus.getYCoord() - getY() + getHeight() * 0.5D;
-        double z = targetNexus.getZCoord() + 0.5D - getZ();
-        return Math.sqrt(x * x + y * y + z * z);
+        return Math.sqrt(getNexus().toBlockPos().toCenterPos().squaredDistanceTo(getX(), getBodyY(0.5), getZ()));
     }
 
     // TODO: This is somewhere else now
@@ -734,10 +730,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return simplyID;
     }
 
-    public boolean isNexusBound() {
-        return this.nexusBound;
-    }
-
     @Override
     public boolean isHoldingOntoLadder() {
         return dataTracker.get(CLIMBING);
@@ -764,8 +756,9 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return true;
     }
 
-    public boolean shouldRenderLabel() {
-        return shouldRenderLabel;
+    @Override
+    public boolean shouldRenderName() {
+        return InvasionMod.getConfig().debugMode || super.shouldRenderName();
     }
 
     @Override
@@ -879,7 +872,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     @Override
     @SuppressWarnings("deprecation")
-    public float getBlockPathCost(PathNode prevNode, PathNode node, WorldAccess terrainMap) {
+    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         float multiplier = 1.0F;
         if ((terrainMap instanceof IBlockAccessExtended i)) {
             multiplier += (i.getData(node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
@@ -894,7 +887,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
 
         if (node.action == PathAction.SWIM) {
-            multiplier *= ((node.getYCoord() <= prevNode.getYCoord()) && !terrainMap.isAir(node.pos) ? 3 : 1);
+            multiplier *= ((node.getYCoord() <= prevNode.getYCoord()) && !terrainMap.getBlockState(node.pos).isAir() ? 3 : 1);
             return prevNode.distanceTo(node) * 1.3F * multiplier;
         }
 
@@ -903,7 +896,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    public void getPathOptionsFromNode(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         if (getWorld().isOutOfHeightLimit(currentNode.getYCoord())) {
             return;
         }
@@ -980,7 +973,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
     }
 
-    protected final void calcPathOptionsVertical(WorldAccess terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    protected final void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         int collideUp = getCollide(terrainMap, currentNode.pos.up());
         if (collideUp > 0) {
             BlockState state = terrainMap.getBlockState(currentNode.pos.up());
@@ -1027,7 +1020,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
     }
 
-    protected final void addAdjacent(WorldAccess terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
+    protected final void addAdjacent(BlockView terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
         if (getCollide(terrainMap, pos) <= 0) {
             return;
         }
@@ -1041,7 +1034,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @SuppressWarnings("deprecation")
-    protected final boolean isAdjacentSolidBlock(WorldAccess terrainMap, BlockPos pos) {
+    protected final boolean isAdjacentSolidBlock(BlockView terrainMap, BlockPos pos) {
         for (BlockPos offset : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
                 : collideSize.getXCoord() == 2 && collideSize.getZCoord() == 2 ? CoordsInt.OFFSET_ADJACENT_2
                 : CoordsInt.ZERO) {

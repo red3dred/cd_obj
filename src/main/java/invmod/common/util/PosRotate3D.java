@@ -1,77 +1,34 @@
 package invmod.common.util;
 
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class PosRotate3D {
-    private double posX;
-    private double posY;
-    private double posZ;
-    private float rotX;
-    private float rotY;
-    private float rotZ;
+public record PosRotate3D (Vec3d position, Vector3fc rotation) {
 
     public PosRotate3D() {
-        this(0.0D, 0.0D, 0.0D, 0.0F, 0.0F, 0.0F);
+        this(new Vec3d(0, 0, 0), new Vector3f());
     }
 
-    public PosRotate3D(double posX, double posY, double posZ, float rotX, float rotY, float rotZ) {
-        this.posX = posX;
-        this.posY = posY;
-        this.posZ = posZ;
-        this.rotX = rotX;
-        this.rotY = rotY;
-        this.rotZ = rotZ;
+    public PosRotate3D lerp(float delta, PosRotate3D b) {
+        return new PosRotate3D(lerp(delta, position, b.position()), lerp(delta, rotation, b.rotation(), new Vector3f()));
     }
 
-    public Vec3d getPos() {
-        return new Vec3d(this.posX, this.posY, this.posZ);
+    public PosRotate3D multiplyPosition(Vec3d positionMul) {
+        return new PosRotate3D(position.multiply(positionMul), rotation);
     }
 
-    public double getPosX() {
-        return this.posX;
+    public static Vec3d lerp(float delta, Vec3d a, Vec3d b) {
+        return new Vec3d(
+                MathHelper.lerp(delta, a.x, b.x),
+                MathHelper.lerp(delta, a.y, b.y),
+                MathHelper.lerp(delta, a.z, b.z)
+        );
     }
 
-    public double getPosY() {
-        return this.posY;
-    }
-
-    public double getPosZ() {
-        return this.posZ;
-    }
-
-    public float getRotX() {
-        return this.rotX;
-    }
-
-    public float getRotY() {
-        return this.rotY;
-    }
-
-    public float getRotZ() {
-        return this.rotZ;
-    }
-
-    public void setPosX(double pos) {
-        this.posX = pos;
-    }
-
-    public void setPosY(double pos) {
-        this.posY = pos;
-    }
-
-    public void setPosZ(double pos) {
-        this.posZ = pos;
-    }
-
-    public void setRotX(float rot) {
-        this.rotX = rot;
-    }
-
-    public void setRotY(float rot) {
-        this.rotY = rot;
-    }
-
-    public void setRotZ(float rot) {
-        this.rotZ = rot;
+    public static Vector3fc lerp(float delta, Vector3fc a, Vector3fc b, Vector3f into) {
+        return b.sub(a, into).mul(delta).add(a);
     }
 }

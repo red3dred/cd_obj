@@ -1,37 +1,29 @@
 package invmod.client.render;
 
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMEgg;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 
-import org.lwjgl.opengl.GL11;
+public class RenderEgg extends EntityRenderer<EntityIMEgg> {
+	private static final Identifier TEXTURE = InvasionMod.id("textures/spideregg.png");
 
-public class RenderEgg extends Render {
-	private static final ResourceLocation texture = new ResourceLocation("invmod:textures/spideregg.png");
-	private ModelEgg modelEgg;
+	private final ModelEgg model = new ModelEgg(ModelEgg.getTexturedModelData().createModel());
 
-	public RenderEgg() {
-		this.modelEgg = new ModelEgg();
+	public RenderEgg(EntityRendererFactory.Context context) {
+	    super(context);
 	}
 
-	public void renderEgg(EntityIMEgg entityEgg, double d, double d1, double d2, float f, float f1) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef((float) d, (float) d1, (float) d2);
-		GL11.glEnable(32826);
-		GL11.glScalef(-1.0F, -1.0F, 1.0F);
-
-		bindEntityTexture(entityEgg);
-		this.modelEgg.render(entityEgg, 0.0F, 0.0F, -0.1F, 0.0F, 0.0F, 0.0625F);
-		GL11.glDisable(32826);
-		GL11.glPopMatrix();
+	@Override
+    public void render(EntityIMEgg entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+	    model.render(matrices, vertexConsumers.getBuffer(model.getLayer(getTexture(entity))), light, 0);
 	}
 
-	public void doRender(Entity entity, double d, double d1, double d2, float f, float f1) {
-		renderEgg((EntityIMEgg) entity, d, d1, d2, f, f1);
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return texture;
-	}
+    @Override
+    public Identifier getTexture(EntityIMEgg entity) {
+        return TEXTURE;
+    }
 }

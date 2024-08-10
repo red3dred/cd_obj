@@ -18,7 +18,7 @@ public class ModelAnimator<T extends Enum<T>> {
     private static final Vector3f TEMP_VECTOR = new Vector3f();
 
     public ModelAnimator() {
-        this(1.0F);
+        this(1);
     }
 
     public ModelAnimator(float animationPeriod) {

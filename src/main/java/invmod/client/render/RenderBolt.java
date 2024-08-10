@@ -1,15 +1,26 @@
 package invmod.client.render;
 
 import invmod.common.entity.EntityIMBolt;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EmptyEntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory.Context;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.ColorHelper;
 
-import org.lwjgl.opengl.GL11;
+public class RenderBolt extends EmptyEntityRenderer<EntityIMBolt> {
+    private static final int BOLT_COLOR = ColorHelper.Argb.getArgb((int)(0.5F * 255), (int)(0.5F * 255), (int)(0.6F * 255), (int)(0.6F * 255));
 
-public class RenderBolt extends Render {
-	public void render(EntityIMBolt entityBolt, double d, double d1, double d2, float f, float f1) {
+    public RenderBolt(Context context) {
+        super(context);
+    }
+
+    @Override
+    public void render(EntityIMBolt entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+
+    }
+
+	/*public void render(EntityIMBolt entityBolt, double d, double d1, double d2, float f, float f1) {
 		Tessellator tessellator = Tessellator.instance;
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) d, (float) d1, (float) d2);
@@ -19,17 +30,18 @@ public class RenderBolt extends Render {
 		GL11.glScalef(scale, scale, scale);
 		renderFromVertices(entityBolt, tessellator);
 		GL11.glPopMatrix();
-	}
+	}*/
 
-	public void renderFromVertices(EntityIMBolt entityBolt, Tessellator tessellator) {
+	public void renderFromVertices(EntityIMBolt entityBolt, VertexConsumer tessellator) {
 		double[][] vertices = entityBolt.getVertices();
 		if (vertices == null) {
 			return;
 		}
+		/*
 		GL11.glDisable(3553);
 		GL11.glDisable(2896);
 		GL11.glEnable(3042);
-		GL11.glBlendFunc(770, 1);
+		GL11.glBlendFunc(770, 1);*/
 
 		double[] xCoords = vertices[0];
 		double[] yCoords = vertices[1];
@@ -39,8 +51,6 @@ public class RenderBolt extends Render {
 		for (int pass = 0; pass < 4; pass++) {
 			drawWidth += 0.32D;
 			for (int i = 1; i < yCoords.length; i++) {
-				tessellator.startDrawing(5);
-				tessellator.setColorRGBA_F(0.5F, 0.5F, 0.65F, 0.6F);
 				for (int j = 0; j < 5; j++) {
 					double xOffset = 0.5D - drawWidth;
 					double zOffset = 0.5D - drawWidth;
@@ -50,22 +60,24 @@ public class RenderBolt extends Render {
 					if ((j == 2) || (j == 3)) {
 						zOffset += drawWidth * 2.0D;
 					}
-					tessellator.addVertex(xCoords[(i - 1)] + xOffset, yCoords[(i - 1)] * 16.0D, zCoords[(i - 1)] + zOffset);
-					tessellator.addVertex(xCoords[i] + xOffset, yCoords[i] * 16.0D, zCoords[i] + zOffset);
+					tessellator.vertex(
+					        (float)(xCoords[(i - 1)] + xOffset),
+					        (float)(yCoords[(i - 1)] * 16.0D),
+					        (float)(zCoords[(i - 1)] + zOffset),
+					        BOLT_COLOR,
+					        0, 0, 0, 0, 0, 0, 0);
+	                   tessellator.vertex(
+	                           (float)(xCoords[i] + xOffset),
+	                           (float)(yCoords[i] * 16.0D),
+	                           (float)(zCoords[i] + zOffset),
+	                           BOLT_COLOR,
+	                            0, 0, 0, 0, 0, 0, 0);
 				}
-				tessellator.draw();
 			}
 		}
+		/*
 		GL11.glDisable(3042);
 		GL11.glEnable(2896);
-		GL11.glEnable(3553);
-	}
-
-	public void doRender(Entity entity, double d, double d1, double d2, float f, float f1) {
-		render((EntityIMBolt) entity, d, d1, d2, f, f1);
-	}
-
-	protected ResourceLocation getEntityTexture(Entity entity) {
-		return null;
+		GL11.glEnable(3553);*/
 	}
 }
