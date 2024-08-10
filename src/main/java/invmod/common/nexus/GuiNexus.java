@@ -1,76 +1,66 @@
 package invmod.common.nexus;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
-public class GuiNexus extends HandledScreen<ContainerNexus>
-{
-  private static final ResourceLocation background = new ResourceLocation("invmod:textures/nexusgui.png");
+import invmod.common.InvasionMod;
 
-  public GuiNexus(InventoryPlayer inventoryplayer, TileEntityNexus tileentityNexus)
-  {
+public class GuiNexus extends HandledScreen<ContainerNexus> {
+    private static final Identifier BACKGROUND = InvasionMod.id("textures/nexusgui.png");
 
-    super(new ContainerNexus(inventoryplayer, tileentityNexus));
-  }
-
-@Override
-  protected void drawGuiContainerForegroundLayer(int x, int y)
-  {
-    this.fontRendererObj.drawString("Nexus - Level " + handler.getLevel(), 46, 6, 4210752);
-    this.fontRendererObj.drawString(handler.getKills() + " mobs killed", 96, 60, 4210752);
-    this.fontRendererObj.drawString("R: " + handler.getSpawnRadius(), 142, 72, 4210752);
-
-    if ((handler.getMode() == 1) || (handler.getMode() == 3))
-    {
-      this.fontRendererObj.drawString("Activated!", 13, 62, 4210752);
-      this.fontRendererObj.drawString("Wave " + handler.getCurrentWave(), 55, 37, 4210752);
-    }
-    else if (handler.getMode() == 2)
-    {
-      this.fontRendererObj.drawString("Power:", 56, 31, 4210752);
-      this.fontRendererObj.drawString("" + handler.getPowerLevel(), 61, 44, 4210752);
+    public GuiNexus(ContainerNexus container, PlayerInventory inventory, Text title) {
+        super(container, inventory, title);
     }
 
-    if ((handler.getNexus().isActivating()) && (handler.getMode() == 0))
-    {
-      this.fontRendererObj.drawString("Activating...", 13, 62, 4210752);
-      if (handler.getMode() != 4)
-        this.fontRendererObj.drawString("Are you sure?", 8, 72, 4210752);
-    }
-  }
-@Override
-  protected void drawGuiContainerBackgroundLayer(float f, int un1, int un2)
-  {
-    GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-    this.mc.getTextureManager().bindTexture(background);
-    int j = (this.width - this.xSize) / 2;
-    int k = (this.height - this.ySize) / 2;
-    drawTexturedModalRect(j, k, 0, 0, this.xSize, this.ySize);
+    @Override
+    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
+        super.drawForeground(context, mouseX, mouseY);
+        context.drawText(textRenderer, "Nexus - Level " + handler.getLevel(), 46, 6, 0x404040, false);
+        context.drawText(textRenderer, handler.getKills() + " mobs killed", 96, 60, 0x404040, false);
+        context.drawText(textRenderer, "R: " + handler.getSpawnRadius(), 142, 72, 0x404040, false);
 
-    int l = handler.getGenerationProgressScaled(26);
-    drawTexturedModalRect(j + 126, k + 28 + 26 - l, 185, 26 - l, 9, l);
-    l = handler.getCookProgressScaled(18);
-    drawTexturedModalRect(j + 31, k + 51, 204, 0, l, 2);
+        if ((handler.getMode() == 1) || (handler.getMode() == 3)) {
+            context.drawText(textRenderer, "Activated!", 13, 62, 4210752, false);
+            context.drawText(textRenderer, "Wave " + handler.getCurrentWave(), 55, 37, 0x404040, false);
+        } else if (handler.getMode() == 2) {
+            context.drawText(textRenderer, "Power:", 56, 31, 4210752, false);
+            context.drawText(textRenderer, "" + handler.getPowerLevel(), 61, 44, 0x404040, false);
+        }
 
-    if ((handler.getMode() == 1) || (handler.getMode() == 3))
-    {
-      drawTexturedModalRect(j + 19, k + 29, 176, 0, 9, 31);
-      drawTexturedModalRect(j + 19, k + 19, 194, 0, 9, 9);
-    }
-    else if (handler.getMode() == 2)
-    {
-      drawTexturedModalRect(j + 19, k + 29, 176, 31, 9, 31);
+        if ((handler.getNexus().isActivating()) && (handler.getMode() == 0)) {
+            context.drawText(textRenderer, "Activating...", 13, 62, 0x404040, false);
+            if (handler.getMode() != 4) {
+                context.drawText(textRenderer, "Are you sure?", 8, 72, 0x404040, false);
+            }
+        }
     }
 
-    if (((handler.getMode() == 0) || (handler.getMode() == 2)) && (handler.getNexus().isActivating()))
-    {
-      l = handler.getActivationProgressScaled(31);
-      drawTexturedModalRect(j + 19, k + 29 + 31 - l, 176, 31 - l, 9, l);
+    @Override
+    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
+        int j = (this.width - this.backgroundWidth) / 2;
+        int k = (this.height - this.backgroundHeight) / 2;
+        context.drawTexture(BACKGROUND, j, k, 0, 0, this.backgroundWidth, this.backgroundHeight);
+
+        int l = handler.getGenerationProgressScaled(26);
+        context.drawTexture(BACKGROUND, j + 126, k + 28 + 26 - l, 185, 26 - l, 9, l);
+        context.drawTexture(BACKGROUND, j + 31, k + 51, 204, 0, handler.getCookProgressScaled(18), 2);
+
+        if (handler.getMode() == 1 || handler.getMode() == 3) {
+            context.drawTexture(BACKGROUND, j + 19, k + 29, 176, 0, 9, 31);
+            context.drawTexture(BACKGROUND, j + 19, k + 19, 194, 0, 9, 9);
+        } else if (handler.getMode() == 2) {
+            context.drawTexture(BACKGROUND, j + 19, k + 29, 176, 31, 9, 31);
+        }
+
+        if ((handler.getMode() == 0 || handler.getMode() == 2) && handler.getNexus().isActivating()) {
+            l = handler.getActivationProgressScaled(31);
+            context.drawTexture(BACKGROUND, j + 19, k + 29 + 31 - l, 176, 31 - l, 9, l);
+        } else if (handler.getMode() == 4 && handler.getNexus().isActivating()) {
+            l = handler.getActivationProgressScaled(31);
+            context.drawTexture(BACKGROUND, j + 19, k + 29 + 31 - l, 176, 62 - l, 9, l);
+        }
     }
-    else if ((handler.getMode() == 4) && (handler.getNexus().isActivating()))
-    {
-      l = handler.getActivationProgressScaled(31);
-      drawTexturedModalRect(j + 19, k + 29 + 31 - l, 176, 62 - l, 9, l);
-    }
-  }
 }

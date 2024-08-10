@@ -1,107 +1,106 @@
 package invmod.common.nexus;
 
-
 import invmod.common.entity.EntityIMLiving;
 import invmod.common.entity.ai.AttackerAI;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
-public class DummyNexus
-  implements INexusAccess
-{
-  private World world;
+public class DummyNexus implements INexusAccess {
+    private World world;
 
-  public void setWorld(World world)
-  {
-    this.world = world;
-  }
+    public void setWorld(World world) {
+        this.world = world;
+    }
 
-  public void attackNexus(int damage)
-  {
-  }
+    @Override
+    public void attackNexus(int damage) {
+    }
 
-  public void registerMobDied()
-  {
-  }
+    @Override
+    public void registerMobDied() {
+    }
 
-  public boolean isActivating() {
-    return false;
-  }
+    @Override
+    public boolean isActivating() {
+        return false;
+    }
 
-  public int getMode()
-  {
-    return 0;
-  }
+    @Override
+    public int getMode() {
+        return 0;
+    }
 
-  public int getActivationTimer()
-  {
-    return 0;
-  }
+    public int getActivationTimer() {
+        return 0;
+    }
 
-  public int getSpawnRadius()
-  {
-    return 45;
-  }
+    @Override
+    public int getSpawnRadius() {
+        return 45;
+    }
 
-  public int getNexusKills()
-  {
-    return 0;
-  }
+    public int getNexusKills() {
+        return 0;
+    }
 
-  public int getGeneration()
-  {
-    return 0;
-  }
+    public int getGeneration() {
+        return 0;
+    }
 
-  public int getNexusLevel()
-  {
-    return 1;
-  }
+    public int getNexusLevel() {
+        return 1;
+    }
 
-  public int getCurrentWave()
-  {
-    return 1;
-  }
+    @Override
+    public int getCurrentWave() {
+        return 1;
+    }
 
-  public int getXCoord()
-  {
-    return 0;
-  }
+    @Override
+    public int getXCoord() {
+        return 0;
+    }
 
-  public int getYCoord()
-  {
-    return 0;
-  }
+    @Override
+    public int getYCoord() {
+        return 0;
+    }
 
-  public int getZCoord()
-  {
-    return 0;
-  }
+    @Override
+    public int getZCoord() {
+        return 0;
+    }
 
-  public World getWorld()
-  {
-    return this.world;
-  }
+    @Override
+    public World getWorld() {
+        return world;
+    }
 
-  public List<EntityIMLiving> getMobList()
-  {
-    return null;
-  }
+    @Override
+    public List<EntityIMLiving> getMobList() {
+        return List.of();
+    }
 
-  public void askForRespawn(EntityIMLiving entity)
-  {
-  }
+    @Override
+    public void askForRespawn(EntityIMLiving entity) {
+    }
 
-  public AttackerAI getAttackerAI()
-  {
-    return null;
-  }
+    @Override
+    public AttackerAI getAttackerAI() {
+        return null;
+    }
 
-@Override
-public HashMap<String, Long> getBoundPlayers() {
-	return null;
-}
+    @Override
+    public Map<UUID, Long> getBoundPlayers() {
+        return Map.of();
+    }
+
+    @Override
+    public void sendMessage(Formatting color, String translationKey, Object... params) {
+    }
 }
