@@ -2,7 +2,11 @@ package invmod.common.entity;
 
 import org.jetbrains.annotations.Nullable;
 
+import invmod.common.block.InvBlocks;
 import invmod.common.nexus.INexusAccess;
+import invmod.common.nexus.TileEntityNexus;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public interface IHasNexus {
     @Nullable
@@ -25,4 +29,16 @@ public interface IHasNexus {
     }
 
     double findDistanceToNexus();
+
+    @Nullable
+    static TileEntityNexus findNexus(World world, BlockPos center) {
+        for (BlockPos pos : BlockPos.iterateOutwards(center, 8, 5, 8)) {
+            if (world.getBlockState(pos).isOf(InvBlocks.NEXUS_CORE)) {
+                if (world.getBlockEntity(pos) instanceof TileEntityNexus nexus) {
+                    return nexus;
+                }
+            }
+        }
+        return null;
+    }
 }
