@@ -1,46 +1,41 @@
 package invmod.common.entity.ai;
 
-//NOOB HAUS: Done
+import java.util.EnumSet;
+
+import org.jetbrains.annotations.Nullable;
 
 import invmod.common.entity.EntityIMFlying;
 import invmod.common.entity.Goal;
 import invmod.common.entity.INavigationFlying;
 import invmod.common.entity.Path;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.EntityAIBase;
 
-public class EntityAIFlyingMoveToEntity extends EntityAIBase
-{
-  private EntityIMFlying theEntity;
+public class EntityAIFlyingMoveToEntity extends net.minecraft.entity.ai.goal.Goal {
+    private final EntityIMFlying theEntity;
 
-  public EntityAIFlyingMoveToEntity(EntityIMFlying entity)
-  {
-    this.theEntity = entity;
-  }
-
-  public boolean shouldExecute()
-  {
-    return (this.theEntity.getAIGoal() == Goal.GOTO_ENTITY) && (this.theEntity.getAttackTarget() != null);
-  }
-
-  public void startExecuting()
-  {
-    INavigationFlying nav = this.theEntity.getNavigatorNew();
-    Entity target = this.theEntity.getAttackTarget();
-    if (target != nav.getTargetEntity())
-    {
-      nav.clearPath();
-      nav.setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
-      Path path = nav.getPathToEntity(target, 0.0F);
-      if (path.getCurrentPathLength() > 2.0D * this.theEntity.getDistanceToEntity(target))
-      {
-        nav.setMovementType(INavigationFlying.MoveType.MIXED);
-      }
-      nav.autoPathToEntity(target);
+    public EntityAIFlyingMoveToEntity(EntityIMFlying entity) {
+        theEntity = entity;
+        setControls(EnumSet.of(Control.MOVE));
     }
-  }
 
-  public void updateTask()
-  {
-  }
+    @Override
+    public boolean canStart() {
+        return theEntity.getAIGoal() == Goal.GOTO_ENTITY && theEntity.getTarget() != null;
+    }
+
+    @Override
+    public void start() {
+        INavigationFlying nav = theEntity.getNavigatorNew();
+        Entity target = theEntity.getTarget();
+        if (target != nav.getTargetEntity()) {
+            nav.clearPath();
+            nav.setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
+            @Nullable
+            Path path = nav.getPathToEntity(target, 0);
+            if (path != null && path.getCurrentPathLength() > 2 * theEntity.distanceTo(target)) {
+                nav.setMovementType(INavigationFlying.MoveType.MIXED);
+            }
+            nav.autoPathToEntity(target);
+        }
+    }
 }

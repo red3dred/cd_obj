@@ -1,66 +1,48 @@
 package invmod.common.entity.ai;
 
-//NOOB HAUS: Done 
+import org.jetbrains.annotations.Nullable;
+
+//NOOB HAUS: Done
 
 import invmod.common.entity.EntityIMCreeper;
-import invmod.common.entity.EntityIMWolf;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.passive.WolfEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
-public class EntityAICreeperIMSwell extends EntityAIBase
-{
-  EntityIMCreeper theEntity;
-  EntityLivingBase targetEntity;
+public class EntityAICreeperIMSwell extends Goal {
+    private final EntityIMCreeper theEntity;
 
-  public EntityAICreeperIMSwell(EntityIMCreeper par1EntityCreeper)
-  {
-    this.theEntity = par1EntityCreeper;
-    setMutexBits(1);
-  }
+    @Nullable
+    private LivingEntity targetEntity;
 
-  @Override
-  public boolean shouldExecute()
-  {
-    EntityLivingBase entityliving = this.theEntity.getAttackTarget();
-   
-    return (this.theEntity.getCreeperState() > 0) || ((entityliving != null) && (this.theEntity.getDistanceSqToEntity(entityliving) < 9.0D) && ((entityliving.getClass() == EntityPlayer.class)||(entityliving.getClass()==EntityIMWolf.class)||(entityliving.getClass()==EntityPlayerMP.class)));
-  }
-
-  @Override
-  public void startExecuting()
-  {
-    this.theEntity.getNavigatorNew().clearPath();
-    this.targetEntity = this.theEntity.getAttackTarget();
-  }
-
-  @Override
-  public void resetTask()
-  {
-    this.targetEntity = null;
-  }
-
-  @Override
-  public void updateTask()
-  {
-    if (this.targetEntity == null)
-    {
-      this.theEntity.setCreeperState(-1);
-      return;
+    public EntityAICreeperIMSwell(EntityIMCreeper creeper) {
+        theEntity = creeper;
     }
 
-    if (this.theEntity.getDistanceSqToEntity(this.targetEntity) > 49.0D)
-    {
-      this.theEntity.setCreeperState(-1);
-      return;
+    @Override
+    public boolean canStart() {
+        LivingEntity target = theEntity.getTarget();
+        return theEntity.getCreeperState() > 0 || (target != null
+                    && theEntity.squaredDistanceTo(target) < 9
+                    && (target instanceof PlayerEntity || target instanceof WolfEntity));
     }
 
-    if (!this.theEntity.getEntitySenses().canSee(this.targetEntity))
-    {
-      this.theEntity.setCreeperState(-1);
-      return;
+    @Override
+    public void start() {
+        theEntity.getNavigatorNew().clearPath();
+        targetEntity = theEntity.getTarget();
     }
-    this.theEntity.setCreeperState(1);
-  }
+
+    @Override
+    public void stop() {
+        targetEntity = null;
+    }
+
+    @Override
+    public void tick() {
+        theEntity.setCreeperState(targetEntity != null
+            && theEntity.squaredDistanceTo(targetEntity) <= 49
+            && theEntity.getVisibilityCache().canSee(targetEntity) ? 1 : -1);
+    }
 }

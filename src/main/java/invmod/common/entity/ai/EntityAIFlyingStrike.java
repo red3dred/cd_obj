@@ -1,77 +1,64 @@
 package invmod.common.entity.ai;
 
-//NOOB HAUS:Done
-
 import invmod.common.entity.EntityIMBird;
 import invmod.common.entity.Goal;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.LivingEntity;
 
-public class EntityAIFlyingStrike extends EntityAIBase
-{
-  private EntityIMBird theEntity;
+public class EntityAIFlyingStrike extends net.minecraft.entity.ai.goal.Goal {
+    private final EntityIMBird theEntity;
 
-  public EntityAIFlyingStrike(EntityIMBird entity)
-  {
-    this.theEntity = entity;
-  }
-
-  public boolean shouldExecute()
-  {
-    return (this.theEntity.getAIGoal() == Goal.FLYING_STRIKE) || (this.theEntity.getAIGoal() == Goal.SWOOP);
-  }
-
-  public boolean continueExecuting()
-  {
-    return shouldExecute();
-  }
-
-  public void updateTask()
-  {
-    if (this.theEntity.getAIGoal() == Goal.FLYING_STRIKE)
-      doStrike();
-  }
-
-  private void doStrike()
-  {
-    EntityLivingBase target = this.theEntity.getAttackTarget();
-    if (target == null)
-    {
-      this.theEntity.transitionAIGoal(Goal.NONE);
-      return;
+    public EntityAIFlyingStrike(EntityIMBird entity) {
+        theEntity = entity;
     }
 
-    float flyByChance = 1.0F;
-    float tackleChance = 0.0F;
-    float pickUpChance = 0.0F;
-    if (this.theEntity.getClawsForward())
-    {
-      flyByChance = 0.5F;
-      tackleChance = 100.0F;
-      pickUpChance = 1.0F;
+    @Override
+    public boolean canStart() {
+        return theEntity.getAIGoal() == Goal.FLYING_STRIKE || theEntity.getAIGoal() == Goal.SWOOP;
     }
 
-    float pE = flyByChance + tackleChance + pickUpChance;
-    float r = this.theEntity.worldObj.rand.nextFloat();
-    if (r <= flyByChance / pE)
-    {
-      doFlyByAttack(target);
-      this.theEntity.transitionAIGoal(Goal.STABILISE);
-      this.theEntity.setClawsForward(false);
+    @Override
+    public boolean shouldContinue() {
+        return canStart();
     }
-    else if (r <= (flyByChance + tackleChance) / pE)
-    {
-      this.theEntity.transitionAIGoal(Goal.TACKLE_TARGET);
-      this.theEntity.setClawsForward(false);
-    }
-    else
-    {
-      this.theEntity.transitionAIGoal(Goal.PICK_UP_TARGET);
-    }
-  }
 
-  private void doFlyByAttack(EntityLivingBase entity)
-  {
-    this.theEntity.attackEntityAsMob(entity, 5);
-  }
+    @Override
+    public void tick() {
+        if (theEntity.getAIGoal() == Goal.FLYING_STRIKE) {
+            doStrike();
+        }
+    }
+
+    private void doStrike() {
+        LivingEntity target = theEntity.getTarget();
+        if (target == null) {
+            theEntity.transitionAIGoal(Goal.NONE);
+            return;
+        }
+
+        float flyByChance = 1;
+        float tackleChance = 0;
+        float pickUpChance = 0;
+        if (theEntity.getClawsForward()) {
+            flyByChance = 0.5F;
+            tackleChance = 100;
+            pickUpChance = 1;
+        }
+
+        float pE = flyByChance + tackleChance + pickUpChance;
+        float r = theEntity.getRandom().nextFloat();
+        if (r <= flyByChance / pE) {
+            doFlyByAttack(target);
+            theEntity.transitionAIGoal(Goal.STABILISE);
+            theEntity.setClawsForward(false);
+        } else if (r <= (flyByChance + tackleChance) / pE) {
+            theEntity.transitionAIGoal(Goal.TACKLE_TARGET);
+            theEntity.setClawsForward(false);
+        } else {
+            theEntity.transitionAIGoal(Goal.PICK_UP_TARGET);
+        }
+    }
+
+    private void doFlyByAttack(LivingEntity entity) {
+        this.theEntity.tryAttack(entity);
+    }
 }

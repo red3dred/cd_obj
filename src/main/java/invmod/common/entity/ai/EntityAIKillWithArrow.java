@@ -11,7 +11,6 @@ import net.minecraft.sound.SoundEvents;
 /**
  * AI for an entity to shoot arrows.
  * Is this even being used?
- * @param <T>
  */
 @Deprecated
 public class EntityAIKillWithArrow<T extends LivingEntity> extends EntityAIKillEntity<T>

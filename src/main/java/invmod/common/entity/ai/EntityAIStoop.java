@@ -1,53 +1,45 @@
 package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMLiving;
-import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIStoop extends EntityAIBase
-{
-  private EntityIMLiving theEntity;
-  private int updateTimer;
-  private boolean stopStoop;
+public class EntityAIStoop extends Goal {
+    private final EntityIMLiving theEntity;
+    private int updateTimer;
+    private boolean stopStoop = true;
 
-  public EntityAIStoop(EntityIMLiving entity)
-  {
-    this.theEntity = entity;
-    this.stopStoop = true;
-  }
-
-  public boolean shouldExecute()
-  {
-    if (--this.updateTimer <= 0)
-    {
-      this.updateTimer = 10;
-      if (this.theEntity.worldObj.getBlock(this.theEntity.getXCoord(), this.theEntity.getYCoord() + 2, this.theEntity.getZCoord()).getMaterial().blocksMovement()) {
-        return true;
-      }
+    public EntityAIStoop(EntityIMLiving entity) {
+        theEntity = entity;
     }
-    return false;
-  }
 
-  public boolean continueExecuting()
-  {
-    return !this.stopStoop;
-  }
+    @Override
+    public boolean canStart() {
+        if (--updateTimer > 0) {
+            return false;
+        }
 
-  public void startExecuting()
-  {
-    this.theEntity.setSneaking(true);
-    this.stopStoop = false;
-  }
-
-  public void updateTask()
-  {
-    if (--this.updateTimer <= 0)
-    {
-      this.updateTimer = 10;
-      if (!this.theEntity.worldObj.getBlock(this.theEntity.getXCoord(), this.theEntity.getYCoord() + 2, this.theEntity.getZCoord()).getMaterial().blocksMovement())
-      {
-        this.theEntity.setSneaking(false);
-        this.stopStoop = true;
-      }
+        updateTimer = 10;
+        return theEntity.getWorld()
+                .getBlockState(theEntity.getBlockPos().up(2))
+                .blocksMovement();
     }
-  }
+
+    @Override
+    public boolean shouldContinue() {
+        return !stopStoop;
+    }
+
+    @Override
+    public void start() {
+        theEntity.setSneaking(true);
+        stopStoop = false;
+    }
+
+    @Override
+    public void tick() {
+        if (canStart()) {
+            theEntity.setSneaking(false);
+            stopStoop = true;
+        }
+    }
 }

@@ -3,53 +3,49 @@ package invmod.common.entity.ai;
 import invmod.common.entity.EntityIMFlying;
 import invmod.common.entity.Goal;
 import invmod.common.entity.INavigationFlying;
-import net.minecraft.entity.ai.EntityAIBase;
 
-public class EntityAIStabiliseFlying extends EntityAIBase
-{
-  private static int INITIAL_STABILISE_TIME = 50;
-  private EntityIMFlying theEntity;
-  private int time;
-  private int stabiliseTime;
+public class EntityAIStabiliseFlying extends net.minecraft.entity.ai.goal.Goal {
+    private static final int INITIAL_STABILISE_TIME = 50;
 
-  public EntityAIStabiliseFlying(EntityIMFlying entity, int stabiliseTime)
-  {
-    this.theEntity = entity;
-    this.time = 0;
-    this.stabiliseTime = stabiliseTime;
-  }
+    private final EntityIMFlying theEntity;
+    private final int stabiliseTime;
 
-  public boolean shouldExecute()
-  {
-    return this.theEntity.getAIGoal() == Goal.STABILISE;
-  }
+    private int time;
 
-  public boolean continueExecuting()
-  {
-    if (this.time >= this.stabiliseTime)
-    {
-      this.theEntity.transitionAIGoal(Goal.NONE);
-      this.theEntity.getNavigatorNew().setPitchBias(0.0F, 0.0F);
-      return false;
+    public EntityAIStabiliseFlying(EntityIMFlying entity, int stabiliseTime) {
+        theEntity = entity;
+        this.stabiliseTime = stabiliseTime;
     }
-    return true;
-  }
 
-  public void startExecuting()
-  {
-    this.time = 0;
-    INavigationFlying nav = this.theEntity.getNavigatorNew();
-    nav.clearPath();
-    nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
-    nav.setPitchBias(20.0F, 0.5F);
-  }
-
-  public void updateTask()
-  {
-    this.time += 1;
-    if (this.time == INITIAL_STABILISE_TIME)
-    {
-      this.theEntity.getNavigatorNew().setPitchBias(0.0F, 0.0F);
+    @Override
+    public boolean canStart() {
+        return theEntity.getAIGoal() == Goal.STABILISE;
     }
-  }
+
+    @Override
+    public boolean shouldContinue() {
+        if (time < stabiliseTime) {
+            return true;
+        }
+
+        theEntity.transitionAIGoal(Goal.NONE);
+        theEntity.getNavigatorNew().setPitchBias(0, 0);
+        return false;
+    }
+
+    @Override
+    public void start() {
+        time = 0;
+        INavigationFlying nav = theEntity.getNavigatorNew();
+        nav.clearPath();
+        nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
+        nav.setPitchBias(20.0F, 0.5F);
+    }
+
+    @Override
+    public void tick() {
+        if (++time == INITIAL_STABILISE_TIME) {
+            theEntity.getNavigatorNew().setPitchBias(0, 0);
+        }
+    }
 }
