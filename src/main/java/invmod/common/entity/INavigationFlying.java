@@ -1,15 +1,18 @@
 package invmod.common.entity;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 
 public interface INavigationFlying extends INavigation {
     void setMovementType(MoveType paramMoveType);
 
     void setLandingPath();
 
-    void setCirclingPath(Entity paramEntity, float paramFloat1, float paramFloat2);
+    default void setCirclingPath(Entity target, float preferredHeight, float preferredRadius) {
+        setCirclingPath(target.getPos(), preferredHeight, preferredRadius);
+    }
 
-    void setCirclingPath(double paramDouble1, double paramDouble2, double paramDouble3, float paramFloat1, float paramFloat2);
+    void setCirclingPath(Vec3d position, float paramFloat1, float paramFloat2);
 
     float getDistanceToCirclingRadius();
 

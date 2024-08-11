@@ -1,10 +1,13 @@
 package invmod.common.entity;
 
+import java.util.Comparator;
+
 import invmod.common.util.IPosition;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 public class PathNode implements IPosition {
+    public static final Comparator<PathNode> POSITION_COMPARATOR = Comparator.comparing(a -> a.pos);
     public final BlockPos pos;
     public final PathAction action;
 

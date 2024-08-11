@@ -5,6 +5,8 @@ import invmod.common.nexus.INexusAccess;
 import invmod.common.util.MathUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ai.control.BodyControl;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public abstract class EntityIMFlying extends EntityIMLiving {
@@ -58,10 +60,14 @@ public abstract class EntityIMFlying extends EntityIMLiving {
         return new PathCreator(800, 200);
     }
 
-	   @Override
+    @Override
     protected BodyControl createBodyControl() {
-	        return new IMBodyHelper(this);
-	    }
+        return new BodyControl(this) {
+            @Override
+            public void tick() {
+            }
+        };
+    }
 
 	@Override
 	public void onUpdate() {
@@ -73,7 +79,9 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 				float oldTargetY = MathUtil.unpackFloat(this.dataWatcher.getWatchableObjectInt(30));
 				float oldTargetZ = MathUtil.unpackFloat(this.dataWatcher.getWatchableObjectInt(31));
 
-				if ((!MathUtil.floatEquals(oldTargetX, (float) target.xCoord, 0.1F)) || (!MathUtil.floatEquals(oldTargetY, (float) target.yCoord, 0.1F)) || (!MathUtil.floatEquals(oldTargetZ, (float) target.zCoord, 0.1F))) {
+				if (!MathHelper.approximatelyEquals(oldTargetX, (float) target.xCoord)
+				        || !MathHelper.approximatelyEquals(oldTargetY, (float) target.yCoord)
+				        || !MathHelper.approximatelyEquals(oldTargetZ, (float) target.zCoord)) {
 					this.dataWatcher.updateObject(29, Integer.valueOf(MathUtil.packFloat((float) target.xCoord)));
 					this.dataWatcher.updateObject(30, Integer.valueOf(MathUtil.packFloat((float) target.yCoord)));
 					this.dataWatcher.updateObject(31, Integer.valueOf(MathUtil.packFloat((float) target.zCoord)));

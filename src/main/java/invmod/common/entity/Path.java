@@ -1,138 +1,109 @@
 package invmod.common.entity;
 
+import java.util.Arrays;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.include.com.google.common.base.Objects;
+
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
-public class Path
-{
-  protected final PathNode[] points;
-  private PathNode intendedTarget;
-  private int pathLength;
-  private int pathIndex;
-  private float totalCost;
+public class Path {
+    private final PathNode[] points;
 
-  public Path(PathNode[] apathpoint)
-  {
-    this.points = apathpoint;
-    this.pathLength = apathpoint.length;
-    if (apathpoint.length > 0)
-    {
-      this.intendedTarget = apathpoint[(apathpoint.length - 1)];
-    }
-  }
+    @Nullable
+    private PathNode intendedTarget;
+    private int length;
+    private int index;
 
-  public Path(PathNode[] apathpoint, PathNode intendedTarget)
-  {
-    this.points = apathpoint;
-    this.pathLength = apathpoint.length;
-    this.intendedTarget = intendedTarget;
-  }
-
-  public float getTotalPathCost()
-  {
-    return this.points[(this.pathLength - 1)].totalPathDistance;
-  }
-
-  public void incrementPathIndex()
-  {
-    this.pathIndex += 1;
-  }
-
-  public boolean isFinished()
-  {
-    return this.pathIndex >= this.points.length;
-  }
-
-  public PathNode getFinalPathPoint()
-  {
-    if (this.pathLength > 0)
-    {
-      return this.points[(this.pathLength - 1)];
+    public Path(PathNode[] nodes) {
+        this(nodes, nodes.length > 0 ? nodes[nodes.length - 1] : null);
     }
 
-    return null;
-  }
-
-  public PathNode getPathPointFromIndex(int par1)
-  {
-    return this.points[par1];
-  }
-
-  public int getCurrentPathLength()
-  {
-    return this.pathLength;
-  }
-
-  public void setCurrentPathLength(int par1)
-  {
-    this.pathLength = par1;
-  }
-
-  public int getCurrentPathIndex()
-  {
-    return this.pathIndex;
-  }
-
-  public void setCurrentPathIndex(int par1)
-  {
-    this.pathIndex = par1;
-  }
-
-  public PathNode getIntendedTarget()
-  {
-    return this.intendedTarget;
-  }
-
-  public Vec3 getPositionAtIndex(Entity entity, int index)
-  {
-    double d = this.points[index].xCoord + (int)(entity.width + 1.0F) * 0.5D;
-    double d1 = this.points[index].yCoord;
-    double d2 = this.points[index].zCoord + (int)(entity.width + 1.0F) * 0.5D;
-    return Vec3.createVectorHelper(d, d1, d2);
-  }
-
-  public Vec3 getCurrentNodeVec3d(Entity entity)
-  {
-    return getPositionAtIndex(entity, this.pathIndex);
-  }
-
-  public Vec3 destination()
-  {
-    return Vec3.createVectorHelper(this.points[(this.points.length - 1)].xCoord, this.points[(this.points.length - 1)].yCoord, this.points[(this.points.length - 1)].zCoord);
-  }
-
-  public boolean equalsPath(Path par1PathEntity)
-  {
-    if (par1PathEntity == null)
-    {
-      return false;
+    public Path(PathNode[] nodes, @Nullable PathNode intendedTarget) {
+        points = nodes;
+        length = nodes.length;
+        this.intendedTarget = intendedTarget;
     }
 
-    if (par1PathEntity.points.length != this.points.length)
-    {
-      return false;
+    public float getTotalPathCost() {
+        @Nullable
+        PathNode finalNode = getFinalPathPoint();
+        return finalNode == null ? 0 : finalNode.totalPathDistance;
     }
 
-    for (int i = 0; i < this.points.length; i++)
-    {
-      if ((this.points[i].xCoord != par1PathEntity.points[i].xCoord) || (this.points[i].yCoord != par1PathEntity.points[i].yCoord) || (this.points[i].zCoord != par1PathEntity.points[i].zCoord))
-      {
-        return false;
-      }
+    public void incrementPathIndex() {
+        index++;
     }
 
-    return true;
-  }
-
-  public boolean isDestinationSame(Vec3 par1Vec3D)
-  {
-    PathNode pathpoint = getFinalPathPoint();
-
-    if (pathpoint == null)
-    {
-      return false;
+    public boolean isFinished() {
+        return index >= points.length;
     }
 
-    return (pathpoint.xCoord == (int)par1Vec3D.xCoord) && (pathpoint.zCoord == (int)par1Vec3D.zCoord);
-  }
+    @Nullable
+    public PathNode getFinalPathPoint() {
+        return length > 0 ? points[length - 1] : null;
+    }
+
+    public PathNode getPathPointFromIndex(int par1) {
+        return points[par1];
+    }
+
+    public int getCurrentPathLength() {
+        return length;
+    }
+
+    public void setCurrentPathLength(int length) {
+        this.length = Math.min(points.length, length);
+    }
+
+    public int getCurrentPathIndex() {
+        return index;
+    }
+
+    public void setCurrentPathIndex(int index) {
+        this.index = index;
+    }
+
+    @Nullable
+    public PathNode getIntendedTarget() {
+        return intendedTarget;
+    }
+
+    public Vec3d getPositionAtIndex(Entity entity, int index) {
+        double width = (int) (entity.getWidth() + 1) * 0.5D;
+        return Vec3d.of(points[index].pos).add(width, 0, width);
+    }
+
+    public Vec3d getCurrentNodeVec3d(Entity entity) {
+        return getPositionAtIndex(entity, index);
+    }
+
+    @Nullable
+    public Vec3d destination() {
+        @Nullable
+        PathNode finalNode = getFinalPathPoint();
+        return finalNode == null ? null : finalNode.pos.toBottomCenterPos();
+    }
+
+    public boolean equalsPath(@Nullable Path path) {
+        return path != null && Arrays.equals(points, path.points, PathNode.POSITION_COMPARATOR);
+    }
+
+    public boolean isDestinationSame(@Nullable Vec3d pos) {
+        return compareBlockPositions(destination(), pos);
+    }
+
+    static boolean compareBlockPositions(@Nullable Vec3d a, @Nullable Vec3d b) {
+        return Objects.equal(a, b) || (
+                a != null && b != null
+                && compareFloored(a.x, b.x)
+                && compareFloored(a.y, b.y)
+                && compareFloored(a.z, b.z)
+        );
+    }
+
+    static boolean compareFloored(double a, double b) {
+        return MathHelper.floor(a) == MathHelper.floor(b);
+    }
 }
