@@ -34,7 +34,7 @@ public interface INavigation extends INotifyTask {
 
     void onUpdateNavigation();
 
-    int getLastActionResult();
+    Status getLastActionResult();
 
     boolean noPath();
 

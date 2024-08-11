@@ -37,7 +37,7 @@ public class NavigatorEngy extends NavigatorIM {
     protected boolean handlePathAction() {
         if (!this.actionCleared) {
             resetStatus();
-            if (getLastActionResult() != 0) {
+            if (getLastActionResult() != Status.SUCCESS) {
                 return false;
             }
             return true;

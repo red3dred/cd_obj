@@ -49,7 +49,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	protected double lastDistance;
 	protected int ticksStuck;
 	private boolean maintainPosOnWait;
-	private int lastActionResult;
+	private Status lastActionResult;
 	private boolean haltMovement;
 	private boolean autoPathToEntity;
 
@@ -286,13 +286,13 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	}
 
 	@Override
-    public void notifyTask(int result) {
+    public void notifyTask(Status result) {
 		waitingForNotify = false;
 		lastActionResult = result;
 	}
 
 	@Override
-    public int getLastActionResult() {
+    public Status getLastActionResult() {
 		return lastActionResult;
 	}
 

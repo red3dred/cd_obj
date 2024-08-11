@@ -1,6 +1,13 @@
 package invmod.common;
 
-public abstract interface INotifyTask
-{
-  public abstract void notifyTask(int paramInt);
+public interface INotifyTask {
+    INotifyTask NONE = status -> {};
+
+    void notifyTask(Status status);
+
+    enum Status {
+        SUCCESS,
+        OUT_OF_RANGE,
+        UNMODIFIABLE
+    }
 }

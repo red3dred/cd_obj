@@ -13,8 +13,8 @@ import invmod.common.entity.Scaffold;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.CoordsInt;
 import invmod.common.util.IPosition;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +33,13 @@ import net.minecraft.world.chunk.ChunkCache;
 public class AttackerAI {
     private final INexusAccess nexus;
     private final IPathSource pathSource = new PathCreator();
-    private final Int2IntMap entityDensityData = new Int2IntOpenHashMap();
+
+    private final Long2ObjectMap<Integer> entityDensityData = new Long2ObjectOpenHashMap<>();
+
     private List<Scaffold> scaffolds = new ArrayList<>();
     private int scaffoldLimit;
     private int minDistanceBetweenScaffolds;
+
     private int nextScaffoldCalcTimer;
     private int updateScaffoldTimer;
     private int nextEntityDensityUpdate;
@@ -48,7 +51,7 @@ public class AttackerAI {
     }
 
     public void update() {
-        nextScaffoldCalcTimer -= 1;
+        nextScaffoldCalcTimer--;
         if (--updateScaffoldTimer <= 0) {
             updateScaffoldTimer = 40;
             updateScaffolds();
@@ -77,10 +80,10 @@ public class AttackerAI {
     }
 
     public boolean askGenerateScaffolds(EntityIMLiving entity) {
-        if ((this.nextScaffoldCalcTimer > 0) || (this.scaffolds.size() > this.scaffoldLimit)) {
+        if (nextScaffoldCalcTimer > 0 || scaffolds.size() > scaffoldLimit) {
             return false;
         }
-        this.nextScaffoldCalcTimer = 200;
+        nextScaffoldCalcTimer = 200;
         List<Scaffold> newScaffolds = findMinScaffolds(entity, entity.getBlockPos());
         if (!newScaffolds.isEmpty()) {
             addNewScaffolds(newScaffolds);
@@ -142,7 +145,7 @@ public class AttackerAI {
         for (Scaffold scaffold : scaffolds) {
             BlockPos pos = scaffold.toBlockPos();
             for (int i = 0; i < scaffold.getTargetHeight(); i++) {
-                terrainMap.setData(pos, terrainMap.getData(pos) | 0x4000);
+                terrainMap.setData(pos, terrainMap.getData(pos) | TerrainDataLayer.EXT_DATA_SCAFFOLD_METAPOSITION);
             }
         }
     }
@@ -287,7 +290,7 @@ public class AttackerAI {
     private void updateDensityData() {
         entityDensityData.clear();
         for (EntityIMLiving mob : nexus.getMobList()) {
-            entityDensityData.compute(PathNode.makeHash(mob, PathAction.NONE), (key, old) -> old == null ? 1 : old + 1);
+            entityDensityData.compute(mob.getBlockPos().asLong(), (key, old) -> old == null ? 1 : old + 1);
         }
     }
 }

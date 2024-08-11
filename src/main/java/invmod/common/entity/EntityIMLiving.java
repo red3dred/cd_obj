@@ -870,17 +870,14 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     @Override
     @SuppressWarnings("deprecation")
     public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        float multiplier = 1.0F;
-        if ((terrainMap instanceof IBlockAccessExtended i)) {
-            multiplier += (i.getData(node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
-        }
+        float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
 
         if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
-            multiplier += 2.0F;
+            multiplier += 2;
         }
 
         if (blockHasLadder(terrainMap, node.pos)) {
-            multiplier += 5.0F;
+            multiplier += 5;
         }
 
         if (node.action == PathAction.SWIM) {

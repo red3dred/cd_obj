@@ -4,13 +4,13 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 
-import org.jetbrains.annotations.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import invmod.common.util.IPosition;
 
 public record ModifyBlockEntry(
         BlockPos pos,
-        @Nullable BlockState oldBlock,
+        AtomicReference<BlockState> oldBlock,
         BlockState newBlock,
         int cost
     ) implements IPosition {
@@ -20,7 +20,7 @@ public record ModifyBlockEntry(
     }
 
     public ModifyBlockEntry(BlockPos pos, BlockState state, int cost) {
-        this(pos, null, state, cost);
+        this(pos, new AtomicReference<>(null), state, cost);
     }
 
     @Override
@@ -43,10 +43,10 @@ public record ModifyBlockEntry(
     }
 
     public BlockState getOldBlock() {
-        return oldBlock;
+        return oldBlock.get();
     }
 
-    public ModifyBlockEntry withOldState(BlockState oldState) {
-        return new ModifyBlockEntry(pos, oldState, newBlock, cost);
+    public void setOldBlock(BlockState state) {
+        oldBlock.set(state);
     }
 }

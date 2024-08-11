@@ -1,9 +1,7 @@
 package invmod.common;
 
-import invmod.common.entity.PathAction;
-import invmod.common.entity.PathNode;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
@@ -11,29 +9,26 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
 public class TerrainDataLayer implements IBlockAccessExtended {
-    public static final int EXT_DATA_SCAFFOLD_METAPOSITION = 16384;
-
-    private final Int2IntMap dataLayer = new Int2IntOpenHashMap();
+    private final Long2ObjectMap<Integer> dataLayer = new Long2ObjectOpenHashMap<>();
     private final BlockView world;
 
     public TerrainDataLayer(BlockView world) {
         this.world = world;
     }
 
-    @Deprecated
-    public TerrainDataLayer(BlockView world, Int2IntMap dataLayer) {
+    public TerrainDataLayer(BlockView world, Long2ObjectMap<Integer> dataLayer) {
         this.world = world;
         this.dataLayer.putAll(dataLayer);
     }
 
     @Override
-    public void setData(BlockPos pos, Integer data) {
-        dataLayer.put(PathNode.makeHash(pos, PathAction.NONE), data.intValue());
+    public void setData(BlockPos pos, int data) {
+        dataLayer.put(pos.asLong(), Integer.valueOf(data));
     }
 
     @Override
     public int getData(BlockPos pos) {
-        return dataLayer.get(PathNode.makeHash(pos, PathAction.NONE));
+        return dataLayer.getOrDefault(pos.asLong(), Integer.valueOf(0));
     }
 
     @Override

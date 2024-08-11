@@ -46,8 +46,8 @@ public class TerrainDigger implements ITerrainDig, INotifyTask {
     }
 
     @Override
-    public void notifyTask(int result) {
-        if (result == 0) {
+    public void notifyTask(Status result) {
+        if (result == Status.SUCCESS) {
             ModifyBlockEntry entry = modifier.getLastBlockModified();
             digger.onBlockRemoved(entry.toBlockPos(), entry.getOldBlock());
         }

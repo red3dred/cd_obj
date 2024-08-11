@@ -163,6 +163,6 @@ public class TerrainBuilder implements ITerrainBuild {
             }
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList.toArray(new ModifyBlockEntry[modList.size()]), asker, null);
+        return !modList.isEmpty() && modifier.requestTask(modList.toArray(new ModifyBlockEntry[modList.size()]), asker, INotifyTask.NONE);
     }
 }
