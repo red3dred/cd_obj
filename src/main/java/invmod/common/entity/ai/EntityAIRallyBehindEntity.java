@@ -1,39 +1,35 @@
 package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMLiving;
-import net.minecraft.entity.EntityLivingBase;
+import invmod.common.entity.ILeader;
+import net.minecraft.entity.LivingEntity;
 
-public class EntityAIRallyBehindEntity<T extends EntityLivingBase, ILeader> extends EntityAIFollowEntity<T> 
-{
-	private static final float DEFAULT_FOLLOW_DISTANCE = 5.0F;
+public class EntityAIRallyBehindEntity<T extends LivingEntity> extends EntityAIFollowEntity<T> {
+    private static final float DEFAULT_FOLLOW_DISTANCE = 5;
 
-	public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader) {
-		this(entity, leader, 5.0F);
-	}
+    public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader) {
+        this(entity, leader, DEFAULT_FOLLOW_DISTANCE);
+    }
 
-	public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader, float followDistance) {
-		super(entity, leader, followDistance);
-	}
-	@Override
-	public boolean shouldExecute() {
-		return (getEntity().readyToRally()) && (super.shouldExecute());
-	}
-	@Override
-	public boolean continueExecuting() {
-		return (getEntity().readyToRally()) && (super.continueExecuting());
-	}
-	@Override
-	public void updateTask() {
-		super.updateTask();
-		// Doenerstyle: Commented unused if block
-		/*if (getEntity().readyToRally()) {
-			EntityLivingBase leader = (EntityLivingBase) getTarget();
-			//if (((ILeader) leader).isMartyr())
-				//rally(leader);
-		}*/
-	}
+    public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader, float followDistance) {
+        super(entity, leader, followDistance);
+    }
 
-	protected void rally(T leader) {
-		getEntity().rally(leader);
-	}
+    @Override
+    public boolean canStart() {
+        return mob.readyToRally() && (super.canStart());
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        return mob.readyToRally() && super.shouldContinue();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (mob.readyToRally() && getTarget() instanceof ILeader leader && leader.isMartyr()) {
+            mob.rally(leader);
+        }
+    }
 }

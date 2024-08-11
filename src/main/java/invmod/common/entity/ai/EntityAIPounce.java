@@ -1,97 +1,76 @@
 package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMSpider;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.MathHelper;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.util.math.Vec3d;
 
-public class EntityAIPounce extends EntityAIBase
-{
-  private EntityIMSpider theEntity;
-  private boolean isPouncing;
-  private int pounceTimer;
-  private int cooldown;
-  private float minPower;
-  private float maxPower;
+public class EntityAIPounce extends Goal {
+    private final EntityIMSpider theEntity;
+    private final float minPower;
+    private final float maxPower;
 
-  public EntityAIPounce(EntityIMSpider entity, float minPower, float maxPower, int cooldown)
-  {
-    this.theEntity = entity;
-    this.isPouncing = false;
-    this.minPower = minPower;
-    this.maxPower = maxPower;
-    this.cooldown = cooldown;
-  }
+    private boolean isPouncing;
+    private int pounceTimer;
+    private int cooldown;
 
-  public boolean shouldExecute()
-  {
-    EntityLivingBase target = this.theEntity.getAttackTarget();
-    if ((--this.pounceTimer <= 0) && (target != null) && (this.theEntity.canEntityBeSeen(target)) && (this.theEntity.onGround))
-    {
-      return true;
+    public EntityAIPounce(EntityIMSpider entity, float minPower, float maxPower, int cooldown) {
+        this.theEntity = entity;
+        this.minPower = minPower;
+        this.maxPower = maxPower;
+        this.cooldown = cooldown;
     }
 
-    return false;
-  }
+    @Override
+    public boolean canStart() {
+        LivingEntity target = theEntity.getTarget();
+        return --pounceTimer <= 0 && target != null && theEntity.getVisibilityCache().canSee(target) && theEntity.isOnGround();
+    }
 
-  public boolean continueExecuting()
-  {
-    return this.isPouncing;
-  }
+    public boolean continueExecuting() {
+        return this.isPouncing;
+    }
 
-  public void startExecuting()
-  {
-    EntityLivingBase target = this.theEntity.getAttackTarget();
-    if (pounce(target.posX, target.posY, target.posZ))
-    {
-      this.theEntity.setAirborneTime(0);
-      this.isPouncing = true;
-      this.theEntity.getNavigatorNew().haltForTick();
+    public void startExecuting() {
+        if (pounce(theEntity.getTarget().getPos())) {
+            theEntity.setAirborneTime(0);
+            isPouncing = true;
+            theEntity.getNavigatorNew().haltForTick();
+        } else {
+            isPouncing = false;
+        }
     }
-    else
-    {
-      this.isPouncing = false;
-    }
-  }
 
-  public void updateTask()
-  {
-    this.theEntity.getNavigatorNew().haltForTick();
-    int airborneTime = this.theEntity.getAirborneTime();
-    if ((airborneTime > 20) && (this.theEntity.onGround))
-    {
-      this.isPouncing = false;
-      this.pounceTimer = this.cooldown;
-      this.theEntity.setAirborneTime(0);
-      this.theEntity.getNavigatorNew().clearPath();
+    public void updateTask() {
+        theEntity.getNavigatorNew().haltForTick();
+        int airborneTime = theEntity.getAirborneTime();
+        if (airborneTime > 20 && theEntity.isOnGround()) {
+            isPouncing = false;
+            pounceTimer = cooldown;
+            theEntity.setAirborneTime(0);
+            theEntity.getNavigatorNew().clearPath();
+        } else {
+            theEntity.setAirborneTime(airborneTime + 1);
+        }
     }
-    else
-    {
-      this.theEntity.setAirborneTime(airborneTime + 1);
-    }
-  }
 
-  protected boolean pounce(double x, double y, double z)
-  {
-    double dX = x - this.theEntity.posX;
-    double dY = y - this.theEntity.posY;
-    double dZ = z - this.theEntity.posZ;
-    double dXZ = MathHelper.sqrt_double(dX * dX + dZ * dZ);
-    double a = Math.atan(dY / dXZ);
-    if ((a > -0.7853981633974483D) && (a < 0.7853981633974483D))
-    {
-      double rratio = (1.0D - Math.tan(a)) * (1.0D / Math.cos(a));
-      double r = dXZ / rratio;
-      double v = 1.0D / Math.sqrt(1.0F / this.theEntity.getGravity() / r);
-      if ((v > this.minPower) && (v < this.maxPower))
-      {
-        double distance = MathHelper.sqrt_double(2.0D * (dXZ * dXZ));
-        this.theEntity.motionX = (v * dX / distance);
-        this.theEntity.motionY = (v * dXZ / distance);
-        this.theEntity.motionZ = (v * dZ / distance);
-        return true;
-      }
+    protected boolean pounce(Vec3d pos) {
+        Vec3d delta = pos.subtract(theEntity.getPos());
+        double dXZ = delta.length();
+        double a = Math.atan(delta.y / dXZ);
+        if (Math.abs(a) > 0.7853981633974483D) {
+            double r = dXZ / ((1 - Math.tan(a)) * (1D / Math.cos(a)));
+            double v = 1D / Math.sqrt(1F / theEntity.getGravity() / r);
+            if (v > minPower && v < maxPower) {
+                double distance = Math.sqrt(2 * (dXZ * dXZ));
+                theEntity.addVelocity(
+                        (v * delta.x / distance),
+                        (v * dXZ / distance),
+                        (v * delta.z / distance)
+                );
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 }

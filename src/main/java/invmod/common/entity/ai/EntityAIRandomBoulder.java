@@ -2,45 +2,41 @@ package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMThrower;
 import invmod.common.nexus.INexusAccess;
-import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIRandomBoulder extends EntityAIBase
-{
-  private final EntityIMThrower theEntity;
-  private int randomAmmo;
-  private int timer;
+public class EntityAIRandomBoulder extends Goal {
+    private final EntityIMThrower theEntity;
+    private int randomAmmo;
+    private int timer = 180;
 
-  public EntityAIRandomBoulder(EntityIMThrower entity, int ammo)
-  {
-    this.theEntity = entity;
-    this.randomAmmo = ammo;
-    this.timer = 180;
-  }
-
-  public boolean shouldExecute()
-  {
-    if ((this.theEntity.getNexus() != null) && (this.randomAmmo > 0) && (this.theEntity.canThrow()))
-    {
-      if (--this.timer <= 0)
-        return true;
+    public EntityAIRandomBoulder(EntityIMThrower entity, int ammo) {
+        theEntity = entity;
+        randomAmmo = ammo;
     }
-    return false;
-  }
 
-  public boolean isInterruptible()
-  {
-    return false;
-  }
-
-  public void startExecuting()
-  {
-    this.randomAmmo -= 1;
-    this.timer = 240;
-    INexusAccess nexus = this.theEntity.getNexus();
-    int d = (int)(this.theEntity.findDistanceToNexus() * 0.37D);
-    if(d==0){
-    	d=1;
+    @Override
+    public boolean canStart() {
+        return theEntity.getNexus() != null && randomAmmo > 0 && theEntity.canThrow() && --timer <= 0;
     }
-    this.theEntity.throwBoulder(nexus.getXCoord() - d + this.theEntity.getRNG().nextInt(2 * d), nexus.getYCoord() - 5 + this.theEntity.getRNG().nextInt(10), nexus.getZCoord() - d + this.theEntity.getRNG().nextInt(2 * d));
-  }
+
+    @Override
+    public boolean canStop() {
+        return false;
+    }
+
+    @Override
+    public void start() {
+        randomAmmo--;
+        timer = 240;
+        INexusAccess nexus = theEntity.getNexus();
+        int d = (int) (theEntity.findDistanceToNexus() * 0.37D);
+        if (d == 0) {
+            d = 1;
+        }
+        theEntity.throwBoulder(
+                nexus.getXCoord() - d + theEntity.getRandom().nextInt(2 * d),
+                nexus.getYCoord() - 5 + theEntity.getRandom().nextInt(10),
+                nexus.getZCoord() - d + theEntity.getRandom().nextInt(2 * d)
+        );
+    }
 }

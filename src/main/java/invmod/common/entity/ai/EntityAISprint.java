@@ -2,157 +2,128 @@ package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMLiving;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.util.DamageSource;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
-public class EntityAISprint extends EntityAIBase
-{
-  private EntityIMLiving theEntity;
-  private int updateTimer;
-  private int timer;
-  private boolean isExecuting;
-  private boolean isSprinting;
-  private boolean isInWindup;
-  private int missingTarget;
-  private double lastX;
-  private double lastY;
-  private double lastZ;
+public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
+    protected final EntityIMLiving theEntity;
 
-  public EntityAISprint(EntityIMLiving entity)
-  {
-    this.theEntity = entity;
-    this.updateTimer = 0;
-    this.timer = 0;
-    this.isExecuting = true;
-    this.isSprinting = false;
-    this.isInWindup = false;
-    this.missingTarget = 0;
-  }
+    private int updateTimer;
+    private int timer;
+    private int missingTarget;
 
-  public boolean shouldExecute()
-  {
-    if (--this.updateTimer <= 0)
-    {
-      this.updateTimer = 20;
-      if (((this.theEntity.getAttackTarget() != null) && (this.theEntity.canEntityBeSeen(this.theEntity.getAttackTarget()))) || (this.isSprinting))
-      {
-        return true;
-      }
+    private boolean isExecuting = true;
+    private boolean isSprinting;
+    private boolean isInWindup;
 
-      this.isExecuting = false;
-      return false;
+    protected Vec3d lastPos = Vec3d.ZERO;
+
+    public EntityAISprint(EntityIMLiving entity) {
+        theEntity = entity;
     }
 
-    return this.isExecuting;
-  }
+    @Override
+    public boolean canStart() {
+        if (--updateTimer <= 0) {
+            updateTimer = 20;
+            if ((theEntity.getTarget() != null && theEntity.getVisibilityCache().canSee(theEntity.getTarget())) || isSprinting) {
+                return true;
+            }
 
-  public void startExecuting()
-  {
-    this.isExecuting = true;
-    this.timer = 60;
-  }
+            isExecuting = false;
+            return false;
+        }
 
-  public void updateTask()
-  {
-    if (this.isSprinting)
-    {
-      Entity target = this.theEntity.getAttackTarget();
-      if ((!this.theEntity.isSprinting()) || (target == null) || ((this.missingTarget > 0) && (++this.missingTarget > 20)))
-      {
+        return isExecuting;
+    }
+
+    @Override
+    public void start() {
+        isExecuting = true;
+        timer = 60;
+    }
+
+    @Override
+    public void tick() {
+        if (this.isSprinting) {
+            Entity target = theEntity.getTarget();
+            if (!theEntity.isSprinting() || target == null || (missingTarget > 0 && ++missingTarget > 20)) {
+                endSprint();
+                return;
+            }
+
+            double dX = target.getX() - theEntity.getX();
+            double dZ = target.getZ() - theEntity.getZ();
+            double dAngle = MathHelper.wrapDegrees(Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90 - theEntity.getYaw());
+            if (dAngle > 60) {
+                theEntity.setTurnRate(2);
+                missingTarget = 1;
+            }
+
+            if (theEntity.squaredDistanceTo(lastPos) < 0.0009D) {
+                crash();
+                return;
+            }
+
+            lastPos = theEntity.getPos();
+        }
+
+        if (--timer <= 0) {
+            if (!isInWindup) {
+                if (!isSprinting) {
+                    startSprint();
+                } else {
+                    endSprint();
+                }
+            } else {
+                sprint();
+            }
+        }
+    }
+
+    protected void startSprint() {
+        Entity target = theEntity.getTarget();
+        if ((target == null) || (target.getY() - theEntity.getY() >= 1)) {
+            return;
+        }
+        double dX = target.getX() - theEntity.getX();
+        double dZ = target.getZ() - theEntity.getZ();
+        double dAngle = MathHelper.wrapDegrees(Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90 - theEntity.getYaw());
+        if (dAngle < 10) {
+            isInWindup = true;
+            timer = 20;
+            theEntity.setMoveSpeedStat(0);
+        } else {
+            timer = 10;
+        }
+    }
+
+    protected void sprint() {
+        isInWindup = false;
+        isSprinting = true;
+        missingTarget = 0;
+        timer = 35;
+
+        theEntity.resetMoveSpeed();
+        theEntity.setMovementSpeed(theEntity.getMovementSpeed() * 2.3F);
+        theEntity.setSprinting(true);
+        theEntity.setTurnRate(4.9F);
+        theEntity.setAttacking(false);
+    }
+
+    protected void endSprint() {
+        isSprinting = false;
+        timer = 180;
+        theEntity.resetMoveSpeed();
+        theEntity.setTurnRate(30);
+        theEntity.setSprinting(false);
+    }
+
+    protected void crash() {
+        theEntity.stunEntity(40);
+        theEntity.damage(theEntity.getDamageSources().generic(), 5);
+        theEntity.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1F, 0.6F);
         endSprint();
-        return;
-      }
-
-      double dX = target.posX - this.theEntity.posX;
-      double dZ = target.posZ - this.theEntity.posZ;
-      double dAngle = (Math.atan2(dZ, dX) * 180.0D / 3.141592653589793D - 90.0D - this.theEntity.rotationYaw) % 360.0D;
-      if (dAngle > 60.0D)
-      {
-        this.theEntity.setTurnRate(2.0F);
-        this.missingTarget = 1;
-      }
-
-      if (this.theEntity.getDistanceSq(this.lastX, this.lastY, this.lastZ) < 0.0009D)
-      {
-        crash();
-        return;
-      }
-
-      this.lastX = this.theEntity.posX;
-      this.lastY = this.theEntity.posY;
-      this.lastZ = this.theEntity.posZ;
     }
-
-    if (--this.timer <= 0)
-    {
-      if (!this.isInWindup)
-      {
-        if (!this.isSprinting)
-        {
-          startSprint();
-        }
-        else
-        {
-          endSprint();
-        }
-      }
-      else
-      {
-        sprint();
-      }
-    }
-  }
-
-  protected void startSprint()
-  {
-    Entity target = this.theEntity.getAttackTarget();
-    if ((target == null) || (target.boundingBox.minY - this.theEntity.posY >= 1.0D)) {
-      return;
-    }
-    double dX = target.posX - this.theEntity.posX;
-    double dZ = target.posZ - this.theEntity.posZ;
-    double dAngle = (Math.atan2(dZ, dX) * 180.0D / 3.141592653589793D - 90.0D - this.theEntity.rotationYaw) % 360.0D;
-    if (dAngle < 10.0D)
-    {
-      this.isInWindup = true;
-      this.timer = 20;
-
-      this.theEntity.setMoveSpeedStat(0.0F);
-    }
-    else
-    {
-      this.timer = 10;
-    }
-  }
-
-  protected void sprint()
-  {
-    this.isInWindup = false;
-    this.isSprinting = true;
-    this.missingTarget = 0;
-    this.timer = 35;
-
-    this.theEntity.resetMoveSpeed();
-    this.theEntity.setMoveSpeedStat(this.theEntity.getMoveSpeedStat() * 2.3F);
-    this.theEntity.setSprinting(true);
-    this.theEntity.setTurnRate(4.9F);
-    this.theEntity.attackTime = 0;
-  }
-
-  protected void endSprint()
-  {
-    this.isSprinting = false;
-    this.timer = 180;
-    this.theEntity.resetMoveSpeed();
-    this.theEntity.setTurnRate(30.0F);
-    this.theEntity.setSprinting(false);
-  }
-
-  protected void crash()
-  {
-    this.theEntity.stunEntity(40);
-    this.theEntity.attackEntityFrom(DamageSource.generic, 5.0F);
-    this.theEntity.worldObj.playSoundAtEntity(this.theEntity, "random.explode", 1.0F, 0.6F);
-    endSprint();
-  }
 }
