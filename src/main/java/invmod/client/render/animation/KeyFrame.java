@@ -1,6 +1,5 @@
 package invmod.client.render.animation;
 
-import invmod.common.util.MathUtil;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
@@ -92,7 +91,7 @@ public record KeyFrame(
 			buffer.add(currFrame);
 		}
 		KeyFrame fencepostStart;
-		if (!MathUtil.floatEquals(currFrame.time(), k1, 0.001F)) {
+		if (!MathHelper.approximatelyEquals(currFrame.time(), k1)) {
 			iter.previous();
 			KeyFrame prev = iter.previous();
 

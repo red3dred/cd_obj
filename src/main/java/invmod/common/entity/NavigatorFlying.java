@@ -1,9 +1,10 @@
 package invmod.common.entity;
 
 
+import com.mojang.datafixers.util.Pair;
+
 import invmod.common.util.Distance;
 import invmod.common.util.MathUtil;
-import invmod.common.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MovingObjectPosition;

@@ -5,7 +5,6 @@ import invmod.client.render.animation.BonesBirdLegs;
 import invmod.client.render.animation.BonesWings;
 import invmod.client.render.animation.ModelAnimator;
 import invmod.common.entity.EntityIMBird;
-import invmod.common.util.MathUtil;
 import java.util.Map;
 
 import net.minecraft.client.model.ModelData;
@@ -147,14 +146,14 @@ public class ModelGiantBird<T extends EntityIMBird> extends SinglePartEntityMode
 
         body.roll = (-roll / 180 * 3.141593F);
 
-        headPitch = MathHelper.clamp((float) MathUtil.boundAngle180Deg(headPitch), -56.650002F, 37.16F);
+        headPitch = MathHelper.clamp(MathHelper.wrapDegrees(headPitch), -56.650002F, 37.16F);
         float pitchFactor = (headPitch + 56.650002F) / 93.800003F;
         head.pitch += -0.96F + pitchFactor * -0.1400001F;
         neck3.pitch += 0.378F + pitchFactor * -0.528F;
         neck2.pitch += 0.4F + pitchFactor * -0.4F;
         neck1.pitch += 0.513F + pitchFactor * -0.613F;
 
-        headYaw = MathHelper.clamp((float)MathUtil.boundAngle180Deg(headYaw), -30.5F, 30.5F);
+        headYaw = MathHelper.clamp(MathHelper.wrapDegrees(headYaw), -30.5F, 30.5F);
         float yawFactor = (headYaw + 30.5F) / 61;
         head.roll += 0.8F + yawFactor * 2 * -0.8F;
         neck3.roll += 0.38F + yawFactor * 2 * -0.38F;

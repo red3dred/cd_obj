@@ -2,6 +2,8 @@ package invmod.common.util;
 
 import java.util.List;
 
+import com.mojang.datafixers.util.Pair;
+
 import net.minecraft.util.math.BlockPos;
 
 public record CoordsInt(int x, int y, int z) implements IPosition {

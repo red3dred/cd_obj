@@ -1,40 +1,32 @@
 package invmod.common.util;
 
+import net.minecraft.util.math.MathHelper;
+
 public interface MathUtil {
-    static boolean floatEquals(float f1, float f2, float tolerance) {
-        float diff = f1 - f2;
-        if (diff >= 0.0F) {
-            return diff < tolerance;
-        }
-        return -diff < tolerance;
-    }
+    double MAX_DEGREES = 360;
+    double HALF_MAX_DEGREES = 180;
 
     static double boundAnglePiRad(double angle) {
-        angle %= 6.283185307179586D;
-        if (angle >= 3.141592653589793D)
-            angle -= 6.283185307179586D;
-        else if (angle < -3.141592653589793D) {
-            angle += 6.283185307179586D;
+        angle %= Math.TAU;
+        if (angle >= Math.PI)
+            angle -= Math.TAU;
+        else if (angle < -Math.PI) {
+            angle += Math.TAU;
         }
         return angle;
     }
 
+    @Deprecated
     static double boundAngle180Deg(double angle) {
-        angle %= 360.0D;
-        if (angle >= 180.0D)
-            angle -= 360.0D;
-        else if (angle < -180.0D) {
-            angle += 360.0D;
-        }
-        return angle;
+        return MathHelper.wrapDegrees(angle);
     }
 
     static float interpRotationRad(float rot1, float rot2, float t) {
-        return interpWrapped(rot1, rot2, t, -3.141593F, 3.141593F);
+        return interpWrapped(rot1, rot2, t, -MathHelper.PI, MathHelper.PI);
     }
 
     static float interpRotationDeg(float rot1, float rot2, float t) {
-        return interpWrapped(rot1, rot2, t, -180.0F, 180.0F);
+        return interpWrapped(rot1, rot2, t, -(float)HALF_MAX_DEGREES, (float)HALF_MAX_DEGREES);
     }
 
     static float interpWrapped(float val1, float val2, float t, float min, float max) {

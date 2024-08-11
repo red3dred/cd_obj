@@ -6,8 +6,7 @@ import java.util.Random;
 
 public class FiniteSelectionPool<T> implements ISelect<T> {
     private final Random rand = new Random();
-	private final List<Pair<ISelect<T>, Integer>> currentPool = new ArrayList<>();
-	private final List<Integer> originalPool = new ArrayList<>();
+	private final List<Entry<T>> currentPool = new ArrayList<>();
 	private int totalAmount;
 	private int originalAmount;
 
@@ -16,8 +15,7 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
 	}
 
 	public FiniteSelectionPool<T> addEntry(ISelect<T> entry, int amount) {
-		currentPool.add(new Pair<>(entry, Integer.valueOf(amount)));
-		originalPool.add(amount);
+		currentPool.add(new Entry<>(entry, amount));
 		originalAmount = (totalAmount += amount);
 		return this;
 	}
@@ -28,15 +26,13 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
 			regeneratePool();
 		}
 		float r = rand.nextInt(totalAmount);
-		for (Pair<ISelect<T>, Integer> entry : currentPool) {
-			int amountLeft = entry.getVal2();
-			if (r < amountLeft) {
-				entry.setVal2(amountLeft - 1);
-				totalAmount -= 1;
-				return entry.getVal1().selectNext();
+		for (Entry<T> entry : currentPool) {
+			if (r < entry.amount) {
+				totalAmount--;
+				return entry.selectNext();
 			}
 
-			r -= amountLeft;
+			r -= entry.amount;
 		}
 
 		return null;
@@ -46,7 +42,6 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
     public FiniteSelectionPool<T> clone() {
 		FiniteSelectionPool<T> clone = new FiniteSelectionPool<>();
 		clone.currentPool.addAll(currentPool);
-		clone.originalPool.addAll(originalPool);
 		clone.totalAmount = totalAmount;
 		clone.originalAmount = originalAmount;
 		return clone;
@@ -61,18 +56,38 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
     public String toString() {
 		String s = "FiniteSelectionPool@" + Integer.toHexString(hashCode()) + "#Size=" + currentPool.size();
 		for (int i = 0; i < currentPool.size(); i++) {
-			s = s + "\n\tEntry " + i + "   Amount: " + originalPool.get(i);
-			s = s + "\n\t" + currentPool.get(i).getVal1().toString();
+			s = s + "\n\tEntry " + i + "   Amount: " + currentPool.get(i).initialAmount;
+			s = s + "\n\t" + currentPool.get(i).amount;
 		}
 		return s;
 	}
 
 	private void regeneratePool() {
 		totalAmount = originalAmount;
-		for (int i = 0; i < currentPool.size(); i++) {
-			currentPool.get(i).setVal2(originalPool.get(i));
-		}
+		currentPool.forEach(ISelect::reset);
 	}
 
-	record Entry<T>(ISelect<T> value, int amount) {}
+	private static class Entry<T> implements ISelect<T> {
+	    ISelect<T> value;
+	    int amount;
+	    final int initialAmount;
+
+	    Entry(ISelect<T> value, int amount) {
+	        this.value = value;
+	        this.initialAmount = amount;
+	        this.amount = amount;
+	    }
+
+        @Override
+        public T selectNext() {
+            amount--;
+            return value.selectNext();
+        }
+
+        @Override
+        public void reset() {
+            amount = initialAmount;
+            value.reset();
+        }
+	}
 }
