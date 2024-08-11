@@ -2,10 +2,19 @@ package invmod.common.entity.ai;
 
 import invmod.common.entity.EntityIMLiving;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.RangedAttackMob;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.item.Items;
+import net.minecraft.sound.SoundEvents;
 
-public class EntityAIKillWithArrow<T extends EntityLivingBase> extends EntityAIKillEntity<T> 
+/**
+ * AI for an entity to shoot arrows.
+ * Is this even being used?
+ * @param <T>
+ */
+@Deprecated
+public class EntityAIKillWithArrow<T extends LivingEntity> extends EntityAIKillEntity<T>
 {
 	private float attackRangeSq;
 
@@ -14,22 +23,36 @@ public class EntityAIKillWithArrow<T extends EntityLivingBase> extends EntityAIK
 		this.attackRangeSq = (attackRange * attackRange);
 	}
 
-	public void updateTask() {
-		super.updateTask();
-		EntityLivingBase target = getTarget();
-		if ((getEntity().getDistanceSq(target.posX, target.boundingBox.minY, target.posZ) < 36.0D) && (getEntity().getEntitySenses().canSee(target)))
-			getEntity().getNavigatorNew().haltForTick();
+	@Override
+    public void tick() {
+		super.tick();
+		LivingEntity target = getTarget();
+		if (mob.squaredDistanceTo(target) < 36 && mob.canSee(target)) {
+		    mob.getNavigatorNew().haltForTick();
+		}
 	}
 
-	protected void attackEntity(Entity target) {
+	@Override
+    protected void attackEntity(Entity target) {
 		setAttackTime(getAttackDelay());
-		EntityLivingBase entity = getEntity();
-		EntityArrow entityarrow = new EntityArrow(entity.worldObj, entity, getTarget(), 1.1F, 12.0F);
-		entity.worldObj.playSoundAtEntity(entity, "random.bow", 1.0F, 1.0F / (entity.getRNG().nextFloat() * 0.4F + 0.8F));
-		entity.worldObj.spawnEntityInWorld(entityarrow);
+		if (target instanceof LivingEntity l && mob instanceof RangedAttackMob attacker) {
+		    attacker.shootAt(l, 1);
+		} else {
+    		ArrowEntity projectile = new ArrowEntity(mob.getWorld(), mob, Items.ARROW.getDefaultStack(), null);
+            double dX = target.getX() - mob.getX();
+            double dY = target.getBodyY(0.3333333333333333) - projectile.getY();
+            double dZ = target.getZ() - mob.getZ();
+            double horLength = Math.sqrt(dX * dX + dZ * dZ);
+            projectile.setVelocity(dX, dY + horLength * 0.2F, dZ, 1.6F, 14 - mob.getWorld().getDifficulty().getId() * 4);
+            mob.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1, 1 / (mob.getRandom().nextFloat() * 0.4F + 0.8F));
+            mob.getWorld().spawnEntity(projectile);
+		}
 	}
 
-	protected boolean canAttackEntity(Entity target) {
-		return (getAttackTime() <= 0) && (getEntity().getDistanceSq(target.posX, target.boundingBox.minY, target.posZ) < this.attackRangeSq) && (getEntity().getEntitySenses().canSee(target));
+	@Override
+    protected boolean canAttackEntity(Entity target) {
+		return getAttackTime() <= 0
+		        && mob.squaredDistanceTo(target) < attackRangeSq
+		        && mob.canSee(target);
 	}
 }

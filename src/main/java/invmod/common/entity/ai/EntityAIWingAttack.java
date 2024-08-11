@@ -1,33 +1,35 @@
 package invmod.common.entity.ai;
 
+import org.jetbrains.annotations.Nullable;
+
 import invmod.common.entity.EntityIMBird;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.MathHelper;
 
-public class EntityAIWingAttack extends EntityAIMeleeAttack {
-	private EntityIMBird theEntity;
+public class EntityAIWingAttack<T extends LivingEntity> extends EntityAIMeleeAttack<T> {
+    private EntityIMBird mob;
 
-	public EntityAIWingAttack(EntityIMBird entity, Class<? extends EntityLivingBase> targetClass, int attackDelay) {
-		super(entity, targetClass, attackDelay);
-		this.theEntity = entity;
-	}
+    public EntityAIWingAttack(EntityIMBird entity, Class<? extends T> targetClass, int attackDelay) {
+        super(entity, targetClass, attackDelay);
+        mob = entity;
+    }
 
-	public void updateTask() {
-		if (getAttackTime() == 0) {
-			this.theEntity.setAttackingWithWings(isInStartMeleeRange());
-		}
-		super.updateTask();
-	}
+    @Override
+    public void tick() {
+        if (getAttackTime() == 0) {
+            mob.setAttackingWithWings(isInStartMeleeRange());
+        }
+        super.tick();
+    }
 
-	public void resetTask() {
-		this.theEntity.setAttackingWithWings(false);
-	}
+    @Override
+    public void stop() {
+        mob.setAttackingWithWings(false);
+    }
 
-	protected boolean isInStartMeleeRange() {
-		EntityLivingBase target = this.theEntity.getAttackTarget();
-		if (target == null) {
-			return false;
-		}
-		double d = this.theEntity.width + this.theEntity.getAttackRange() + 3.0D;
-		return this.theEntity.getDistanceSq(target.posX, target.boundingBox.minY, target.posZ) < d * d;
-	}
+    protected boolean isInStartMeleeRange() {
+        @Nullable
+        LivingEntity target = mob.getTarget();
+        return target != null && mob.squaredDistanceTo(target) < MathHelper.square(mob.getWidth() + mob.getAttackRange() + 3.0D);
+    }
 }

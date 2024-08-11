@@ -1,25 +1,25 @@
 package invmod.common.entity.ai;
 
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.EntityLookHelper;
+import java.util.EnumSet;
 
-public class EntityAIWatchTarget extends EntityAIBase
-{
-  private EntityLiving theEntity;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.mob.MobEntity;
 
-  public EntityAIWatchTarget(EntityLiving entity)
-  {
-    this.theEntity = entity;
-  }
+public class EntityAIWatchTarget extends Goal {
+    private final MobEntity theEntity;
 
-  public boolean shouldExecute()
-  {
-    return this.theEntity.getAttackTarget() != null;
-  }
+    public EntityAIWatchTarget(MobEntity entity) {
+        this.theEntity = entity;
+        setControls(EnumSet.of(Control.LOOK));
+    }
 
-  public void updateTask()
-  {
-    this.theEntity.getLookHelper().setLookPositionWithEntity(this.theEntity.getAttackTarget(), 2.0F, 2.0F);
-  }
+    @Override
+    public boolean canStart() {
+        return this.theEntity.getTarget() != null;
+    }
+
+    @Override
+    public void tick() {
+        this.theEntity.getLookControl().lookAt(theEntity.getTarget(), 2.0F, 2.0F);
+    }
 }

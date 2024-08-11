@@ -25,7 +25,7 @@ public class EntityAIWanderIM extends Goal {
             double z = mob.getZ() + mob.getRandom().nextInt(13) - MAX_HORIZONTAL_PATH;
             Path path = mob.getNavigatorNew().getPathTowardsXZ(x, z, MIN_HORIZONTAL_PATH, MAX_HORIZONTAL_PATH, MAX_VERTICAL_PATH);
             if (path != null) {
-                mob.getNavigatorNew().setPath(path, mob.getMoveSpeedStat());
+                mob.getNavigatorNew().setPath(path, mob.getMovementSpeed());
                 return true;
             }
         }

@@ -1,67 +1,57 @@
 package invmod.common.entity.ai;
 
-import java.util.Random;
-
 import invmod.common.entity.EntityIMThrower;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.MathHelper;
+import net.minecraft.entity.LivingEntity;
 
-public class EntityAIThrowerKillEntity<T extends EntityLivingBase> extends EntityAIKillEntity<T> {
-	private boolean melee;
-	private float attackRangeSq;
-	private float launchSpeed;
-	private final EntityIMThrower theEntity;
-	private Random rand;
-	private int maxBoulderAmount;
-	public EntityAIThrowerKillEntity(EntityIMThrower entity, Class<? extends T> targetClass, int attackDelay, float throwRange, float launchSpeed) {
-		super(entity, targetClass, attackDelay);
-		this.rand = new Random();
-		this.attackRangeSq = (throwRange * throwRange);
-		this.launchSpeed = launchSpeed;
-		this.theEntity = entity;
-		maxBoulderAmount=3;
-	}
+public class EntityAIThrowerKillEntity<T extends LivingEntity> extends EntityAIKillEntity<T> {
+    private boolean melee;
+    private float launchSpeed;
+    private final EntityIMThrower theEntity;
+    private int maxBoulderAmount = 3;
 
-	@Override
-	protected void attackEntity(Entity target) {
-		if (this.melee) {
-			setAttackTime(getAttackDelay());
-			super.attackEntity(target);
-		} else {
-			setAttackTime(getAttackDelay() * 2);
-			int distance=Math.round((float)this.theEntity.getDistance(target.posX, target.posY, target.posZ));
-			int missDistance=Math.round((float)Math.ceil(distance/10));
+    public EntityAIThrowerKillEntity(EntityIMThrower entity, Class<? extends T> targetClass, int attackDelay, float throwRange, float launchSpeed) {
+        super(entity, targetClass, attackDelay);
+        this.launchSpeed = launchSpeed;
+        this.theEntity = entity;
+    }
 
-			for(int i=1;i<=this.rand.nextInt(maxBoulderAmount);i++)
-			{
-				double x = (target.posX - missDistance) + (double)this.rand.nextInt((missDistance+1)*2);
-				double y = (target.posY - missDistance+1) + (double)this.rand.nextInt((missDistance+1)*2);
-				double z = (target.posZ - missDistance) + (double)this.rand.nextInt((missDistance+1)*2);
-				
-				if(this.theEntity.getTier()==1)
-				{
-					this.theEntity.throwBoulder(x, y, z);
-				}else{
-					this.theEntity.throwTNT(x, y, z);
-				}
-			}
-		}
-	}
+    @Override
+    protected void attackEntity(Entity target) {
+        if (melee) {
+            setAttackTime(getAttackDelay());
+            super.attackEntity(target);
+        } else {
+            setAttackTime(getAttackDelay() * 2);
+            int distance = Math.round(theEntity.distanceTo(target));
+            int missDistance = Math.round((float) Math.ceil(distance / 10));
 
-	@Override
-	protected boolean canAttackEntity(Entity target) {
-		this.melee = super.canAttackEntity(target);
-		if (this.melee) {
-			return true;
-		}
-		if ((!this.theEntity.canThrow())) {
-			return false;
-		}
+            for (int i = 1; i <= theEntity.getRandom().nextInt(maxBoulderAmount); i++) {
+                double x = (target.getX() - missDistance) + theEntity.getRandom().nextInt((missDistance + 1) * 2);
+                double y = (target.getY() - missDistance + 1) + theEntity.getRandom().nextInt((missDistance + 1) * 2);
+                double z = (target.getZ() - missDistance) + theEntity.getRandom().nextInt((missDistance + 1) * 2);
 
-		double dX = this.theEntity.posX - target.posX;
-		double dZ = this.theEntity.posZ - target.posZ;
-		double dXY = MathHelper.sqrt_double(dX * dX + dZ * dZ);
-		return (getAttackTime() <= 0) && (this.theEntity.getEntitySenses().canSee(target)) && (0.025D * dXY / (this.launchSpeed * this.launchSpeed) <= 1.0D);
-	}
+                if (theEntity.getTier() == 1) {
+                    theEntity.throwBoulder(x, y, z);
+                } else {
+                    theEntity.throwTNT(x, y, z);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected boolean canAttackEntity(Entity target) {
+        melee = super.canAttackEntity(target);
+        if (melee) {
+            return true;
+        }
+        if (!theEntity.canThrow()) {
+            return false;
+        }
+
+        double dXY = theEntity.getPos().subtract(target.getPos()).horizontalLength();
+        return getAttackTime() <= 0 && theEntity.getVisibilityCache().canSee(target)
+                && (0.025D * dXY / (launchSpeed * launchSpeed) <= 1);
+    }
 }

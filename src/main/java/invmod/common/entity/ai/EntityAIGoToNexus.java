@@ -42,7 +42,7 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
             if (distance > 2000) {
                 pathSet = navigation.tryMoveTowardsXZ(nexus.getXCoord(), nexus.getZCoord(), 1, 6, 4, mob.getMovementSpeed());
             } else if (distance > 1.5) {
-                pathSet = navigation.tryMoveToXYZ(nexus.getXCoord(), nexus.getYCoord(), nexus.getZCoord(), 1, mob.getMovementSpeed());
+                pathSet = navigation.tryMoveToXYZ(nexus.toBlockPos().toBottomCenterPos(), 1, mob.getMovementSpeed());
             }
 
             if (!pathSet || (navigation.getLastPathDistanceToTarget() > 3 && Distance.distanceBetween(lastPathRequestPos, mob) < 3.5)) {
