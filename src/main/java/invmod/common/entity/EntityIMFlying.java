@@ -4,6 +4,7 @@ import invmod.common.IBlockAccessExtended;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.MathUtil;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.control.BodyControl;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.MathHelper;
@@ -34,12 +35,12 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	private boolean flyPathfind = true;
 	private boolean debugFlying = true;
 
-	public EntityIMFlying(World world) {
-		this(world, null);
+	public EntityIMFlying(EntityType<? extends EntityIMFlying> type, World world) {
+		this(type, world, null);
 	}
 
-	public EntityIMFlying(World world, INexusAccess nexus) {
-		super(world, nexus);
+	public EntityIMFlying(EntityType<? extends EntityIMFlying> type, World world, INexusAccess nexus) {
+		super(type, world, nexus);
 		moveControl = new IMMoveHelperFlying(this);
 		lookControl = new IMLookHelper(this);
 

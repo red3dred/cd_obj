@@ -14,6 +14,7 @@ import invmod.common.entity.ai.EntityAIWaitForEngy;
 import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.world.World;
 
 
@@ -21,9 +22,9 @@ import net.minecraft.world.World;
 public class EntityIMImp extends EntityIMMob
 {
 private int tier;
-  public EntityIMImp(World world, INexusAccess nexus)
+  public EntityIMImp(EntityType<EntityIMImp> type, World world, INexusAccess nexus)
   {
-    super(world, nexus);
+    super(type, world, nexus);
     setBaseMoveSpeedStat(0.3F);
     this.attackStrength = 3;
     this.tier=1;
@@ -36,9 +37,9 @@ private int tier;
     setAI();
   }
 
-  public EntityIMImp(World world)
+  public EntityIMImp(EntityType<EntityIMImp> type, World world)
   {
-    this(world, null);
+    this(type, world, null);
   }
 
   @Override

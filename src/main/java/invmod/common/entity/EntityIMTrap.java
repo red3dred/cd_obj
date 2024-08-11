@@ -6,20 +6,10 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.DataWatcher;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 public class EntityIMTrap extends Entity
@@ -37,9 +27,9 @@ public class EntityIMTrap extends Entity
   private byte metaChanged;
   private boolean fromLoaded;
 
-  public EntityIMTrap(World world)
+  public EntityIMTrap(EntityType<EntityIMTrap> type, World world)
   {
-    super(world);
+    super(type, world);
     setSize(0.5F, 0.28F);
     this.yOffset = 0.0F;
     this.ticks = 0;
@@ -56,14 +46,14 @@ public class EntityIMTrap extends Entity
     this.dataWatcher.addObject(31, Byte.valueOf((byte)(this.isEmpty ? 0 : 1)));
   }
 
-  public EntityIMTrap(World world, double x, double y, double z)
+  public EntityIMTrap(EntityType<EntityIMTrap> type, World world, double x, double y, double z)
   {
-    this(world, x, y, z, 0);
+    this(type, world, x, y, z, 0);
   }
 
-  public EntityIMTrap(World world, double x, double y, double z, int trapType)
+  public EntityIMTrap(EntityType<EntityIMTrap> type, World world, double x, double y, double z, int trapType)
   {
-    this(world);
+    this(type, world);
     this.trapType = trapType;
     this.dataWatcher.updateObject(30, Integer.valueOf(trapType));
     setLocationAndAngles(x, y, z, 0.0F, 0.0F);
@@ -174,7 +164,7 @@ public class EntityIMTrap extends Entity
     }
     return false;
   }
-  
+
 
   public boolean isEmpty()
   {

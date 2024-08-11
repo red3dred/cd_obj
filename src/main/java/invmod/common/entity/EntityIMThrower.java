@@ -16,6 +16,7 @@ import invmod.common.util.CoordsInt;
 import invmod.common.util.IPosition;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
@@ -29,14 +30,14 @@ public class EntityIMThrower extends EntityIMMob
 	private int tier;
 	private byte metaChanged;
 
-	public EntityIMThrower(World world)
+	public EntityIMThrower(EntityType<EntityIMThrower> type, World world)
 	{
-		this(world, null);
+		this(type, world, null);
 	}
 
-	public EntityIMThrower(World world, INexusAccess nexus)
+	public EntityIMThrower(EntityType<EntityIMThrower> type, World world, INexusAccess nexus)
 	{
-		super(world, nexus);
+		super(type, world, nexus);
 
 		setBaseMoveSpeedStat(0.13F);
 		this.attackStrength = 10;

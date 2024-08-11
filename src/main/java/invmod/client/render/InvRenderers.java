@@ -23,6 +23,6 @@ public interface InvRenderers {
         EntityRendererRegistry.register(InvEntities.SPIDER_EGG, RenderEgg::new);
         EntityRendererRegistry.register(InvEntities.CREEPER, RenderIMCreeper::new);
         EntityRendererRegistry.register(InvEntities.BIRD, RenderB::new);
-        EntityRendererRegistry.register(InvEntities.GIANT_BIRD, RenderGiantBird::new);
+        EntityRendererRegistry.register(InvEntities.VULTURE, RenderGiantBird::new);
     }
 }

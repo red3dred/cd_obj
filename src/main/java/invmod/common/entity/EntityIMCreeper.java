@@ -15,9 +15,9 @@ import invmod.common.entity.ai.EntityAITargetRetaliate;
 import invmod.common.entity.ai.EntityAIWaitForEngy;
 import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
-import invmod.common.util.ExplosionUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SkinOverlayOwner;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.SkeletonEntity;
@@ -41,14 +41,14 @@ public class EntityIMCreeper extends EntityIMMob implements SkinOverlayOwner
   private int explodeDirection;
   private int tier;
 
-  public EntityIMCreeper(World world)
+  public EntityIMCreeper(EntityType<EntityIMCreeper> type, World world)
   {
-    this(world, null);
+    this(type, world, null);
   }
 
-  public EntityIMCreeper(World world, INexusAccess nexus)
+  public EntityIMCreeper(EntityType<EntityIMCreeper> type, World world, INexusAccess nexus)
   {
-	  super(world, nexus);
+	  super(type, world, nexus);
 	    this.setName("Creeper");
 	    this.setGender(0);
 	    this.tier=1;

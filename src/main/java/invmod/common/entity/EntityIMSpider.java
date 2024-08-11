@@ -19,6 +19,7 @@ import invmod.common.nexus.INexusAccess;
 import invmod.common.nexus.MobBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.world.World;
 
@@ -35,12 +36,12 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 	private static final int META_TEXTURE = 31;
 	private static final int META_FLAVOUR = 28;
 
-	public EntityIMSpider(World world) {
-		this(world, null);
+	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
+		this(type, world, null);
 	}
 
-	public EntityIMSpider(World world, INexusAccess nexus) {
-		super(world, nexus);
+	public EntityIMSpider(EntityType<EntityIMSpider> type, World world, INexusAccess nexus) {
+		super(type, world, nexus);
 		setSize(1.4F, 0.9F);
 		setCanClimb(true);
 		this.airborneTime = 0;

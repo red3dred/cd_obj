@@ -5,6 +5,7 @@ import invmod.client.render.animation.AnimationAction;
 import invmod.client.render.animation.AnimationState;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -26,12 +27,12 @@ public class EntityIMBird extends EntityIMFlying {
     private float carriedEntityYawOffset;
     private int tier;
 
-    public EntityIMBird(World world) {
-        this(world, null);
+    public EntityIMBird(EntityType<? extends EntityIMBird> type, World world) {
+        this(type, world, null);
     }
 
-    public EntityIMBird(World world, INexusAccess nexus) {
-        super(world, nexus);
+    public EntityIMBird(EntityType<? extends EntityIMBird> type, World world, INexusAccess nexus) {
+        super(type, world, nexus);
         setName("Bird");
         setGender(2);
         setBaseMoveSpeedStat(1.0F);

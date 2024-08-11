@@ -15,6 +15,7 @@ import invmod.common.entity.ai.EntityAIStabiliseFlying;
 import invmod.common.entity.ai.EntityAISwoop;
 import invmod.common.entity.ai.EntityAIWatchTarget;
 import invmod.common.nexus.INexusAccess;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.world.World;
 
@@ -27,12 +28,12 @@ public class EntityIMGiantBird extends EntityIMBird {
     private static final byte TRIGGER_SCREECH = 10;
     private static final byte TRIGGER_DEATHSOUND = 10;
 
-    public EntityIMGiantBird(World world) {
-        this(world, null);
+    public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world) {
+        this(type, world, null);
     }
 
-    public EntityIMGiantBird(World world, INexusAccess nexus) {
-        super(world, nexus);
+    public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world, INexusAccess nexus) {
+        super(type, world, nexus);
         setName("Bird");
         setGender(2);
         setAttackStrength(5);

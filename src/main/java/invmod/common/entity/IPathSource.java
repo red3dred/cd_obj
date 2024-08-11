@@ -26,7 +26,7 @@ public interface IPathSource {
     default Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius, float maxSearchRange, BlockView terrainMap) {
         return createPath(entity,
                 getPathBegin(entity),
-                pos.add(MathHelper.floor(0.5F - entity.getWidth() / 2.0F), 0, MathHelper.floor(0.5F - entity.getWidth() / 2.0F)),
+                pos.add(MathHelper.floor(0.5F - entity.getWidth() * 0.5F), 0, MathHelper.floor(0.5F - entity.getWidth() * 0.5F)),
                 targetRadius, maxSearchRange, terrainMap);
     }
 
@@ -46,10 +46,6 @@ public interface IPathSource {
         return true;
     }
 
-    public enum PathPriority {
-        LOW, MEDIUM, HIGH
-    }
-
     static BlockPos getPathingPosition(Entity entity, Entity target) {
         return new BlockPos(
                 MathHelper.floor(target.getX() + 0.5D - entity.getWidth() * 0.5F),
@@ -65,5 +61,13 @@ public interface IPathSource {
         }
 
         return BlockPos.ofFloored(entity.getBoundingBox().getMinPos());
+    }
+
+    public interface IPathResult {
+        void pathCompleted(Path path);
+    }
+
+    public enum PathPriority {
+        LOW, MEDIUM, HIGH
     }
 }

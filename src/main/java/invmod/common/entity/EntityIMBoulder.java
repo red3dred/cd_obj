@@ -3,13 +3,12 @@ package invmod.common.entity;
 import invmod.common.mod_Invasion;
 import invmod.common.block.InvBlocks;
 import invmod.common.nexus.TileEntityNexus;
-import invmod.common.util.ExplosionUtil;
-
 import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.world.World;
 
 public class EntityIMBoulder extends Entity
@@ -28,9 +27,9 @@ public class EntityIMBoulder extends Entity
   private int ticksInAir;
   public boolean arrowCritical;
 
-  public EntityIMBoulder(World world)
+  public EntityIMBoulder(EntityType<EntityIMBoulder> type, World world)
   {
-    super(world);
+    super(type, world);
     this.xTile = -1;
     this.yTile = -1;
     this.zTile = -1;
@@ -45,9 +44,9 @@ public class EntityIMBoulder extends Entity
     setSize(0.5F, 0.5F);
   }
 
-  public EntityIMBoulder(World world, double d, double d1, double d2)
+  public EntityIMBoulder(EntityType<EntityIMBoulder> type, World world, double d, double d1, double d2)
   {
-    super(world);
+    super(type, world);
     this.xTile = -1;
     this.yTile = -1;
     this.zTile = -1;
@@ -64,9 +63,9 @@ public class EntityIMBoulder extends Entity
     this.yOffset = 0.0F;
   }
 
-  public EntityIMBoulder(World world, EntityLivingBase entityliving, float f)
+  public EntityIMBoulder(EntityType<EntityIMBoulder> type, World world, EntityLivingBase entityliving, float f)
   {
-    super(world);
+    super(type, world);
     this.xTile = -1;
     this.yTile = -1;
     this.zTile = -1;

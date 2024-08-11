@@ -3,6 +3,7 @@ package invmod.common.entity;
 import java.util.Random;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -22,9 +23,9 @@ public class EntityIMBolt extends Entity
   private float vecZ;
   private int soundMade;
 
-  public EntityIMBolt(World world)
+  public EntityIMBolt(EntityType<EntityIMBolt> type, World world)
   {
-    super(world);
+    super(type, world);
     this.age = 0;
     this.timeCreated = (this.lastVertexUpdate = System.currentTimeMillis());
     this.vertices = new double[3][0];
@@ -34,13 +35,13 @@ public class EntityIMBolt extends Entity
 
   public EntityIMBolt(World world, double x, double y, double z)
   {
-    this(world);
+    this(InvEntities.BOLT, world);
     setPosition(x, y, z);
   }
 
   public EntityIMBolt(World world, Vec3d pos, Vec3d targetPos, int ticksToRender, int soundMade)
   {
-    this(world, x, y, z);
+    this(InvEntities.BOLT, world, x, y, z);
     this.vecX = ((float)(x2 - x));
     this.vecY = ((float)(y2 - y));
     this.vecZ = ((float)(z2 - z));

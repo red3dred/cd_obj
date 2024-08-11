@@ -2,8 +2,6 @@ package invmod.common.entity;
 
 import java.lang.reflect.Field;
 
-import org.jetbrains.annotations.Nullable;
-
 import invmod.common.ConfigInvasion;
 import invmod.common.InvasionMod;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
@@ -11,15 +9,9 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.biome.BiomeKeys;
 
 public interface InvEntities {
     EntityType<EntityIMSkeleton> SKELETON = register("skeleton", EntityType.Builder.<EntityIMSkeleton>create(EntityIMSkeleton::new, SpawnGroup.MONSTER)
@@ -63,7 +55,7 @@ public interface InvEntities {
 
     EntityType<EntityIMBird> BIRD = register("bird", betaFeature(EntityType.Builder.<EntityIMBird>create(EntityIMBird::new, SpawnGroup.MONSTER)
             .dimensions(1, 1).maxTrackingRange(10).trackingTickInterval(10)));
-    EntityType<EntityIMGiantBird> GIANT_BIRD = register("giant_bird", betaFeature(EntityType.Builder.<EntityIMGiantBird>create(EntityIMGiantBird::new, SpawnGroup.MONSTER)
+    EntityType<EntityIMGiantBird> VULTURE = register("vulture", betaFeature(EntityType.Builder.<EntityIMGiantBird>create(EntityIMGiantBird::new, SpawnGroup.MONSTER)
             .dimensions(1.9F, 2.8F).maxTrackingRange(10).trackingTickInterval(10)));
 
     private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> builder) {

@@ -7,6 +7,7 @@ import invmod.common.nexus.INexusAccess;
 import invmod.common.util.PosRotate3D;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 //NOOB HAUS: This one is done I think...
@@ -24,14 +25,14 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig
 	protected final Vector3f rot = new Vector3f();
 	protected final Vector3f prevRot = new Vector3f();
 
-	public EntityIMBurrower(World world)
+	public EntityIMBurrower(EntityType<EntityIMBurrower> type, World world)
 	{
-		this(world, null);
+		this(type, world, null);
 	}
 
-	public EntityIMBurrower(World world, INexusAccess nexus)
+	public EntityIMBurrower(EntityType<EntityIMBurrower> type, World world, INexusAccess nexus)
 	{
-		super(world, nexus);
+		super(type, world, nexus);
 
 		IPathSource pathSource = getPathSource();
 		pathSource.setSearchDepth(800);

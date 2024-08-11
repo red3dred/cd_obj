@@ -13,6 +13,7 @@ import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
 import invmod.common.util.CoordsInt;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -36,9 +37,13 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 	private TerrainBuilder terrainBuilder;
 	private ItemStack currentItem;
 
-	public EntityIMPigEngy(World world, INexusAccess nexus)
+	public EntityIMPigEngy(EntityType<EntityIMPigEngy> type, World world) {
+	    this(type, world, null);
+	}
+
+	public EntityIMPigEngy(EntityType<EntityIMPigEngy> type, World world, INexusAccess nexus)
 	{
-		super(world, nexus);
+		super(type, world, nexus);
 		IPathSource pathSource = getPathSource();
 		pathSource.setSearchDepth(1500);
 		pathSource.setQuickFailDepth(1500);

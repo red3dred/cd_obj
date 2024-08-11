@@ -2,7 +2,6 @@ package invmod.common.item;
 
 import invmod.common.entity.EntityIMBird;
 import invmod.common.entity.EntityIMCreeper;
-import invmod.common.entity.EntityIMGiantBird;
 import invmod.common.entity.EntityIMPigEngy;
 import invmod.common.entity.EntityIMSkeleton;
 import invmod.common.entity.EntityIMSpider;
@@ -47,7 +46,8 @@ class ItemDebugWand extends Item {
         }
 
         BlockPos pos = context.getBlockPos().offset(context.getSide());
-        EntityIMBird bird = new EntityIMGiantBird(world);
+        EntityIMBird bird = InvEntities.VULTURE.create(world);
+        bird.setNexus(nexus);
         bird.setPosition(pos.toBottomCenterPos());
 
         ZombieEntity zombie2 = new ZombieEntity(world);
@@ -58,7 +58,8 @@ class ItemDebugWand extends Item {
         Entity entity1 = new EntityIMPigEngy(world);
         entity1.setPosition(pos.toBottomCenterPos());
 
-        EntityIMZombie zombie = new EntityIMZombie(InvEntities.ZOMBIE, world, this.nexus);
+        EntityIMZombie zombie = InvEntities.ZOMBIE.create(world);
+        zombie.setNexus(nexus);
         zombie.setTexture(0);
         zombie.setFlavour(0);
         zombie.setTier(1);
@@ -66,43 +67,48 @@ class ItemDebugWand extends Item {
         zombie.setPosition(pos.toBottomCenterPos());
 
         if (this.nexus != null) {
-            Entity entity = new EntityIMPigEngy(world, this.nexus);
+            EntityIMPigEngy entity = InvEntities.PIGMAN_ENGINEER.create(world);
+            entity.setNexus(nexus);
             entity.setPosition(pos.toBottomCenterPos());
 
             zombie = new EntityIMZombie(InvEntities.ZOMBIE, world, this.nexus);
+            zombie.setNexus(nexus);
             zombie.setTexture(0);
             zombie.setFlavour(0);
             zombie.setTier(2);
             zombie.setPosition(pos.toBottomCenterPos());
 
-            Entity thrower = new EntityIMThrower(world, this.nexus);
+            EntityIMThrower thrower = InvEntities.THROWER.create(world);
+            thrower.setNexus(nexus);
             thrower.setPosition(pos.toBottomCenterPos());
 
-            EntityIMCreeper creep = new EntityIMCreeper(world, this.nexus);
+            EntityIMCreeper creep = InvEntities.CREEPER.create(world);
+            creep.setNexus(nexus);
             creep.setPosition(pos.toBottomCenterPos());
 
-            EntityIMSpider spider = new EntityIMSpider(world, this.nexus);
-
+            EntityIMSpider spider = InvEntities.SPIDER.create(world);
+            spider.setNexus(nexus);
             spider.setTexture(0);
             spider.setFlavour(0);
             spider.setTier(2);
 
             spider.setPosition(pos.toBottomCenterPos());
 
-            EntityIMSkeleton skeleton = new EntityIMSkeleton(InvEntities.SKELETON, world);
+            EntityIMSkeleton skeleton = InvEntities.SKELETON.create(world);
             skeleton.setNexus(nexus);
             skeleton.setPosition(pos.toBottomCenterPos());
         }
 
-        EntityIMSpider entity = new EntityIMSpider(world, this.nexus);
-
+        EntityIMSpider entity = InvEntities.SPIDER.create(world);
+        entity.setNexus(nexus);
         entity.setTexture(0);
         entity.setFlavour(1);
         entity.setTier(2);
 
         entity.setPosition(pos.toBottomCenterPos());
 
-        EntityIMCreeper creep = new EntityIMCreeper(world);
+        EntityIMCreeper creep = InvEntities.CREEPER.create(world);
+        creep.setNexus(nexus);
         creep.setPosition(150.5D, 64.0D, 271.5D);
 
         return ActionResult.SUCCESS;
