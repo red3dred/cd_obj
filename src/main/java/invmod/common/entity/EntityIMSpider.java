@@ -19,6 +19,7 @@ import invmod.common.nexus.INexusAccess;
 import invmod.common.nexus.MobBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.world.World;
 
 public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
@@ -70,7 +71,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 		this.tasks.addTask(4, new EntityAIKillEntity(this, EntityLiving.class, 40));
 		this.tasks.addTask(5, new EntityAIGoToNexus(this));
 		this.tasks.addTask(7, new EntityAIWanderIM(this));
-		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
+		this.tasks.addTask(8, new LookAtEntityGoal(this, EntityPlayer.class, 8.0F));
 
 		this.tasks.addTask(9, new EntityAILookIdle(this));
 
@@ -82,7 +83,7 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 		this.targetTasks.addTask(4, new EntityAIHurtByTarget(this, false));
 
 		this.tasks.addTask(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
-		this.tasks.addTask(10, new EntityAIWatchClosest(this, EntityIMCreeper.class, 12.0F));
+		this.tasks.addTask(10, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
 
 		if (this.tier == 2) {
 			if (this.flavour == 0) {

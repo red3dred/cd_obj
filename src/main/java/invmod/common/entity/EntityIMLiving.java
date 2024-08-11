@@ -419,7 +419,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return movement;
     }
 
-    public void rally(Entity leader) {
+    public void rally(ILeader leader) {
         rallyCooldown = 300;
     }
 
@@ -796,7 +796,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    public void mobTick() {
+    protected void mobTick() {
         getNavigatorNew().onUpdateNavigation();
         if (rallyCooldown > 0) {
             rallyCooldown--;

@@ -70,8 +70,8 @@ public abstract class EntityIMFlying extends EntityIMLiving {
     }
 
 	@Override
-	public void onUpdate() {
-		super.onUpdate();
+	public void baseTick() {
+		super.baseTick();
 		if (!this.worldObj.isRemote) {
 			if (this.debugFlying) {
 				Vec3 target = this.navigatorFlying.getTarget();
@@ -213,7 +213,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	}
 
 	@Override
-	public boolean isOnLadder() {
+	public boolean isClimbing() {
 		return false;
 	}
 
