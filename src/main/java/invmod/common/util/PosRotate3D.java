@@ -7,10 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public record PosRotate3D (Vec3d position, Vector3fc rotation) {
-
-    public PosRotate3D() {
-        this(new Vec3d(0, 0, 0), new Vector3f());
-    }
+    public static final PosRotate3D ZERO = new PosRotate3D(new Vec3d(0, 0, 0), new Vector3f());
 
     public PosRotate3D lerp(float delta, PosRotate3D b) {
         return new PosRotate3D(lerp(delta, position, b.position()), lerp(delta, rotation, b.rotation(), new Vector3f()));
