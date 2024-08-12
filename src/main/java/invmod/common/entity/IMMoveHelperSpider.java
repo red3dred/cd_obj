@@ -1,64 +1,59 @@
 package invmod.common.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
+import java.util.Optional;
 
-public class IMMoveHelperSpider extends IMMoveHelper
-{
-  public IMMoveHelperSpider(EntityIMLiving par1EntityLiving)
-  {
-    super(par1EntityLiving);
-  }
+import invmod.common.util.CoordsInt;
+import net.minecraft.block.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 
-  protected int getClimbFace(double x, double y, double z)
-  {
-    int mobX = MathHelper.floor_double(x - this.entity.width / 2.0F);
-    int mobY = MathHelper.floor_double(y);
-    int mobZ = MathHelper.floor_double(z - this.entity.width / 2.0F);
+public class IMMoveHelperSpider extends IMMoveHelper {
+    private static final Direction[] DIRECTIONS = Direction.values();
 
-    int index = 0;
-    Path path = this.entity.getNavigatorNew().getPath();
-    if ((path != null) && (!path.isFinished()))
-    {
-      PathNode currentPoint = path.getPathPointFromIndex(path.getCurrentPathIndex());
-      int pathLength = path.getCurrentPathLength();
-      for (int i = path.getCurrentPathIndex(); i < pathLength; i++)
-      {
-        PathNode point = path.getPathPointFromIndex(i);
-        if (point.xCoord > currentPoint.xCoord)
-        {
-          break;
-        }
-        if (point.xCoord < currentPoint.xCoord)
-        {
-          index = 2;
-          break;
-        }
-        if (point.zCoord > currentPoint.zCoord)
-        {
-          index = 4;
-          break;
-        }
-        if (point.zCoord < currentPoint.zCoord)
-        {
-          index = 6;
-          break;
-        }
-      }
-
+    public IMMoveHelperSpider(EntityIMLiving par1EntityLiving) {
+        super(par1EntityLiving);
     }
 
-    for (int count = 0; count < 8; count++)
-    {
-    	//set bool to true, donno why
-      if (this.entity.worldObj.isBlockNormalCubeDefault(mobX + invmod.common.util.CoordsInt.offsetAdj2X[index], mobY, mobZ + invmod.common.util.CoordsInt.offsetAdj2Z[index],true)) {
-        return index / 2;
-      }
-      index++; if (index > 7) {
-        index = 0;
-      }
+    private int getMoveDirection() {
+        Path path = entity.getNavigatorNew().getPath();
+        if (path != null && !path.isFinished()) {
+            PathNode currentPoint = path.getPathPointFromIndex(path.getCurrentPathIndex());
+            int pathLength = path.getCurrentPathLength();
+            for (int i = path.getCurrentPathIndex(); i < pathLength; i++) {
+                PathNode point = path.getPathPointFromIndex(i);
+                if (point.pos.getX() > currentPoint.pos.getX()) {
+                    return 0;
+                }
+                if (point.pos.getX() < currentPoint.pos.getX()) {
+                    return 2;
+                }
+                if (point.pos.getZ() > currentPoint.pos.getZ()) {
+                    return 4;
+                }
+                if (point.pos.getZ() < currentPoint.pos.getZ()) {
+                    return 6;
+                }
+            }
+        }
+        return 0;
     }
-    return -1;
-  }
+
+    @Override
+    protected Optional<Direction> getClimbFace(BlockPos pos) {
+        pos = BlockPos.ofFloored(Vec3d.of(pos).subtract(entity.getWidth() * 0.5F, 0, entity.getWidth() * 0.5F));
+
+        int index = getMoveDirection();
+
+        BlockPos.Mutable mutable = pos.mutableCopy();
+        for (BlockPos offset : CoordsInt.OFFSET_ADJACENT_2) {
+            // set bool to true, donno why
+            BlockState state = entity.getWorld().getBlockState(mutable.set(pos).move(offset));
+            if (state.isFullCube(entity.getWorld(), mutable)) {
+                return Optional.of(DIRECTIONS[(index % 8) / 2]);
+            }
+            index++;
+        }
+        return Optional.empty();
+    }
 }

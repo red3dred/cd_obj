@@ -36,7 +36,7 @@ public class EntityAIFlyingTackle extends net.minecraft.entity.ai.goal.Goal {
     public void start() {
         LivingEntity target = theEntity.getTarget();
         if (target != null) {
-            theEntity.getNavigatorNew().setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
+            ((INavigationFlying)theEntity.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
         }
     }
 

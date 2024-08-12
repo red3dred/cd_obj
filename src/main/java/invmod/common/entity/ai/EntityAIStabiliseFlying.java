@@ -29,14 +29,14 @@ public class EntityAIStabiliseFlying extends net.minecraft.entity.ai.goal.Goal {
         }
 
         theEntity.transitionAIGoal(Goal.NONE);
-        theEntity.getNavigatorNew().setPitchBias(0, 0);
+        ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         return false;
     }
 
     @Override
     public void start() {
         time = 0;
-        INavigationFlying nav = theEntity.getNavigatorNew();
+        INavigationFlying nav = (INavigationFlying)theEntity.getNavigatorNew();
         nav.clearPath();
         nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
         nav.setPitchBias(20.0F, 0.5F);
@@ -45,7 +45,7 @@ public class EntityAIStabiliseFlying extends net.minecraft.entity.ai.goal.Goal {
     @Override
     public void tick() {
         if (++time == INITIAL_STABILISE_TIME) {
-            theEntity.getNavigatorNew().setPitchBias(0, 0);
+            ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         }
     }
 }

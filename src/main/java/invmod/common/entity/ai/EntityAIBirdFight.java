@@ -35,7 +35,7 @@ public class EntityAIBirdFight<T extends LivingEntity> extends EntityAIMeleeFigh
 
     @Override
     public void updatePath() {
-        INavigationFlying nav = theEntity.getNavigatorNew();
+        INavigationFlying nav = (INavigationFlying)theEntity.getNavigatorNew();
         Entity target = mob.getTarget();
         if (target != nav.getTargetEntity()) {
             nav.clearPath();

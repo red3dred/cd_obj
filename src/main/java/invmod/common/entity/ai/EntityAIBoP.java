@@ -49,8 +49,8 @@ public class EntityAIBoP extends net.minecraft.entity.ai.goal.Goal {
             } else if (mob.getAIGoal() != Goal.CHILL) {
                 mob.transitionAIGoal(Goal.CHILL);
                 mob.getNavigatorNew().clearPath();
-                mob.getNavigatorNew().setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
-                mob.getNavigatorNew().setLandingPath();
+                ((INavigationFlying)mob.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
+                ((INavigationFlying)mob.getNavigatorNew()).setLandingPath();
             }
         } else if (mob.getAIGoal() == Goal.CHILL || mob.getAIGoal() == Goal.NONE) {
             mob.transitionAIGoal(shouldAttackTarget(lastTarget) ? Goal.MELEE_TARGET : Goal.STAY_AT_RANGE);

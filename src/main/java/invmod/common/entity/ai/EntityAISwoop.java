@@ -74,7 +74,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
     public void start() {
         time = 0;
         theEntity.transitionAIGoal(Goal.SWOOP);
-        theEntity.getNavigatorNew().setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
+        ((INavigationFlying)theEntity.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
         theEntity.getNavigatorNew().tryMoveToEntity(swoopTarget, 0, theEntity.getMaxPoweredFlightSpeed());
         theEntity.doScreech();
     }
@@ -83,7 +83,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
     public void stop() {
         endSwoop = false;
         isCommittedToFinalRun = false;
-        theEntity.getNavigatorNew().enableDirectTarget(false);
+        ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
         if (theEntity.getAIGoal() == Goal.SWOOP) {
             theEntity.transitionAIGoal(Goal.NONE);
             theEntity.setClawsForward(false);
@@ -95,10 +95,10 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
         time++;
         if (!isCommittedToFinalRun) {
             if (theEntity.distanceTo(swoopTarget) < finalRunLength) {
-                theEntity.getNavigatorNew().setPitchBias(0, 1);
+                ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 1);
                 if (isFinalRunLinedUp()) {
                     theEntity.setClawsForward(true);
-                    theEntity.getNavigatorNew().enableDirectTarget(true);
+                    ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(true);
                     isCommittedToFinalRun = true;
                 } else {
                     theEntity.transitionAIGoal(Goal.NONE);
@@ -109,12 +109,12 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
                 if (dYp < 2.9) {
                     dYp = 0;
                 }
-                theEntity.getNavigatorNew().setPitchBias(diveAngle * (float) (dYp / diveHeight), (float) (0.6D * (dYp / diveHeight)));
+                ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(diveAngle * (float) (dYp / diveHeight), (float) (0.6D * (dYp / diveHeight)));
             }
 
         } else if (theEntity.distanceTo(swoopTarget) < strikeDistance) {
             theEntity.transitionAIGoal(Goal.FLYING_STRIKE);
-            theEntity.getNavigatorNew().enableDirectTarget(false);
+            ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
             endSwoop = true;
         } else {
             double yawToTarget = Math.atan2(
@@ -123,7 +123,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
             ) * MathHelper.DEGREES_PER_RADIAN - 90;
             if (Math.abs(MathHelper.subtractAngles((float) yawToTarget, theEntity.getYaw())) > 90) {
                 theEntity.transitionAIGoal(Goal.NONE);
-                theEntity.getNavigatorNew().enableDirectTarget(false);
+                ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
                 theEntity.setClawsForward(false);
                 endSwoop = true;
             }

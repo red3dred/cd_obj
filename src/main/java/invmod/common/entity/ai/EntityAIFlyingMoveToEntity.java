@@ -25,7 +25,7 @@ public class EntityAIFlyingMoveToEntity extends net.minecraft.entity.ai.goal.Goa
 
     @Override
     public void start() {
-        INavigationFlying nav = theEntity.getNavigatorNew();
+        INavigationFlying nav = (INavigationFlying)theEntity.getNavigatorNew();
         Entity target = theEntity.getTarget();
         if (target != nav.getTargetEntity()) {
             nav.clearPath();

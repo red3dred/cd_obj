@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 
 import invmod.common.entity.EntityIMBird;
 import invmod.common.entity.Goal;
+import invmod.common.entity.INavigationFlying;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
@@ -85,11 +86,11 @@ public class EntityAIPickUpEntity extends net.minecraft.entity.ai.goal.Goal {
                     isHoldingEntity = true;
                     time = 0;
                     theEntity.getNavigatorNew().clearPath();
-                    theEntity.getNavigatorNew().setPitchBias(20, 1.5F);
+                    ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
                 }
             }
         } else if (time == 45) {
-            theEntity.getNavigatorNew().setPitchBias(0, 0);
+            ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         } else if (time > holdTime) {
             theEntity.getTarget().stopRiding();
         }

@@ -38,7 +38,7 @@ public class EntityAICircleTarget extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public void start() {
-        INavigationFlying nav = mob.getNavigatorNew();
+        INavigationFlying nav = (INavigationFlying)mob.getNavigatorNew();
         nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
         nav.setCirclingPath(mob.getTarget(), this.preferredHeight, this.preferredRadius);
 

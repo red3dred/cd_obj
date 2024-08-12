@@ -185,7 +185,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
         setAcceleration(new Vec3d(xAccel, yAccel, zAccel));
     }
 
-   protected void setAcceleration(Vec3d accelleration) {
+    protected void setAcceleration(Vec3d accelleration) {
        this.accelleration = accelleration;
     }
 

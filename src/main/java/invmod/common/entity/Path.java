@@ -94,6 +94,14 @@ public class Path {
         return compareBlockPositions(destination(), pos);
     }
 
+    public Path combine(Path path2, int lowerBoundP1, int upperBoundP1) {
+        int k = upperBoundP1 - lowerBoundP1;
+        PathNode[] newPoints = new PathNode[k + path2.getCurrentPathLength()];
+        System.arraycopy(points, lowerBoundP1, newPoints, 0, k);
+        System.arraycopy(path2.points, 0, newPoints, k, path2.getCurrentPathLength());
+        return new Path(newPoints, path2.getIntendedTarget());
+    }
+
     static boolean compareBlockPositions(@Nullable Vec3d a, @Nullable Vec3d b) {
         return Objects.equal(a, b) || (
                 a != null && b != null
