@@ -1,5 +1,6 @@
 package invmod.common.entity;
 
+import invmod.common.InvSounds;
 import invmod.common.InvasionMod;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -83,7 +84,7 @@ public class EntityIMEgg extends EntityIMLiving {
     }
 
     private void hatch() {
-        playSound("invmod:egghatch" + (getRandom().nextInt(1) + 1), 1, 1);
+        playSound(InvSounds.ENTITY_EGG_HATCH, 1, 1);
         setHatched(true);
         if (!getWorld().isClient) {
             if (contents != null) {

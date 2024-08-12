@@ -1,35 +1,22 @@
 package invmod.common.entity;
 
-import invmod.common.ConfigInvasion;
-import invmod.common.IBlockAccessExtended;
-import invmod.common.INotifyTask;
+import org.jetbrains.annotations.Nullable;
+
+import invmod.common.InvSounds;
 import invmod.common.InvasionMod;
 import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAICharge;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAIKillEntity;
-import invmod.common.entity.ai.EntityAILeaderTarget;
-import invmod.common.entity.ai.EntityAIRallyBehindEntity;
 import invmod.common.entity.ai.EntityAISimpleTarget;
-import invmod.common.entity.ai.EntityAISprint;
-import invmod.common.entity.ai.EntityAIStoop;
 import invmod.common.entity.ai.EntityAITargetOnNoNexusPath;
 import invmod.common.entity.ai.EntityAITargetRetaliate;
 import invmod.common.entity.ai.EntityAIWaitForEngy;
 import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.INexusAccess;
-import invmod.common.util.IPosition;
-
-import java.util.Calendar;
-import java.util.List;
-
-import com.google.common.base.Predicates;
-
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -42,15 +29,11 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
@@ -173,9 +156,10 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
+    @Nullable
     protected SoundEvent getAmbientSound() {
         if (getTier() == 3) {
-            return getRandom().nextInt(3) == 0 ? "invmod:bigzombie1" : null;
+            return getRandom().nextInt(3) == 0 ? InvSounds.ENTITY_BIG_ZOMBIE_AMBIENT : null;
         }
 
         return SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_AMBIENT;

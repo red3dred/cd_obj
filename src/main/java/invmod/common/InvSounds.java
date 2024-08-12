@@ -10,6 +10,8 @@ public interface InvSounds {
     SoundEvent ENTITY_VULTURE_SQUAWK = register("v_squawk");
     SoundEvent ENTITY_VULTURE_DEATH = register("v_death");
     SoundEvent ENTITY_VULTURE_SCREECH = register("v_screech");
+    SoundEvent ENTITY_EGG_HATCH = register("egghatch");
+    SoundEvent ENTITY_BIG_ZOMBIE_AMBIENT = register("bigzombie");
 
     private static SoundEvent register(String name) {
         Identifier id = InvasionMod.id(name);

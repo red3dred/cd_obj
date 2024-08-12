@@ -1,13 +1,10 @@
 package invmod.common.entity;
 
-import invmod.common.IBlockAccessExtended;
-import invmod.common.INotifyTask;
+import invmod.common.InvSounds;
 import invmod.common.InvasionMod;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAIKillEntity;
-import invmod.common.entity.ai.EntityAILeaderTarget;
-import invmod.common.entity.ai.EntityAIRallyBehindEntity;
 import invmod.common.entity.ai.EntityAISimpleTarget;
 import invmod.common.entity.ai.EntityAISprint;
 import invmod.common.entity.ai.EntityAIStoop;
@@ -17,13 +14,8 @@ import invmod.common.entity.ai.EntityAIWaitForEngy;
 import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.INexusAccess;
-import invmod.common.util.IPosition;
-
 import java.util.List;
 
-import com.google.common.base.Predicates;
-
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -34,11 +26,9 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -46,8 +36,6 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public class EntityIMZombie extends AbstractIMZombieEntity {
@@ -176,10 +164,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     @Override
     protected void updateSound() {
         if (terrainModifier.isBusy()) {
-            if (--throttled2 <= 0) {
-                playSound("invmod:scrape" + (getRandom().nextInt(3) + 1), 0.85F, 1.0F / (getRandom().nextFloat() * 0.5F + 1.0F));
-                this.throttled2 = (45 + this.rand.nextInt(20));
-            }
+            super.updateSound();
         }
     }
 
@@ -187,11 +172,10 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         return 10;
     }
 
-
     @Override
     public SoundEvent getAmbientSound() {
         if (super.getTier() == 3) {
-            return getRandom().nextInt(3) == 0 ? "invmod:bigzombie1" : null;
+            return getRandom().nextInt(3) == 0 ? InvSounds.ENTITY_BIG_ZOMBIE_AMBIENT : null;
         }
 
         return SoundEvents.ENTITY_ZOMBIE_AMBIENT;

@@ -66,7 +66,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     @Override
-    public final int getTier() {
+    public int getTier() {
         return dataTracker.get(TIER);
     }
 
