@@ -268,7 +268,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 				if (pathEndEntity != null && pathEndEntity.getY() - theEntity.getY() <= 0 && theEntity.squaredDistanceTo(pathEndEntity) < 4.5D) {
 					theEntity.getMoveControl().moveTo(
 					        pathEndEntity.getX(),
-					        pathEndEntity.getBoundingBox().minY,
+					        pathEndEntity.getY(),
 					        pathEndEntity.getZ(), moveSpeed);
 				} else {
 					theEntity.getMoveControl().moveTo(
@@ -333,18 +333,13 @@ public class NavigatorIM implements INotifyTask, INavigation {
 
 	@Override
     public String getStatus() {
-		String s = "";
-		if (this.autoPathToEntity) {
-			s = s + "Auto:";
-		}
+		String s = autoPathToEntity ?  "Auto:" : "";
 		if (noPath()) {
-			s = s + "NoPath:";
-			return s;
+			return s + "NoPath:";
 		}
-		s = s + "Pathing:";
-		s = s + "Node[" + path.getCurrentPathIndex() + "/" + path.getCurrentPathLength() + "]:";
+		s += "Pathing: Node[" + path.getCurrentPathIndex() + "/" + path.getCurrentPathLength() + "]:";
 		if (!nodeActionFinished && activeNode != null) {
-			s = s + "Action[" + activeNode.action + "]:";
+			s += "Action[" + activeNode.action + "]:";
 		}
 		return s;
 	}
@@ -478,7 +473,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return this.theEntity;
 	}
 
-	private int getPathableYPos() {
+	@SuppressWarnings("deprecation")
+    private int getPathableYPos() {
 		if (!theEntity.isTouchingWater() || !canSwim) {
 			return theEntity.getBlockPos().getY();
 		}
@@ -603,7 +599,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return true;
 	}
 
-	protected boolean isSafeToStandAt(BlockPos.Mutable pos, Vec3i size, Vec3d entityPosition, Vec3d delta) {
+	@SuppressWarnings("deprecation")
+    protected boolean isSafeToStandAt(BlockPos.Mutable pos, Vec3i size, Vec3d entityPosition, Vec3d delta) {
 	    pos.move(-size.getX() / 2, 0, -size.getZ() / 2);
 
 		if (!isPositionClear(pos, size, entityPosition, delta.x, delta.z)) {
@@ -626,7 +623,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return true;
 	}
 
-	protected boolean isPositionClear(BlockPos pos, Vec3i size, Vec3d entityPostion, double vecX, double vecZ) {
+	@SuppressWarnings("deprecation")
+    protected boolean isPositionClear(BlockPos pos, Vec3i size, Vec3d entityPostion, double vecX, double vecZ) {
 	    for (BlockPos p : BlockPos.iterate(pos, pos.add(size))) {
 	        double d = p.getX() + 0.5D - entityPostion.x;
             double d1 = p.getZ() + 0.5D - entityPostion.z;
@@ -642,7 +640,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return true;
 	}
 
-	protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
+	@SuppressWarnings("deprecation")
+    protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
 		if (to.getY() > from.getY()) {
 			BlockState block = theEntity.getWorld().getBlockState(from.add(0, entity.getCollideSize().getYCoord(), 0));
 			if (!block.isAir() && block.blocksMovement()) {
@@ -658,7 +657,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return isPositionClear(pos, size.toBlockPos());
 	}
 
-	protected boolean isPositionClear(BlockPos pos, BlockPos size) {
+	@SuppressWarnings("deprecation")
+    protected boolean isPositionClear(BlockPos pos, BlockPos size) {
 	    for (BlockPos p : BlockPos.iterate(pos, pos.add(size))) {
 	        BlockState block = theEntity.getWorld().getBlockState(p);
 

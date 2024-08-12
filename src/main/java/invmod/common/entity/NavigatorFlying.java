@@ -3,6 +3,7 @@ package invmod.common.entity;
 
 import org.joml.Vector3f;
 
+import invmod.common.util.MathUtil;
 import it.unimi.dsi.fastutil.floats.FloatFloatPair;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import net.minecraft.block.BlockState;
@@ -11,14 +12,14 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
 public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 	private static final int VISION_RESOLUTION_H = 30;
 	private static final int VISION_RESOLUTION_V = 20;
-	private static final float FOV_H = 300;
-	private static final float FOV_V = 220;
+
 	private final EntityIMFlying theEntity;
 	private INavigationFlying.MoveType moveType = INavigationFlying.MoveType.MIXED;
 	private boolean wantsToBeFlying;
@@ -77,10 +78,7 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 
 	@Override
     public float getDistanceToCirclingRadius() {
-	    if (finalTarget == null) {
-	        return Float.MAX_VALUE;
-	    }
-		return (float)theEntity.getPos().distanceTo(finalTarget) - circlingRadius;
+		return finalTarget == null ? Float.MAX_VALUE : (float)theEntity.getPos().distanceTo(finalTarget) - circlingRadius;
 	}
 
 	@Override
@@ -185,28 +183,28 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 
 	@Override
     public boolean tryMoveToEntity(Entity targetEntity, float targetRadius, float speed) {
-		if (this.moveType != INavigationFlying.MoveType.PREFER_WALKING) {
+		if (moveType != INavigationFlying.MoveType.PREFER_WALKING) {
 			clearPath();
-			this.pathEndEntity = targetEntity;
-			this.finalTarget = pathEndEntity.getPos();
-			this.isCircling = false;
+			pathEndEntity = targetEntity;
+			finalTarget = pathEndEntity.getPos();
+			isCircling = false;
 			return true;
 		}
 
-		this.theEntity.setPathfindFlying(false);
+		theEntity.setPathfindFlying(false);
 		return super.tryMoveToEntity(targetEntity, targetRadius, speed);
 	}
 
 	@Override
     public boolean tryMoveToXYZ(Vec3d pos, float targetRadius, float speed) {
-		if (this.moveType != INavigationFlying.MoveType.PREFER_WALKING) {
+		if (moveType != INavigationFlying.MoveType.PREFER_WALKING) {
 			clearPath();
-			this.finalTarget = pos;
-			this.isCircling = false;
+			finalTarget = pos;
+			isCircling = false;
 			return true;
 		}
 
-		this.theEntity.setPathfindFlying(false);
+		theEntity.setPathfindFlying(false);
 		return super.tryMoveToXYZ(pos, targetRadius, speed);
 	}
 
@@ -219,13 +217,13 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 	@Override
     public void clearPath() {
 		super.clearPath();
-		this.pathEndEntity = null;
-		this.isCircling = false;
+		pathEndEntity = null;
+		isCircling = false;
 	}
 
 	@Override
     public boolean isCircling() {
-		return this.isCircling;
+		return isCircling;
 	}
 
 	@Override
@@ -233,25 +231,15 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 		if (!noPath()) {
 			return super.getStatus();
 		}
-		String s = "";
-		if (isAutoPathingToEntity()) {
-			s = s + "Auto:";
-		}
-
-		s = s + "Flyer:";
-		if (this.isCircling) {
-			s = s + "Circling:";
-		} else if (this.wantsToBeFlying) {
-			if (this.theEntity.getFlyState() == FlyState.TAKEOFF)
-				s = s + "TakeOff:";
-			else {
-				s = s + "Flying:";
-			}
-
-		} else if ((this.theEntity.getFlyState() == FlyState.LANDING) || (this.theEntity.getFlyState() == FlyState.TOUCHDOWN))
-			s = s + "Landing:";
+		String s = (isAutoPathingToEntity() ? "Auto:" : "") + "Flyer:";
+		if (isCircling) {
+			s += "Circling:";
+		} else if (wantsToBeFlying) {
+		    s += (theEntity.getFlyState() == FlyState.TAKEOFF ? "TakeOff:" : "Flying:");
+		} else if (theEntity.getFlyState() == FlyState.LANDING || theEntity.getFlyState() == FlyState.TOUCHDOWN)
+			s += "Landing:";
 		else {
-			s = s + "Ground";
+			s += "Ground";
 		}
 		return s;
 	}
@@ -259,45 +247,46 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 	@Override
     protected void pathFollow() {
 		Vec3d vec3d = getEntityPosition();
-		int maxNextLeg = this.path.getCurrentPathLength();
+		int maxNextLeg = path.getCurrentPathLength();
 
-		float fa = MathHelper.square(this.theEntity.getWidth() * 0.5F);
-		for (int j = this.path.getCurrentPathIndex(); j < maxNextLeg; j++) {
-			if (vec3d.squaredDistanceTo(this.path.getPositionAtIndex(this.theEntity, j)) < fa)
-				this.path.setCurrentPathIndex(j + 1);
+		float fa = MathHelper.square(theEntity.getWidth() * 0.5F);
+		for (int j = path.getCurrentPathIndex(); j < maxNextLeg; j++) {
+			if (vec3d.squaredDistanceTo(path.getPositionAtIndex(theEntity, j)) < fa) {
+				path.setCurrentPathIndex(j + 1);
+			}
 		}
 	}
 
 	@Override
     protected void noPathFollow() {
-		if ((this.theEntity.getMoveState() != MoveState.FLYING) && (this.theEntity.getAIGoal() == Goal.CHILL)) {
+		if (theEntity.getMoveState() != MoveState.FLYING && theEntity.getAIGoal() == Goal.CHILL) {
 			setWantsToBeFlying(false);
 			return;
 		}
 
-		if (this.moveType == INavigationFlying.MoveType.PREFER_FLYING)
+		if (moveType == INavigationFlying.MoveType.PREFER_FLYING)
 			setWantsToBeFlying(true);
-		else if (this.moveType == INavigationFlying.MoveType.PREFER_WALKING) {
+		else if (moveType == INavigationFlying.MoveType.PREFER_WALKING) {
 			setWantsToBeFlying(false);
 		}
-		if (++this.timeSinceVision >= this.visionUpdateRate) {
-			this.timeSinceVision = 0;
-			if ((!this.precisionTarget) || (this.pathEndEntity == null))
+		if (++timeSinceVision >= visionUpdateRate) {
+			timeSinceVision = 0;
+			if (!precisionTarget || pathEndEntity == null) {
 				updateHeading();
-			else {
-				updateHeadingDirectTarget(this.pathEndEntity);
+			} else {
+				updateHeadingDirectTarget(pathEndEntity);
 			}
-			theEntity.setTargetPos(convertToVector(this.targetYaw, this.targetPitch, this.targetSpeed).toVector3f());
+			theEntity.setTargetPos(convertToVector(targetYaw, targetPitch, targetSpeed).toVector3f());
 		}
 		Vector3f target = theEntity.getTargetPos();
-		this.theEntity.getMoveControl().moveTo(target.x, target.y, target.z, this.targetSpeed);
+		this.theEntity.getMoveControl().moveTo(target.x, target.y, target.z, targetSpeed);
 	}
 
 	protected Vec3d convertToVector(float yaw, float pitch, float idealSpeed) {
-		int time = this.visionUpdateRate + 20;
-		double x = this.theEntity.getX() + -Math.sin(yaw * MathHelper.RADIANS_PER_DEGREE) * idealSpeed * time;
-		double y = this.theEntity.getY() + Math.sin(pitch * MathHelper.RADIANS_PER_DEGREE) * idealSpeed * time;
-		double z = this.theEntity.getZ() + Math.cos(yaw * MathHelper.RADIANS_PER_DEGREE) * idealSpeed * time;
+		int time = visionUpdateRate + 20;
+		double x = theEntity.getX() + -Math.sin(yaw * MathHelper.RADIANS_PER_DEGREE) * idealSpeed * time;
+		double y = theEntity.getY() + Math.sin(pitch * MathHelper.RADIANS_PER_DEGREE) * idealSpeed * time;
+		double z = theEntity.getZ() + Math.cos(yaw * MathHelper.RADIANS_PER_DEGREE) * idealSpeed * time;
 		return new Vec3d(x, y, z);
 	}
 
@@ -305,17 +294,15 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 		float pixelDegreeH = 10;
 		float pixelDegreeV = 11;
 		for (int i = 0; i < VISION_RESOLUTION_H; i++) {
-			double nextAngleH = i * pixelDegreeH + 0.5D * pixelDegreeH - 150 + this.theEntity.getYaw();
+			double nextAngleH = i * pixelDegreeH + 0.5D * pixelDegreeH - 150 + theEntity.getYaw();
 			for (int j = 0; j < 20; j++) {
 				double nextAngleV = j * pixelDegreeV + 0.5D * pixelDegreeV - 110;
-				double y = this.theEntity.getY() + Math.sin(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * this.visionDistance;
-				double distanceXZ = Math.cos(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * this.visionDistance;
-				double x = this.theEntity.getX() + -Math.sin(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
-				double z = this.theEntity.getZ() + Math.cos(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
-				Vec3d target = new Vec3d(x, y, z);
-				Vec3d origin = this.theEntity.getPos().add(0, 1, 0);
+				double y = theEntity.getY() + Math.sin(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * visionDistance;
+				double distanceXZ = Math.cos(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * visionDistance;
+				double x = theEntity.getX() + -Math.sin(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
+				double z = theEntity.getZ() + Math.cos(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
 
-				BlockHitResult object = this.theEntity.getWorld().raycast(new RaycastContext(origin, target, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, theEntity));
+				BlockHitResult object = this.theEntity.getWorld().raycast(new RaycastContext(theEntity.getPos().add(0, 1, 0), new Vec3d(x, y, z), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, theEntity));
 				if ((object != null) && object.getType() == Type.BLOCK) {
 					this.retina[i][j] = (float)object.getPos().distanceTo(theEntity.getPos());
 				} else {
@@ -327,103 +314,86 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 
 		for (int i = 1; i < 29; i++) {
 			for (int j = 1; j < 19; j++) {
-				float appeal = this.retina[i][j];
-				appeal += this.retina[(i - 1)][(j - 1)];
-				appeal += this.retina[(i - 1)][j];
-				appeal += this.retina[(i - 1)][(j + 1)];
-				appeal += this.retina[i][(j - 1)];
-				appeal += this.retina[i][(j + 1)];
-				appeal += this.retina[(i + 1)][(j - 1)];
-				appeal += this.retina[(i + 1)][j];
-				appeal += this.retina[(i + 1)][(j + 1)];
+				float appeal = retina[i][j];
+				appeal += retina[(i - 1)][(j - 1)];
+				appeal += retina[(i - 1)][j];
+				appeal += retina[(i - 1)][(j + 1)];
+				appeal += retina[i][(j - 1)];
+				appeal += retina[i][(j + 1)];
+				appeal += retina[(i + 1)][(j - 1)];
+				appeal += retina[(i + 1)][j];
+				appeal += retina[(i + 1)][(j + 1)];
 				appeal /= 9;
-				this.headingAppeal[(i - 1)][(j - 1)] = appeal;
+				headingAppeal[(i - 1)][(j - 1)] = appeal;
 			}
 
 		}
 
 		if (this.isCircling) {
-			double dX = this.finalTarget.x - this.theEntity.getX();
-			double dY = this.finalTarget.y - this.theEntity.getY();
-			double dZ = this.finalTarget.z - this.theEntity.getZ();
+			double dX = finalTarget.x - theEntity.getX();
+			double dY = finalTarget.y - theEntity.getY();
+			double dZ = finalTarget.z - theEntity.getZ();
 			double dXZ = Math.sqrt(dX * dX + dZ * dZ);
 
 			if ((dXZ > 0) && (dXZ > this.circlingRadius * 0.6D)) {
-				double intersectRadius = Math.abs((this.circlingRadius - dXZ) * 2) + 8;
+				double intersectRadius = Math.abs((circlingRadius - dXZ) * 2) + 8;
 				if (intersectRadius > this.circlingRadius * 1.8D) {
 					intersectRadius = dXZ + 5;
 				}
 
-				float preferredYaw1 = (float) (Math.acos((dXZ * dXZ - this.circlingRadius * this.circlingRadius + intersectRadius * intersectRadius) / (2 * dXZ) / intersectRadius) * MathHelper.DEGREES_PER_RADIAN);
+				float preferredYaw1 = (float) (Math.acos((dXZ * dXZ - circlingRadius * circlingRadius + intersectRadius * intersectRadius) / (2 * dXZ) / intersectRadius) * MathHelper.DEGREES_PER_RADIAN);
 				float preferredYaw2 = -preferredYaw1;
 
 				double dYaw = Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90;
 				preferredYaw1 = (float) (preferredYaw1 + dYaw);
 				preferredYaw2 = (float) (preferredYaw2 + dYaw);
 
-				float preferredPitch = (float) (Math.atan((dY + this.circlingHeight) / intersectRadius) * MathHelper.DEGREES_PER_RADIAN);
+				float preferredPitch = (float) (Math.atan((dY + circlingHeight) / intersectRadius) * MathHelper.DEGREES_PER_RADIAN);
 
-				float yawBias = (float) (1.5D * Math.abs(dXZ - this.circlingRadius) / this.circlingRadius);
-				float pitchBias = (float) (1.9D * Math.abs((dY + this.circlingHeight) / this.circlingHeight));
+				float yawBias = (float) (1.5D * Math.abs(dXZ - circlingRadius) / circlingRadius);
+				float pitchBias = (float) (1.9D * Math.abs((dY + circlingHeight) / circlingHeight));
 
 				doHeadingBiasPass(this.headingAppeal, preferredYaw1, preferredYaw2, preferredPitch, yawBias, pitchBias);
 			} else {
 				float yawToTarget = (float) (Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90);
 				yawToTarget += 180;
-				float preferredPitch = (float) (Math.atan((dY + this.circlingHeight) / Math.abs(this.circlingRadius - dXZ)) * MathHelper.DEGREES_PER_RADIAN);
-				float yawBias = (float) (0.5D * Math.abs(dXZ - this.circlingRadius) / this.circlingRadius);
-				float pitchBias = (float) (0.9D * Math.abs((dY + this.circlingHeight) / this.circlingHeight));
+				float preferredPitch = (float) (Math.atan((dY + circlingHeight) / Math.abs(circlingRadius - dXZ)) * MathHelper.DEGREES_PER_RADIAN);
+				float yawBias = (float) (0.5D * Math.abs(dXZ - circlingRadius) / circlingRadius);
+				float pitchBias = (float) (0.9D * Math.abs((dY + circlingHeight) / circlingHeight));
 				doHeadingBiasPass(this.headingAppeal, yawToTarget, yawToTarget, preferredPitch, yawBias, pitchBias);
 			}
-		} else if (this.pathEndEntity != null) {
-			double dX = this.pathEndEntity.getX() - this.theEntity.getX();
-			double dY = this.pathEndEntity.getY() - this.theEntity.getY();
-			double dZ = this.pathEndEntity.getZ() - this.theEntity.getZ();
-			double dXZ = Math.sqrt(dX * dX + dZ * dZ);
-			float yawToTarget = (float) (Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90);
-			float pitchToTarget = (float) (Math.atan(dY / dXZ) * MathHelper.DEGREES_PER_RADIAN);
-			doHeadingBiasPass(this.headingAppeal, yawToTarget, yawToTarget, pitchToTarget, 20.6F, 20.6F);
+		} else if (pathEndEntity != null) {
+			Vec2f angles = MathUtil.toPolar(pathEndEntity.getPos().subtract(theEntity.getPos()));
+			doHeadingBiasPass(headingAppeal, angles.y, angles.y, angles.x, 20.6F, 20.6F);
 		}
 
 		if (this.pathEndEntity == null) {
-			float dOldYaw = MathHelper.subtractAngles(this.targetYaw, this.theEntity.getYaw());
-			float dOldPitch = this.targetPitch;
-			float approxLastTargetX = dOldYaw / pixelDegreeH + 14;
-			float approxLastTargetY = dOldPitch / pixelDegreeV + 9;
-			if (approxLastTargetX > 28)
-				approxLastTargetX = 28;
-			else if (approxLastTargetX < 0) {
-				approxLastTargetX = 0;
-			}
-			if (approxLastTargetY > 18)
-				approxLastTargetY = 18;
-			else if (approxLastTargetY < 0) {
-				approxLastTargetY = 0;
-			}
+			float dOldYaw = MathHelper.subtractAngles(targetYaw, theEntity.getYaw());
+			float dOldPitch = targetPitch;
+			float approxLastTargetX = MathHelper.clamp(dOldYaw / pixelDegreeH + 14, 0, 28);
+			float approxLastTargetY = MathHelper.clamp(dOldPitch / pixelDegreeV + 9, 0, 18);
 			float statusQuoBias = 0.4F;
 			float falloffDist = 30;
 			for (int i = 0; i < 28; i++) {
 				float dXSq = (approxLastTargetX - i) * (approxLastTargetX - i);
 				for (int j = 0; j < 18; j++) {
 					float dY = approxLastTargetY - j;
-					int tmp1306_1304 = j;
-					float[] tmp1306_1303 = this.headingAppeal[i];
-					tmp1306_1303[tmp1306_1304] = ((float) (tmp1306_1303[tmp1306_1304] * (1 + statusQuoBias - statusQuoBias * Math.sqrt(dXSq + dY * dY) / falloffDist)));
+					headingAppeal[i][j] *= (float)(1 + statusQuoBias - statusQuoBias * Math.sqrt(dXSq + dY * dY) / falloffDist);
 				}
 			}
 		}
 
-		if (this.pitchBias != 0) {
-			doHeadingBiasPass(this.headingAppeal, 0, 0, this.pitchBias, 0, this.pitchBiasAmount);
+		if (pitchBias != 0) {
+			doHeadingBiasPass(headingAppeal, 0, 0, pitchBias, 0, pitchBiasAmount);
 		}
 
-		if (!this.wantsToBeFlying) {
+		if (!wantsToBeFlying) {
 		    FloatFloatPair landingInfo = appraiseLanding();
 			if (landingInfo.secondFloat() < 4) {
 				if (landingInfo.firstFloat() >= 0.9F)
-					doHeadingBiasPass(this.headingAppeal, 0, 0, -45, 0, 3.5F);
+					doHeadingBiasPass(headingAppeal, 0, 0, -45, 0, 3.5F);
 				else if (landingInfo.firstFloat() >= 0.65F) {
-					doHeadingBiasPass(this.headingAppeal, 0, 0, -15, 0, 0.4F);
+					doHeadingBiasPass(headingAppeal, 0, 0, -15, 0, 0.4F);
 				}
 
 			} else if (landingInfo.firstFloat() >= 0.52F) {
@@ -433,17 +403,14 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 		}
 
 		IntIntPair bestPixel = chooseCoordinate();
-		this.targetYaw = (this.theEntity.getYaw() - 150 + (bestPixel.firstInt() + 1) * pixelDegreeH + 0.5F * pixelDegreeH);
-		this.targetPitch = (-110 + (bestPixel.secondInt() + 1) * pixelDegreeV + 0.5F * pixelDegreeV);
+		targetYaw = (theEntity.getYaw() - 150 + (bestPixel.firstInt() + 1) * pixelDegreeH + 0.5F * pixelDegreeH);
+		targetPitch = (-110 + (bestPixel.secondInt() + 1) * pixelDegreeV + 0.5F * pixelDegreeV);
 	}
 
 	protected void updateHeadingDirectTarget(Entity target) {
-		double dX = target.getX() - this.theEntity.getX();
-		double dY = target.getY() - this.theEntity.getY();
-		double dZ = target.getZ() - this.theEntity.getZ();
-		double dXZ = Math.sqrt(dX * dX + dZ * dZ);
-		this.targetYaw = ((float) (Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90));
-		this.targetPitch = ((float) (Math.atan(dY / dXZ) * MathHelper.DEGREES_PER_RADIAN));
+	    Vec2f angles = MathUtil.toPolar(target.getPos().subtract(theEntity.getPos()));
+		this.targetYaw = angles.x;
+		this.targetPitch = angles.y;
 	}
 
 	protected IntIntPair chooseCoordinate() {
@@ -451,7 +418,7 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 		int bestPixelY = 0;
 		for (int i = 0; i < 28; i++) {
 			for (int j = 0; j < 18; j++) {
-				if (this.headingAppeal[bestPixelX][bestPixelY] < this.headingAppeal[i][j]) {
+				if (headingAppeal[bestPixelX][bestPixelY] < headingAppeal[i][j]) {
 					bestPixelX = i;
 					bestPixelY = j;
 				}
@@ -472,42 +439,39 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 		float pixelDegreeH = 10;
 		float pixelDegreeV = 11;
 		for (int i = 0; i < array.length; i++) {
-			double nextAngleH = (i + 1) * pixelDegreeH + 0.5D * pixelDegreeH - 150 + this.theEntity.getYaw();
+			double nextAngleH = (i + 1) * pixelDegreeH + 0.5D * pixelDegreeH - 150 + theEntity.getYaw();
 			double dYaw1 = MathHelper.wrapDegrees(preferredYaw1 - nextAngleH);
 			double dYaw2 = MathHelper.wrapDegrees(preferredYaw2 - nextAngleH);
 			double yawBiasAmount = 1 + Math.min(Math.abs(dYaw1), Math.abs(dYaw2)) * yawBias / 180;
 			for (int j = 0; j < array[0].length; j++) {
 				double nextAngleV = (j + 1) * pixelDegreeV + 0.5D * pixelDegreeV - 110;
 				double pitchBiasAmount = 1 + Math.abs(MathHelper.wrapDegrees(preferredPitch - nextAngleV)) * pitchBias / 180;
-				int tmp162_160 = j;
-				float[] tmp162_159 = array[i];
-				tmp162_159[tmp162_160] = ((float) (tmp162_159[tmp162_160] / (yawBiasAmount * pitchBiasAmount)));
+				array[i][j] /= yawBiasAmount * pitchBiasAmount;
 			}
 		}
 	}
 
 	private void setWantsToBeFlying(boolean flag) {
-		this.wantsToBeFlying = flag;
-		this.theEntity.getMoveControl().setWantsToBeFlying(flag);
+		wantsToBeFlying = flag;
+		theEntity.getMoveControl().setWantsToBeFlying(flag);
 	}
 
 	private FloatFloatPair appraiseLanding() {
 		float safety = 0;
 		float distance = 0;
 		int landingResolution = 3;
-		double nextAngleH = this.theEntity.getYaw();
+		double nextAngleH = theEntity.getYaw();
 		for (int i = 0; i < landingResolution; i++) {
 			double nextAngleV = -90 + i * VISION_RESOLUTION_H / landingResolution;
-			double y = this.theEntity.getY() + Math.sin(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * 64;
+			double y = theEntity.getY() + Math.sin(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * 64;
 			double distanceXZ = Math.cos(nextAngleV * MathHelper.RADIANS_PER_DEGREE) * 64;
-			double x = this.theEntity.getX() + -Math.sin(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
-			double z = this.theEntity.getZ() + Math.cos(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
-			Vec3d target = new Vec3d(x, y, z);
-			Vec3d origin = this.theEntity.getPos();
-			BlockHitResult hit = this.theEntity.getWorld().raycast(new RaycastContext(origin, target, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, theEntity));
+			double x = theEntity.getX() + -Math.sin(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
+			double z = theEntity.getZ() + Math.cos(nextAngleH * MathHelper.RADIANS_PER_DEGREE) * distanceXZ;
+			Vec3d origin = theEntity.getPos();
+			BlockHitResult hit = theEntity.getWorld().raycast(new RaycastContext(origin, new Vec3d(x, y, z), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, theEntity));
 			if (hit != null && hit.getType() == Type.BLOCK) {
-				BlockState Block = this.theEntity.getWorld().getBlockState(hit.getBlockPos());
-				if (!this.theEntity.avoidsBlock(Block)) {
+				BlockState Block = theEntity.getWorld().getBlockState(hit.getBlockPos());
+				if (!theEntity.avoidsBlock(Block)) {
 					safety += 0.7F;
 				}
 				if (hit.getSide() == Direction.UP) {
@@ -518,8 +482,6 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 				distance += 64;
 			}
 		}
-		distance /= landingResolution;
-		safety /= landingResolution;
-		return FloatFloatPair.of(Float.valueOf(safety), Float.valueOf(distance));
+		return FloatFloatPair.of(safety / landingResolution, distance / landingResolution);
 	}
 }

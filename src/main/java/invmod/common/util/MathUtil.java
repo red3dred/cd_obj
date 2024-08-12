@@ -1,10 +1,22 @@
 package invmod.common.util;
 
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 
 public interface MathUtil {
     double MAX_DEGREES = 360;
     double HALF_MAX_DEGREES = 180;
+
+    /**
+     * Converts a vector to a polar angles (pitch, yaw)
+     */
+    static Vec2f toPolar(Vec3d vector) {
+        return new Vec2f(
+                ((float) (Math.atan(vector.getY() / vector.horizontalLength()) * MathHelper.DEGREES_PER_RADIAN)),
+                ((float) (Math.atan2(vector.getZ(), vector.getX()) * MathHelper.DEGREES_PER_RADIAN - 90))
+        );
+    }
 
     static double boundAnglePiRad(double angle) {
         angle %= Math.TAU;

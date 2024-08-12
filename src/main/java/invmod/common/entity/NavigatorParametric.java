@@ -13,25 +13,25 @@ public abstract class NavigatorParametric extends NavigatorIM {
     }
 
     public void onUpdateNavigation(int paramElapsed) {
-        this.totalTicks += 1;
-        if ((noPath()) || (this.waitingForNotify)) {
+        totalTicks++;
+        if (noPath() || waitingForNotify) {
             return;
         }
-        if ((canNavigate()) && (this.nodeActionFinished)) {
-            int pathIndex = this.path.getCurrentPathIndex();
-            pathFollow(this.timeParam + paramElapsed);
-            doMovementTo(this.timeParam);
+        if (canNavigate() && nodeActionFinished) {
+            int pathIndex = path.getCurrentPathIndex();
+            pathFollow(timeParam + paramElapsed);
+            doMovementTo(timeParam);
 
-            if (this.path.getCurrentPathIndex() != pathIndex) {
-                this.ticksStuck = 0;
-                if (this.activeNode.action != PathAction.NONE) {
-                    this.nodeActionFinished = false;
+            if (path.getCurrentPathIndex() != pathIndex) {
+                ticksStuck = 0;
+                if (activeNode.action != PathAction.NONE) {
+                    nodeActionFinished = false;
                 }
             }
         }
-        if (this.nodeActionFinished) {
-            if (!isPositionClear(this.activeNode.pos, this.theEntity)) {
-                if (this.theEntity.onPathBlocked(this.path, this)) {
+        if (nodeActionFinished) {
+            if (!isPositionClear(activeNode.pos, theEntity)) {
+                if (theEntity.onPathBlocked(path, this)) {
                     setDoingTaskAndHold();
                 } else {
                     clearPath();
@@ -53,10 +53,10 @@ public abstract class NavigatorParametric extends NavigatorIM {
                 theEntity.getMovementSpeed());
 
         if (Math.abs(theEntity.squaredDistanceTo(movePos.position())) < minMoveToleranceSq) {
-            this.timeParam = param;
-            this.ticksStuck -= 1;
+            timeParam = param;
+            ticksStuck--;
         } else {
-            this.ticksStuck += 1;
+            ticksStuck++;
         }
     }
 
@@ -65,15 +65,15 @@ public abstract class NavigatorParametric extends NavigatorIM {
     protected abstract boolean isReadyForNextNode(int paramInt);
 
     protected void pathFollow(int param) {
-        int nextIndex = this.path.getCurrentPathIndex() + 1;
+        int nextIndex = path.getCurrentPathIndex() + 1;
         if (isReadyForNextNode(param)) {
-            if (nextIndex < this.path.getCurrentPathLength()) {
-                this.timeParam = 0;
-                this.path.setCurrentPathIndex(nextIndex);
-                this.activeNode = this.path.getPathPointFromIndex(this.path.getCurrentPathIndex());
+            if (nextIndex < path.getCurrentPathLength()) {
+                timeParam = 0;
+                path.setCurrentPathIndex(nextIndex);
+                activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
             }
         } else {
-            this.timeParam = param;
+            timeParam = param;
         }
     }
 

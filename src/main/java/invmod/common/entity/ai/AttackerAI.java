@@ -66,7 +66,6 @@ public class AttackerAI {
         }
     }
 
-    @Deprecated
     public IBlockAccessExtended wrapEntityData(BlockView terrainMap) {
         return new TerrainDataLayer(terrainMap, entityDensityData);
     }
