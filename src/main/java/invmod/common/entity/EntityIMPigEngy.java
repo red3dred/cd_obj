@@ -485,9 +485,9 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig
 	public void onBlockRemoved(int paramInt1, int paramInt2, int paramInt3, Block block) {
 	}
 
-	   @Deprecated
-	    @Override
-	    public String getLegacyName() {
-	       return "IMPigManEngineer-T" + this.getTier();
-	    }
+	@Deprecated
+	@Override
+	public String getLegacyName() {
+	    return "IMPigManEngineer-T" + this.getTier();
+	}
 }

@@ -56,7 +56,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
 
     @Override
     protected void initGoals() {
-        // added entityaiswimming and increased all other tasksordernumers with 1
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(2, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
         goalSelector.add(3, new EntityAIAttackNexus(this));
@@ -108,14 +107,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    public String getSpecies() {
-        return "ZombiePigman";
-    }
-
-    @Override
     public void updateAnimation(boolean override) {
-        // System.out.println(this.getXCoord()+" "+this.getYCoord()+"
-        // "+this.getZCoord()+" charging:"+this.isCharging());
         if (!getWorld().isClient && (terrainModifier.isBusy() || override)) {
             setSwinging(true);
         }

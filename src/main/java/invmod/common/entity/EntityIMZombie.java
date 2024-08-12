@@ -126,11 +126,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     }
 
     @Override
-    public String getSpecies() {
-        return "Zombie";
-    }
-
-    @Override
     public int getTier() {
         return super.getTier() < 3 ? 2 : 3;
     }

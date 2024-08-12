@@ -3,7 +3,6 @@ package invmod.common.entity;
 import org.jetbrains.annotations.Nullable;
 
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAISimpleTarget;
@@ -62,16 +61,6 @@ public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
     @Override
     protected SoundEvent getDeathSound() {
         return SoundEvents.ENTITY_SKELETON_DEATH;
-    }
-
-    @Override
-    public String getSpecies() {
-        return "Skeleton";
-    }
-
-    @Override
-    public int getTier() {
-        return 1;
     }
 
     @Override

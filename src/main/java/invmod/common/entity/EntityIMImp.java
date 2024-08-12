@@ -1,13 +1,10 @@
 package invmod.common.entity;
 
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
 import invmod.common.entity.ai.EntityAIKillEntity;
 import invmod.common.entity.ai.EntityAISimpleTarget;
-import invmod.common.entity.ai.EntityAISprint;
-import invmod.common.entity.ai.EntityAIStoop;
 import invmod.common.entity.ai.EntityAITargetOnNoNexusPath;
 import invmod.common.entity.ai.EntityAITargetRetaliate;
 import invmod.common.entity.ai.EntityAIWaitForEngy;
@@ -15,76 +12,56 @@ import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
+public class EntityIMImp extends EntityIMMob {
+    public EntityIMImp(EntityType<EntityIMImp> type, World world, INexusAccess nexus) {
+        super(type, world, nexus);
+        setMovementSpeed(0.3F);
+        setAttackStrength(3);
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+        setGender(1);
+        setJumpHeight(1);
+        setCanClimb(true);
+    }
 
+    public EntityIMImp(EntityType<EntityIMImp> type, World world) {
+        this(type, world, null);
+    }
 
-public class EntityIMImp extends EntityIMMob
-{
-private int tier;
-  public EntityIMImp(EntityType<EntityIMImp> type, World world, INexusAccess nexus)
-  {
-    super(type, world, nexus);
-    setBaseMoveSpeedStat(0.3F);
-    this.attackStrength = 3;
-    this.tier=1;
-    setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-    setName("Imp");
-    setGender(1);
-    setJumpHeight(1);
-    setCanClimb(true);
+    @Override
+    protected void initGoals() {
+        goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
+        goalSelector.add(2, new EntityAIAttackNexus(this));
+        goalSelector.add(3, new EntityAIWaitForEngy(this, 4, true));
+        goalSelector.add(4, new EntityAIKillEntity<>(this, MobEntity.class, 40));
+        goalSelector.add(5, new EntityAIGoToNexus(this));
+        goalSelector.add(6, new EntityAIWanderIM(this));
+        goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 8));
+        goalSelector.add(8, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
+        goalSelector.add(8, new LookAroundGoal(this));
 
-    setAI();
-  }
+        targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, getAggroRange()));
+        targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, getSenseRange(), false));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
+        targetSelector.add(5, new RevengeGoal(this));
+        targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
+    }
 
-  public EntityIMImp(EntityType<EntityIMImp> type, World world)
-  {
-    this(type, world, null);
-  }
-
-  @Override
-  public String getSpecies()
-  {
-    return "Imp";
-  }
-
-  @Override
-  public int getTier()
-  {
-    return this.tier;
-  }
-
-  protected void setAI()
-	{
-		//added entityaiswimming and increased all other tasksordernumers with 1
-		this.tasks = new EntityAITasks(this.worldObj.theProfiler);
-		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(1, new EntityAIKillEntity(this, EntityPlayer.class, 40));
-		this.tasks.addTask(1, new EntityAIKillEntity(this, EntityPlayerMP.class, 40));
-		this.tasks.addTask(2, new EntityAIAttackNexus(this));
-		this.tasks.addTask(3, new EntityAIWaitForEngy(this, 4.0F, true));
-		this.tasks.addTask(4, new EntityAIKillEntity(this, EntityLiving.class, 40));
-		this.tasks.addTask(5, new EntityAIGoToNexus(this));
-		this.tasks.addTask(6, new EntityAIWanderIM(this));
-		this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityIMCreeper.class, 12.0F));
-		this.tasks.addTask(8, new EntityAILookIdle(this));
-
-
-		this.targetTasks = new EntityAITasks(this.worldObj.theProfiler);
-		this.targetTasks.addTask(0, new EntityAITargetRetaliate(this, EntityLiving.class, this.getAggroRange()));
-		this.targetTasks.addTask(1, new EntityAISimpleTarget(this, EntityPlayer.class, this.getSenseRange(), false));
-		this.targetTasks.addTask(2, new EntityAISimpleTarget(this, EntityPlayer.class, this.getAggroRange(), true));
-		this.targetTasks.addTask(5, new EntityAIHurtByTarget(this, false));
-		this.targetTasks.addTask(3, new EntityAITargetOnNoNexusPath(this, EntityIMPigEngy.class, 3.5F));
-
-	}
-
-  @Override
-	public boolean attackEntityAsMob(Entity entity)
-	{
-	  	entity.setFire(3);
-		return  super.attackEntityAsMob(entity);
-	}
+    @Override
+    public boolean tryAttack(Entity entity) {
+        if (super.tryAttack(entity)) {
+            entity.setFireTicks(3);
+            return true;
+        }
+        return false;
+    }
 
 }

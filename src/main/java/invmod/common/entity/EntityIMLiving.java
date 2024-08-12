@@ -5,7 +5,6 @@ import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
 import invmod.common.IPathfindable;
 import invmod.common.InvasionMod;
-import invmod.common.SparrowAPI;
 import invmod.common.item.InvItems;
 import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.EntityConstruct.BuildableMob;
@@ -57,7 +56,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IPosition, IHasNexus, SparrowAPI, IHasAiGoals, BuildableMob {
+public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IPosition, IHasNexus, IHasAiGoals, BuildableMob {
     protected static final float DEFAULT_SOFT_STRENGTH = 2.5F;
     protected static final float DEFAULT_HARD_STRENGTH = 5.5F;
     protected static final float DEFAULT_SOFT_COST = 2;
@@ -192,8 +191,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     private IPosition currentTargetPos = new CoordsInt(0, 0, 0);
     private IPosition lastBreathExtendPos = new CoordsInt(0, 0, 0);
-
-    private String simplyID = "needID";
 
     private int gender;
 
@@ -691,39 +688,36 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return InvasionMod.getConfig().debugMode;
     }
 
-    @Override
-    public boolean isHostile() {
+    @Deprecated
+    public final boolean isHostile() {
         return this.isHostile;
     }
 
-    @Override
-    public boolean isNeutral() {
+    @Deprecated
+    public final boolean isNeutral() {
         return this.creatureRetaliates;
     }
 
-    @Override
+    @Deprecated
     public boolean isThreatTo(Entity entity) {
         return isHostile && entity instanceof PlayerEntity;
     }
 
-    @Override
-    public final Entity getAttackingTarget() {
-        return getTarget();
-    }
-
-    @Override
     public int getGender() {
         return gender;
     }
 
-    @Override
     public float getSize() {
         return getHeight() * getWidth();
     }
 
-    @Override
+    public int getTier() {
+        return 1;
+    }
+
+    @Deprecated
     public String getSimplyID() {
-        return simplyID;
+        return null;
     }
 
     @Override

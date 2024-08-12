@@ -164,9 +164,4 @@ public class EntityIMBird extends EntityIMFlying {
     protected void updateBeakAnimation() {
         beakController.update();
     }
-
-    @Override
-    public String getSpecies() {
-        return "Bird";
-    }
 }

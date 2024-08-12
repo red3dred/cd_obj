@@ -1,11 +1,12 @@
-/*package invmod.client.render;
-
+package invmod.client.render;
+/*
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-
-public class ModelTest extends ModelBase
-{
+*/
+@Deprecated
+public class ModelTest// extends ModelBase
+{/*
   ModelRenderer Shape1;
   ModelRenderer Shape2;
   ModelRenderer Shape3;
@@ -53,5 +54,5 @@ public class ModelTest extends ModelBase
     setRotation(this.Shape1, f, f1, f2);
     setRotation(this.Shape2, f, f1, f2);
     setRotation(this.Shape3, f, f1, f2);
-  }
-}*/
+  }*/
+}

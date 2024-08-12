@@ -42,21 +42,6 @@ public class EntityIMEgg extends EntityIMLiving {
     }
 
     @Override
-    public String getSpecies() {
-        return null;
-    }
-
-    @Override
-    public boolean isHostile() {
-        return false;
-    }
-
-    @Override
-    public boolean isNeutral() {
-        return false;
-    }
-
-    @Override
     public boolean isThreatTo(Entity entity) {
         return entity instanceof PlayerEntity;
     }
