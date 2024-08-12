@@ -43,6 +43,7 @@ public class InvasionMod implements ModInitializer {
         });
         InvBlocks.bootstrap();
         InvItems.bootstrap();
+        InvSounds.boostrap();
         InvEntities.bootstrap();
     }
 }

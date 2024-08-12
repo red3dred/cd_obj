@@ -1,6 +1,8 @@
 package invmod.common.entity;
 
 
+import org.joml.Vector3f;
+
 import it.unimi.dsi.fastutil.floats.FloatFloatPair;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import net.minecraft.block.BlockState;
@@ -28,7 +30,7 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 	private int timeSinceVision = 3;
 	private float[][] retina = new float[VISION_RESOLUTION_H][VISION_RESOLUTION_V];
 	private float[][] headingAppeal = new float[28][18];
-	private Vec3d intermediateTarget = Vec3d.ZERO;
+
 	private Vec3d finalTarget;
 	private boolean isCircling;
 	private float circlingHeight;
@@ -285,9 +287,10 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 			else {
 				updateHeadingDirectTarget(this.pathEndEntity);
 			}
-			this.intermediateTarget = convertToVector(this.targetYaw, this.targetPitch, this.targetSpeed);
+			theEntity.setTargetPos(convertToVector(this.targetYaw, this.targetPitch, this.targetSpeed).toVector3f());
 		}
-		this.theEntity.getMoveHelper().moveTo(this.intermediateTarget.x, this.intermediateTarget.y, this.intermediateTarget.z, this.targetSpeed);
+		Vector3f target = theEntity.getTargetPos();
+		this.theEntity.getMoveControl().moveTo(target.x, target.y, target.z, this.targetSpeed);
 	}
 
 	protected Vec3d convertToVector(float yaw, float pitch, float idealSpeed) {
@@ -458,11 +461,11 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 	}
 
 	protected void setTarget(double x, double y, double z) {
-		intermediateTarget = new Vec3d(x, y, z);
+		theEntity.setTargetPos(new Vec3d(x, y, z).toVector3f());
 	}
 
-	protected Vec3d getTarget() {
-		return intermediateTarget;
+	protected Vector3f getTarget() {
+		return theEntity.getTargetPos();
 	}
 
 	protected void doHeadingBiasPass(float[][] array, float preferredYaw1, float preferredYaw2, float preferredPitch, float yawBias, float pitchBias) {
@@ -485,7 +488,7 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 
 	private void setWantsToBeFlying(boolean flag) {
 		this.wantsToBeFlying = flag;
-		this.theEntity.getMoveHelper().setWantsToBeFlying(flag);
+		this.theEntity.getMoveControl().setWantsToBeFlying(flag);
 	}
 
 	private FloatFloatPair appraiseLanding() {

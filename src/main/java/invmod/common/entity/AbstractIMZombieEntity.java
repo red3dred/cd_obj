@@ -4,27 +4,21 @@ import com.google.common.base.Predicates;
 
 import invmod.common.IBlockAccessExtended;
 import invmod.common.INotifyTask;
+import invmod.common.InvSounds;
 import invmod.common.nexus.INexusAccess;
-import invmod.common.util.IPosition;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 
 public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICanDig {
     private static final TrackedData<Integer> TIER = DataTracker.registerData(AbstractIMZombieEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -113,7 +107,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     protected void updateSound() {
         if (terrainModifier.isBusy() && --throttled2 <= 0) {
-            playSound("invmod:scrape" + (getRandom().nextInt(3) + 1), 0.85F, 1 / (getRandom().nextFloat() * 0.5F + 1));
+            playSound(InvSounds.SCRAPE, 0.85F, 1 / (getRandom().nextFloat() * 0.5F + 1));
             throttled2 = 45 + getRandom().nextInt(20);
         }
     }
@@ -123,7 +117,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     @Override
     public void mobTick() {
         super.mobTick();
-        this.terrainModifier.onUpdate();
+        terrainModifier.onUpdate();
     }
 
     @Override
@@ -139,7 +133,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     @Override
     protected int getNextAirUnderwater(int air) {
         if (getTier() == 2 && getFlavour() == 2) {
-            return this.getNextAirOnLand(air);
+            return getNextAirOnLand(air);
         }
         return super.getNextAirUnderwater(air);
     }
@@ -202,7 +196,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     @Override
     protected boolean onPathBlocked(Path path, INotifyTask notifee) {
         if (!path.isFinished() && (hasNexus() || getAttacking() != null)) {
-            if (path.getFinalPathPoint().distanceTo(path.getIntendedTarget()) > 2.2D && (path.getCurrentPathIndex() + 2) >= (path.getCurrentPathLength() / 2)) {
+            if (path.getFinalPathPoint().distanceTo(path.getIntendedTarget()) > 2.2D && path.getCurrentPathIndex() + 2 >= path.getCurrentPathLength() / 2) {
                 return false;
             }
             PathNode node = path.getPathPointFromIndex(path.getCurrentPathIndex());
@@ -217,10 +211,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     @Override
     public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
-            float multiplier = 1;
-            if ((terrainMap instanceof IBlockAccessExtended i)) {
-                multiplier += (i.getData(node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
-            }
+            float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
             if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
                 multiplier += 2;
@@ -245,13 +236,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        if (entity == null) {
-            setDestructiveness(1);
-        } else if (((entity instanceof EntityIMPigEngy)) || ((entity instanceof EntityIMCreeper))) {
-            setDestructiveness(0);
-        } else {
-            setDestructiveness(1);
-        }
+        setDestructiveness(entity instanceof EntityIMPigEngy || entity instanceof EntityIMCreeper ? 0 : 1);
     }
 
     @Override

@@ -7,6 +7,7 @@ import invmod.common.InvasionMod;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityAttachmentType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
@@ -56,6 +57,7 @@ public interface InvEntities {
     EntityType<EntityIMBird> BIRD = register("bird", betaFeature(EntityType.Builder.<EntityIMBird>create(EntityIMBird::new, SpawnGroup.MONSTER)
             .dimensions(1, 1).maxTrackingRange(10).trackingTickInterval(10)));
     EntityType<EntityIMGiantBird> VULTURE = register("vulture", betaFeature(EntityType.Builder.<EntityIMGiantBird>create(EntityIMGiantBird::new, SpawnGroup.MONSTER)
+            .attachment(EntityAttachmentType.VEHICLE, 0, -0.2F, 0)
             .dimensions(1.9F, 2.8F).maxTrackingRange(10).trackingTickInterval(10)));
 
     private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> builder) {

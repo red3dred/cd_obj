@@ -2,8 +2,8 @@ package invmod.common.entity;
 
 import org.joml.Vector3f;
 
+import invmod.common.InvSounds;
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import invmod.common.entity.ai.EntityAIBirdFight;
 import invmod.common.entity.ai.EntityAIBoP;
 import invmod.common.entity.ai.EntityAICircleTarget;
@@ -15,18 +15,22 @@ import invmod.common.entity.ai.EntityAIStabiliseFlying;
 import invmod.common.entity.ai.EntityAISwoop;
 import invmod.common.entity.ai.EntityAIWatchTarget;
 import invmod.common.nexus.INexusAccess;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class EntityIMGiantBird extends EntityIMBird {
-    private static final float PICKUP_OFFSET_X = 0.0F;
-    private static final float PICKUP_OFFSET_Y = 0.2F;
-    private static final float PICKUP_OFFSET_Z = -0.92F;
+    private static final Vector3f PICKUP_OFFSET = new Vector3f(0, 0.2F, -0.92F);
     private static final float MODEL_ROTATION_OFFSET_Y = 1.9F;
     private static final byte TRIGGER_SQUAWK = 10;
-    private static final byte TRIGGER_SCREECH = 10;
-    private static final byte TRIGGER_DEATHSOUND = 10;
+    private static final byte TRIGGER_SCREECH = 11;
+    private static final byte TRIGGER_DEATHSOUND = 12;
 
     public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world) {
         this(type, world, null);
@@ -37,101 +41,77 @@ public class EntityIMGiantBird extends EntityIMBird {
         setName("Bird");
         setGender(2);
         setAttackStrength(5);
-        setSize(1.9F, 2.8F);
+        //setSize(1.9F, 2.8F);
         setGravity(0.03F);
         setThrust(0.028F);
         setMaxPoweredFlightSpeed(0.9F);
         setLiftFactor(0.35F);
         setThrustComponentRatioMin(0.0F);
         setThrustComponentRatioMax(0.5F);
-        setMaxTurnForce(getGravity() * 8.0F);
+        setMaxTurnForce((float)getGravity() * 8.0F);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         setBaseMoveSpeedStat(0.4F);
-        setAI();
-        setDebugMode(1);
     }
 
     @Override
     protected void initGoals() {
-        this.tasks = new EntityAITasks(this.worldObj.theProfiler);
+        goalSelector.add(0, new EntityAISwoop(this));
 
-        this.tasks.addTask(0, new EntityAISwoop(this));
+        goalSelector.add(3, new EntityAIBoP(this));
+        goalSelector.add(4, new EntityAIFlyingStrike(this));
+        goalSelector.add(4, new EntityAIFlyingTackle(this));
+        goalSelector.add(4, new EntityAIPickUpEntity(this, PICKUP_OFFSET, 1.5F, 1.5F, 20, 45, 45));
+        goalSelector.add(4, new EntityAIStabiliseFlying(this, 35));
+        goalSelector.add(4, new EntityAICircleTarget(this, 300, 16.0F, 45.0F));
+        goalSelector.add(4, new EntityAIBirdFight<>(this, ZombieEntity.class, 25, 0.4F));
+        goalSelector.add(4, new EntityAIWatchTarget(this));
 
-        this.tasks.addTask(3, new EntityAIBoP(this));
-        this.tasks.addTask(4, new EntityAIFlyingStrike(this));
-        this.tasks.addTask(4, new EntityAIFlyingTackle(this));
-        this.tasks.addTask(4, new EntityAIPickUpEntity(this,
-                new Vector3f(PICKUP_OFFSET_X, PICKUP_OFFSET_Y, PICKUP_OFFSET_Z), 1.5F, 1.5F, 20, 45, 45));
-        this.tasks.addTask(4, new EntityAIStabiliseFlying(this, 35));
-        this.tasks.addTask(4, new EntityAICircleTarget(this, 300, 16.0F, 45.0F));
-        this.tasks.addTask(4, new EntityAIBirdFight<>(this, ZombieEntity.class, 25, 0.4F));
-        this.tasks.addTask(4, new EntityAIWatchTarget(this));
-
-        this.targetTasks = new EntityAITasks(this.worldObj.theProfiler);
-
-        this.targetTasks.addTask(2, new EntityAISimpleTarget<>(this, ZombieEntity.class, 58.0F, true));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, ZombieEntity.class, 58.0F, true));
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
-        if ((getDebugMode() == 1) && (!this.worldObj.isRemote)) {
+    public void tick() {
+        super.tick();
+        if (getDebugMode() && !getWorld().isClient) {
             setRenderLabel(getAIGoal() + "\n" + getNavigatorNew());
         }
     }
 
     @Override
-    public boolean canDespawn() {
-        return false;
+    protected void updatePassengerPosition(Entity passenger, Entity.PositionUpdater positionUpdater) {
+        super.updatePassengerPosition(passenger, positionUpdater);
+        passenger.setYaw(getCarriedEntityYawOffset() + getYaw());
     }
 
     @Override
-    public void updateRiderPosition() {
-        if (this.riddenByEntity != null) {
-            double x = 0.0D;
-            double y = getMountedYOffset() - 1.899999976158142D;
-            double z = -0.9200000166893005D;
+    protected Vec3d getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+        double x = PICKUP_OFFSET.x;
+        double y = -MODEL_ROTATION_OFFSET_Y;
+        double z = -PICKUP_OFFSET.z;
 
-            double dAngle = this.rotationPitch / 180.0F * 3.141592653589793D;
-            double sinF = Math.sin(dAngle);
-            double cosF = Math.cos(dAngle);
-            double tmp = z * cosF - y * sinF;
-            y = y * cosF + z * sinF;
-            z = tmp;
+        double dAngle = getPitch() * MathHelper.RADIANS_PER_DEGREE;
+        double sinF = Math.sin(dAngle);
+        double cosF = Math.cos(dAngle);
+        double tmp = z * cosF - y * sinF;
+        y = y * cosF + z * sinF;
+        z = tmp;
 
-            dAngle = this.rotationYaw / 180.0F * 3.141592653589793D;
-            sinF = Math.sin(dAngle);
-            cosF = Math.cos(dAngle);
-            tmp = x * cosF - z * sinF;
-            z = z * cosF + x * sinF;
-            x = tmp;
+        dAngle = getYaw() * MathHelper.RADIANS_PER_DEGREE;
+        sinF = Math.sin(dAngle);
+        cosF = Math.cos(dAngle);
 
-            y += 1.899999976158142D + this.riddenByEntity.getYOffset();
-
-            this.riddenByEntity.lastTickPosX = (this.lastTickPosX + x);
-            this.riddenByEntity.lastTickPosY = (this.lastTickPosY + y);
-            this.riddenByEntity.lastTickPosZ = (this.lastTickPosZ + z);
-            this.riddenByEntity.setPosition(this.posX + x, this.posY + y, this.posZ + z);
-            this.riddenByEntity.rotationYaw = (getCarriedEntityYawOffset() + this.rotationYaw);
-        }
-    }
-
-    @Override
-    public boolean shouldRiderSit() {
-        return false;
-    }
-
-    @Override
-    public double getMountedYOffset() {
-        return -0.2000000029802322D;
+        return new Vec3d(
+                x * cosF - z * sinF,
+                y + MODEL_ROTATION_OFFSET_Y,
+                z * cosF + x * sinF
+        );
     }
 
     @Override
     public void doScreech() {
-        if (!this.worldObj.isRemote) {
-            this.worldObj.playSoundAtEntity(this, "invmod:v_screech" + (rand.nextInt(2) + (Integer) 1), 6.0F,
-                    1.0F + (this.rand.nextFloat() * 0.2F - 0.1F));
-            this.worldObj.setEntityState(this, TRIGGER_SCREECH);
+        if (!getWorld().isClient) {
+            playSound(InvSounds.ENTITY_VULTURE_SCREECH, 6, 1 + (getRandom().nextFloat() * 0.2F - 0.1F));
+            getWorld().sendEntityStatus(this, TRIGGER_SCREECH);
         } else {
             setBeakState(35);
         }
@@ -148,34 +128,40 @@ public class EntityIMGiantBird extends EntityIMBird {
     }
 
     @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return InvSounds.ENTITY_VULTURE_SQUAWK;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return InvSounds.ENTITY_VULTURE_DEATH;
+    }
+
+    @Override
     protected void doDeathSound() {
-        if (!this.worldObj.isRemote) {
-            this.worldObj.playSoundAtEntity(this, "invmod:v_death1", 1.9F,
-                    1.0F + (this.rand.nextFloat() * 0.2F - 0.1F));
-            this.worldObj.setEntityState(this, TRIGGER_DEATHSOUND);
+        if (!getWorld().isClient) {
+            getWorld().sendEntityStatus(this, TRIGGER_DEATHSOUND);
         } else {
             setBeakState(25);
         }
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public void handleHealthUpdate(byte b) {
-        super.handleHealthUpdate(b);
-        if (b == 10) {
+    public void handleStatus(byte status) {
+        super.handleStatus(status);
+        if (status == TRIGGER_SQUAWK) {
             doSquawk();
-        } else if (b == 10) {
+        } else if (status == TRIGGER_SCREECH) {
             doScreech();
-        } else if (b == 10) {
+        } else if (status == TRIGGER_DEATHSOUND) {
             doDeathSound();
         }
     }
 
     private void doSquawk() {
-        if (!this.worldObj.isRemote) {
-            this.worldObj.playSoundAtEntity(this, "invmod:v_squawk" + (rand.nextInt(3) + (Integer) 1), 1.9F,
-                    1.0F + (this.rand.nextFloat() * 0.2F - 0.1F));
-            this.worldObj.setEntityState(this, TRIGGER_SQUAWK);
+        if (!getWorld().isClient) {
+            playSound(InvSounds.ENTITY_VULTURE_SQUAWK, 1.9F, 1.0F + getRandom().nextFloat() * 0.2F - 0.1F);
+            getWorld().sendEntityStatus(this, TRIGGER_SQUAWK);
         } else {
             setBeakState(10);
         }

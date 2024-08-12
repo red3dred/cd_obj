@@ -83,7 +83,7 @@ public class TerrainBuilder implements ITerrainBuild {
             }
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList.toArray(ModifyBlockEntry[]::new), asker, null);
+        return !modList.isEmpty() && modifier.requestTask(modList, asker, null);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class TerrainBuilder implements ITerrainBuild {
             }
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList.toArray(new ModifyBlockEntry[modList.size()]), asker, null);
+        return !modList.isEmpty() && modifier.requestTask(modList, asker, null);
     }
 
     @SuppressWarnings("deprecation")
@@ -143,7 +143,7 @@ public class TerrainBuilder implements ITerrainBuild {
             modList.add(new ModifyBlockEntry(pos.down(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList.toArray(ModifyBlockEntry[]::new), asker, null);
+        return !modList.isEmpty() && modifier.requestTask(modList, asker, null);
     }
 
     @Override
@@ -163,6 +163,6 @@ public class TerrainBuilder implements ITerrainBuild {
             }
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList.toArray(new ModifyBlockEntry[modList.size()]), asker, INotifyTask.NONE);
+        return !modList.isEmpty() && modifier.requestTask(modList, asker, INotifyTask.NONE);
     }
 }

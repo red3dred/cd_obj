@@ -10,9 +10,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.potion.Potion;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public class EntityIMBird extends EntityIMFlying {
@@ -41,9 +38,9 @@ public class EntityIMBird extends EntityIMFlying {
         setThrust(0.1F);
         setMaxPoweredFlightSpeed(0.5F);
         setLiftFactor(0.35F);
-        setThrustComponentRatioMin(0.0F);
+        setThrustComponentRatioMin(0);
         setThrustComponentRatioMax(0.5F);
-        setMaxTurnForce(getGravity() * 8.0F);
+        setMaxTurnForce((float)getGravity() * 8);
         setMoveState(MoveState.STANDING);
         setFlyState(FlyState.GROUNDED);
         setTier(1);
@@ -172,5 +169,4 @@ public class EntityIMBird extends EntityIMFlying {
     public String getSpecies() {
         return "Bird";
     }
-
 }
