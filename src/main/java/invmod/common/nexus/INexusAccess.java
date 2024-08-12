@@ -8,10 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
 public interface INexusAccess extends IPosition {
+
+    boolean forceStart(int wave);
+
+    void stop(boolean killEnemies);
+
     void attackNexus(int paramInt);
 
     void registerMobDied();
@@ -22,6 +28,8 @@ public interface INexusAccess extends IPosition {
 
     int getSpawnRadius();
 
+    boolean setSpawnRadius(int radius);
+
     int getCurrentWave();
 
     World getWorld();
@@ -30,10 +38,11 @@ public interface INexusAccess extends IPosition {
 
     AttackerAI getAttackerAI();
 
+    boolean isActive();
+
     void askForRespawn(EntityIMLiving paramEntityIMLiving);
 
     Map<UUID, Long> getBoundPlayers();
-
 
     default void sendWarning(String translationKey, Object...params) {
         sendMessage(Formatting.RED, translationKey, params);
@@ -44,4 +53,6 @@ public interface INexusAccess extends IPosition {
     }
 
     void sendMessage(Formatting color, String translationKey, Object...params);
+
+    List<Text> getStatus();
 }

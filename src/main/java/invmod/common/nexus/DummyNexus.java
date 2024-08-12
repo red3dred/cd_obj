@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
@@ -35,25 +36,10 @@ public class DummyNexus implements INexusAccess {
         return 0;
     }
 
-    public int getActivationTimer() {
-        return 0;
-    }
 
     @Override
     public int getSpawnRadius() {
         return 45;
-    }
-
-    public int getNexusKills() {
-        return 0;
-    }
-
-    public int getGeneration() {
-        return 0;
-    }
-
-    public int getNexusLevel() {
-        return 1;
     }
 
     @Override
@@ -102,5 +88,29 @@ public class DummyNexus implements INexusAccess {
 
     @Override
     public void sendMessage(Formatting color, String translationKey, Object... params) {
+    }
+
+    @Override
+    public boolean forceStart(int wave) {
+        return true;
+    }
+
+    @Override
+    public void stop(boolean killEnemies) {
+    }
+
+    @Override
+    public boolean setSpawnRadius(int radius) {
+        return true;
+    }
+
+    @Override
+    public boolean isActive() {
+        return false;
+    }
+
+    @Override
+    public List<Text> getStatus() {
+        return List.of();
     }
 }

@@ -11,18 +11,20 @@ import invmod.common.nexus.WaveSpawnerException;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Random;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Consumer;
 
 public class Tester {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Tester.class);
-
     private final Random rand = new Random();
 
+    private final Consumer<String> logger;
+
+    public Tester(Consumer<String> logger) {
+        this.logger = logger;
+    }
+
     public void doWaveBuilderTest(float difficulty, float tierLevel, int lengthSeconds) {
-        LOGGER.info("Doing wave builder test. Difficulty: " + difficulty + ", tier: " + tierLevel + ", length: " + lengthSeconds + " seconds");
-        LOGGER.info("Generating dummy Nexus and fake spawn points...");
+        logger.accept("Doing wave builder test. Difficulty: " + difficulty + ", tier: " + tierLevel + ", length: " + lengthSeconds + " seconds");
+        logger.accept("Generating dummy Nexus and fake spawn points...");
         DummyNexus nexus = new DummyNexus();
         SpawnPointContainer spawnPoints = new SpawnPointContainer();
         for (int i = -170; i < -100; i += 3) {
@@ -31,7 +33,7 @@ public class Tester {
         for (int i = 90; i < 180; i += 3) {
             spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
-        LOGGER.info("Setting radius to 45");
+        logger.accept("Setting radius to 45");
         IMWaveSpawner spawner = new IMWaveSpawner(nexus, 45);
         spawner.giveSpawnPoints(spawnPoints);
         spawner.debugMode(true);
@@ -44,27 +46,27 @@ public class Tester {
         int definedSpawns = 0;
         try {
             spawner.beginNextWave(wave);
-            LOGGER.info("Starting wave.Wave duration: " + spawner.getWaveDuration());
+            logger.accept("Starting wave.Wave duration: " + spawner.getWaveDuration());
             while (!spawner.isWaveComplete()) {
                 spawner.spawn(100);
             }
-            LOGGER.info("Wave finished spawning. Wave rest time: " + spawner.getWaveRestTime());
+            logger.accept("Wave finished spawning. Wave rest time: " + spawner.getWaveRestTime());
             successfulSpawns += spawner.getSuccessfulSpawnsThisWave();
             definedSpawns += spawner.getTotalDefinedMobsThisWave();
         } catch (WaveSpawnerException e) {
-            LOGGER.info(e.getMessage());
+            logger.accept(e.getMessage());
         } catch (Exception e) {
-            LOGGER.info(e.getMessage());
+            logger.accept(e.getMessage());
             e.printStackTrace();
         }
 
-        LOGGER.info("Successful spawns for wave: " + spawner.getSuccessfulSpawnsThisWave());
-        LOGGER.info("Test finished. Total successful spawns: " + successfulSpawns + "  Total defined spawns: " + definedSpawns);
+        logger.accept("Successful spawns for wave: " + spawner.getSuccessfulSpawnsThisWave());
+        logger.accept("Test finished. Total successful spawns: " + successfulSpawns + "  Total defined spawns: " + definedSpawns);
     }
 
     public void doWaveSpawnerTest(int startWave, int endWave) {
-        LOGGER.info("Doing wave spawner test. Start wave: " + startWave + "  End wave: " + endWave);
-        LOGGER.info("Generating dummy Nexus and fake spawn points...");
+        logger.accept("Doing wave spawner test. Start wave: " + startWave + "  End wave: " + endWave);
+        logger.accept("Generating dummy Nexus and fake spawn points...");
         DummyNexus nexus = new DummyNexus();
         SpawnPointContainer spawnPoints = new SpawnPointContainer();
         for (int i = -170; i < -100; i += 3) {
@@ -73,7 +75,7 @@ public class Tester {
         for (int i = 90; i < 180; i += 3) {
             spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
-        LOGGER.info("Setting radius to 45");
+        logger.accept("Setting radius to 45");
         IMWaveSpawner spawner = new IMWaveSpawner(nexus, 45);
         spawner.giveSpawnPoints(spawnPoints);
         spawner.debugMode(true);
@@ -84,46 +86,46 @@ public class Tester {
         for (; startWave <= endWave; startWave++) {
             try {
                 spawner.beginNextWave(startWave);
-                LOGGER.info("Starting wave " + startWave + ". Wave duration: " + spawner.getWaveDuration());
+                logger.accept("Starting wave " + startWave + ". Wave duration: " + spawner.getWaveDuration());
                 while (!spawner.isWaveComplete()) {
                     spawner.spawn(100);
                 }
-                LOGGER.info("Wave finished spawning. Wave rest time: " + spawner.getWaveRestTime());
+                logger.accept("Wave finished spawning. Wave rest time: " + spawner.getWaveRestTime());
                 successfulSpawns += spawner.getSuccessfulSpawnsThisWave();
                 definedSpawns += spawner.getTotalDefinedMobsThisWave();
             } catch (WaveSpawnerException e) {
-                LOGGER.info(e.getMessage());
+                logger.accept(e.getMessage());
             }
         }
 
-        LOGGER.info("Successful spawns last wave: " + spawner.getSuccessfulSpawnsThisWave());
-        LOGGER.info("Test finished. Total successful spawns: " + successfulSpawns + "  Total defined spawns: "
+        logger.accept("Successful spawns last wave: " + spawner.getSuccessfulSpawnsThisWave());
+        logger.accept("Test finished. Total successful spawns: " + successfulSpawns + "  Total defined spawns: "
                 + definedSpawns);
     }
 
     public void doSpawnPointSelectionTest() {
-        LOGGER.info("Doing SpawnPointContainer test");
-        LOGGER.info("Filling with spawn points...");
+        logger.accept("Doing SpawnPointContainer test");
+        logger.accept("Filling with spawn points...");
         SpawnPointContainer spawnPoints = new SpawnPointContainer();
         for (int i = -180; i < 180; i += this.rand.nextInt(3)) {
             spawnPoints.addSpawnPointXZ(new SpawnPoint(new BlockPos(i, 0, 0), i, SpawnType.HUMANOID));
         }
-        LOGGER.info(spawnPoints.getNumberOfSpawnPoints(SpawnType.HUMANOID) + " random points in container");
+        logger.accept(spawnPoints.getNumberOfSpawnPoints(SpawnType.HUMANOID) + " random points in container");
 
-        LOGGER.info("Cycling through ranges... format: min <= x < max");
+        logger.accept("Cycling through ranges... format: min <= x < max");
         for (int i = -180; i < 180; i += 25) {
             int i2 = i + 40;
             if (i2 >= 180)
                 i2 -= 360;
-            LOGGER.info(i + " to " + i2);
+            logger.accept(i + " to " + i2);
             for (int j = 0; j < 4; j++) {
                 SpawnPoint point = spawnPoints.getRandomSpawnPoint(SpawnType.HUMANOID, i, i2);
                 if (point != null) {
-                    LOGGER.info(point.toString());
+                    logger.accept(point.toString());
                 }
             }
         }
-        LOGGER.info("Beginning random stress test");
+        logger.accept("Beginning random stress test");
 
         int count = 0;
         int count2 = 0;
@@ -137,20 +139,20 @@ public class Tester {
                     if (r < r2) {
                         if ((point.getAngle() < r) || (point.getAngle() >= r2)) {
                             count2++;
-                            LOGGER.info(point.toString() + " with specified: " + r + ", " + r2);
+                            logger.accept(point.toString() + " with specified: " + r + ", " + r2);
                         }
 
                     } else if ((point.getAngle() >= r) && (point.getAngle() < r2)) {
                         count2++;
-                        LOGGER.info(point.toString() + " with specified: " + r + ", " + r2);
+                        logger.accept(point.toString() + " with specified: " + r + ", " + r2);
                     }
                 }
             }
 
         }
 
-        LOGGER.info("Tested " + count + " random spawn point retrievals. " + count2 + " results out of bounds.");
+        logger.accept("Tested " + count + " random spawn point retrievals. " + count2 + " results out of bounds.");
 
-        LOGGER.info("Finished test.");
+        logger.accept("Finished test.");
     }
 }

@@ -163,6 +163,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         return boundPlayers;
     }
 
+    @Override
     public boolean isActive() {
         return this.activated;
     }
@@ -312,35 +313,34 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         }
     }
 
-    public void emergencyStop() {
-        InvasionMod.LOGGER.info("Nexus manually stopped by command");
+    @Override
+    public void stop(boolean killEnemies) {
         stop();
-        killAllMobs();
-    }
-
-    public void debugStatus() {
-        for (Map.Entry<UUID, Long> entry : this.getBoundPlayers().entrySet()) {
-            PlayerEntity player = getWorld().getPlayerByUuid(entry.getKey());
-            if (player != null) {
-                player.sendMessage(Text.literal("Current Time: " + getWorld().getTime()));
-                player.sendMessage(Text.literal("Time to next: " + nextAttackTime));
-                player.sendMessage(Text.literal("Days to attack: " + daysToAttack));
-                player.sendMessage(Text.literal("Mobs left: " + mobsLeftInWave));
-                player.sendMessage(Text.literal("Mode: " + mode));
-            }
+        if (killEnemies) {
+            killAllMobs();
         }
     }
 
-    public void debugStartInvaion(int startWave) {
+    @Override
+    public List<Text> getStatus() {
+        return List.of(
+                Text.literal("Current Time: " + getWorld().getTime()),
+                Text.literal("Time to next: " + nextAttackTime),
+                Text.literal("Days to attack: " + daysToAttack),
+                Text.literal("Mobs left: " + mobsLeftInWave),
+                Text.literal("Mode: " + mode)
+        );
+    }
+
+    @Override
+    public boolean forceStart(int startWave) {
         mod_Invasion.tryGetInvasionPermission(this);
         startInvasion(startWave);
         this.activated = true;
+        return true;
     }
 
-    public void createBolt(BlockPos target, int t) {
-        getWorld().spawnEntity(new EntityIMBolt(getWorld(), getPos().toCenterPos(), target.toCenterPos(), t, 1));
-    }
-
+    @Override
     public boolean setSpawnRadius(int radius) {
         if ((!waveSpawner.isActive()) && (radius > 8)) {
             spawnRadius = radius;

@@ -1,135 +1,155 @@
 package invmod.common;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.tree.CommandNode;
+
+import invmod.common.entity.EntityIMBolt;
+import invmod.common.nexus.INexusAccess;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.NumberRangeArgumentType;
+import net.minecraft.predicate.NumberRange.IntRange;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 
 public class InvasionCommand {
-
-    public static LiteralArgumentBuilder<ServerCommandSource> create(CommandRegistryAccess registries) {
-        //TODO:
-        return null;
+    public static LiteralArgumentBuilder<ServerCommandSource> create(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registries) {
+        return CommandManager.literal("invasion")
+                .then(CommandManager.literal("help").executes(context -> help(dispatcher, context.getSource())))
+                .then(CommandManager.literal("status").executes(context -> status(context.getSource())))
+                .then(CommandManager.literal("start").then(CommandManager.argument("wave", IntegerArgumentType.integer(1)).executes(context -> start(context.getSource(), IntegerArgumentType.getInteger(context, "wave")))))
+                .then(CommandManager.literal("stop").executes(context -> stop(context.getSource())))
+                .then(CommandManager.literal("radius")
+                        .then(CommandManager.literal("get").executes(context -> getRadius(context.getSource())))
+                        .then(CommandManager.literal("set").then(CommandManager.argument("radius", IntegerArgumentType.integer(32, 128)).executes(context -> setRadius(context.getSource(), IntegerArgumentType.getInteger(context, "radius"))))))
+                .then(CommandManager.literal("bolt").executes(context -> bolt(context.getSource(), Vec3i.ZERO))
+                    .then(CommandManager.argument("offset", BlockPosArgumentType.blockPos()).executes(context -> bolt(context.getSource(), BlockPosArgumentType.getBlockPos(context, "offset"))))
+                )
+                .then(CommandManager.literal("test")
+                        .then(CommandManager.literal("status").executes(context -> printDebugStatus(context.getSource())))
+                        .then(CommandManager.literal("spawner").executes(context -> testSpawner(context.getSource(), IntRange.between(1, 11)))
+                                .then(CommandManager.argument("waves", NumberRangeArgumentType.intRange()).executes(context -> testSpawner(context.getSource(), NumberRangeArgumentType.IntRangeArgumentType.getRangeArgument(context, "waves")))))
+                        .then(CommandManager.literal("spawnPoints").executes(context -> testSpawnpoints(context.getSource())))
+                        .then(CommandManager.literal("waveBuilder").executes(context -> testWaveBuilder(context.getSource(), 1, 1, 160))
+                                .then(CommandManager.argument("difficuly", FloatArgumentType.floatArg(0)).executes(context -> testWaveBuilder(context.getSource(),
+                                                FloatArgumentType.getFloat(context, "difficuly"), 1, 160))
+                                        .then(CommandManager.argument("tier", FloatArgumentType.floatArg(1)).executes(context -> testWaveBuilder(context.getSource(),
+                                                    FloatArgumentType.getFloat(context, "difficuly"),
+                                                    FloatArgumentType.getFloat(context, "tier"), 160))
+                                                .then(CommandManager.argument("duration", IntegerArgumentType.integer(1, 1000)).executes(context -> testWaveBuilder(context.getSource(),
+                                                        FloatArgumentType.getFloat(context, "difficuly"),
+                                                        FloatArgumentType.getFloat(context, "tier"),
+                                                        IntegerArgumentType.getInteger(context, "duration")))))))
+                );
     }
 
-	public void processCommand(ICommandSender sender, String[] args) {
-		String username = sender.getCommandSenderName();
-		if ((args.length > 0) && (args.length <= 7)) {
-			if (args[0].equalsIgnoreCase("help")) {
-				sendCommandHelp(sender);
-			} else if (args[0].equalsIgnoreCase("begin") || args[0].equalsIgnoreCase("start")) {
-				if (args.length == 2) {
-					int startWave = Integer.parseInt(args[1]);
-					if (mod_Invasion.getFocusNexus() != null) {
-						if(startWave > 0) {
-							mod_Invasion.getFocusNexus().debugStartInvaion(startWave);
-						} else {
-							sender.addChatMessage(new ChatComponentText("There are no waves before the first wave.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-						}
-					}
-				}
-			} else if (args[0].equalsIgnoreCase("end") || args[0].equalsIgnoreCase("stop")) {
-				if (mod_Invasion.getActiveNexus() != null) {
-					mod_Invasion.getActiveNexus().emergencyStop();
-					mod_Invasion.broadcastToAll(EnumChatFormatting.RED, username + " has ended the invasion!");
-				} else {
-					sender.addChatMessage(new ChatComponentText("There is no invasion to end.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-				}
-			} else if (args[0].equalsIgnoreCase("range")) {
-				if (args.length == 2) {
-					int radius = Integer.parseInt(args[1]);
-					if (mod_Invasion.getFocusNexus() != null) {
-						if ((radius >= 32) && (radius <= 128)) {
-							if (mod_Invasion.getFocusNexus().setSpawnRadius(radius)) {
-								sender.addChatMessage(new ChatComponentText("Set Nexus range to " + EnumChatFormatting.DARK_GREEN + radius).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
-							} else {
-								sender.addChatMessage(new ChatComponentText("Can't change range while Nexus is active.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-							}
-						} else {
-							sender.addChatMessage(new ChatComponentText("Range must be between 32 and 128.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-						}
-					} else {
-						sender.addChatMessage(new ChatComponentText("Right-click the Nexus first to set target for commands.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
-					}
-				}
-			} else if (args[0].equalsIgnoreCase("spawnertest")) {
-				int startWave = 1;
-				int endWave = 11;
+    private static void handleWithNexus(ServerCommandSource source, Consumer<INexusAccess> nexusConsumer) {
+        getNexus(source).ifPresentOrElse(nexusConsumer, () -> {
+            source.sendFeedback(() -> Text.literal("Right-click the Nexus first to set target for commands.").formatted(Formatting.GOLD), false);
+        });
+    }
 
-				if (args.length >= 4)
-					return;
-				if (args.length >= 3)
-					endWave = Integer.parseInt(args[2]);
-				if (args.length >= 2) {
-					startWave = Integer.parseInt(args[1]);
-				}
-				Tester tester = new Tester();
-				tester.doWaveSpawnerTest(startWave, endWave);
-			} else if (args[0].equalsIgnoreCase("pointcontainertest")) {
-				Tester tester = new Tester();
-				tester.doSpawnPointSelectionTest();
-			} else if (args[0].equalsIgnoreCase("wavebuildertest")) {
-				float difficulty = 1.0F;
-				float tierLevel = 1.0F;
-				int lengthSeconds = 160;
+    private static Optional<INexusAccess> getNexus(ServerCommandSource source) {
+        return mod_Invasion.getNexus(source.getWorld());
+    }
 
-				if (args.length >= 5)
-					return;
-				if (args.length >= 4)
-					lengthSeconds = Integer.parseInt(args[3]);
-				if (args.length >= 3)
-					tierLevel = Float.parseFloat(args[2]);
-				if (args.length >= 2) {
-					difficulty = Float.parseFloat(args[1]);
-				}
-				Tester tester = new Tester();
-				tester.doWaveBuilderTest(difficulty, tierLevel, lengthSeconds);
-			} else if (args[0].equalsIgnoreCase("nexusstatus")) {
-				if (mod_Invasion.getFocusNexus() != null)
-					mod_Invasion.getFocusNexus().debugStatus();
-			} else if (args[0].equalsIgnoreCase("bolt")) {
-				if (mod_Invasion.getFocusNexus() != null) {
-					int x = mod_Invasion.getFocusNexus().getXCoord();
-					int y = mod_Invasion.getFocusNexus().getYCoord();
-					int z = mod_Invasion.getFocusNexus().getZCoord();
-					int time = 40;
-					if (args.length >= 6)
-						return;
-					if (args.length >= 5)
-						time = Integer.parseInt(args[4]);
-					if (args.length >= 4)
-						z += Integer.parseInt(args[3]);
-					if (args.length >= 3)
-						y += Integer.parseInt(args[2]);
-					if (args.length >= 2) {
-						x += Integer.parseInt(args[1]);
-					}
-					mod_Invasion.getFocusNexus().createBolt(x, y, z, time);
-				}
-			} else if (args[0].equalsIgnoreCase("status")) {
-				sender.addChatMessage(new ChatComponentText("Nexus status: " + EnumChatFormatting.DARK_GREEN + mod_Invasion.getFocusNexus().isActive()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
-			}else{
-				sender.addChatMessage(new ChatComponentText("Command not recognized, use /invasion help for a list of all available commands").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-			}
+    private static int start(ServerCommandSource source, int startingWave) {
+        handleWithNexus(source, nexus -> {
+            nexus.forceStart(startingWave);
+            source.getServer().sendMessage(Text.literal(source.getName() + " has started the invasion!").formatted(Formatting.YELLOW));
+        });
+        return 0;
+    }
 
-		} else {
-			sendCommandHelp(sender);
-		}
+    private static int stop(ServerCommandSource source) {
+        handleWithNexus(source, nexus -> {
+            InvasionMod.LOGGER.info("Nexus manually stopped by command");
+            nexus.stop(true);
+            source.getServer().sendMessage(Text.literal(source.getName() + " has ended the invasion!").formatted(Formatting.RED));
+        });
+        return 0;
+    }
+
+    private static int getRadius(ServerCommandSource source) {
+        handleWithNexus(source, nexus -> {
+            source.sendFeedback(() -> Text.literal("The nexus spawn radius is " + nexus.getSpawnRadius()).formatted(Formatting.GREEN), false);
+        });
+        return 0;
+    }
+
+    private static int setRadius(ServerCommandSource source, int radius) {
+        handleWithNexus(source, nexus -> {
+            if (nexus.setSpawnRadius(radius)) {
+                source.sendFeedback(() -> Text.literal("Set nexus range to " + radius).formatted(Formatting.GREEN), false);
+            } else {
+                source.sendFeedback(() -> Text.literal("Can't change range while Nexus is active.").formatted(Formatting.RED), false);
+            }
+        });
+        return 0;
+    }
+
+    private static int testSpawner(ServerCommandSource source, IntRange waves) {
+        new Tester(message -> {
+            source.sendFeedback(() -> Text.literal(message), false);
+        }).doWaveSpawnerTest(waves.min().orElseThrow(), waves.max().orElseThrow());
+        return 0;
+    }
+
+    private static int testSpawnpoints(ServerCommandSource source) {
+        new Tester(message -> {
+            source.sendFeedback(() -> Text.literal(message), false);
+        }).doSpawnPointSelectionTest();
+        return 0;
+    }
+
+    private static int testWaveBuilder(ServerCommandSource source, float difficulty, float tier, int duration) {
+        new Tester(message -> {
+            source.sendFeedback(() -> Text.literal(message), false);
+        }).doWaveBuilderTest(difficulty, tier, duration);
+        return 0;
+    }
+
+    private static int printDebugStatus(ServerCommandSource source) {
+        handleWithNexus(source, nexus -> {
+            nexus.getStatus().forEach(line -> source.sendFeedback(() -> line, false));
+        });
+        return 0;
+    }
+
+	private static int bolt(ServerCommandSource source, Vec3i offset) {
+	    handleWithNexus(source, nexus -> {
+	        BlockPos nexusPos = nexus.toBlockPos();
+	        source.getWorld().spawnEntity(new EntityIMBolt(source.getWorld(), nexusPos.toCenterPos(), nexusPos.add(offset).toCenterPos(), 40, 1));
+	    });
+        return 0;
+    }
+
+	private static int status(ServerCommandSource source) {
+	    handleWithNexus(source, nexus -> {
+	        source.sendFeedback(() -> Text.literal("Nexus status: ").formatted(Formatting.GREEN).append(Text.literal("" + nexus.isActive()).formatted(Formatting.DARK_GREEN)), false);
+	    });
+
+	    return 0;
 	}
 
-	public String getCommandName() {
-		return "invasion";
-	}
+	private static int help(CommandDispatcher<ServerCommandSource> dispatcher, ServerCommandSource source) {
+	    Map<CommandNode<ServerCommandSource>, String> map = dispatcher.getSmartUsage(dispatcher.getRoot().getChild("invasion"), source);
 
-	public String getCommandUsage(ICommandSender icommandsender) {
-		return "";
-	}
+        for (String name : map.values()) {
+            source.sendFeedback(() -> Text.literal("/" + name), false);
+        }
 
-	public static void sendCommandHelp(ICommandSender sender) {
-		sender.addChatMessage(new ChatComponentText("--- Showing Invasion help page 1 of 1 ---").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_GREEN)));
-		sender.addChatMessage(new ChatComponentText("/invasion begin x" + EnumChatFormatting.GRAY + " - start a wave").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
-		sender.addChatMessage(new ChatComponentText("/invasion end" + EnumChatFormatting.GRAY + " - end the current invasion").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
-		sender.addChatMessage(new ChatComponentText("/invasion range x" + EnumChatFormatting.GRAY + " - set the spawn range").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
+        return map.size();
 	}
-
 }

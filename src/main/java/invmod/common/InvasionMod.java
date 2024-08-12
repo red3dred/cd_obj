@@ -9,6 +9,7 @@ import invmod.common.entity.InvEntities;
 import invmod.common.item.InvItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 
@@ -35,9 +36,11 @@ public class InvasionMod implements ModInitializer {
     public void onInitialize() {
         CONFIG.loadConfig(FabricLoader.getInstance().getConfigDir().resolve("invasion_config.cfg").toFile());
         CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) -> {
-            dispatcher.register(InvasionCommand.create(registries));
+            dispatcher.register(InvasionCommand.create(dispatcher, registries));
         });
-
+        ServerTickEvents.START_WORLD_TICK.register(world -> {
+            BountyHunter.of(world).tick();
+        });
         InvBlocks.bootstrap();
         InvItems.bootstrap();
         InvEntities.bootstrap();
