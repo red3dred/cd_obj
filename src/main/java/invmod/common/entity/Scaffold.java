@@ -9,10 +9,10 @@ import java.util.List;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
@@ -20,7 +20,7 @@ public class Scaffold implements IPathfindable, IPosition {
     private static final int MIN_SCAFFOLD_HEIGHT = 4;
     private BlockPos pos = BlockPos.ORIGIN;
     private int targetHeight;
-    private int orientation;
+    private Direction orientation = Direction.EAST;
     private int[] platforms;
     private IPathfindable pathfindBase;
     private INexusAccess nexus;
@@ -50,11 +50,11 @@ public class Scaffold implements IPathfindable, IPosition {
         }
     }
 
-    public void setOrientation(int i) {
-        this.orientation = i;
+    public void setOrientation(Direction orientation) {
+        this.orientation = orientation;
     }
 
-    public int getOrientation() {
+    public Direction getOrientation() {
         return orientation;
     }
 
@@ -122,7 +122,7 @@ public class Scaffold implements IPathfindable, IPosition {
     public void readFromNBT(NbtCompound compound) {
         setPosition(compound.getInt("xCoord"), compound.getInt("yCoord"), compound.getInt("zCoord"));
         targetHeight = compound.getInt("targetHeight");
-        orientation = compound.getInt("orientation");
+        orientation = Direction.fromHorizontal(compound.getInt("orientation"));
         initialCompletion = compound.getFloat("initialCompletion");
         latestPercentCompleted = compound.getFloat("latestPercentCompleted");
         calcPlatforms();
@@ -133,7 +133,7 @@ public class Scaffold implements IPathfindable, IPosition {
         compound.putInt("yCoord", pos.getY());
         compound.putInt("zCoord", pos.getZ());
         compound.putInt("targetHeight", targetHeight);
-        compound.putInt("orientation", orientation);
+        compound.putInt("orientation", orientation.getHorizontal());
         compound.putFloat("initialCompletion", initialCompletion);
         compound.putFloat("latestPercentCompleted", latestPercentCompleted);
     }
@@ -174,15 +174,15 @@ public class Scaffold implements IPathfindable, IPosition {
         World world = nexus.getWorld();
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (int i = 0; i < targetHeight; i++) {
-            if (world.getBlockState(mutable.set(pos).move(CoordsInt.offsetAdjX[orientation], i, CoordsInt.offsetAdjZ[orientation])).isFullCube(world, mutable)) {
+            if (world.getBlockState(mutable.set(pos).move(orientation).move(Direction.UP, i)).isFullCube(world, mutable)) {
                 existingMainSectionBlocks++;
             }
-            if (world.getBlockState(mutable.set(pos).move(0, 1, 0)).isIn(BlockTags.CLIMBABLE)) {
+            if (world.getBlockState(mutable.set(pos).move(Direction.UP)).isIn(BlockTags.CLIMBABLE)) {
                 existingMainLadderBlocks++;
             }
             if (isLayerPlatform(i)) {
-                for (int j = 0; j < 8; j++) {
-                    if (world.getBlockState(mutable.set(pos).add(CoordsInt.offsetRing1X[j], i, CoordsInt.offsetRing1Z[j])).isFullCube(world, mutable)) {
+                for (BlockPos offset : CoordsInt.OFFSET_RING) {
+                    if (world.getBlockState(mutable.set(pos).move(Direction.UP, i).move(offset)).isFullCube(world, mutable)) {
                         existingPlatformBlocks++;
                     }
                 }
@@ -195,10 +195,10 @@ public class Scaffold implements IPathfindable, IPosition {
         return 0.7F * (0.7F * mainSectionPercent + 0.3F * ladderPercent) + 0.3F * (existingPlatformBlocks / (platforms.length + 1) * 8);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        float materialMultiplier = terrainMap.getBlockState(node.pos).isSolid() ? 2.2F : 1.0F;
+        BlockState state = terrainMap.getBlockState(node.pos);
+        float materialMultiplier = state.isSolidBlock(terrainMap,node.pos) ? 2.2F : 1.0F;
         if (node.action == PathAction.SCAFFOLD_UP) {
             if (prevNode.action != PathAction.SCAFFOLD_UP) {
                 materialMultiplier *= 3.4F;
@@ -211,10 +211,7 @@ public class Scaffold implements IPathfindable, IPosition {
             }
             return prevNode.distanceTo(node) * 1.1F * materialMultiplier;
         }
-        if (node.action == PathAction.LADDER_UP_NX
-                || node.action == PathAction.LADDER_UP_NZ
-                || node.action == PathAction.LADDER_UP_PX
-                || node.action == PathAction.LADDER_UP_PZ) {
+        if (node.action.getType() == PathAction.Type.LADDER && node.action.isHorizontal()) {
             return prevNode.distanceTo(node) * 1.5F * materialMultiplier;
         }
 
@@ -224,15 +221,14 @@ public class Scaffold implements IPathfindable, IPosition {
         return prevNode.distanceTo(node);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         if (pathfindBase != null) {
             pathfindBase.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
         }
         BlockPos positionAbove = currentNode.pos.up();
-        BlockState block = terrainMap.getBlockState(positionAbove);
-        if (currentNode.getPrevious() != null && currentNode.getPrevious().action == PathAction.SCAFFOLD_UP && !avoidsBlock(block)) {
+        BlockState stateAbove = terrainMap.getBlockState(positionAbove);
+        if (currentNode.getPrevious() != null && currentNode.getPrevious().action == PathAction.SCAFFOLD_UP && !avoidsBlock(stateAbove)) {
             pathFinder.addNode(positionAbove, PathAction.SCAFFOLD_UP);
             return;
         }
@@ -241,29 +237,31 @@ public class Scaffold implements IPathfindable, IPosition {
             List<Scaffold> scaffolds = nexus.getAttackerAI().getScaffolds();
             minDistance = nexus.getAttackerAI().getMinDistanceBetweenScaffolds();
             for (int sl = scaffolds.size() - 1; sl >= 0; sl--) {
-                Scaffold scaffold = scaffolds.get(sl);
-                if (scaffold.toBlockPos().isWithinDistance(currentNode.pos, minDistance)) {
+                if (scaffolds.get(sl).toBlockPos().isWithinDistance(currentNode.pos, minDistance)) {
                     return;
                 }
             }
         }
 
-        if (block.isAir() && terrainMap.getBlockState(currentNode.pos.down(2)).isSolid()) {
-            boolean flag = false;
-            for (int i = 1; i < MIN_SCAFFOLD_HEIGHT; i++) {
-                if (terrainMap.getBlockState(currentNode.pos.up(i)).isAir()) {
-                    flag = true;
-                    break;
+        if (stateAbove.isAir()) {
+            BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
+            if (terrainMap.getBlockState(mutable.move(Direction.DOWN, 2)).isSolidBlock(terrainMap, mutable)) {
+                for (int i = 1; i < MIN_SCAFFOLD_HEIGHT; i++) {
+                    if (terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP, i)).isAir()) {
+                        return;
+                    }
                 }
-            }
 
-            if (!flag) {
                 pathFinder.addNode(positionAbove, PathAction.SCAFFOLD_UP);
             }
         }
     }
 
+    @SuppressWarnings("deprecation")
     private boolean avoidsBlock(BlockState state) {
-        return state.isIn(BlockTags.FIRE) || state.isOf(Blocks.BEDROCK) || state.isIn(BlockTags.DOORS) || state.getBlock() instanceof FluidBlock;
+        return state.isIn(BlockTags.FIRE)
+                || state.isOf(Blocks.BEDROCK)
+                || state.isIn(BlockTags.DOORS)
+                || state.isLiquid();
     }
 }

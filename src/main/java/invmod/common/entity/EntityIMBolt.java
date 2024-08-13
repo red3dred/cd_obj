@@ -9,15 +9,14 @@ import net.minecraft.world.World;
 
 public class EntityIMBolt extends Entity
 {
-  private int age;
   private int ticksToRender;
-  private long timeCreated;
-  private double[][] vertices;
-  private long lastVertexUpdate;
+  private long timeCreated = System.currentTimeMillis();
+  private double[][] vertices = new double[3][0];
+  private long lastVertexUpdate = timeCreated;
   private float yaw;
   private float pitch;
   private double distance;
-  private float widthVariance;
+  private float widthVariance = 6;
   private float vecX;
   private float vecY;
   private float vecZ;
@@ -26,11 +25,7 @@ public class EntityIMBolt extends Entity
   public EntityIMBolt(EntityType<EntityIMBolt> type, World world)
   {
     super(type, world);
-    this.age = 0;
-    this.timeCreated = (this.lastVertexUpdate = System.currentTimeMillis());
-    this.vertices = new double[3][0];
-    this.widthVariance = 6.0F;
-    this.ignoreFrustumCheck = true;
+    ignoreCameraFrustum = true;
   }
 
   public EntityIMBolt(World world, double x, double y, double z)

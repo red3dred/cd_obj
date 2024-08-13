@@ -47,7 +47,6 @@ public class IMMoveHelperSpider extends IMMoveHelper {
 
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (BlockPos offset : CoordsInt.OFFSET_ADJACENT_2) {
-            // set bool to true, donno why
             BlockState state = entity.getWorld().getBlockState(mutable.set(pos).move(offset));
             if (state.isFullCube(entity.getWorld(), mutable)) {
                 return Optional.of(DIRECTIONS[(index % 8) / 2]);

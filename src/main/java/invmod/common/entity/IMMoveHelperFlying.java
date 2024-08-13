@@ -105,7 +105,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 
 		if (distanceSquared > 0.04D) {
 			int timeToTurn = 10;
-			float gravity = (float)entity.getGravity();
+			float gravity = (float)entity.getFinalGravity();
 			float liftConstant = gravity;
 			Vec3d acelleration = Vec3d.ZERO;
 			Vec3d velocity = entity.getVelocity();
@@ -239,7 +239,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 
 		entity.setPitch(correctRotation(entity.getPitch(), 40, 4));
 
-		float gravity = (float)entity.getGravity();
+		float gravity = (float)entity.getFinalGravity();
 		float liftConstant = gravity;
 		double liftForce = speed / (entity.getMaxPoweredFlightSpeed() * entity.getLiftFactor()) * liftConstant;
 

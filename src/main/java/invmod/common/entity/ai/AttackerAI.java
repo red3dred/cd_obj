@@ -26,6 +26,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.chunk.ChunkCache;
@@ -231,24 +232,23 @@ public class AttackerAI {
 
     private void orientScaffold(Scaffold scaffold, BlockView terrainMap) {
         int mostBlocks = 0;
-        int highestDirectionIndex = 0;
-        for (int i = 0; i < 4; i++) {
+        Direction highestDirection = CoordsInt.CARDINAL_DIRECTIONS[0];
+        BlockPos.Mutable mutable = scaffold.toBlockPos().mutableCopy();
+        for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
             int blockCount = 0;
             for (int height = 0; height < scaffold.getYCoord(); height++) {
-                BlockPos pos = scaffold.toBlockPos().add(CoordsInt.offsetAdjX[i], height, CoordsInt.offsetAdjZ[i]);
-                if (terrainMap.getBlockState(pos).isFullCube(terrainMap, pos)) {
+                if (terrainMap.getBlockState(mutable.set(scaffold.toBlockPos()).move(Direction.UP, height).move(offset)).isFullCube(terrainMap, mutable)) {
                     blockCount++;
                 }
-                pos = scaffold.toBlockPos().add(CoordsInt.offsetAdjX[i] * 2, height, CoordsInt.offsetAdjZ[i] * 2);
-                if (terrainMap.getBlockState(pos).isFullCube(terrainMap, pos)) {
+                if (terrainMap.getBlockState(mutable.set(scaffold.toBlockPos()).move(Direction.UP, height).move(offset, 2)).isFullCube(terrainMap, mutable)) {
                     blockCount++;
                 }
             }
             if (blockCount > mostBlocks) {
-                highestDirectionIndex = i;
+                highestDirection = offset;
             }
         }
-        scaffold.setOrientation(highestDirectionIndex);
+        scaffold.setOrientation(highestDirection);
     }
 
     private void addNewScaffolds(List<Scaffold> newScaffolds) {

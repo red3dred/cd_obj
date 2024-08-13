@@ -179,7 +179,11 @@ public class EntityIMTrap extends Entity
   public boolean isValidPlacement()
   {
 	  //set bool of blocknormalcubedefault to true, donno why
-    return (this.worldObj.isBlockNormalCubeDefault(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY) - 1, MathHelper.floor_double(this.posZ),true)) && (this.worldObj.getEntitiesWithinAABB(EntityIMTrap.class, this.boundingBox).size() < 2);
+    return (this.worldObj.isBlockNormalCubeDefault(
+            MathHelper.floor_double(this.posX),
+            MathHelper.floor_double(this.posY) - 1,
+            MathHelper.floor_double(this.posZ),true)
+    ) && (this.worldObj.getEntitiesWithinAABB(EntityIMTrap.class, this.boundingBox).size() < 2);
   }
 
   @Override

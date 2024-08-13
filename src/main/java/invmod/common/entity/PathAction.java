@@ -54,6 +54,10 @@ public enum PathAction {
         return direction;
     }
 
+    public boolean isHorizontal() {
+        return direction != null && direction.getAxis().isHorizontal();
+    }
+
     public enum Type {
         NONE,
         LADDER,

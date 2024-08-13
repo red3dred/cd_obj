@@ -214,10 +214,6 @@ public abstract class EntityIMFlying extends EntityIMLiving {
         this.optimalPitch = pitch;
     }
 
-    @Deprecated
-    protected void setLandingSpeedThreshold(float speed) {
-    }
-
     protected void setMaxRunSpeed(float speed) {
         this.maxRunSpeed = speed;
     }
@@ -232,7 +228,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 		return (IMLookHelper)super.getLookControl();
 	}
 
-	   // based on FlyingEntity (originals in comments)
+    // based on FlyingEntity (originals in comments)
 	@Override
 	public void travel(Vec3d movementInput) {
 	    if (isLogicalSideForUpdatingMovement()) {
@@ -295,23 +291,23 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
 		BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
 
-		if (getCollide(terrainMap, mutable.move(Direction.UP)) > 0) {
+		if (getCollide(terrainMap, mutable.move(Direction.UP)) > DestructableType.UNBREAKABLE) {
 			pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
 		}
 
-		if (getCollide(terrainMap, mutable.move(Direction.DOWN, 2)) > 0) {
+		if (getCollide(terrainMap, mutable.move(Direction.DOWN, 2)) > DestructableType.UNBREAKABLE) {
 			pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
 		}
 
-        for (int i = 0; i < 4; i++) {
-
-            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i])) > 0) {
+		for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
                 pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
             }
         }
+
         if (canSwimHorizontal()) {
-            for (int i = 0; i < 4; i++) {
-                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i])) == -1) {
+            for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                 }
             }
@@ -320,7 +316,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
 	@Override
 	public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
-		float multiplier = 1.0F + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
+		float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
 		BlockPos.Mutable mutable = node.pos.mutableCopy();
 
@@ -333,21 +329,19 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 					if (blockType != 2 || i < -2) {
 						break;
 					}
-					multiplier += (6 + i * 2);
+					multiplier += 6 + i * 2;
 					break;
 				}
-
 			}
-
 		}
 
-		for (int i = 0; i < 4; i++) {
+		for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
 			for (int j = 1; j <= 2; j++) {
-				BlockState block = terrainMap.getBlockState(mutable.set(node.pos).move(CoordsInt.offsetAdjX[i] * j, 0, CoordsInt.offsetAdjZ[i] * j));
+				BlockState block = terrainMap.getBlockState(mutable.set(node.pos).move(offset, j));
 				int blockType = getBlockType(block.getBlock());
 				if (blockType != 1) {
 					multiplier += 1.5F - j * 0.5F;
-					if (blockType != 2 || i < -2) {
+					if (blockType != 2) {
 						break;
 					}
 					multiplier += 6 - j * 2;
@@ -364,6 +358,6 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 		}
 
 		BlockState block = terrainMap.getBlockState(node.pos);
-		return prevNode.distanceTo(node) * EntityIMLiving.getBlockCost(block).orElse(block.isSolid() ? 3.2F : 1) * multiplier;
+		return prevNode.distanceTo(node) * EntityIMLiving.getBlockCost(block).orElse(block.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
 	}
 }

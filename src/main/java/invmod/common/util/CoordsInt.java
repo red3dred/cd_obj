@@ -3,28 +3,27 @@ package invmod.common.util;
 import java.util.List;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 public record CoordsInt(int x, int y, int z) implements IPosition {
+    public static final int EAST = 0;
+    public static final int WEST = 1;
+    public static final int SOUTH = 2;
+    public static final int NORTH = 3;
+
+    public static final Direction[] CARDINAL_DIRECTIONS = { Direction.EAST, Direction.WEST, Direction.SOUTH, Direction.NORTH };
+
     @Deprecated
     public static final int[] offsetAdjX = { 1, -1, 0,  0 };
     @Deprecated
     public static final int[] offsetAdjZ = { 0,  0, 1, -1 };
 
-    @Deprecated
-    public static final int[] offsetAdj2X = { 2, 2, -1, -1, 1, 0,  0,  1 };
-    @Deprecated
-    public static final int[] offsetAdj2Z = { 0, 1,  1,  0, 2, 2, -1, -1 };
-    @Deprecated
-    public static final int[] offsetRing1X = { 1, 0, -1, -1, -1, 0, 1, 1 };
-    @Deprecated
-    public static final int[] offsetRing1Z = { 1, 1, 1, 0, -1, -1, -1, 0 };
-
     public static final List<BlockPos> ZERO = List.of();
     public static final List<BlockPos> OFFSET_ADJACENT = List.of(
             new BlockPos( 1, 0, 0),
             new BlockPos(-1, 0, 0),
-            new BlockPos(0, 0, 1),
-            new BlockPos(0, 0, -1)
+            new BlockPos( 0, 0, 1),
+            new BlockPos( 0, 0, -1)
     );
     public static final List<BlockPos> OFFSET_ADJACENT_2 = List.of(
             new BlockPos( 2, 0, 0),

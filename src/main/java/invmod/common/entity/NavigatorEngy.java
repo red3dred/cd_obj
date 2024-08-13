@@ -4,7 +4,6 @@ import invmod.common.IBlockAccessExtended;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 
 public class NavigatorEngy extends NavigatorIM {
@@ -35,12 +34,9 @@ public class NavigatorEngy extends NavigatorIM {
 
     @Override
     protected boolean handlePathAction() {
-        if (!this.actionCleared) {
+        if (!actionCleared) {
             resetStatus();
-            if (getLastActionResult() != Status.SUCCESS) {
-                return false;
-            }
-            return true;
+            return getLastActionResult() == Status.SUCCESS;
         }
 
         if (activeNode.action.getType() == PathAction.Type.LADDER && activeNode.action.getBuildDirection() != Direction.UP) {
@@ -56,8 +52,8 @@ public class NavigatorEngy extends NavigatorIM {
                 return setDoingTaskAndHoldOnPoint();
             }
         } else if (activeNode.action.getType() == PathAction.Type.LADDER) {
-            Vec3i direction = activeNode.action.getBuildDirection().getVector();
-            if (pigEntity.getTerrainBuildEngy().askBuildLadderTower(activeNode, direction.getX(), direction.getZ(), this)) {
+            Direction direction = activeNode.action.getBuildDirection();
+            if (pigEntity.getTerrainBuildEngy().askBuildLadderTower(activeNode, direction, direction.getVector().getZ(), this)) {
                 return setDoingTaskAndHold();
             }
         }

@@ -213,7 +213,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
         if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
             float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
-            if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
+            if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
                 multiplier += 2;
             }
 

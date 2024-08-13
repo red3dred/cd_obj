@@ -55,7 +55,7 @@ class ItemDebugWand extends Item {
 
         EntityType.WOLF.create(world, w -> {}, pos, SpawnReason.COMMAND, true, false);
 
-        Entity entity1 = new EntityIMPigEngy(world);
+        Entity entity1 = InvEntities.PIGMAN_ENGINEER.create(world);
         entity1.setPosition(pos.toBottomCenterPos());
 
         EntityIMZombie zombie = InvEntities.ZOMBIE.create(world);

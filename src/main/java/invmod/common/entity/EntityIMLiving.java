@@ -849,7 +849,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
 
-        if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == 2) {
+        if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
             multiplier += 2;
         }
 
@@ -881,46 +881,39 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         int height = getJumpHeight();
         for (int i = 1; i <= height; i++) {
-            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == 0) {
+            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == DestructableType.UNBREAKABLE) {
                 height = i - 1;
             }
         }
 
         int maxFall = 8;
-        for (int i = 0; i < 4; i++) {
+        for (Direction facing : CoordsInt.CARDINAL_DIRECTIONS) {
             if (currentNode.action != PathAction.NONE) {
-                if (i == 0 && currentNode.action == PathAction.LADDER_UP_NX) {
+                if (facing == Direction.EAST && currentNode.action == PathAction.LADDER_UP_NX) {
                     height = 0;
                 }
-                if (i == 1 && currentNode.action == PathAction.LADDER_UP_PX) {
+                if (facing == Direction.WEST && currentNode.action == PathAction.LADDER_UP_PX) {
                     height = 0;
                 }
-                if (i == 2 && currentNode.action == PathAction.LADDER_UP_NZ) {
+                if (facing == Direction.SOUTH && currentNode.action == PathAction.LADDER_UP_NZ) {
                     height = 0;
                 }
-                if (i == 3 && currentNode.action == PathAction.LADDER_UP_PZ) {
+                if (facing == Direction.NORTH && currentNode.action == PathAction.LADDER_UP_PZ) {
                     height = 0;
                 }
             }
-            int yOffset = 0;
             int currentY = currentNode.getYCoord() + height;
             boolean passedLevel = false;
             do {
-
-                yOffset = getNextLowestSafeYOffset(terrainMap, mutable.set(
-                        currentNode.getXCoord() + CoordsInt.offsetAdjX[i],
-                        currentY,
-                        currentNode.getZCoord() + CoordsInt.offsetAdjZ[i]
-                ), maxFall + currentY - currentNode.getYCoord());
+                int yOffset = getNextLowestSafeYOffset(terrainMap,
+                        mutable.set(currentNode.pos).setY(currentY).move(facing),
+                        maxFall + currentY - currentNode.getYCoord()
+                );
                 if (yOffset > 0) {
                     break;
                 }
                 if (yOffset > -maxFall) {
-                    pathFinder.addNode(new BlockPos(
-                            currentNode.getXCoord() + CoordsInt.offsetAdjX[i],
-                            currentY + yOffset,
-                            currentNode.getZCoord() + CoordsInt.offsetAdjZ[i]
-                    ), PathAction.NONE);
+                    pathFinder.addNode(mutable.move(Direction.UP, yOffset).toImmutable(), PathAction.NONE);
                 }
 
                 currentY += yOffset - 1;
@@ -928,7 +921,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
                 if ((!passedLevel) && (currentY <= currentNode.getYCoord())) {
                     passedLevel = true;
                     if (currentY != currentNode.getYCoord()) {
-                        addAdjacent(terrainMap, currentNode.pos.add(CoordsInt.OFFSET_ADJACENT.get(i)), currentNode, pathFinder);
+                        addAdjacent(terrainMap, currentNode.pos.offset(facing), currentNode, pathFinder);
                     }
 
                 }
@@ -937,17 +930,17 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
 
         if (canSwimHorizontal()) {
-            for (int i = 0; i < 4; i++) {
-                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.OFFSET_ADJACENT.get(i))) == -1) {
+            for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) == -1) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                 }
             }
         }
     }
 
-    protected final void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
         int collideUp = getCollide(terrainMap, currentNode.pos.up());
-        if (collideUp > 0) {
+        if (collideUp > DestructableType.UNBREAKABLE) {
             BlockState state = terrainMap.getBlockState(currentNode.pos.up());
             if (state.isIn(BlockTags.CLIMBABLE)) {
                 Direction facing = state.getOrEmpty(HorizontalFacingBlock.FACING).orElse(null);
@@ -971,11 +964,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         int below = getCollide(terrainMap, currentNode.pos.down());
         int above = getCollide(terrainMap, currentNode.pos.up());
         if (getCanDigDown()) {
-            if (below == 2) {
+            if (below == DestructableType.DESTRUCTABLE) {
                 pathFinder.addNode(currentNode.pos.down(), PathAction.DIG);
-            } else if (below == 1) {
-                int maxFall = 5;
-                int yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.pos.down(), maxFall);
+            } else if (below == DestructableType.TERRAIN) {
+                int yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.pos.down(), 5);
                 if (yOffset <= 0) {
                     pathFinder.addNode(currentNode.pos.up(yOffset - 1), PathAction.NONE);
                 }
@@ -993,7 +985,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     protected final void addAdjacent(BlockView terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
-        if (getCollide(terrainMap, pos) <= 0) {
+        if (getCollide(terrainMap, pos) <= DestructableType.UNBREAKABLE) {
             return;
         }
         if (getCanClimb()) {
@@ -1005,13 +997,14 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
     }
 
-    @SuppressWarnings("deprecation")
     protected final boolean isAdjacentSolidBlock(BlockView terrainMap, BlockPos pos) {
-        for (BlockPos offset : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
+        for (BlockPos offset
+                : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
                 : collideSize.getXCoord() == 2 && collideSize.getZCoord() == 2 ? CoordsInt.OFFSET_ADJACENT_2
                 : CoordsInt.ZERO) {
-            BlockState state = terrainMap.getBlockState(pos.add(offset));
-            if (!state.isAir() && state.isSolid()) {
+            BlockPos pos2 = pos.add(offset);
+            BlockState state = terrainMap.getBlockState(pos2);
+            if (!state.isAir() && state.isSolidBlock(terrainMap, pos2)) {
                 return true;
             }
         }
@@ -1052,7 +1045,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     protected boolean canStandAtAndIsValid(BlockView world, BlockPos pos) {
-        return getCollide(world, pos) > 0 && canStandAt(world, pos);
+        return getCollide(world, pos) > DestructableType.UNBREAKABLE && canStandAt(world, pos);
     }
 
     @SuppressWarnings("deprecation")
@@ -1063,8 +1056,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     protected boolean blockHasLadder(BlockView world, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
-        for (BlockPos p : CoordsInt.OFFSET_ADJACENT) {
-            if (world.getBlockState(mutable.set(pos).move(p)).isIn(BlockTags.CLIMBABLE)) {
+        for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+            if (world.getBlockState(mutable.set(pos).move(offset)).isIn(BlockTags.CLIMBABLE)) {
                 return true;
             }
         }
@@ -1072,33 +1065,33 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @SuppressWarnings("deprecation")
-    protected int getCollide(BlockView terrainMap, BlockPos pos) {
+    protected final int getCollide(BlockView terrainMap, BlockPos pos) {
         boolean destructibleFlag = false;
         boolean liquidFlag = false;
 
-        for (BlockPos p : BlockPos.iterate(pos, this.getCollideSize().toBlockPos().add(pos))) {
+        for (BlockPos p : BlockPos.iterate(pos, getCollideSize().toBlockPos().add(pos))) {
             BlockState state = terrainMap.getBlockState(p);
             if (!state.isAir()) {
                 if (state.isLiquid()) {
                     liquidFlag = true;
                 } else if (!state.blocksMovement()) {
                     if (!isBlockDestructible(terrainMap, p, state)) {
-                        return 0;
+                        return DestructableType.UNBREAKABLE;
                     }
                     destructibleFlag = true;
                 } else {
                     state = terrainMap.getBlockState(p.down());
                     if (state.isIn(BlockTags.WOODEN_FENCES)) {
-                        return isBlockDestructible(terrainMap, pos, state) ? 3 : 0;
+                        return isBlockDestructible(terrainMap, pos, state) ? DestructableType.BREAKABLE_BARRIER : DestructableType.UNBREAKABLE;
                     }
                 }
 
                 if (avoidsBlock(state)) {
-                    return -2;
+                    return DestructableType.REPELLANT;
                 }
             }
         }
-        return destructibleFlag ? 2 : liquidFlag ? -1 : 1;
+        return destructibleFlag ? DestructableType.DESTRUCTABLE : liquidFlag ? DestructableType.FLUID : DestructableType.TERRAIN;
     }
 
     protected boolean getLightLevelBelow8() {

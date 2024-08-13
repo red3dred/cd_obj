@@ -50,7 +50,7 @@ public class TerrainBuilder implements ITerrainBuild {
         }
 
         int height = pos.getY() - scaffold.getYCoord();
-        BlockPos offset = CoordsInt.OFFSET_ADJACENT.get(scaffold.getOrientation());
+        Direction offset = scaffold.getOrientation();
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         BlockState block = mob.getWorld().getBlockState(mutable.set(pos).move(offset).move(Direction.DOWN));
@@ -74,10 +74,8 @@ public class TerrainBuilder implements ITerrainBuild {
 
         if (scaffold.isLayerPlatform(height)) {
             for (BlockPos i : CoordsInt.OFFSET_RING) {
-                if (!i.equals(offset)) {
-                    if (!mob.getWorld().getBlockState(mutable.set(pos).move(i)).isFullCube(mob.getWorld(), mutable)) {
-                        modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
-                    }
+                if (!i.equals(offset.getVector()) && !mob.getWorld().getBlockState(mutable.set(pos).move(i)).isFullCube(mob.getWorld(), mutable)) {
+                    modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
                 }
             }
         }
@@ -86,25 +84,23 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildLadderTower(IPosition position, int orientation, int layersToBuild, INotifyTask asker) {
+    public boolean askBuildLadderTower(IPosition position, Direction orientation, int layersToBuild, INotifyTask asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
-        int xOffset = orientation == 1 ? -1 : orientation == 0 ? 1 : 0;
-        int zOffset = orientation == 3 ? -1 : orientation == 2 ? 1 : 0;
         List<ModifyBlockEntry> modList = new ArrayList<>();
         BlockPos pos = position.toBlockPos();
 
         BlockPos.Mutable mutable = pos.mutableCopy();
 
-        if (!mob.getWorld().getBlockState(mutable.set(pos).move(xOffset, -1, zOffset)).isFullCube(mob.getWorld(), mutable)) {
+        if (!mob.getWorld().getBlockState(mutable.set(pos).move(orientation).move(Direction.DOWN)).isFullCube(mob.getWorld(), mutable)) {
             modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
         }
         if (mob.getWorld().isAir(mutable.move(Direction.DOWN))) {
             modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
         for (int i = 0; i < layersToBuild; i++) {
-            if (!mob.getWorld().getBlockState(mutable.set(pos).move(xOffset, i, zOffset)).isFullCube(mob.getWorld(), mutable)) {
+            if (!mob.getWorld().getBlockState(mutable.set(pos).move(orientation).move(Direction.UP, i)).isFullCube(mob.getWorld(), mutable)) {
                 modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
             }
             if (mob.getWorld().getBlockState(mutable.move(Direction.UP, i)).isOf(Blocks.LADDER)) {
