@@ -1,83 +1,62 @@
 package invmod.client.render;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
 import invmod.common.entity.EntityIMBolt;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory.Context;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.RotationAxis;
 
 public class RenderBolt extends EmptyEntityRenderer<EntityIMBolt> {
-    private static final int BOLT_COLOR = ColorHelper.Argb.getArgb((int)(0.5F * 255), (int)(0.5F * 255), (int)(0.6F * 255), (int)(0.6F * 255));
-
     public RenderBolt(Context context) {
         super(context);
     }
 
     @Override
     public void render(EntityIMBolt entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-
+        Vector3f[] vertices = entity.getVertices();
+        if (vertices != null) {
+            matrices.push();
+            setupTransform(entity, matrices, tickDelta);
+            renderBranches(matrices, vertices, vertexConsumers.getBuffer(RenderLayer.getLightning()));
+            matrices.pop();
+        }
     }
 
-	/*public void render(EntityIMBolt entityBolt, double d, double d1, double d2, float f, float f1) {
-		Tessellator tessellator = Tessellator.instance;
-		GL11.glPushMatrix();
-		GL11.glTranslatef((float) d, (float) d1, (float) d2);
-		GL11.glRotatef(entityBolt.getYaw(), 0.0F, 1.0F, 0.0F);
-		GL11.glRotatef(entityBolt.getPitch(), 0.0F, 0.0F, 1.0F);
-		float scale = 0.0625F;
-		GL11.glScalef(scale, scale, scale);
-		renderFromVertices(entityBolt, tessellator);
-		GL11.glPopMatrix();
-	}*/
+    private void setupTransform(EntityIMBolt entity, MatrixStack matrices, float tickDelta) {
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(entity.getYaw(tickDelta)));
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(entity.getPitch(tickDelta)));
+        matrices.scale(0.0625F, 0.0625F, 0.0625F);
+    }
 
-	public void renderFromVertices(EntityIMBolt entityBolt, VertexConsumer tessellator) {
-		double[][] vertices = entityBolt.getVertices();
-		if (vertices == null) {
-			return;
-		}
-		/*
-		GL11.glDisable(3553);
-		GL11.glDisable(2896);
-		GL11.glEnable(3042);
-		GL11.glBlendFunc(770, 1);*/
+    private void renderBranches(MatrixStack matrices, Vector3f[] vertices, VertexConsumer buffer) {
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        float drawWidth = -0.1F;
+        for (int pass = 0; pass < 4; pass++) {
+            drawWidth += 0.32F;
+            for (int i = 1; i < vertices.length; i++) {
+                for (int j = 0; j < 5; j++) {
+                    float xOffset = 0.5F - drawWidth;
+                    float zOffset = 0.5F - drawWidth;
+                    if (j == 1 || j == 2) {
+                        xOffset += drawWidth * 2;
+                    }
+                    if (j == 2 || j == 3) {
+                        zOffset += drawWidth * 2;
+                    }
+                    drawBranchSegment(matrix, buffer, vertices[i - 1], vertices[i], 0.5F, 0.5F, 0.6F, xOffset, zOffset);
+                }
+            }
+        }
+    }
 
-		double[] xCoords = vertices[0];
-		double[] yCoords = vertices[1];
-		double[] zCoords = vertices[2];
-
-		double drawWidth = -0.1D;
-		for (int pass = 0; pass < 4; pass++) {
-			drawWidth += 0.32D;
-			for (int i = 1; i < yCoords.length; i++) {
-				for (int j = 0; j < 5; j++) {
-					double xOffset = 0.5D - drawWidth;
-					double zOffset = 0.5D - drawWidth;
-					if ((j == 1) || (j == 2)) {
-						xOffset += drawWidth * 2.0D;
-					}
-					if ((j == 2) || (j == 3)) {
-						zOffset += drawWidth * 2.0D;
-					}
-					tessellator.vertex(
-					        (float)(xCoords[(i - 1)] + xOffset),
-					        (float)(yCoords[(i - 1)] * 16.0D),
-					        (float)(zCoords[(i - 1)] + zOffset),
-					        BOLT_COLOR,
-					        0, 0, 0, 0, 0, 0, 0);
-	                   tessellator.vertex(
-	                           (float)(xCoords[i] + xOffset),
-	                           (float)(yCoords[i] * 16.0D),
-	                           (float)(zCoords[i] + zOffset),
-	                           BOLT_COLOR,
-	                            0, 0, 0, 0, 0, 0, 0);
-				}
-			}
-		}
-		/*
-		GL11.glDisable(3042);
-		GL11.glEnable(2896);
-		GL11.glEnable(3553);*/
-	}
+    private static void drawBranchSegment(Matrix4f matrix, VertexConsumer buffer, Vector3f from, Vector3f to, float red, float green, float blue, float xOffset, float zOffset) {
+        buffer.vertex(matrix, from.x + xOffset, from.y * 16, from.z + zOffset).color(red, green, blue, 0.6F);
+        buffer.vertex(matrix, to.x + xOffset, to.y * 16, to.z + zOffset).color(red, green, blue, 0.6F);
+    }
 }

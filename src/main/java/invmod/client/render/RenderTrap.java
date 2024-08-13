@@ -16,6 +16,7 @@ public class RenderTrap extends EntityRenderer<EntityIMTrap> {
 
 	public RenderTrap(EntityRendererFactory.Context ctx) {
 	    super(ctx);
+	    shadowRadius = 0;
 	    model = new ModelTrap(ModelTrap.getTexturedModelData().createModel());
 	}
 

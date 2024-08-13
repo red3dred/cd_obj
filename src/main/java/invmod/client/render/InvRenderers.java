@@ -15,7 +15,6 @@ public interface InvRenderers {
         EntityRendererRegistry.register(InvEntities.THROWER, RenderThrower::new);
         EntityRendererRegistry.register(InvEntities.BOULDER, RenderBoulder::new);
         EntityRendererRegistry.register(InvEntities.WOLF, RenderIMWolf::new);
-        EntityRendererRegistry.register(InvEntities.BOULDER, RenderBoulder::new);
         EntityRendererRegistry.register(InvEntities.TRAP, RenderTrap::new);
         EntityRendererRegistry.register(InvEntities.BOLT, RenderBolt::new);
         EntityRendererRegistry.register(InvEntities.SFX, EmptyEntityRenderer::new);

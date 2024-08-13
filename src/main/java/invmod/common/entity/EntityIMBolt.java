@@ -1,199 +1,144 @@
 package invmod.common.entity;
 
-import java.util.Random;
+import java.util.Arrays;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
+import invmod.common.InvSounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.data.DataTracker.Builder;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class EntityIMBolt extends Entity
-{
-  private int ticksToRender;
-  private long timeCreated = System.currentTimeMillis();
-  private double[][] vertices = new double[3][0];
-  private long lastVertexUpdate = timeCreated;
-  private float yaw;
-  private float pitch;
-  private double distance;
-  private float widthVariance = 6;
-  private float vecX;
-  private float vecY;
-  private float vecZ;
-  private int soundMade;
+public class EntityIMBolt extends Entity {
+    private static final int VERTEX_COUNT = 60;
 
-  public EntityIMBolt(EntityType<EntityIMBolt> type, World world)
-  {
-    super(type, world);
-    ignoreCameraFrustum = true;
-  }
+    private int ticksToRender;
+    private final long timeCreated = System.currentTimeMillis();
+    private final Vector3f[] vertices = Util.make(new Vector3f[VERTEX_COUNT], v -> Arrays.fill(v, new Vector3f()));
+    private long lastVertexUpdate = timeCreated;
 
-  public EntityIMBolt(World world, double x, double y, double z)
-  {
-    this(InvEntities.BOLT, world);
-    setPosition(x, y, z);
-  }
+    private double distance;
+    private float widthVariance = 6;
+    private Vec3d ray;
+    private int soundMade;
 
-  public EntityIMBolt(World world, Vec3d pos, Vec3d targetPos, int ticksToRender, int soundMade)
-  {
-    this(InvEntities.BOLT, world, x, y, z);
-    this.vecX = ((float)(x2 - x));
-    this.vecY = ((float)(y2 - y));
-    this.vecZ = ((float)(z2 - z));
-    this.ticksToRender = ticksToRender;
-    this.soundMade = soundMade;
-    setHeading(this.vecX, this.vecY, this.vecZ);
-    doVertexUpdate();
-  }
-
-  public void writeSpawnData(ByteArrayDataOutput data)
-  {
-    data.writeShort((short)this.ticksToRender);
-    data.writeFloat((float)this.posX);
-    data.writeFloat((float)this.posY);
-    data.writeFloat((float)this.posZ);
-    data.writeFloat(this.vecX);
-    data.writeFloat(this.vecY);
-    data.writeFloat(this.vecZ);
-    data.writeByte((byte)this.soundMade);
-  }
-
-  public void readSpawnData(ByteArrayDataInput data)
-  {
-    this.ticksToRender = data.readShort();
-    setPosition(data.readFloat(), data.readFloat(), data.readFloat());
-    setHeading(data.readFloat(), data.readFloat(), data.readFloat());
-    this.soundMade = data.readByte();
-    doVertexUpdate();
-  }
-
-  @Override
-  public void onUpdate()
-  {
-    super.onUpdate();
-    this.age += 1;
-    if ((this.age == 1) && (this.soundMade == 1)) {
-      this.worldObj.playSoundAtEntity(this, "invmod:zap"+(rand.nextInt(3)+1), 1.0F, 1.0F);
-    }
-    if (this.age > this.ticksToRender)
-      setDead();
-  }
-
-  public double[][] getVertices()
-  {
-    long time = System.currentTimeMillis();
-    if (time - this.timeCreated > this.ticksToRender * 50) {
-      return null;
-    }
-    if (time - this.lastVertexUpdate >= 75L)
-    {
-      doVertexUpdate();
-      while (this.lastVertexUpdate + 50L <= time) {
-        this.lastVertexUpdate += 50L;
-      }
-    }
-    return this.vertices;
-  }
-
-  @Override
-public float getYaw()
-  {
-    return this.yaw;
-  }
-
-  @Override
-public float getPitch()
-  {
-    return this.pitch;
-  }
-
-  @Override
-  public void handleHealthUpdate(byte byte0)
-  {
-    if (byte0 == 0)
-    {
-      this.worldObj.playSoundAtEntity(this, "invmod:zap"+(rand.nextInt(3)+1), 1.0F, 1.0F);
-    }
-    else if (byte0 != 1)
-    {
-      if (byte0 != 2);
-    }
-  }
-
-
-  @Override
-  public void entityInit()
-  {
-  }
-
-  @Override
-  protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
-  {
-  }
-
-  @Override
-  protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
-  {
-  }
-
-  private void setHeading(float x, float y, float z)
-  {
-    float xzSq = x * x + z * z;
-    this.yaw = ((float)(Math.atan2(x, z) * 180.0D / 3.141592653589793D) + 90.0F);
-    this.pitch = ((float)(Math.atan2(MathHelper.sqrt_double(xzSq), y) * 180.0D / 3.141592653589793D));
-    this.distance = Math.sqrt(xzSq + y * y);
-  }
-
-  private void doVertexUpdate()
-  {
-    this.worldObj.theProfiler.startSection("IMBolt");
-    this.widthVariance = (10.0F / (float)Math.log10(this.distance + 1.0D));
-    int numberOfVertexes = 60;
-    if (numberOfVertexes != this.vertices[0].length)
-    {
-      this.vertices[0] = new double[numberOfVertexes];
-      this.vertices[1] = new double[numberOfVertexes];
-      this.vertices[2] = new double[numberOfVertexes];
+    public EntityIMBolt(EntityType<EntityIMBolt> type, World world) {
+        super(type, world);
+        ignoreCameraFrustum = true;
     }
 
-    for (int vertex = 0; vertex < numberOfVertexes; vertex++)
-    {
-      this.vertices[1][vertex] = (vertex * this.distance / (numberOfVertexes - 1));
+    public EntityIMBolt(World world, double x, double y, double z) {
+        this(InvEntities.BOLT, world);
+        setPosition(x, y, z);
     }
 
-    createSegment(0, numberOfVertexes - 1);
-    this.worldObj.theProfiler.endSection();
-  }
-
-  private void createSegment(int begin, int end)
-  {
-    int points = end + 1 - begin;
-    if (points <= 4)
-    {
-      if (points == 3)
-      {
-        createVertex(begin, begin + 1, end);
-      }
-      else
-      {
-        createVertex(begin, begin + 1, end);
-        createVertex(begin, begin + 2, end);
-      }
-      return;
+    public EntityIMBolt(World world, Vec3d pos, Vec3d targetPos, int ticksToRender, int soundMade) {
+        this(InvEntities.BOLT, world);
+        setPosition(pos);
+        ray = targetPos.subtract(pos);
+        this.ticksToRender = ticksToRender;
+        this.soundMade = soundMade;
+        setHeading((float)ray.x, (float)ray.y, (float)ray.z);
+        doVertexUpdate();
     }
-    int midPoint = begin + points / 2;
-    createVertex(begin, midPoint, end);
-    createSegment(begin, midPoint);
-    createSegment(midPoint, end);
-  }
 
-  private void createVertex(int begin, int mid, int end)
-  {
-    double difference = this.vertices[0][end] - this.vertices[0][begin];
-    double yDiffToMid = this.vertices[1][mid] - this.vertices[1][begin];
-    double yRatio = yDiffToMid / (this.vertices[1][end] - this.vertices[1][begin]);
-    this.vertices[0][mid] = (this.vertices[0][begin] + difference * yRatio + (this.worldObj.rand.nextFloat() - 0.5D) * yDiffToMid * this.widthVariance);
-    difference = this.vertices[2][end] - this.vertices[2][begin];
-    this.vertices[2][mid] = (this.vertices[2][begin] + difference * yRatio + (this.worldObj.rand.nextFloat() - 0.5D) * yDiffToMid * this.widthVariance);
-  }
+    @Override
+    protected void initDataTracker(Builder builder) {
+    }
+
+    @Override
+    public boolean shouldSave() {
+        return false;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (++age == 1 && soundMade == 1) {
+            playSound(InvSounds.ENTITY_LIGHTNING_ZAP, 1, 1);
+        }
+        if (age > ticksToRender) {
+            discard();
+        }
+    }
+
+    @Nullable
+    public Vector3f[] getVertices() {
+        long time = System.currentTimeMillis();
+        if (time - timeCreated > ticksToRender * 50) {
+            return null;
+        }
+        if (time - lastVertexUpdate >= 75L) {
+            doVertexUpdate();
+            while (lastVertexUpdate + 50L <= time) {
+                lastVertexUpdate += 50L;
+            }
+        }
+        return vertices;
+    }
+
+    @Override
+    public void handleStatus(byte status) {
+        if (status == 0) {
+            playSound(InvSounds.ENTITY_LIGHTNING_ZAP, 1, 1);
+        }
+    }
+
+    private void setHeading(float x, float y, float z) {
+        float xzSq = MathHelper.square(x) + MathHelper.square(z);
+        setYaw((float)MathHelper.atan2(x, z) * MathHelper.DEGREES_PER_RADIAN + 90);
+        setPitch((float)MathHelper.atan2(MathHelper.sqrt(xzSq), y) * MathHelper.DEGREES_PER_RADIAN);
+        distance = Math.sqrt(xzSq + MathHelper.square(y));
+    }
+
+    private void doVertexUpdate() {
+        getWorld().getProfiler().push("IMBolt");
+        widthVariance = (10F / (float) Math.log10(distance + 1));
+        for (int vertex = 0; vertex < vertices.length; vertex++) {
+            vertices[vertex].y = (vertex * (float)distance / (vertices.length - 1));
+        }
+
+        createSegment(0, vertices.length - 1);
+        getWorld().getProfiler().pop();
+    }
+
+    private void createSegment(int begin, int end) {
+        int points = end + 1 - begin;
+        if (points <= 4) {
+            createVertex(begin, begin + 1, end);
+            if (points != 3) {
+                createVertex(begin, begin + 2, end);
+            }
+            return;
+        }
+        int midPoint = begin + points / 2;
+        createVertex(begin, midPoint, end);
+        createSegment(begin, midPoint);
+        createSegment(midPoint, end);
+    }
+
+    private void createVertex(int begin, int mid, int end) {
+        float xDiff = vertices[end].x - vertices[begin].x;
+        float zDiff = vertices[end].z - vertices[begin].z;
+
+        float yDiffToMid = vertices[mid].y - vertices[begin].y;
+
+        float yRatio = yDiffToMid / (vertices[end].y() - vertices[begin].y);
+
+        vertices[mid].x = vertices[begin].x + xDiff * yRatio + (getRandom().nextFloat() - 0.5F) * yDiffToMid * widthVariance;
+        vertices[mid].z = vertices[begin].z + zDiff * yRatio + (getRandom().nextFloat() - 0.5F) * yDiffToMid * widthVariance;
+    }
+
+    @Override
+    protected void readCustomDataFromNbt(NbtCompound nbt) {
+    }
+
+    @Override
+    protected void writeCustomDataToNbt(NbtCompound nbt) {
+    }
 }

@@ -15,6 +15,7 @@ public class RenderBoulder extends EntityRenderer<EntityIMBoulder> {
 
     public RenderBoulder(EntityRendererFactory.Context context) {
         super(context);
+        shadowRadius = 0;
     }
 
     @Override

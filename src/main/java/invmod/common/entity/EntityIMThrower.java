@@ -345,13 +345,13 @@ public class EntityIMThrower extends EntityIMMob
 			double dY = entityY - entityBoulder.posY;
 			double angle = 0.5D * Math.asin(0.025D * dXY / (launchSpeed * launchSpeed));
 			dY += dXY * Math.tan(angle);
-			entityBoulder.setBoulderHeading(dX, dY, dZ, launchSpeed, 0.05F);
+			entityBoulder.setVelocity(dX, dY, dZ, launchSpeed, 0.05F);
 			this.worldObj.spawnEntityInWorld(entityBoulder);
 		} else if (forced) {
 			EntityIMBoulder entityBoulder = new EntityIMBoulder(this.worldObj, this, launchSpeed);
 			double dY = entityY - entityBoulder.posY;
 			dY += dXY * Math.tan(0.7853981633974483D);
-			entityBoulder.setBoulderHeading(dX, dY, dZ, launchSpeed, 0.05F);
+			entityBoulder.setVelocity(dX, dY, dZ, launchSpeed, 0.05F);
 			this.worldObj.spawnEntityInWorld(entityBoulder);
 		}
 
@@ -373,7 +373,7 @@ public class EntityIMThrower extends EntityIMMob
 		EntityIMBoulder entityBoulder = new EntityIMBoulder(this.worldObj, this, launchSpeed);
 		double dY = entityY - entityBoulder.posY;
 		dY += dXY * Math.tan(angle);
-		entityBoulder.setBoulderHeading(dX, dY, dZ, launchSpeed, 0.05F);
+		entityBoulder.setVelocity(dX, dY, dZ, launchSpeed, 0.05F);
 		this.worldObj.spawnEntityInWorld(entityBoulder);
 	}
 

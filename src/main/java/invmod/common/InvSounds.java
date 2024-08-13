@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 
 public interface InvSounds {
     SoundEvent SCRAPE = register("scrape");
+    SoundEvent ENTITY_LIGHTNING_ZAP = register("zap");
     SoundEvent ENTITY_VULTURE_SQUAWK = register("v_squawk");
     SoundEvent ENTITY_VULTURE_DEATH = register("v_death");
     SoundEvent ENTITY_VULTURE_SCREECH = register("v_screech");
