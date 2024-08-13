@@ -51,9 +51,8 @@ public class ModelTrap extends SinglePartEntityModel<EntityIMTrap> {
 
     @Override
     public void setAngles(EntityIMTrap entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
-        boolean isEmpty = entity.isEmpty();
-        int type = entity.getTrapType();
-        core.visible = !isEmpty && type == 1;
-        flames.visible = !isEmpty && type == 2;
+        EntityIMTrap.Type type = entity.getTrapType();
+        core.visible = type == EntityIMTrap.Type.RIFT;
+        flames.visible = type == EntityIMTrap.Type.FIRE;
     }
 }

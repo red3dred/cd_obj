@@ -12,9 +12,9 @@ import net.minecraft.world.World;
 
 public class ItemTrap extends Item {
 
-    private final int trapType;
+    private final EntityIMTrap.Type trapType;
 
-    public ItemTrap(Settings settings, int trapType) {
+    public ItemTrap(Settings settings, EntityIMTrap.Type trapType) {
         super(settings.maxCount(64).maxDamage(0));
         this.trapType = trapType;
     }

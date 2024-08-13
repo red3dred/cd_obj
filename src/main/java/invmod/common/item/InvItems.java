@@ -5,6 +5,7 @@ import java.util.List;
 
 import invmod.common.InvasionMod;
 import invmod.common.block.InvBlocks;
+import invmod.common.entity.EntityIMTrap;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
 import net.minecraft.item.BlockItem;
@@ -29,8 +30,8 @@ public interface InvItems {
     Item ENGY_HAMMER = register("engy_hammer", new Item(new Item.Settings())); // TODO: has 3d model
 
     Item EMPTY_TRAP = register("empty_trap", new Item(new Item.Settings()));
-    Item RIFT_TRAP = register("rift_trap", new ItemTrap(new Item.Settings(), 1));
-    Item FLAME_TRAP = register("flame_trap", new ItemTrap(new Item.Settings(), 2));
+    Item RIFT_TRAP = register("rift_trap", new ItemTrap(new Item.Settings(), EntityIMTrap.Type.RIFT));
+    Item FLAME_TRAP = register("flame_trap", new ItemTrap(new Item.Settings(), EntityIMTrap.Type.FIRE));
     // TODO: Ice trap
     // Item XYZ_TRAP = register("xyz_trap", new ItemTrap(new Item.Settings()));
 

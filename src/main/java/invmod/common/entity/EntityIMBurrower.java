@@ -6,6 +6,7 @@ import org.joml.Vector3f;
 
 import invmod.common.INotifyTask;
 import invmod.common.nexus.INexusAccess;
+import invmod.common.util.CoordsInt;
 import invmod.common.util.PosRotate3D;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
@@ -98,9 +99,9 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     }
 
     public void setSegment(int index, PosRotate3D pos) {
-        if (index < this.segments3D.length) {
-            this.segments3DLastTick[index] = this.segments3D[index];
-            this.segments3D[index] = pos;
+        if (index < segments3D.length) {
+            segments3DLastTick[index] = segments3D[index];
+            segments3D[index] = pos;
         }
     }
 
@@ -123,24 +124,17 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
         int enclosedLevelSide = 0;
 
         BlockPos.Mutable mutable = node.pos.mutableCopy();
-        // donno what last parameter does, but I've set it to true anyway!
         if (!getWorld().getBlockState(mutable.move(Direction.DOWN)).isFullCube(getWorld(), mutable)) {
             penalty += 0.3F;
         }
         if (!getWorld().getBlockState(mutable.set(node.pos).move(Direction.UP)).isFullCube(getWorld(), mutable)) {
             penalty += 2;
         }
-        if (!getWorld().getBlockState(mutable.set(node.pos).move(Direction.EAST)).isFullCube(getWorld(), mutable)) {
-            enclosedLevelSide++;
-        }
-        if (!getWorld().getBlockState(mutable.set(node.pos).move(Direction.WEST)).isFullCube(getWorld(), mutable)) {
-            enclosedLevelSide++;
-        }
-        if (!getWorld().getBlockState(mutable.set(node.pos).move(Direction.SOUTH)).isFullCube(getWorld(), mutable)) {
-            enclosedLevelSide++;
-        }
-        if (!getWorld().getBlockState(mutable.set(node.pos).move(Direction.NORTH)).isFullCube(getWorld(), mutable)) {
-            enclosedLevelSide++;
+
+        for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+            if (!getWorld().getBlockState(mutable.set(node.pos).move(offset)).isFullCube(getWorld(), mutable)) {
+                enclosedLevelSide++;
+            }
         }
 
         if (enclosedLevelSide > 2) {
@@ -148,11 +142,9 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
         }
         penalty += enclosedLevelSide * 0.5F;
 
-        if (!block.isAir() && (block.isSolid() || EntityIMLiving.getBlockCost(block).isPresent())) {
-            return prevNode.distanceTo(node) * 1.3F * penalty;
-        }
+        float factor = !block.isAir() && (block.isSolidBlock(worldMap, node.pos) || EntityIMLiving.getBlockCost(block).isPresent()) ? 1.3F : 1;
 
-        return prevNode.distanceTo(node) * penalty;
+        return prevNode.distanceTo(node) * factor * penalty;
     }
 
     @Override
