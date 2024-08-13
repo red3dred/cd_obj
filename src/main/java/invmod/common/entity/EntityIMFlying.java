@@ -311,8 +311,9 @@ public abstract class EntityIMFlying extends EntityIMLiving {
         }
         if (canSwimHorizontal()) {
             for (int i = 0; i < 4; i++) {
-                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i])) == -1)
+                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i])) == -1) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
+                }
             }
         }
 	}

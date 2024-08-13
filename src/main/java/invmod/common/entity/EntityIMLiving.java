@@ -181,7 +181,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     private float airResistance = 0.9995F;
     private float groundFriction = 0.546F;
-    private float gravityAcel = 0.08F;
     private float moveSpeedBase = 0.26F;
 
     private float turnRate = 30;
@@ -232,6 +231,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     protected int flammability = 2;
     protected int destructiveness;
 
+    @Nullable
     protected Entity j;
 
     public EntityIMLiving(EntityType<? extends EntityIMLiving> type, World world, @Nullable INexusAccess nexus) {
@@ -526,6 +526,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return rotationRoll;
     }
 
+    protected void setRotationRoll(float roll) {
+        this.rotationRoll = roll;
+    }
+
     @Deprecated
     public float getPrevRotationYawHeadIM() {
         return prevHeadYaw;
@@ -565,6 +569,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return this.attackRange;
     }
 
+    protected void setAttackRange(float range) {
+        this.attackRange = range;
+    }
+
     public void setMaxHealth(float health) {
         getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(health);
     }
@@ -579,17 +587,16 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return canSpawn(world) && (hasNexus() || getLightLevelBelow8()) && getWorld().isTopSolid(getBlockPos(), this);
     }
 
-    @Deprecated
-    public float getMoveSpeedStat() {
-        return getMovementSpeed();
-    }
-
     public float getBaseMoveSpeedStat() {
         return this.moveSpeedBase;
     }
 
     public int getJumpHeight() {
-        return this.jumpHeight;
+        return jumpHeight;
+    }
+
+    protected void setJumpHeight(int height) {
+        jumpHeight = height;
     }
 
     public float getBlockStrength(BlockPos pos) {
@@ -601,48 +608,59 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public boolean getCanClimb() {
-        return this.canClimb;
+        return canClimb;
     }
 
     public boolean getCanDigDown() {
-        return this.canDig;
+        return canDig;
     }
 
     public int getAggroRange() {
-        return this.aggroRange;
+        return aggroRange;
+    }
+
+    public void setAggroRange(int range) {
+        this.aggroRange = range;
     }
 
     public int getSenseRange() {
-        return this.senseRange;
+        return senseRange;
+    }
+
+    public void setSenseRange(int range) {
+        this.senseRange = range;
     }
 
     public boolean getBurnsInDay() {
-        return this.burnsInDay;
+        return burnsInDay;
+    }
+
+    public void setBurnsInDay(boolean flag) {
+        this.burnsInDay = flag;
     }
 
     public int getDestructiveness() {
-        return this.destructiveness;
+        return destructiveness;
     }
 
     public float getTurnRate() {
-        return this.turnRate;
+        return turnRate;
     }
 
     public float getPitchRate() {
-        return this.pitchRate;
+        return pitchRate;
     }
 
-    @Override
-    public double getGravity() {
-        return this.gravityAcel;
+    protected void setGravity(float acceleration) {
+        getAttributeInstance(EntityAttributes.GENERIC_GRAVITY).setBaseValue(acceleration);
     }
 
     public float getAirResistance() {
-        return this.airResistance;
+        return airResistance;
     }
 
     public float getGroundFriction() {
-        return this.groundFriction;
+        return groundFriction;
     }
 
     public CoordsInt getCollideSize() {
@@ -651,18 +669,18 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     @Override
     public Goal getAIGoal() {
-        return this.currentGoal;
+        return currentGoal;
     }
 
     @Override
     public Goal getPrevAIGoal() {
-        return this.prevGoal;
+        return prevGoal;
     }
 
     @Override
     public Goal transitionAIGoal(Goal newGoal) {
-        this.prevGoal = currentGoal;
-        this.currentGoal = newGoal;
+        prevGoal = currentGoal;
+        currentGoal = newGoal;
         return newGoal;
     }
 
@@ -672,7 +690,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public IPosition getCurrentTargetPos() {
-        return this.currentTargetPos;
+        return currentTargetPos;
+    }
+
+    protected void setCurrentTargetPos(IPosition pos) {
+        currentTargetPos = pos;
     }
 
     @Override
@@ -713,11 +735,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     public int getTier() {
         return 1;
-    }
-
-    @Deprecated
-    public String getSimplyID() {
-        return null;
     }
 
     @Override
@@ -766,18 +783,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return result;
     }
 
-    public void setBurnsInDay(boolean flag) {
-        this.burnsInDay = flag;
-    }
-
-    public void setAggroRange(int range) {
-        this.aggroRange = range;
-    }
-
-    public void setSenseRange(int range) {
-        this.senseRange = range;
-    }
-
     @Override
     public void setJumping(boolean jumping) {
         super.setJumping(jumping);
@@ -821,28 +826,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     protected void setFireImmune(boolean fireImmune) {
         this.fireImmune = fireImmune;
-    }
-
-    protected void setRotationRoll(float roll) {
-        this.rotationRoll = roll;
-    }
-
-    @Deprecated
-    public void setRotationYawHeadIM(float yaw) {
-        setHeadYaw(yaw);
-    }
-
-    @Deprecated
-    protected void setRotationPitchHead(float pitch) {
-        setPitch(pitch);
-    }
-
-    protected void setAttackRange(float range) {
-        this.attackRange = range;
-    }
-
-    protected void setCurrentTargetPos(IPosition pos) {
-        this.currentTargetPos = pos;
     }
 
     protected void sunlightDamageTick() {
@@ -906,16 +889,16 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         int maxFall = 8;
         for (int i = 0; i < 4; i++) {
             if (currentNode.action != PathAction.NONE) {
-                if ((i == 0) && (currentNode.action == PathAction.LADDER_UP_NX)) {
+                if (i == 0 && currentNode.action == PathAction.LADDER_UP_NX) {
                     height = 0;
                 }
-                if ((i == 1) && (currentNode.action == PathAction.LADDER_UP_PX)) {
+                if (i == 1 && currentNode.action == PathAction.LADDER_UP_PX) {
                     height = 0;
                 }
-                if ((i == 2) && (currentNode.action == PathAction.LADDER_UP_NZ)) {
+                if (i == 2 && currentNode.action == PathAction.LADDER_UP_NZ) {
                     height = 0;
                 }
-                if ((i == 3) && (currentNode.action == PathAction.LADDER_UP_PZ)) {
+                if (i == 3 && currentNode.action == PathAction.LADDER_UP_PZ) {
                     height = 0;
                 }
             }
@@ -945,7 +928,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
                 if ((!passedLevel) && (currentY <= currentNode.getYCoord())) {
                     passedLevel = true;
                     if (currentY != currentNode.getYCoord()) {
-                        addAdjacent(terrainMap, currentNode.pos.add(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i]), currentNode, pathFinder);
+                        addAdjacent(terrainMap, currentNode.pos.add(CoordsInt.OFFSET_ADJACENT.get(i)), currentNode, pathFinder);
                     }
 
                 }
@@ -955,8 +938,9 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
         if (canSwimHorizontal()) {
             for (int i = 0; i < 4; i++) {
-                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.offsetAdjX[i], 0, CoordsInt.offsetAdjZ[i])) == -1)
+                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(CoordsInt.OFFSET_ADJACENT.get(i))) == -1) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
+                }
             }
         }
     }
@@ -1079,9 +1063,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     protected boolean blockHasLadder(BlockView world, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
-        for (int i = 0; i < 4; i++) {
-            mutable.set(pos.getX() + CoordsInt.offsetAdjX[i], pos.getY(), pos.getZ() + CoordsInt.offsetAdjZ[i]);
-            if (world.getBlockState(mutable).isIn(BlockTags.CLIMBABLE)) {
+        for (BlockPos p : CoordsInt.OFFSET_ADJACENT) {
+            if (world.getBlockState(mutable.set(pos).move(p)).isIn(BlockTags.CLIMBABLE)) {
                 return true;
             }
         }
@@ -1136,20 +1119,12 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         destructiveness = x;
     }
 
-    protected void setGravity(float acceleration) {
-        gravityAcel = acceleration;
-    }
-
     protected void setGroundFriction(float frictionCoefficient) {
         groundFriction = frictionCoefficient;
     }
 
     protected void setCanClimb(boolean flag) {
         canClimb = flag;
-    }
-
-    protected void setJumpHeight(int height) {
-        jumpHeight = height;
     }
 
     protected void setBaseMoveSpeedStat(float speed) {
@@ -1168,8 +1143,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public void resetMoveSpeed() {
-        setMoveSpeedStat(moveSpeedBase);
-        getNavigatorNew().setSpeed(moveSpeedBase);
+        setMovementSpeed(moveSpeedBase);
     }
 
     public void setTurnRate(float rate) {

@@ -3,6 +3,7 @@ package invmod.common.entity.ai;
 import invmod.common.entity.EntityIMSpider;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class EntityAIPounce extends Goal {
@@ -56,17 +57,17 @@ public class EntityAIPounce extends Goal {
 
     protected boolean pounce(Vec3d pos) {
         Vec3d delta = pos.subtract(theEntity.getPos());
-        double dXZ = delta.length();
+        double dXZ = delta.horizontalLength();
         double a = Math.atan(delta.y / dXZ);
         if (Math.abs(a) > 0.7853981633974483D) {
-            double r = dXZ / ((1 - Math.tan(a)) * (1D / Math.cos(a)));
-            double v = 1D / Math.sqrt(1F / theEntity.getGravity() / r);
-            if (v > minPower && v < maxPower) {
-                double distance = Math.sqrt(2 * (dXZ * dXZ));
+            double radius = (dXZ / ((1 - Math.tan(a)) / Math.cos(a))) * theEntity.getFinalGravity();
+            double power = 1D / Math.sqrt(1D / radius);
+            if (power > minPower && power < maxPower) {
+                double distance = MathHelper.SQUARE_ROOT_OF_TWO * dXZ;
                 theEntity.addVelocity(
-                        (v * delta.x / distance),
-                        (v * dXZ / distance),
-                        (v * delta.z / distance)
+                        (power * delta.x / distance),
+                        (power * dXZ / distance),
+                        (power * delta.z / distance)
                 );
                 return true;
             }
