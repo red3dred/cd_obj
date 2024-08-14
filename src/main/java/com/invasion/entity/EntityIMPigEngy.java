@@ -134,13 +134,9 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
         supportThisTick = 0;
         askForScaffoldTimer++;
         if (hasNexus()) {
-            int weight = 1;
-            if (getNexus().getYCoord() - getYCoord() > 1) {
-                weight = Math.max(6000 / getNexus().getYCoord() - getYCoord(), 1);
-            }
-            if ((currentGoal == Goal.BREAK_NEXUS)
-                    && (((getNavigatorNew().getLastPathDistanceToTarget() > 2) && (askForScaffoldTimer <= 0))
-                            || (getRandom().nextInt(weight) == 0))) {
+            int yDifference = getNexus().getOrigin().getY() - getBlockPos().getY();
+            int weight = yDifference > 1 ? Math.max(6000 / yDifference, 1) : 1;
+            if (currentGoal == Goal.BREAK_NEXUS && ((getNavigatorNew().getLastPathDistanceToTarget() > 2 && askForScaffoldTimer <= 0) || getRandom().nextInt(weight) == 0)) {
                 if (getNexus().getAttackerAI().askGenerateScaffolds(this)) {
                     getNavigatorNew().clearPath();
                     askForScaffoldTimer = 60;
@@ -171,12 +167,17 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
 
     @Override
     public void onPathSet() {
-        this.terrainModifier.cancelTask();
+        terrainModifier.cancelTask();
     }
 
     @Override
     public BlockView getTerrain() {
         return getWorld();
+    }
+
+    @Override
+    public BlockPos toBlockPos() {
+        return getBlockPos();
     }
 
     @Override

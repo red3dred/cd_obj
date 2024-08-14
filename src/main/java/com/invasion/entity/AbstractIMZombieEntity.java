@@ -64,6 +64,11 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
         return this.terrainDigger;
     }
 
+    @Override
+    public BlockPos toBlockPos() {
+        return getBlockPos();
+    }
+
     public void setTexture(int textureId) {
         dataTracker.set(TEXTURE, textureId);
     }

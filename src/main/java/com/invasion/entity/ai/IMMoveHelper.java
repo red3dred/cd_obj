@@ -5,8 +5,6 @@ import java.util.Optional;
 import org.joml.Vector3f;
 
 import com.invasion.entity.EntityIMLiving;
-import com.invasion.util.math.IPosition;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.registry.tag.BlockTags;
@@ -36,20 +34,6 @@ public class IMMoveHelper extends MoveControl {
 
     public void setMoveSpeed(float speed) {
         this.speed = speed;
-    }
-
-    @Deprecated
-    public void setMoveTo(IPosition pos, float speed) {
-        moveTo(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), speed);
-    }
-
-    public void moveTo(IPosition pos, float speed) {
-        moveTo(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), speed);
-    }
-
-    @Deprecated
-    public void setMoveTo(double x, double y, double z, double speed) {
-        moveTo(x, y, z, speed);
     }
 
     @Override
@@ -118,10 +102,7 @@ public class IMMoveHelper extends MoveControl {
             entity.setMovementSpeed((float) moveSpeed);
         }
 
-        double w = Math.max(entity.getWidth() * 0.5F + 1, 1);
-        // TODO: Was this added by the modder?
-        w = entity.getWidth() * 0.5F + 1;
-        if (dY > 0 && (dX * dX + dZ * dZ <= MathHelper.square(w) || isInLiquid)) {
+        if (dY > 0 && dX * dX + dZ * dZ <= MathHelper.square(entity.getWidth() * 0.5F + 1) || isInLiquid) {
             entity.getJumpControl().setActive();
             if (ladderPos.isPresent()) {
                 return MoveState.CLIMBING;

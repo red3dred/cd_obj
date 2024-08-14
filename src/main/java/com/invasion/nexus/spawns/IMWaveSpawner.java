@@ -28,8 +28,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	private SpawnPointContainer spawnPointContainer = new SpawnPointContainer();
 
-	@Nullable
-	private INexusAccess nexus;
+	private final INexusAccess nexus;
 
 	@Nullable
 	private Wave currentWave;
@@ -43,20 +42,17 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	private int successfulSpawns;
 	private long elapsed;
 
-	public IMWaveSpawner(INexusAccess tileEntityNexus, int radius) {
-		this.nexus = tileEntityNexus;
+	public IMWaveSpawner(INexusAccess nexus, int radius) {
+		this.nexus = nexus;
 		this.spawnRadius = radius;
 	}
 
 	public long getElapsedTime() {
-		return this.elapsed;
+		return elapsed;
 	}
 
 	public void setRadius(int radius) {
-	    // TODO: Why does it not update for radius less than 8? This is going to cause syncing issues
-		if (radius > 8) {
-			this.spawnRadius = radius;
-		}
+	    spawnRadius = Math.max(8, radius);
 	}
 
 	public void beginNextWave(int waveNumber) throws WaveSpawnerException {
@@ -161,7 +157,9 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	public void askForRespawn(EntityIMLiving entity) {
 		if (spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID) > 10) {
 			SpawnPoint spawnPoint = spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID);
-			entity.updatePositionAndAngles(spawnPoint.getXCoord() + 0.5D, spawnPoint.getYCoord() + 0.5D, spawnPoint.getZCoord() + 0.5D, 0, 0);
+			if (spawnPoint != null) {
+			    spawnPoint.applyTo(entity);
+			}
 		}
 	}
 
@@ -201,35 +199,30 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		}
 
 		EntityIMLiving mob = mobConstruct.createMob(nexus);
-		int spawnTries = getNumberOfPointsInRange(minAngle, maxAngle, SpawnType.HUMANOID);
-		if (spawnTries > MAX_SPAWN_TRIES) {
-			spawnTries = MAX_SPAWN_TRIES;
-		}
+		int spawnTries = Math.min(getNumberOfPointsInRange(minAngle, maxAngle, SpawnType.HUMANOID), MAX_SPAWN_TRIES);
+
 		for (int j = 0; j < spawnTries; j++) {
-			SpawnPoint spawnPoint;
-			if (maxAngle - minAngle >= 360) {
-				spawnPoint = spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID);
-			} else {
-				spawnPoint = spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID, minAngle, maxAngle);
-			}
+		    @Nullable
+			final SpawnPoint spawnPoint = maxAngle - minAngle >= 360
+				        ? spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID)
+		                : spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID, minAngle, maxAngle);
+
 			if (spawnPoint == null) {
 				return false;
 			}
 			if (!spawnMode) {
-				successfulSpawns += 1;
+				successfulSpawns++;
 				if (debugMode) {
-				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + spawnPoint.getXCoord() + ", " + spawnPoint.getYCoord() + ", " + spawnPoint.getZCoord() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + spawnPoint + "  Specified: " + minAngle + "," + maxAngle);
 				}
 
 				return true;
 			}
 
-			mob.updatePositionAndAngles(spawnPoint.getXCoord() + 0.5, spawnPoint.getYCoord() + 0.5, spawnPoint.getZCoord() + 0.5, 0, 0);
-			if (mob.canSpawn(nexus.getWorld())) {
+			if (spawnPoint.trySpawnEntity(nexus.getWorld(), mob)) {
 				successfulSpawns++;
-				nexus.getWorld().spawnEntity(mob);
 				if (debugMode) {
-				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob.toString() + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
 				}
 
 				return true;
@@ -246,42 +239,37 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		EntityIMZombie zombie = InvEntities.ZOMBIE.create(nexus.getWorld());
 		zombie.setNexus(nexus);
 		List<SpawnPoint> spawnPoints = new ArrayList<>();
-		int x = nexus.getXCoord();
-		int y = nexus.getYCoord();
-		int z = nexus.getZCoord();
-		for (int vertical = 0; vertical < 128; vertical = vertical > 0 ? vertical * -1 : vertical * -1 + 1) {
-			if (y + vertical <= 252) {
-				for (int i = 0; i <= spawnRadius * 0.7D + 1.0D; i++) {
-					int j = (int) Math.round(spawnRadius * Math.cos(Math.asin(i / spawnRadius)));
+		BlockPos origin = nexus.getOrigin();
+		BlockPos.Mutable mutable = origin.mutableCopy();
+		for (int vertical = nexus.getWorld().getBottomY();
+		         vertical < nexus.getWorld().getTopY() - 2;
+		         vertical = vertical > 0 ? vertical * -1 : vertical * -1 + 1) {
+			for (int i = 0; i <= spawnRadius * 0.7D + 1.0D; i++) {
+				int j = (int) Math.round(spawnRadius * Math.cos(Math.asin(i / spawnRadius)));
 
-					addValidSpawn(zombie, spawnPoints, x + i, y + vertical, z + j);
-					addValidSpawn(zombie, spawnPoints, x + j, y + vertical, z + i);
+				addValidSpawn(zombie, spawnPoints, mutable.set(origin).move( i, vertical, j));
+				addValidSpawn(zombie, spawnPoints, mutable.set(origin).move( i, vertical,-j));
+				addValidSpawn(zombie, spawnPoints, mutable.set(origin).move(-i, vertical, j));
+				addValidSpawn(zombie, spawnPoints, mutable.set(origin).move(-i, vertical,-j));
 
-					addValidSpawn(zombie, spawnPoints, x + i, y + vertical, z - j);
-					addValidSpawn(zombie, spawnPoints, x + j, y + vertical, z - i);
-
-					addValidSpawn(zombie, spawnPoints, x - i, y + vertical, z + j);
-					addValidSpawn(zombie, spawnPoints, x - j, y + vertical, z + i);
-
-					addValidSpawn(zombie, spawnPoints, x - i, y + vertical, z - j);
-					addValidSpawn(zombie, spawnPoints, x - j, y + vertical, z - i);
-				}
-
+                addValidSpawn(zombie, spawnPoints, mutable.set(origin).move( j, vertical, i));
+                addValidSpawn(zombie, spawnPoints, mutable.set(origin).move( j, vertical,-i));
+                addValidSpawn(zombie, spawnPoints, mutable.set(origin).move(-j, vertical, i));
+                addValidSpawn(zombie, spawnPoints, mutable.set(origin).move(-j, vertical,-i));
 			}
-
 		}
 
 		if (spawnPoints.size() > MIN_SPAWN_POINTS_TO_KEEP) {
 			int i;
 			int amountToRemove = (int) ((spawnPoints.size() - MIN_SPAWN_POINTS_TO_KEEP) * SPAWN_POINT_CULL_RATE);
 			for (i = spawnPoints.size() - 1; i >= spawnPoints.size() - amountToRemove; i--) {
-				if (Math.abs(spawnPoints.get(i).getYCoord() - y) < NORMAL_SPAWN_HEIGHT) {
+				if (Math.abs(spawnPoints.get(i).pos().getY() - origin.getY()) < NORMAL_SPAWN_HEIGHT) {
 					break;
 				}
 			}
 			for (; i >= MIN_SPAWN_POINTS_TO_KEEP_BELOW_HEIGHT_CUTOFF; i--) {
 				SpawnPoint spawnPoint = spawnPoints.get(i);
-				if (spawnPoint.getYCoord() - y <= HEIGHT_CUTOFF) {
+				if (spawnPoint.pos().getY() - origin.getY() <= HEIGHT_CUTOFF) {
 					spawnPointContainer.addSpawnPointXZ(spawnPoint);
 				}
 
@@ -295,11 +283,11 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		InvasionMod.log("Num. Spawn Points: " + Integer.toString(spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID)));
 	}
 
-	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, int x, int y, int z) {
-		entity.updatePositionAndAngles(x + 0.5, y + 0.5, z + 0.5, 0, 0);
+	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, BlockPos pos) {
+		entity.updatePositionAndAngles(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0);
 		if (entity.canSpawn(nexus.getWorld())) {
-			int angle = (int) (Math.atan2(nexus.getZCoord() - z, nexus.getXCoord() - x) * MathHelper.DEGREES_PER_RADIAN);
-			spawnPoints.add(new SpawnPoint(new BlockPos(x, y, z), angle, SpawnType.HUMANOID));
+			int angle = (int) (Math.atan2(nexus.getOrigin().getZ() - pos.getZ(), nexus.getOrigin().getX() - pos.getX()) * MathHelper.DEGREES_PER_RADIAN);
+			spawnPoints.add(new SpawnPoint(pos.toImmutable(), angle, SpawnType.HUMANOID));
 		}
 	}
 }

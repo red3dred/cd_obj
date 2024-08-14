@@ -9,6 +9,7 @@ import com.invasion.entity.ai.AttackerAI;
 
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class DummyNexus implements INexusAccess {
@@ -48,18 +49,8 @@ public class DummyNexus implements INexusAccess {
     }
 
     @Override
-    public int getXCoord() {
-        return 0;
-    }
-
-    @Override
-    public int getYCoord() {
-        return 0;
-    }
-
-    @Override
-    public int getZCoord() {
-        return 0;
+    public BlockPos getOrigin() {
+        return BlockPos.ORIGIN;
     }
 
     @Override

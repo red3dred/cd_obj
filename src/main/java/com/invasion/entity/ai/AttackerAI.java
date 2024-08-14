@@ -19,7 +19,6 @@ import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.CoordsInt;
-import com.invasion.util.math.IPosition;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -29,6 +28,7 @@ import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.chunk.ChunkCache;
 
@@ -95,7 +95,7 @@ public class AttackerAI {
     }
 
     public List<Scaffold> findMinScaffolds(IPathfindable pather, BlockPos pos) {
-        BlockPos nexusPos = nexus.toBlockPos();
+        BlockPos nexusPos = nexus.getOrigin();
         Scaffold scaffold = new Scaffold(nexus);
         scaffold.setPathfindBase(pather);
         Path basePath = createPath(scaffold, pos, nexusPos, 12);
@@ -109,9 +109,9 @@ public class AttackerAI {
             for (int i = 0; i < scaffoldPositions.size(); i++) {
                 IBlockAccessExtended terrainMap = getChunkCache(pos, nexusPos, 12);
                 Scaffold s = scaffoldPositions.get(i);
-                terrainMap.setData(s.toBlockPos(), 200000);
+                terrainMap.setData(s.getPos(), 200000);
                 Path path = createPath(pather, pos, nexusPos, terrainMap);
-                if (path.getTotalPathCost() < lowestCost && path.getFinalPathPoint().isAt(nexus)) {
+                if (path.getTotalPathCost() < lowestCost && path.getFinalPathPoint().pos.equals(nexusPos)) {
                     lowestCostIndex = i;
                 }
             }
@@ -126,11 +126,11 @@ public class AttackerAI {
                 Scaffold s = scaffoldPositions.get(i);
                 for (int j = 0; j < scaffoldPositions.size(); j++) {
                     if (j != i) {
-                        terrainMap.setData(s.toBlockPos(), 200000);
+                        terrainMap.setData(s.getPos(), 200000);
                     }
                 }
 
-                if (!createPath(pather, pos, nexusPos, terrainMap).getFinalPathPoint().isAt(nexus)) {
+                if (!createPath(pather, pos, nexusPos, terrainMap).getFinalPathPoint().pos.equals(nexus.getOrigin())) {
                     costDif.add(s);
                 }
 
@@ -144,23 +144,19 @@ public class AttackerAI {
 
     public void addScaffoldDataTo(IBlockAccessExtended terrainMap) {
         for (Scaffold scaffold : scaffolds) {
-            BlockPos pos = scaffold.toBlockPos();
+            BlockPos pos = scaffold.getPos();
             for (int i = 0; i < scaffold.getTargetHeight(); i++) {
                 terrainMap.setData(pos, terrainMap.getData(pos) | TerrainDataLayer.EXT_DATA_SCAFFOLD_METAPOSITION);
             }
         }
     }
 
-    public Scaffold getScaffoldAt(IPosition pos) {
-        return getScaffoldAt(pos.toBlockPos());
-    }
-
     public Scaffold getScaffoldAt(BlockPos pos) {
         for (Scaffold scaffold : scaffolds) {
-            if (scaffold.getXCoord() == pos.getX()
-                    && scaffold.getZCoord() == pos.getZ()
-                    && scaffold.getYCoord() <= pos.getY()
-                    && scaffold.getYCoord() + scaffold.getTargetHeight() >= pos.getY()) {
+            if (scaffold.getPos().getX() == pos.getX()
+                    && scaffold.getPos().getZ() == pos.getZ()
+                    && scaffold.getPos().getY() <= pos.getY()
+                    && scaffold.getPos().getY() + scaffold.getTargetHeight() >= pos.getY()) {
                 return scaffold;
             }
         }
@@ -234,14 +230,14 @@ public class AttackerAI {
     private void orientScaffold(Scaffold scaffold, BlockView terrainMap) {
         int mostBlocks = 0;
         Direction highestDirection = CoordsInt.CARDINAL_DIRECTIONS[0];
-        BlockPos.Mutable mutable = scaffold.toBlockPos().mutableCopy();
+        BlockPos.Mutable mutable = scaffold.getPos().mutableCopy();
         for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
             int blockCount = 0;
-            for (int height = 0; height < scaffold.getYCoord(); height++) {
-                if (terrainMap.getBlockState(mutable.set(scaffold.toBlockPos()).move(Direction.UP, height).move(offset)).isFullCube(terrainMap, mutable)) {
+            for (int height = 0; height < scaffold.getPos().getY(); height++) {
+                if (terrainMap.getBlockState(mutable.set(scaffold.getPos()).move(Direction.UP, height).move(offset)).isFullCube(terrainMap, mutable)) {
                     blockCount++;
                 }
-                if (terrainMap.getBlockState(mutable.set(scaffold.toBlockPos()).move(Direction.UP, height).move(offset, 2)).isFullCube(terrainMap, mutable)) {
+                if (terrainMap.getBlockState(mutable.set(scaffold.getPos()).move(Direction.UP, height).move(offset, 2)).isFullCube(terrainMap, mutable)) {
                     blockCount++;
                 }
             }
@@ -255,15 +251,15 @@ public class AttackerAI {
     private void addNewScaffolds(List<Scaffold> newScaffolds) {
         for (Scaffold newScaffold : newScaffolds) {
             for (Scaffold existingScaffold : scaffolds) {
-                if (existingScaffold.getXCoord() == newScaffold.getXCoord() && existingScaffold.getZCoord() == newScaffold.getZCoord()) {
-                    if (newScaffold.getYCoord() > existingScaffold.getYCoord()) {
-                        if (newScaffold.getYCoord() < existingScaffold.getYCoord() + existingScaffold.getTargetHeight()) {
-                            existingScaffold.setHeight(newScaffold.getYCoord() + newScaffold.getTargetHeight() - existingScaffold.getYCoord());
+                if (existingScaffold.getPos().getX() == newScaffold.getPos().getX() && existingScaffold.getPos().getZ() == newScaffold.getPos().getZ()) {
+                    if (newScaffold.getPos().getY() > existingScaffold.getPos().getY()) {
+                        if (newScaffold.getPos().getY() < existingScaffold.getPos().getY() + existingScaffold.getTargetHeight()) {
+                            existingScaffold.setHeight(newScaffold.getPos().getY() + newScaffold.getTargetHeight() - existingScaffold.getPos().getY());
                             break;
                         }
-                    } else if (newScaffold.getYCoord() + newScaffold.getTargetHeight() > existingScaffold.getYCoord()) {
-                        existingScaffold.setPosition(newScaffold.getXCoord(), newScaffold.getYCoord(), newScaffold.getZCoord());
-                        existingScaffold.setHeight(existingScaffold.getYCoord() + existingScaffold.getTargetHeight() - newScaffold.getYCoord());
+                    } else if (newScaffold.getPos().getY() + newScaffold.getTargetHeight() > existingScaffold.getPos().getY()) {
+                        existingScaffold.setPosition(newScaffold.getPos().getX(), newScaffold.getPos().getY(), newScaffold.getPos().getZ());
+                        existingScaffold.setHeight(existingScaffold.getPos().getY() + existingScaffold.getTargetHeight() - newScaffold.getPos().getY());
                         break;
                     }
                 }
@@ -275,12 +271,8 @@ public class AttackerAI {
 
     private void updateScaffolds() {
         scaffolds.removeIf(scaffold -> {
-            nexus.getWorld().addParticle(ParticleTypes.HEART,
-                    scaffold.getXCoord() + 0.2D,
-                    scaffold.getYCoord() + 0.2D,
-                    scaffold.getZCoord() + 0.2D,
-                    0.5D, 0.5D, 0.5D
-            );
+            Vec3d pos = scaffold.getPos().toCenterPos();
+            nexus.getWorld().addParticle(ParticleTypes.HEART, pos.x, pos.y, pos.z, 0.5D, 0.5D, 0.5D);
 
             scaffold.forceStatusUpdate();
             return scaffold.getPercentIntactCached() + 0.05F < 0.4F * scaffold.getPercentCompletedCached();

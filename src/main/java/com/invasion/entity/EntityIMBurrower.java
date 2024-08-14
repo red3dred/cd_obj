@@ -63,6 +63,11 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     }
 
     @Override
+    public BlockPos toBlockPos() {
+        return getBlockPos();
+    }
+
+    @Override
     public BlockView getTerrain() {
         return getWorld();
     }

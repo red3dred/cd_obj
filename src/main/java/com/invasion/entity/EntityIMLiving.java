@@ -70,7 +70,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IPosition, IHasNexus, IHasAiGoals, BuildableMob {
+public abstract class EntityIMLiving extends HostileEntity implements IPathfindable, IHasNexus, IHasAiGoals, BuildableMob {
     protected static final float DEFAULT_SOFT_STRENGTH = 2.5F;
     protected static final float DEFAULT_HARD_STRENGTH = 5.5F;
     protected static final float DEFAULT_SOFT_COST = 2;
@@ -489,7 +489,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         if (!hasNexus()) {
             return Double.MAX_VALUE;
         }
-        return Math.sqrt(getNexus().toBlockPos().toCenterPos().squaredDistanceTo(getX(), getBodyY(0.5), getZ()));
+        return Math.sqrt(getNexus().getOrigin().toCenterPos().squaredDistanceTo(getX(), getBodyY(0.5), getZ()));
     }
 
     @Override
@@ -540,21 +540,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     @Deprecated
     public float getRotationPitchHead() {
         return getPitch();
-    }
-
-    @Override
-    public int getXCoord() {
-        return getBlockPos().getX();
-    }
-
-    @Override
-    public int getYCoord() {
-        return getBlockPos().getY();
-    }
-
-    @Override
-    public int getZCoord() {
-        return getBlockPos().getZ();
     }
 
     @Deprecated
@@ -1028,11 +1013,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
             }
         }
         return isSolidBlock;
-    }
-
-    @Override
-    public final BlockPos toBlockPos() {
-        return getBlockPos();
     }
 
     public boolean canStandAtAndIsValid(BlockView world, BlockPos pos) {

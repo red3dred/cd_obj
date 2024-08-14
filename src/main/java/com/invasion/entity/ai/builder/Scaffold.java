@@ -8,18 +8,17 @@ import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.entity.pathfinding.PathfinderIM;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.CoordsInt;
-import com.invasion.util.math.IPosition;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-public class Scaffold implements IPathfindable, IPosition {
+public class Scaffold implements IPathfindable {
     private static final int MIN_SCAFFOLD_HEIGHT = 4;
     private BlockPos pos = BlockPos.ORIGIN;
     private int targetHeight;
@@ -44,6 +43,10 @@ public class Scaffold implements IPathfindable, IPosition {
 
     public void setPosition(int x, int y, int z) {
         pos = new BlockPos(x, y, z);
+    }
+
+    public BlockPos getPos() {
+        return pos;
     }
 
     public void setInitialIntegrity() {
@@ -83,21 +86,6 @@ public class Scaffold implements IPathfindable, IPosition {
 
     public float getPercentCompletedCached() {
         return this.latestPercentCompleted;
-    }
-
-    @Override
-    public int getXCoord() {
-        return pos.getX();
-    }
-
-    @Override
-    public int getYCoord() {
-        return pos.getY();
-    }
-
-    @Override
-    public int getZCoord() {
-        return pos.getZ();
     }
 
     public INexusAccess getNexus() {
@@ -184,7 +172,7 @@ public class Scaffold implements IPathfindable, IPosition {
                 existingMainLadderBlocks++;
             }
             if (isLayerPlatform(i)) {
-                for (BlockPos offset : CoordsInt.OFFSET_RING) {
+                for (Vec3i offset : CoordsInt.OFFSET_RING) {
                     if (world.getBlockState(mutable.set(pos).move(Direction.UP, i).move(offset)).isFullCube(world, mutable)) {
                         existingPlatformBlocks++;
                     }
@@ -240,7 +228,7 @@ public class Scaffold implements IPathfindable, IPosition {
             List<Scaffold> scaffolds = nexus.getAttackerAI().getScaffolds();
             minDistance = nexus.getAttackerAI().getMinDistanceBetweenScaffolds();
             for (int sl = scaffolds.size() - 1; sl >= 0; sl--) {
-                if (scaffolds.get(sl).toBlockPos().isWithinDistance(currentNode.pos, minDistance)) {
+                if (scaffolds.get(sl).pos.isWithinDistance(currentNode.pos, minDistance)) {
                     return;
                 }
             }

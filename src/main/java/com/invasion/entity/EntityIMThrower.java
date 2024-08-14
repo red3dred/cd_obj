@@ -270,7 +270,7 @@ public class EntityIMThrower extends EntityIMMob {
         BlockState block = getWorld().getBlockState(pos);
         if (this.j != null) {
             if (block.isOf(InvBlocks.NEXUS_CORE)) {
-                if (hasNexus() && canAttack() && pos.equals(getNexus().toBlockPos())) {
+                if (hasNexus() && canAttack() && pos.equals(getNexus().getOrigin())) {
                     getNexus().attackNexus(5);
                 }
             } else {

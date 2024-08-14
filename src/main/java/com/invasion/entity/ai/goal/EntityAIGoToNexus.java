@@ -1,6 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import java.util.EnumSet;
+import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -8,13 +9,12 @@ import com.invasion.entity.EntityIMMob;
 import com.invasion.entity.ai.Goal;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.util.math.CoordsInt;
-import com.invasion.util.math.Distance;
-import com.invasion.util.math.IPosition;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
     private EntityIMMob mob;
-    private IPosition lastPathRequestPos = new CoordsInt(0, -128, 0);
+    private Optional<BlockPos> lastPathRequestPos = Optional.empty();
     private final INavigation navigation;
     private int pathRequestTimer;
     private int pathFailedCount;
@@ -40,12 +40,13 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
             double distance = mob.findDistanceToNexus();
 
             if (distance > 2000) {
-                pathSet = navigation.tryMoveTowardsXZ(nexus.getXCoord(), nexus.getZCoord(), 1, 6, 4, mob.getMovementSpeed());
+                Vec3d target = nexus.getOrigin().toBottomCenterPos();
+                pathSet = navigation.tryMoveTowardsXZ(target.x, target.z, 1, 6, 4, mob.getMovementSpeed());
             } else if (distance > 1.5) {
-                pathSet = navigation.tryMoveToXYZ(nexus.toBlockPos().toBottomCenterPos(), 1, mob.getMovementSpeed());
+                pathSet = navigation.tryMoveToXYZ(nexus.getOrigin().toBottomCenterPos(), 1, mob.getMovementSpeed());
             }
 
-            if (!pathSet || (navigation.getLastPathDistanceToTarget() > 3 && Distance.distanceBetween(lastPathRequestPos, mob) < 3.5)) {
+            if (!pathSet || (navigation.getLastPathDistanceToTarget() > 3 && lastPathRequestPos.isPresent() && mob.getBlockPos().isWithinDistance(lastPathRequestPos.get(), 3.5))) {
                 pathFailedCount++;
                 pathRequestTimer = 40 * pathFailedCount + mob.getRandom().nextInt(10);
             } else {
@@ -53,7 +54,7 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
                 pathRequestTimer = 20;
             }
 
-            lastPathRequestPos = new CoordsInt(mob.getBlockPos());
+            lastPathRequestPos = Optional.of(mob.getBlockPos());
         }
     }
 
@@ -63,7 +64,8 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
             @Nullable
             INexusAccess nexus = mob.getNexus();
             if (nexus != null) {
-                mob.getMoveControl().moveTo(nexus.getXCoord() + 0.5D, nexus.getYCoord(), nexus.getZCoord() + 0.5D, mob.getMovementSpeed());
+                Vec3d target = nexus.getOrigin().toCenterPos();
+                mob.getMoveControl().moveTo(target.x, target.y, target.z, mob.getMovementSpeed());
             }
         }
         if (mob.getNavigatorNew().noPath() || mob.getNavigatorNew().getStuckTime() > 40) {

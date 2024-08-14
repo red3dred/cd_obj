@@ -52,7 +52,7 @@ public class TerrainBuilder implements ITerrainBuild {
             return false;
         }
 
-        int height = pos.getY() - scaffold.getYCoord();
+        int height = pos.getY() - scaffold.getPos().getY();
         Direction offset = scaffold.getOrientation();
         BlockPos.Mutable mutable = pos.mutableCopy();
 

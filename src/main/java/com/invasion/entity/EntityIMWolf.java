@@ -109,7 +109,7 @@ public class EntityIMWolf extends WolfEntity implements IHasNexus {
         checkNexus();
         if ((!getWorld().isClient) && hasNexus() && getNexus().getMode() != 0) {
             EntityIMWolf wolf = InvEntities.WOLF.create(getWorld());
-            BlockPos center = getNexus().toBlockPos();
+            BlockPos center = getNexus().getOrigin();
             Optional<Vec3d> respawnPoint = BlockPos.streamOutwards(center, 5, 3, 5).map(BlockPos::toBottomCenterPos)
                     .filter(pos -> {
                         wolf.setPosition(pos);
@@ -189,7 +189,7 @@ public class EntityIMWolf extends WolfEntity implements IHasNexus {
     @Override
     public void setNexus(@Nullable INexusAccess nexus) {
         this.nexus = nexus;
-        nexusPos = Optional.ofNullable(nexus).map(n -> GlobalPos.create(n.getWorld().getRegistryKey(), n.toBlockPos()));
+        nexusPos = Optional.ofNullable(nexus).map(n -> GlobalPos.create(n.getWorld().getRegistryKey(), n.getOrigin()));
     }
 
     @Override
@@ -206,6 +206,6 @@ public class EntityIMWolf extends WolfEntity implements IHasNexus {
         if (!hasNexus()) {
             return Double.MAX_VALUE;
         }
-        return Math.sqrt(getNexus().toBlockPos().toCenterPos().squaredDistanceTo(getX(), getBodyY(0.5), getZ()));
+        return Math.sqrt(getNexus().getOrigin().toCenterPos().squaredDistanceTo(getX(), getBodyY(0.5), getZ()));
     }
 }

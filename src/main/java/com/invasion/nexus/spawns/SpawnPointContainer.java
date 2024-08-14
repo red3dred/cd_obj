@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.util.math.PolarAngle;
 
 import net.minecraft.block.Block;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class SpawnPointContainer {
@@ -27,7 +26,7 @@ public class SpawnPointContainer {
         for (int i = 0; i < spawnList.size(); i++) {
             SpawnPoint oldPoint = spawnList.get(i);
             if (oldPoint.columnEquals(spawnPoint)) {
-                if (oldPoint.pos().getY() > spawnPoint.getYCoord()) {
+                if (oldPoint.pos().getY() > spawnPoint.pos().getY()) {
                     spawnList.set(i, spawnPoint);
                 }
                 foundMatch = true;
@@ -84,14 +83,14 @@ public class SpawnPointContainer {
     }
 
     public int getNumberOfSpawnPoints(SpawnType spawnType, int minAngle, int maxAngle) {
-        List<SpawnPoint> spawnList = this.spawnPoints.get(spawnType);
+        List<SpawnPoint> spawnList = spawnPoints.get(spawnType);
         if (spawnList.isEmpty() || (maxAngle - minAngle) >= 360) {
             return spawnList.size();
         }
 
-        if (!this.sorted) {
+        if (!sorted) {
             Collections.sort(spawnList);
-            this.sorted = true;
+            sorted = true;
         }
 
         int start = Collections.binarySearch(spawnList, new PolarAngle(minAngle));
@@ -112,11 +111,8 @@ public class SpawnPointContainer {
     }
 
     public void pointDisplayTest(Block block, World world) {
-        List<SpawnPoint> points = this.spawnPoints.get(SpawnType.HUMANOID);
-        for (int i = 0; i < points.size(); i++) {
-            SpawnPoint point = points.get(i);
-            world.setBlockState(new BlockPos(point.getXCoord(), point.getYCoord(), point.getZCoord()),
-                    block.getDefaultState());
+        for (SpawnPoint point : spawnPoints.get(SpawnType.HUMANOID)) {
+            world.setBlockState(point.pos(), block.getDefaultState());
         }
     }
 }

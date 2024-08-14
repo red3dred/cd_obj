@@ -6,13 +6,14 @@ import java.util.UUID;
 
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.ai.AttackerAI;
-import com.invasion.util.math.IPosition;
-
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public interface INexusAccess extends IPosition {
+public interface INexusAccess {
+
+    BlockPos getOrigin();
 
     boolean forceStart(int wave);
 

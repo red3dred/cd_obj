@@ -5,8 +5,6 @@ import java.util.Objects;
 
 import com.invasion.INotifyTask;
 import com.invasion.entity.ICanDig;
-import com.invasion.util.math.IPosition;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 
@@ -32,7 +30,7 @@ public class TerrainDigger implements ITerrainDig, INotifyTask {
     @SuppressWarnings("deprecation")
     @Override
     public boolean askClearPosition(BlockPos pos, INotifyTask onFinished, float costMultiplier) {
-        return this.modifier.requestTask(onFinished, this, Arrays.stream(digger.getBlockRemovalOrder(pos)).map(IPosition::toBlockPos).map(removal -> {
+        return this.modifier.requestTask(onFinished, this, Arrays.stream(digger.getBlockRemovalOrder(pos)).map(removal -> {
             BlockState state = digger.getTerrain().getBlockState(removal);
             if (!state.isAir() && !state.blocksMovement() && digger.canClearBlock(removal)) {
                 return ModifyBlockEntry.ofDeletion(removal, (int) (costMultiplier * digger.getBlockRemovalCost(removal) / digRate));
@@ -51,7 +49,7 @@ public class TerrainDigger implements ITerrainDig, INotifyTask {
     public void notifyTask(Status result) {
         if (result == Status.SUCCESS) {
             ModifyBlockEntry entry = modifier.getLastBlockModified();
-            digger.onBlockRemoved(entry.toBlockPos(), entry.getOldBlock());
+            digger.onBlockRemoved(entry.pos(), entry.getOldBlock());
         }
     }
 }

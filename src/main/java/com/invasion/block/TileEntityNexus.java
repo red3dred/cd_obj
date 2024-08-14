@@ -188,18 +188,8 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
     }
 
     @Override
-    public int getXCoord() {
-        return getPos().getX();
-    }
-
-    @Override
-    public int getYCoord() {
-        return getPos().getY();
-    }
-
-    @Override
-    public int getZCoord() {
-        return getPos().getZ();
+    public BlockPos getOrigin() {
+        return getPos();
     }
 
     @Override
@@ -817,7 +807,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         }
 
         if (!mobsSorted) {
-            Collections.sort(mobList, ComparatorDistanceFrom.ofComparisonEntities(this));
+            Collections.sort(mobList, ComparatorDistanceFrom.ofComparisonEntities(getOrigin().toCenterPos()));
         }
         EntityIMLiving mob = mobList.removeLast();
         mob.damage(mob.getDamageSources().magic(), 500);

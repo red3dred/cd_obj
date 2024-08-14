@@ -129,7 +129,7 @@ public class InvasionCommand {
 
 	private static int bolt(ServerCommandSource source, Vec3i offset) {
 	    handleWithNexus(source, nexus -> {
-	        BlockPos nexusPos = nexus.toBlockPos();
+	        BlockPos nexusPos = nexus.getOrigin();
 	        source.getWorld().spawnEntity(new EntityIMBolt(source.getWorld(), nexusPos.toCenterPos(), nexusPos.add(offset).toCenterPos(), 40, 1));
 	    });
         return 0;
