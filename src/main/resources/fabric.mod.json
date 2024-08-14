@@ -17,16 +17,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.minelittlepony.server.MineLittlePonyServer"
+      "com.invasion.InvasionMod"
     ],
     "client": [
-      "com.minelittlepony.client.MineLittlePony"
-    ],
-    "hdskins": [
-      "com.minelittlepony.client.compat.hdskins.MineLPHDSkins"
-    ],
-    "modmenu": [
-      "com.minelittlepony.client.compat.modmenu.MineLPModMenuFactory"
+      "com.invasion.client.InvasionModClient"
     ]
   },
   "mixins": [
