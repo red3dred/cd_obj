@@ -10,9 +10,9 @@ import com.invasion.InvasionMod;
 
 public class RenderIMZombiePigman extends RenderIMZombie {
     static final List<Identifier> TEXTURES = Stream.of(
-            "textures/pigzombie64x32.png",
-            "textures/pigzombie64x32.png",
-            "textures/zombiePigmanT3.png"
+            "textures/entity/zombie_pigman/zombie_pigman.png",
+            "textures/entity/zombie_pigman/zombie_pigman.png",
+            "textures/entity/zombie_pigman/zombie_pigman_t3.png"
     ).map(InvasionMod::id).toList();
 
 	public RenderIMZombiePigman(EntityRendererFactory.Context ctx) {

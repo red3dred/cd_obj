@@ -11,7 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 public class RenderBoulder extends EntityRenderer<EntityIMBoulder> {
-	private static final Identifier TEXTURE = InvasionMod.id("textures/boulder.png");
+	private static final Identifier TEXTURE = InvasionMod.id("textures/entity/boulder.png");
 
     private final ModelBoulder model = new ModelBoulder(ModelBoulder.getTexturedModelData().createModel());
 

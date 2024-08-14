@@ -11,7 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 public class RenderEgg extends EntityRenderer<EntityIMEgg> {
-	private static final Identifier TEXTURE = InvasionMod.id("textures/spideregg.png");
+	private static final Identifier TEXTURE = InvasionMod.id("textures/entity/spider_egg.png");
 
 	private final ModelEgg model = new ModelEgg(ModelEgg.getTexturedModelData().createModel());
 

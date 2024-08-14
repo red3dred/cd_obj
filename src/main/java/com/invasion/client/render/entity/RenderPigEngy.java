@@ -10,7 +10,7 @@ import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.util.Identifier;
 
 public class RenderPigEngy extends BipedEntityRenderer<EntityIMPigEngy, BipedEntityModel<EntityIMPigEngy>> {
-    private static final Identifier TEXTURE = InvasionMod.id("textures/pigengT1.png");
+    private static final Identifier TEXTURE = InvasionMod.id("textures/entity/pigman_engineer.png");
 
     public RenderPigEngy(Context ctx) {
         super(ctx, new BipedEntityModel<>(ctx.getPart(EntityModelLayers.ZOMBIE)), 0.5F);

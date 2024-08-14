@@ -62,6 +62,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.LightType;
@@ -988,13 +989,13 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     protected final boolean isAdjacentSolidBlock(BlockView terrainMap, BlockPos pos) {
-        for (BlockPos offset
+        BlockPos.Mutable mutable = pos.mutableCopy();
+        for (Vec3i offset
                 : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
                 : collideSize.getXCoord() == 2 && collideSize.getZCoord() == 2 ? CoordsInt.OFFSET_ADJACENT_2
                 : CoordsInt.ZERO) {
-            BlockPos pos2 = pos.add(offset);
-            BlockState state = terrainMap.getBlockState(pos2);
-            if (!state.isAir() && state.isSolidBlock(terrainMap, pos2)) {
+            BlockState state = terrainMap.getBlockState(mutable.set(pos).add(offset));
+            if (!state.isAir() && state.isSolidBlock(terrainMap, mutable)) {
                 return true;
             }
         }

@@ -3,6 +3,7 @@ package com.invasion.util.math;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
+@Deprecated
 public interface IPosition {
     int getXCoord();
 

@@ -30,10 +30,13 @@ import com.invasion.entity.AbstractIMZombieEntity;
  */
 public class RenderIMZombie extends BipedEntityRenderer<AbstractIMZombieEntity, BipedEntityModel<AbstractIMZombieEntity>> {
     static final List<Identifier> TEXTURES = Stream.of(
-            "textures/zombie_old.png", "textures/zombieT1a.png",
-            "textures/zombieT2.png", "textures/pigzombie64x32.png",
-            "textures/zombieT2a.png", "textures/zombietar.png",
-            "textures/zombieT3.png"
+            "textures/entity/zombie/old_zombie_t1.png",
+            "textures/entity/zombie/zombie_t1.png",
+            "textures/entity/zombie/zombie_t2.png",
+            "textures/entity/zombie_pigman/zombie_pigman_t3.png",
+            "textures/entity/zombie/zombie_t2a.png",
+            "textures/entity/zombie/zombie_tar.png",
+            "textures/entity/zombie/zombie_t3.png"
     ).map(InvasionMod::id).toList();
 
     protected final BipedEntityModel<AbstractIMZombieEntity> normalModel;

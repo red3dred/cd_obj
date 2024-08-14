@@ -9,7 +9,7 @@ import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.util.Identifier;
 
 public class RenderIMWolf extends WolfEntityRenderer {
-    private static final Identifier TEXTURE = InvasionMod.id("textures/wolf_tame_nexus.png");
+    private static final Identifier TEXTURE = InvasionMod.id("textures/wolf/tame_nexus.png");
 
 	public RenderIMWolf(EntityRendererFactory.Context context) {
         super(context);

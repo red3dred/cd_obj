@@ -11,6 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 
 public class IMMoveHelperSpider extends IMMoveHelper {
     private static final Direction[] DIRECTIONS = Direction.values();
@@ -50,7 +51,7 @@ public class IMMoveHelperSpider extends IMMoveHelper {
         int index = getMoveDirection();
 
         BlockPos.Mutable mutable = pos.mutableCopy();
-        for (BlockPos offset : CoordsInt.OFFSET_ADJACENT_2) {
+        for (Vec3i offset : CoordsInt.OFFSET_ADJACENT_2) {
             BlockState state = entity.getWorld().getBlockState(mutable.set(pos).move(offset));
             if (state.isFullCube(entity.getWorld(), mutable)) {
                 return Optional.of(DIRECTIONS[(index % 8) / 2]);

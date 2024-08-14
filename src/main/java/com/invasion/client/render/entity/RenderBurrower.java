@@ -11,7 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 
 public class RenderBurrower extends LivingEntityRenderer<EntityIMBurrower, ModelBurrower> {
-    private static final Identifier TEXTURE = InvasionMod.id("textures/burrower.png");
+    private static final Identifier TEXTURE = InvasionMod.id("textures/entity/burrower.png");
 
     public RenderBurrower(Context ctx) {
         super(ctx, new ModelBurrower(ModelBurrower.getTexturedModelData2().createModel()), 0.5F);

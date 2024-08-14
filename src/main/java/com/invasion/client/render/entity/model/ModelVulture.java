@@ -1,11 +1,10 @@
-package com.invasion.client.render;
+package com.invasion.client.render.entity.model;
 
 import java.util.Map;
 
 import com.invasion.client.render.animation.AnimationRegistry;
 import com.invasion.client.render.animation.BonesMouth;
 import com.invasion.client.render.animation.ModelAnimator;
-import com.invasion.client.render.entity.model.ModelGiantBird;
 import com.invasion.entity.EntityIMBird;
 
 import net.minecraft.client.model.ModelData;

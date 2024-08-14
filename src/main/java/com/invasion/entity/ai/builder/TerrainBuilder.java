@@ -15,6 +15,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 
 public class TerrainBuilder implements ITerrainBuild {
     private static final float LADDER_COST = 25;
@@ -75,7 +76,7 @@ public class TerrainBuilder implements ITerrainBuild {
         }
 
         if (scaffold.isLayerPlatform(height)) {
-            for (BlockPos i : CoordsInt.OFFSET_RING) {
+            for (Vec3i i : CoordsInt.OFFSET_RING) {
                 if (!i.equals(offset.getVector()) && !mob.getWorld().getBlockState(mutable.set(pos).move(i)).isFullCube(mob.getWorld(), mutable)) {
                     modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
                 }
