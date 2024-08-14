@@ -3,6 +3,7 @@ package com.invasion.entity;
 import org.joml.Vector3f;
 
 import com.invasion.IBlockAccessExtended;
+import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.IMLookHelper;
@@ -329,9 +330,9 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 		BlockPos.Mutable mutable = node.pos.mutableCopy();
 
 		for (int i = -1; i > -6; i--) {
-			BlockState block = terrainMap.getBlockState(mutable.set(node.pos).move(Direction.UP, i));
-			if (!block.isAir()) {
-				int blockType = getBlockType(block.getBlock());
+			BlockState state = terrainMap.getBlockState(mutable.set(node.pos).move(Direction.UP, i));
+			if (!state.isAir()) {
+				int blockType = BlockMetadata.getBlockType(state);
 				if (blockType != 1) {
 					multiplier += 1 + i * 0.2F;
 					if (blockType != 2 || i < -2) {
@@ -345,8 +346,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
 		for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
 			for (int j = 1; j <= 2; j++) {
-				BlockState block = terrainMap.getBlockState(mutable.set(node.pos).move(offset, j));
-				int blockType = getBlockType(block.getBlock());
+				int blockType = BlockMetadata.getBlockType(terrainMap.getBlockState(mutable.set(node.pos).move(offset, j)));
 				if (blockType != 1) {
 					multiplier += 1.5F - j * 0.5F;
 					if (blockType != 2) {
@@ -365,7 +365,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 			return prevNode.distanceTo(node) * 1.3F * multiplier;
 		}
 
-		BlockState block = terrainMap.getBlockState(node.pos);
-		return prevNode.distanceTo(node) * EntityIMLiving.getBlockCost(block).orElse(block.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
+		BlockState state = terrainMap.getBlockState(node.pos);
+		return prevNode.distanceTo(node) * BlockMetadata.getCost(state).orElse(state.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
 	}
 }

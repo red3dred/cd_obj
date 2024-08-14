@@ -2,10 +2,9 @@ package com.invasion.item;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.block.BlockMetadata;
 import com.invasion.block.InvBlocks;
 import com.invasion.block.TileEntityNexus;
-import com.invasion.entity.EntityIMLiving;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -61,7 +60,7 @@ class ItemProbe extends Item {
         }
 
         if (isProbe) {
-            float blockStrength = EntityIMLiving.getBlockStrength(pos, state, world);
+            float blockStrength = BlockMetadata.getStrength(pos, state, world);
             int strengthRounded = (int) ((blockStrength + 0.005D) * 100.0D) / 100;
             player.sendMessage(Text.translatable("invmod.message.probe.blockstrength", Text.literal(strengthRounded + "").formatted(Formatting.GREEN)).formatted(Formatting.DARK_GREEN));
             return ActionResult.SUCCESS;

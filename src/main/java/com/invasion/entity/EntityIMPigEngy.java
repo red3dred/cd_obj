@@ -3,6 +3,7 @@ package com.invasion.entity;
 import com.invasion.IBlockAccessExtended;
 import com.invasion.INotifyTask;
 import com.invasion.InvasionMod;
+import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.ai.Goal;
@@ -381,7 +382,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
     }
 
     public static boolean canPlaceLadderAt(BlockView map, BlockPos pos) {
-        if (EntityIMLiving.UNDESTRUCTABLE_BLOCKS.contains(map.getBlockState(pos).getBlock())) {
+        if (BlockMetadata.isIndestructible(map.getBlockState(pos))) {
             BlockPos.Mutable mutable = pos.mutableCopy();
             if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)
                     || map.getBlockState(mutable.set(pos).move(-1, 0, 0)).isFullCube(map, mutable)

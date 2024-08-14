@@ -48,7 +48,7 @@ public class EntityIMBoulder extends PersistentProjectileEntity {
         } else if (state.getHardness(getWorld(), hit.getBlockPos()) >= 0) {
 
             if (!state.isIn(BlockTags.WITHER_IMMUNE) && !state.isIn(BlockTags.DRAGON_IMMUNE)) {
-                if (EntityIMLiving.getBlockSpecial(state.getBlock()) == BlockSpecial.DEFLECTION_1 && getRandom().nextInt(2) == 0) {
+                if (BlockSpecial.of(state) == BlockSpecial.DEFLECTION_1 && getRandom().nextInt(2) == 0) {
                     discard();
                     return;
                 }

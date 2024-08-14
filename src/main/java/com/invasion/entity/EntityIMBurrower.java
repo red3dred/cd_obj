@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.joml.Vector3f;
 
 import com.invasion.INotifyTask;
+import com.invasion.block.BlockMetadata;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.INavigation;
@@ -153,7 +154,7 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
         }
         penalty += enclosedLevelSide * 0.5F;
 
-        float factor = !block.isAir() && (block.isSolidBlock(worldMap, node.pos) || EntityIMLiving.getBlockCost(block).isPresent()) ? 1.3F : 1;
+        float factor = !block.isAir() && (block.isSolidBlock(worldMap, node.pos) || BlockMetadata.getCost(block).isPresent()) ? 1.3F : 1;
 
         return prevNode.distanceTo(node) * factor * penalty;
     }
