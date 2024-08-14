@@ -1,6 +1,5 @@
 package com.invasion.block;
 
-import com.invasion.block.container.ContainerNexus;
 import com.invasion.item.InvItems;
 import com.mojang.serialization.MapCodec;
 
@@ -8,14 +7,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -46,18 +42,9 @@ public class BlockNexus extends BlockWithEntity {
     @Override
     protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!stack.isOf(InvItems.MATERIAL_PROBE) && !stack.isOf(InvItems.NEXUS_ADJUSTER) && !stack.getRegistryEntry().matchesKey(InvItems.DEBUG_WAND)) {
-            if (world.getBlockEntity(pos) instanceof TileEntityNexus nexus) {
-                player.openHandledScreen(new NamedScreenHandlerFactory() {
-                    @Override
-                    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-                        return new ContainerNexus(syncId, playerInventory, nexus);
-                    }
-
-                    @Override
-                    public Text getDisplayName() {
-                        return getName();
-                    }
-                });
+            NamedScreenHandlerFactory factory = createScreenHandlerFactory(state, world, pos);
+            if (factory != null) {
+                player.openHandledScreen(factory);
             }
             return ItemActionResult.SUCCESS;
         }

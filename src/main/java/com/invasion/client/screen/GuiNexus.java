@@ -31,7 +31,7 @@ public class GuiNexus extends HandledScreen<ContainerNexus> {
             context.drawText(textRenderer, "" + handler.getPowerLevel(), 61, 44, 0x404040, false);
         }
 
-        if ((handler.getNexus().isActivating()) && (handler.getMode() == 0)) {
+        if (handler.isActivating() && handler.getMode() == 0) {
             context.drawText(textRenderer, "Activating...", 13, 62, 0x404040, false);
             if (handler.getMode() != 4) {
                 context.drawText(textRenderer, "Are you sure?", 8, 72, 0x404040, false);
@@ -56,10 +56,10 @@ public class GuiNexus extends HandledScreen<ContainerNexus> {
             context.drawTexture(BACKGROUND, j + 19, k + 29, 176, 31, 9, 31);
         }
 
-        if ((handler.getMode() == 0 || handler.getMode() == 2) && handler.getNexus().isActivating()) {
+        if ((handler.getMode() == 0 || handler.getMode() == 2) && handler.isActivating()) {
             l = handler.getActivationProgressScaled(31);
             context.drawTexture(BACKGROUND, j + 19, k + 29 + 31 - l, 176, 31 - l, 9, l);
-        } else if (handler.getMode() == 4 && handler.getNexus().isActivating()) {
+        } else if (handler.getMode() == 4 && handler.isActivating()) {
             l = handler.getActivationProgressScaled(31);
             context.drawTexture(BACKGROUND, j + 19, k + 29 + 31 - l, 176, 62 - l, 9, l);
         }

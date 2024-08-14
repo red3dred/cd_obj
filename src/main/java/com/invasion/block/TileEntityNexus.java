@@ -12,6 +12,7 @@ import com.invasion.ConfigInvasion;
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.mod_Invasion;
+import com.invasion.block.container.ContainerNexus;
 import com.invasion.entity.EntityIMBolt;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMWolf;
@@ -28,6 +29,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -37,7 +39,10 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.PropertyDelegate;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -50,7 +55,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedInventory {
+public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedInventory, NamedScreenHandlerFactory {
     private static final int[] SLOTS = {0, 1};
     public static final long BIND_EXPIRE_TIME = 300000L;
     public static final long TICKS_PER_DAY = World.field_30969;//24000
@@ -116,6 +121,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                 case 6 -> generation;
                 case 7 -> powerLevel;
                 case 8 -> cookTime;
+                case 9 -> isActivating() ? 1 : 0;
                 default -> 0;
             };
         }
@@ -848,6 +854,16 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
         } finally {
             mod_Invasion.setInvasionEnded(this);
         }
+    }
+
+    @Override
+    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+        return new ContainerNexus(syncId, playerInventory, this, properties, ScreenHandlerContext.create(player.getWorld(), getPos()));
+    }
+
+    @Override
+    public Text getDisplayName() {
+        return getCachedState().getBlock().getName();
     }
 
     @Override

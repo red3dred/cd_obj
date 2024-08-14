@@ -2,78 +2,87 @@ package com.invasion.block.container;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.block.TileEntityNexus;
+import com.invasion.InvScreenHandlers;
+import com.invasion.block.InvBlocks;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.ArrayPropertyDelegate;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
 
 public class ContainerNexus extends ScreenHandler {
-    private final TileEntityNexus nexus;
+    private final PropertyDelegate properties;
+    private final ScreenHandlerContext context;
 
-    public ContainerNexus(int syncId, PlayerInventory inventoryplayer, TileEntityNexus tileEntityNexus) {
-        // TODO: Screen handler type
-        super(null, syncId);
-        nexus = tileEntityNexus;
-        addSlot(new Slot(tileEntityNexus, 0, 32, 33));
-        addSlot(new SlotOutput(tileEntityNexus, 1, 102, 33));
+    public ContainerNexus(int syncId, PlayerInventory inventory) {
+        this(syncId, inventory, new SimpleInventory(2), new ArrayPropertyDelegate(10), ScreenHandlerContext.EMPTY);
+    }
+
+    public ContainerNexus(int syncId, PlayerInventory playerInventory, Inventory nexusInventory, PropertyDelegate properties, ScreenHandlerContext context) {
+        super(InvScreenHandlers.NEXUS, syncId);
+        this.context = context;
+        this.properties = properties;
+        addProperties(properties);
+        addSlot(new Slot(nexusInventory, 0, 32, 33));
+        addSlot(new SlotOutput(nexusInventory, 1, 102, 33));
 
         // inventory
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventoryplayer, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
             }
         }
 
         // hotbar
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventoryplayer, col, 8 + col * 18, 142));
+            addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
         }
-
-        addProperties(nexus.properties);
-
-    }
-
-    public TileEntityNexus getNexus() {
-        return nexus;
     }
 
     public int getActivationTimer() {
-        return nexus.properties.get(0);
+        return properties.get(0);
     }
 
     public int getMode() {
-        return nexus.properties.get(1);
+        return properties.get(1);
     }
 
     public int getCurrentWave() {
-        return nexus.properties.get(2);
+        return properties.get(2);
     }
 
     public int getLevel() {
-        return nexus.properties.get(3);
+        return properties.get(3);
     }
 
     public int getKills() {
-        return nexus.properties.get(4);
+        return properties.get(4);
     }
 
     public int getSpawnRadius() {
-        return nexus.properties.get(5);
+        return properties.get(5);
     }
 
     public int getGeneration() {
-        return nexus.properties.get(6);
+        return properties.get(6);
     }
 
     public int getPowerLevel() {
-        return nexus.properties.get(7);
+        return properties.get(7);
     }
 
     public int getCookTime() {
-        return nexus.properties.get(8);
+        return properties.get(8);
+    }
+
+    public boolean isActivating() {
+        return properties.get(9) != 0;
     }
 
     public int getActivationProgressScaled(int i) {
@@ -90,7 +99,7 @@ public class ContainerNexus extends ScreenHandler {
 
     @Override
     public boolean canUse(PlayerEntity entityplayer) {
-        return nexus.canPlayerUse(entityplayer);
+        return canUse(context, entityplayer, InvBlocks.NEXUS_CORE);
     }
 
     @Override
