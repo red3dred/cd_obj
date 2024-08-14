@@ -9,8 +9,6 @@ import com.invasion.INotifyTask;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMPigEngy;
 import com.invasion.util.math.CoordsInt;
-import com.invasion.util.math.IPosition;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -41,11 +39,10 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildScaffoldLayer(IPosition position, INotifyTask asker) {
+    public boolean askBuildScaffoldLayer(BlockPos pos, INotifyTask asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
-        BlockPos pos = position.toBlockPos();
         @Nullable
         Scaffold scaffold = mob.getNexus().getAttackerAI().getScaffoldAt(pos);
         if (scaffold == null) {
@@ -87,12 +84,11 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildLadderTower(IPosition position, Direction orientation, int layersToBuild, INotifyTask asker) {
+    public boolean askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild, INotifyTask asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
         List<ModifyBlockEntry> modList = new ArrayList<>();
-        BlockPos pos = position.toBlockPos();
 
         BlockPos.Mutable mutable = pos.mutableCopy();
 
@@ -116,12 +112,11 @@ public class TerrainBuilder implements ITerrainBuild {
 
     @SuppressWarnings("deprecation")
     @Override
-    public boolean askBuildLadder(IPosition position, INotifyTask asker) {
+    public boolean askBuildLadder(BlockPos pos, INotifyTask asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
         List<ModifyBlockEntry> modList = new ArrayList<>();
-        BlockPos pos = position.toBlockPos();
 
         if (!mob.getWorld().getBlockState(pos).isOf(Blocks.LADDER)) {
             if (!EntityIMPigEngy.canPlaceLadderAt(mob.getWorld(), pos)) {
@@ -142,13 +137,12 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildBridge(IPosition position, INotifyTask asker) {
+    public boolean askBuildBridge(BlockPos pos, INotifyTask asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
 
         List<ModifyBlockEntry> modList = new ArrayList<>();
-        BlockPos pos = position.toBlockPos();
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         if (mob.getWorld().isAir(mutable.move(Direction.DOWN))) {

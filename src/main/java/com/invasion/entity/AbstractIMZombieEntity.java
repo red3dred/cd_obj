@@ -12,7 +12,7 @@ import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.INexusAccess;
-
+import com.invasion.util.math.CoordsInt;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -225,7 +225,7 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
         if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
             float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
-            if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
+            if (node.pos.getY() > prevNode.pos.getY() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
                 multiplier += 2;
             }
 
@@ -237,7 +237,9 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     public boolean isBlockDestructible(BlockView terrainMap, BlockPos pos, BlockState block) {
-        return super.isBlockDestructible(terrainMap, pos, block) && getCurrentTargetPos().getInclinationTo(pos) <= 2.144D;
+        return super.isBlockDestructible(terrainMap, pos, block)
+                && getCurrentTargetPos().isPresent()
+                && CoordsInt.getInclination(getCurrentTargetPos().get(), pos) <= 2.144D;
     }
 
     @Override

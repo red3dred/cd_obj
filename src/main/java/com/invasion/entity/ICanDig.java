@@ -1,8 +1,8 @@
 package com.invasion.entity;
 
-import com.invasion.util.math.CoordsInt;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 
 public interface ICanDig {
@@ -19,7 +19,7 @@ public interface ICanDig {
 
         return new BlockPos[] {
             pos.up(),
-            toBlockPos().up(getCollideSize().getYCoord()),
+            toBlockPos().up(getCollideSize().getY()),
             pos
         };
     }
@@ -34,5 +34,5 @@ public interface ICanDig {
 
     BlockView getTerrain();
 
-    CoordsInt getCollideSize();
+    Vec3i getCollideSize();
 }

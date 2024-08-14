@@ -32,8 +32,6 @@ import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.nexus.EntityConstruct.BuildableMob;
 import com.invasion.util.math.CoordsInt;
-import com.invasion.util.math.Distance;
-import com.invasion.util.math.IPosition;
 import com.invasion.util.math.MathUtil;
 
 import net.minecraft.block.Block;
@@ -206,8 +204,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     private int rallyCooldown;
 
-    private IPosition currentTargetPos = new CoordsInt(0, 0, 0);
-    private IPosition lastBreathExtendPos = new CoordsInt(0, 0, 0);
+    private Optional<BlockPos> currentTargetPos = Optional.empty();
+    private Optional<BlockPos> lastBreathExtendPos = Optional.empty();
 
     private boolean isHostile = true;
     private boolean creatureRetaliates = true;
@@ -222,7 +220,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     protected float blockRemoveSpeed = 1.0F;
     protected boolean floatsInWater = true;
 
-    private CoordsInt collideSize = new CoordsInt(
+    @Deprecated
+    private Vec3i collideSize = new Vec3i(
             MathHelper.ceil(getWidth()),
             MathHelper.ceil(getHeight()),
             MathHelper.ceil(getWidth())
@@ -352,11 +351,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         int air = getAir();
 
         if (air == 190) {
-            lastBreathExtendPos = new CoordsInt(getBlockPos());
+            lastBreathExtendPos = Optional.of(getBlockPos());
         } else if (air == 0) {
-            IPosition pos = new CoordsInt(getBlockPos());
-            if (Distance.distanceBetween(this.lastBreathExtendPos, pos) > 4) {
-                lastBreathExtendPos = pos;
+            if (lastBreathExtendPos.isEmpty() || !getBlockPos().isWithinDistance(lastBreathExtendPos.get(), 4)) {
+                lastBreathExtendPos = Optional.of(getBlockPos());
                 setAir(180);
             }
         }
@@ -639,8 +637,13 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return groundFriction;
     }
 
-    public CoordsInt getCollideSize() {
+    @Deprecated
+    public Vec3i getCollideSize() {
         return collideSize;
+    }
+
+    public EntityDimensions getDimensions() {
+        return getDimensions(getPose());
     }
 
     @Override
@@ -665,12 +668,12 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return hasNexus() ? 0 : 0.5F - world.getLightLevel(pos);
     }
 
-    public IPosition getCurrentTargetPos() {
+    public Optional<BlockPos> getCurrentTargetPos() {
         return currentTargetPos;
     }
 
-    public void setCurrentTargetPos(IPosition pos) {
-        currentTargetPos = pos;
+    public void setCurrentTargetPos(BlockPos pos) {
+        currentTargetPos = Optional.of(pos);
     }
 
     @Override
@@ -755,7 +758,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     @Override
     public boolean recalculateDimensions(EntityDimensions previous) {
         boolean result = super.recalculateDimensions(previous);
-        collideSize = new CoordsInt(getBlockPos().add(1, 1, 1));
+        collideSize = new Vec3i(
+                MathHelper.ceil(getWidth()),
+                MathHelper.ceil(getHeight()),
+                MathHelper.ceil(getWidth())
+        );
         return result;
     }
 
@@ -821,11 +828,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
 
-        if (node.getYCoord() > prevNode.getYCoord() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
+        if (node.pos.getY() > prevNode.pos.getY() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
             multiplier += 2;
         }
 
@@ -834,17 +840,17 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
 
         if (node.action == PathAction.SWIM) {
-            multiplier *= ((node.getYCoord() <= prevNode.getYCoord()) && !terrainMap.getBlockState(node.pos).isAir() ? 3 : 1);
+            multiplier *= node.pos.getY() <= prevNode.pos.getY() && !terrainMap.getBlockState(node.pos).isAir() ? 3 : 1;
             return prevNode.distanceTo(node) * 1.3F * multiplier;
         }
 
         BlockState block = terrainMap.getBlockState(node.pos);
-        return prevNode.distanceTo(node) * getBlockCost(block).orElse(block.isSolid() ? 3.2F : 1) * multiplier;
+        return prevNode.distanceTo(node) * getBlockCost(block).orElse(block.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
     }
 
     @Override
     public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-        if (getWorld().isOutOfHeightLimit(currentNode.getYCoord())) {
+        if (getWorld().isOutOfHeightLimit(currentNode.pos)) {
             return;
         }
 
@@ -878,12 +884,12 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
                     height = 0;
                 }
             }
-            int currentY = currentNode.getYCoord() + height;
+            int currentY = currentNode.pos.getY() + height;
             boolean passedLevel = false;
             do {
                 int yOffset = getNextLowestSafeYOffset(terrainMap,
                         mutable.set(currentNode.pos).setY(currentY).move(facing),
-                        maxFall + currentY - currentNode.getYCoord()
+                        maxFall + currentY - currentNode.pos.getY()
                 );
                 if (yOffset > 0) {
                     break;
@@ -894,15 +900,15 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
                 currentY += yOffset - 1;
 
-                if ((!passedLevel) && (currentY <= currentNode.getYCoord())) {
+                if ((!passedLevel) && (currentY <= currentNode.pos.getY())) {
                     passedLevel = true;
-                    if (currentY != currentNode.getYCoord()) {
+                    if (currentY != currentNode.pos.getY()) {
                         addAdjacent(terrainMap, currentNode.pos.offset(facing), currentNode, pathFinder);
                     }
 
                 }
 
-            } while (currentY >= currentNode.getYCoord());
+            } while (currentY >= currentNode.pos.getY());
         }
 
         if (canSwimHorizontal()) {
@@ -976,8 +982,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     protected final boolean isAdjacentSolidBlock(BlockView terrainMap, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (Vec3i offset
-                : collideSize.getXCoord() == 1 && collideSize.getZCoord() == 1 ? CoordsInt.OFFSET_ADJACENT
-                : collideSize.getXCoord() == 2 && collideSize.getZCoord() == 2 ? CoordsInt.OFFSET_ADJACENT_2
+                : getWidth() == 1 ? CoordsInt.OFFSET_ADJACENT
+                : getWidth() == 2 ? CoordsInt.OFFSET_ADJACENT_2
                 : CoordsInt.ZERO) {
             BlockState state = terrainMap.getBlockState(mutable.set(pos).add(offset));
             if (!state.isAir() && state.isSolidBlock(terrainMap, mutable)) {
@@ -1001,8 +1007,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     @SuppressWarnings("deprecation")
     public final boolean canStandAt(BlockView world, BlockPos pos) {
         boolean isSolidBlock = false;
-        pos = pos.down();
-        for (BlockPos p : BlockPos.iterate(pos, pos.add(collideSize.toBlockPos()))) {
+        for (BlockPos p : BlockPos.stream(getDimensions(getPose()).getBoxAt(pos.down().toBottomCenterPos())).toList()) {
             BlockState state = world.getBlockState(p);
             if (!state.isAir()) {
                 if (!state.blocksMovement()) {
@@ -1040,7 +1045,8 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         boolean destructibleFlag = false;
         boolean liquidFlag = false;
 
-        for (BlockPos p : BlockPos.iterate(pos, getCollideSize().toBlockPos().add(pos))) {
+
+        for (BlockPos p : BlockPos.stream(getDimensions(getPose()).getBoxAt(pos.toBottomCenterPos())).toList()) {
             BlockState state = terrainMap.getBlockState(p);
             if (!state.isAir()) {
                 if (state.isLiquid()) {

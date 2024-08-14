@@ -2,12 +2,10 @@ package com.invasion.entity.pathfinding;
 
 import java.util.Comparator;
 
-import com.invasion.util.math.IPosition;
-
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
-public class PathNode implements IPosition {
+public class PathNode {
     public static final Comparator<PathNode> POSITION_COMPARATOR = Comparator.comparing(a -> a.pos);
     public final BlockPos pos;
     public final PathAction action;
@@ -49,11 +47,11 @@ public class PathNode implements IPosition {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof PathNode node && hash == node.hash && isAt(node) && node.action == action;
+        return obj instanceof PathNode node && hash == node.hash && isAt(node.pos) && node.action == action;
     }
 
-    public boolean isAt(IPosition position) {
-        return equals(position.getXCoord(), position.getYCoord(), position.getZCoord());
+    public boolean isAt(BlockPos position) {
+        return pos.equals(position);
     }
 
     public boolean equals(int x, int y, int z) {
@@ -62,26 +60,6 @@ public class PathNode implements IPosition {
 
     public boolean isAssigned() {
         return index >= 0;
-    }
-
-    @Override
-    public int getXCoord() {
-        return pos.getX();
-    }
-
-    @Override
-    public int getYCoord() {
-        return pos.getY();
-    }
-
-    @Override
-    public int getZCoord() {
-        return pos.getZ();
-    }
-
-    @Override
-    public BlockPos toBlockPos() {
-        return pos;
     }
 
     public PathNode getPrevious() {
@@ -116,10 +94,6 @@ public class PathNode implements IPosition {
     @Override
     public String toString() {
         return pos.toShortString() + ", " + action;
-    }
-
-    public static int makeHash(IPosition pos, PathAction action) {
-        return makeHash(pos.getXCoord(), pos.getYCoord(), pos.getZCoord(), action);
     }
 
     public static int makeHash(BlockPos pos, PathAction action) {

@@ -2,8 +2,6 @@ package com.invasion.entity.pathfinding;
 
 import com.invasion.IPathfindable;
 import com.invasion.entity.EntityIMLiving;
-import com.invasion.util.math.CoordsInt;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -57,8 +55,7 @@ public interface IPathSource {
     }
 
     static BlockPos getPathBegin(EntityIMLiving entity) {
-        CoordsInt size = entity.getCollideSize();
-        if (size.getXCoord() <= 1 && size.getZCoord() <= 1) {
+        if (entity.getWidth() <= 1) {
             return entity.getBlockPos();
         }
 

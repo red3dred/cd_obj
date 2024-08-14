@@ -326,10 +326,10 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
 
             if ((currentNode.action == PathAction.NONE) || (currentNode.action == PathAction.BRIDGE)) {
                 int maxHeight = 4;
-                for (int i = getCollideSize().getYCoord(); i < 4; i++) {
+                for (int i = getCollideSize().getY(); i < 4; i++) {
                     BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP, i));
                     if (!block.isAir() && !block.blocksMovement()) {
-                        maxHeight = i - getCollideSize().getYCoord();
+                        maxHeight = i - getCollideSize().getY();
                         break;
                     }
 

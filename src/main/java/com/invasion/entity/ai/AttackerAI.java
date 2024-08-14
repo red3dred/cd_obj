@@ -212,11 +212,11 @@ public class AttackerAI {
             if (!flag) {
                 if (node.action == PathAction.SCAFFOLD_UP) {
                     flag = true;
-                    startHeight = node.getYCoord() - 1;
+                    startHeight = node.pos.getY() - 1;
                 }
 
             } else if (node.action != PathAction.SCAFFOLD_UP) {
-                Scaffold scaffold = new Scaffold(node.getPrevious().getXCoord(), startHeight, node.getPrevious().getZCoord(), node.getYCoord() - startHeight, this.nexus);
+                Scaffold scaffold = new Scaffold(node.getPrevious().pos.getX(), startHeight, node.getPrevious().pos.getZ(), node.pos.getY() - startHeight, this.nexus);
                 orientScaffold(scaffold, nexus.getWorld());
                 scaffold.setInitialIntegrity();
                 scaffoldPositions.add(scaffold);

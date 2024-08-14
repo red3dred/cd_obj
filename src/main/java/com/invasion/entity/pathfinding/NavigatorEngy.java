@@ -43,20 +43,20 @@ public class NavigatorEngy extends NavigatorIM {
         }
 
         if (activeNode.action.getType() == PathAction.Type.LADDER && activeNode.action.getBuildDirection() != Direction.UP) {
-            if (pigEntity.getTerrainBuildEngy().askBuildLadder(activeNode, this)) {
+            if (pigEntity.getTerrainBuildEngy().askBuildLadder(activeNode.pos, this)) {
                 return setDoingTaskAndHold();
             }
         } else if (activeNode.action.getType() == PathAction.Type.BRIDGE) {
-            if (pigEntity.getTerrainBuildEngy().askBuildBridge(activeNode, this)) {
+            if (pigEntity.getTerrainBuildEngy().askBuildBridge(activeNode.pos, this)) {
                 return setDoingTaskAndHold();
             }
         } else if (activeNode.action.getType() == PathAction.Type.SCAFFOLD) {
-            if (pigEntity.getTerrainBuildEngy().askBuildScaffoldLayer(activeNode, this)) {
+            if (pigEntity.getTerrainBuildEngy().askBuildScaffoldLayer(activeNode.pos, this)) {
                 return setDoingTaskAndHoldOnPoint();
             }
         } else if (activeNode.action.getType() == PathAction.Type.LADDER) {
             Direction direction = activeNode.action.getBuildDirection();
-            if (pigEntity.getTerrainBuildEngy().askBuildLadderTower(activeNode, direction, direction.getVector().getZ(), this)) {
+            if (pigEntity.getTerrainBuildEngy().askBuildLadderTower(activeNode.pos, direction, direction.getVector().getZ(), this)) {
                 return setDoingTaskAndHold();
             }
         }

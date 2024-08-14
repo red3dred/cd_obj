@@ -7,6 +7,10 @@ import net.minecraft.util.Identifier;
 
 public interface InvSounds {
     SoundEvent SCRAPE = register("scrape");
+
+    SoundEvent BLOCK_NEXUS_RUMBLE = register("rumble");
+    SoundEvent BLOCK_NEXUS_CHIME = register("chime1");
+
     SoundEvent ENTITY_LIGHTNING_ZAP = register("zap");
     SoundEvent ENTITY_VULTURE_SQUAWK = register("v_squawk");
     SoundEvent ENTITY_VULTURE_DEATH = register("v_death");

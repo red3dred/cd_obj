@@ -5,8 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.INotifyTask;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.util.math.CoordsInt;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.tag.FluidTags;
@@ -164,15 +162,14 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		ticksStuck = 0;
 		resetStatus();
 
-		CoordsInt size = theEntity.getCollideSize();
-		entityCentre = size.toBlockPos().toBottomCenterPos();
+		entityCentre = theEntity.getBlockPos().toBottomCenterPos();
 
 		path = newPath;
 		activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
 
 		if (activeNode.action != PathAction.NONE) {
 			nodeActionFinished = false;
-		} else if (size.getXCoord() <= 1 && size.getZCoord() <= 1) {
+		} else if (theEntity.getWidth() <= 1) {
 			path.incrementPathIndex();
 			if (!path.isFinished()) {
 				activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
@@ -274,9 +271,9 @@ public class NavigatorIM implements INotifyTask, INavigation {
 					        pathEndEntity.getZ(), moveSpeed);
 				} else {
 					theEntity.getMoveControl().moveTo(
-					        activeNode.getXCoord() + entityCentre.x,
-					        activeNode.getYCoord() + entityCentre.y,
-					        activeNode.getZCoord() + entityCentre.z, moveSpeed);
+					        activeNode.pos.getX() + entityCentre.x,
+					        activeNode.pos.getY() + entityCentre.y,
+					        activeNode.pos.getZ() + entityCentre.z, moveSpeed);
 				}
 			} else {
 				haltMovement = false;
@@ -351,7 +348,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	}
 
 	protected Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius) {
-		this.theEntity.setCurrentTargetPos(new CoordsInt(pos));
+		this.theEntity.setCurrentTargetPos(pos);
 		BlockView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
 		INexusAccess nexus = entity.getNexus();
 		if (nexus != null) {
@@ -645,7 +642,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	@SuppressWarnings("deprecation")
     protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
 		if (to.getY() > from.getY()) {
-			BlockState block = theEntity.getWorld().getBlockState(from.add(0, entity.getCollideSize().getYCoord(), 0));
+			BlockState block = theEntity.getWorld().getBlockState(from.add(0, entity.getCollideSize().getY(), 0));
 			if (!block.isAir() && block.blocksMovement()) {
 				return false;
 			}
@@ -655,20 +652,10 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	}
 
 	protected boolean isPositionClear(BlockPos pos, EntityIMLiving entity) {
-		CoordsInt size = entity.getCollideSize();
-		return isPositionClear(pos, size.toBlockPos());
-	}
-
-	@SuppressWarnings("deprecation")
-    protected boolean isPositionClear(BlockPos pos, BlockPos size) {
-	    for (BlockPos p : BlockPos.iterate(pos, pos.add(size))) {
+	    return BlockPos.stream(entity.getDimensions(entity.getPose()).getBoxAt(pos.toBottomCenterPos())).allMatch(p -> {
 	        BlockState block = theEntity.getWorld().getBlockState(p);
-
-            if (!block.isAir() && block.blocksMovement()) {
-                return false;
-            }
-	    }
-		return true;
+	        return block.isAir() || !block.blocksMovement();
+	    });
 	}
 
 	protected ChunkCache getChunkCache(BlockPos p1, BlockPos p2, float axisExpand) {

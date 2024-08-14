@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.invasion.BountyHunter;
 import com.invasion.ConfigInvasion;
+import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.mod_Invasion;
 import com.invasion.entity.EntityIMBolt;
@@ -425,7 +426,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                     boundPlayers = boundPlayers.substring(0, boundPlayers.length() - 4);
                     sendMessage(Formatting.DARK_AQUA, "invmod.message.nexus.listboundplayers", boundPlayers);
                     sendWarning("invmod.message.nexus.firstwavesoon");
-                    playSoundForBoundPlayers("invmod:rumble1");
+                    playSoundForBoundPlayers(InvSounds.BLOCK_NEXUS_RUMBLE);
                 } catch (WaveSpawnerException e) {
                     stop();
                     InvasionMod.log(e.getMessage());
@@ -467,7 +468,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                 if (waveSpawner.isWaveComplete()) {
                     if (waveDelayTimer == -1L) {
                         sendMessage(Formatting.GREEN, "invmod.message.wave.complete", "" + Formatting.DARK_GREEN + this.currentWave);
-                        playSoundForBoundPlayers("invmod:chime1");
+                        playSoundForBoundPlayers(InvSounds.BLOCK_NEXUS_CHIME);
                         waveDelayTimer = 0L;
                         waveDelay = waveSpawner.getWaveRestTime();
                     } else {
@@ -477,7 +478,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                             sendWarning("invmod.message.wave.begin", "" + Formatting.DARK_RED + currentWave);
                             waveSpawner.beginNextWave(currentWave);
                             waveDelayTimer = -1L;
-                            playSoundForBoundPlayers("invmod:rumble1");
+                            playSoundForBoundPlayers(InvSounds.BLOCK_NEXUS_RUMBLE);
                             if (currentWave > nexusLevel) {
                                 nexusLevel = currentWave;
                             }
@@ -547,7 +548,7 @@ public class TileEntityNexus extends BlockEntity implements INexusAccess, SidedI
                     this.zapTimer = 0;
                     this.waveDelayTimer = -1L;
                     sendWarning("invmod.message.nexus.destabilizing");
-                    playSoundForBoundPlayers("invmod:rumble1");
+                    playSoundForBoundPlayers(InvSounds.BLOCK_NEXUS_RUMBLE);
                 } catch (WaveSpawnerException e) {
                     InvasionMod.log(e.getMessage());
                     e.printStackTrace();
