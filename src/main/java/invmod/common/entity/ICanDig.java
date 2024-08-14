@@ -26,7 +26,9 @@ public interface ICanDig extends IPosition {
 
     boolean canClearBlock(BlockPos pos);
 
-    void onBlockRemoved(BlockPos pos, BlockState state);
+    default void onBlockRemoved(BlockPos pos, BlockState state) {
+
+    }
 
     BlockView getTerrain();
 
