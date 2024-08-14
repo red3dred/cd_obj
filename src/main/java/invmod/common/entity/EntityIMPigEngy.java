@@ -53,14 +53,13 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
 
     public EntityIMPigEngy(EntityType<EntityIMPigEngy> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-        setBaseMoveSpeedStat(0.23F);
+        setMovementSpeed(0.23F);
         setAttackStrength(2);
         selfDamage = 0;
         maxSelfDamage = 0;
-        maxDestructiveness = 2;
+        setCanDestroyBlocks(true);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setGender(1);
-        setDestructiveness(2);
+        setCanDestroyBlocks(true);
         setJumpHeight(1);
         setCanClimb(false);
     }
@@ -378,10 +377,6 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
             }
         }
         return false;
-    }
-
-    @Override
-    public void onBlockRemoved(BlockPos pos, BlockState block) {
     }
 
     @Deprecated

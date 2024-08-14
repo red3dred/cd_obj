@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Nullable;
 
 import invmod.common.entity.EntityIMBird;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.MathHelper;
 
 public class EntityAIWingAttack<T extends LivingEntity> extends EntityAIMeleeAttack<T> {
     private EntityIMBird mob;
@@ -30,6 +29,6 @@ public class EntityAIWingAttack<T extends LivingEntity> extends EntityAIMeleeAtt
     protected boolean isInStartMeleeRange() {
         @Nullable
         LivingEntity target = mob.getTarget();
-        return target != null && mob.squaredDistanceTo(target) < MathHelper.square(mob.getWidth() + mob.getAttackRange() + 3.0D);
+        return target != null && mob.isInRange(target, mob.getWidth() + 3);
     }
 }

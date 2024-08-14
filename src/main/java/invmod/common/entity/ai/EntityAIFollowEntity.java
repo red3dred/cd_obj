@@ -1,13 +1,12 @@
 package invmod.common.entity.ai;
 
-import java.util.EnumSet;
-
 import invmod.common.entity.EntityIMLiving;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.MathHelper;
 
 public class EntityAIFollowEntity<T extends LivingEntity> extends EntityAIMoveToEntity<T> {
-    private float followDistanceSq;
+    private final float followDistanceSq;
 
     @SuppressWarnings("unchecked")
     public EntityAIFollowEntity(EntityIMLiving entity, float followDistance) {
@@ -16,8 +15,7 @@ public class EntityAIFollowEntity<T extends LivingEntity> extends EntityAIMoveTo
 
     public EntityAIFollowEntity(EntityIMLiving entity, Class<? extends T> target, float followDistance) {
         super(entity, target);
-        this.followDistanceSq = (followDistance * followDistance);
-        setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        followDistanceSq = MathHelper.square(followDistance);
     }
 
     @Override
@@ -36,7 +34,8 @@ public class EntityAIFollowEntity<T extends LivingEntity> extends EntityAIMoveTo
     public void tick() {
         super.tick();
         Entity target = getTarget();
-        if (target != null && mob.squaredDistanceTo(target) < followDistanceSq)
+        if (target != null && mob.squaredDistanceTo(target) < followDistanceSq) {
             mob.getNavigatorNew().haltForTick();
+        }
     }
 }

@@ -103,7 +103,7 @@ public class IMMoveHelper extends MoveControl {
                 newYaw = (float) (Math.atan2(dZ + orientation.x, dX + orientation.z) * MathHelper.DEGREES_PER_RADIAN)
                         - 90;
             }
-            entity.setYaw(correctRotation(entity.getYaw(), newYaw, this.entity.getTurnRate()));
+            entity.setYaw(correctRotation(entity.getYaw(), newYaw, entity.getTurnRate()));
             double moveSpeed;
             if (distanceSquared >= 0.064D || entity.isSprinting()) {
                 moveSpeed = targetSpeed;

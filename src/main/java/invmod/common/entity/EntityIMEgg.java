@@ -27,11 +27,9 @@ public class EntityIMEgg extends EntityIMLiving {
         this.contents = contents;
         this.hatchTime = hatchTime;
         setBurnsInDay(false);
-        setBaseMoveSpeedStat(0.01F);
-
+        setMovementSpeed(0.01F);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         setName("Spider Egg");
-        setGender(0);
         setPosition(parent.getPos());
     }
 

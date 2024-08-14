@@ -43,7 +43,6 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -170,6 +169,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> CLINGING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
 
+    public static final float DEFAULT_AIR_RESISTANCE = 0.9995F;
+    public static final float DEFAULT_GROUND_FRICTION = 0.546F;
+    public static final float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
+
     private INavigation newNavigation;
     private IPathSource pathSource;
 
@@ -179,9 +182,9 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     private float rotationRoll;
     private float prevRotationRoll;
 
-    private float airResistance = 0.9995F;
-    private float groundFriction = 0.546F;
-    private float moveSpeedBase = 0.26F;
+    protected float airResistance = DEFAULT_AIR_RESISTANCE;
+    private float groundFriction = DEFAULT_GROUND_FRICTION;
+    private float moveSpeedBase = DEFAULT_BASE_MOVEMENT_SPEED;
 
     private float turnRate = 30;
     private float pitchRate = 2;
@@ -191,15 +194,11 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     private IPosition currentTargetPos = new CoordsInt(0, 0, 0);
     private IPosition lastBreathExtendPos = new CoordsInt(0, 0, 0);
 
-    private int gender;
-
     private boolean isHostile = true;
     private boolean creatureRetaliates = true;
 
     @Nullable
     private INexusAccess targetNexus;
-
-    private float attackRange;
 
     protected int selfDamage = 2;
     protected int maxSelfDamage = 6;
@@ -220,7 +219,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     private boolean burnsInDay;
     private boolean fireImmune;
 
-    private int jumpHeight = 1;
     private int aggroRange;
     private int senseRange;
     private int stunTimer;
@@ -229,7 +227,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     protected int pathThrottle;
     protected int destructionTimer;
     protected int flammability = 2;
-    protected int destructiveness;
+    private boolean canMin;
 
     @Nullable
     protected Entity j;
@@ -410,10 +408,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     public Vec3d applyMovementInput(Vec3d movementInput, float slipperiness) {
         Vec3d movement = super.applyMovementInput(movementInput, slipperiness);
         if (isOnGround() && !hasNoDrag()) {
-            double friction = getGroundFriction() / 0.91D; // divide by initial friction, then multiply by our new friction
-            return movement.multiply(friction, 1, friction);
+            double friction = (getGroundFriction() * airResistance) / 0.91D; // divide by initial friction, then multiply by our new friction
+            return movement.multiply(friction, airResistance, friction);
         }
-        return movement;
+        return movement.multiply(airResistance);
     }
 
     public void rally(ILeader leader) {
@@ -464,7 +462,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public boolean isBlockDestructible(BlockView world, BlockPos pos, BlockState state) {
-        if (state.isAir() || !getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING) || UNDESTRUCTABLE_BLOCKS.contains(state.getBlock()) || blockHasLadder(world, pos)) {
+        if (state.isAir() || !canDestroyBlocks() || UNDESTRUCTABLE_BLOCKS.contains(state.getBlock()) || blockHasLadder(world, pos)) {
             return false;
         }
         return state.isIn(BlockTags.DOORS) || state.isIn(BlockTags.TRAPDOORS) || state.isSolidBlock(world, pos);
@@ -482,22 +480,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
             return Double.MAX_VALUE;
         }
         return Math.sqrt(getNexus().toBlockPos().toCenterPos().squaredDistanceTo(getX(), getBodyY(0.5), getZ()));
-    }
-
-    // TODO: This is somewhere else now
-    @Deprecated
-    @Nullable
-    //@Override
-    protected Entity findPlayerToAttack() {
-        PlayerEntity entityPlayer = getWorld().getClosestPlayer(this, getSenseRange());
-        if (entityPlayer != null) {
-            return entityPlayer;
-        }
-        entityPlayer = getWorld().getClosestPlayer(this, getAggroRange());
-        if (entityPlayer != null && canSee(entityPlayer)) {
-            return entityPlayer;
-        }
-        return null;
     }
 
     @Override
@@ -565,12 +547,9 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return getBlockPos().getZ();
     }
 
+    @Deprecated
     public float getAttackRange() {
-        return this.attackRange;
-    }
-
-    protected void setAttackRange(float range) {
-        this.attackRange = range;
+        return 0;
     }
 
     public void setMaxHealth(float health) {
@@ -588,15 +567,12 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
     }
 
     public float getBaseMoveSpeedStat() {
-        return this.moveSpeedBase;
+        return moveSpeedBase;
     }
 
-    public int getJumpHeight() {
-        return jumpHeight;
-    }
-
+    @Deprecated
     protected void setJumpHeight(int height) {
-        jumpHeight = height;
+        getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(height);
     }
 
     public float getBlockStrength(BlockPos pos) {
@@ -609,6 +585,10 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     public boolean getCanClimb() {
         return canClimb;
+    }
+
+    protected void setCanClimb(boolean flag) {
+        canClimb = flag;
     }
 
     public boolean getCanDigDown() {
@@ -639,9 +619,14 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         this.burnsInDay = flag;
     }
 
-    public int getDestructiveness() {
-        return destructiveness;
+    public boolean canDestroyBlocks() {
+        return canMin && getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
     }
+
+    protected void setCanDestroyBlocks(boolean flag) {
+        canMin = flag;
+    }
+
 
     public float getTurnRate() {
         return turnRate;
@@ -653,10 +638,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     protected void setGravity(float acceleration) {
         getAttributeInstance(EntityAttributes.GENERIC_GRAVITY).setBaseValue(acceleration);
-    }
-
-    public float getAirResistance() {
-        return airResistance;
     }
 
     public float getGroundFriction() {
@@ -725,10 +706,6 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         return isHostile && entity instanceof PlayerEntity;
     }
 
-    public int getGender() {
-        return gender;
-    }
-
     public float getSize() {
         return getHeight() * getWidth();
     }
@@ -739,16 +716,20 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     @Override
     public boolean isHoldingOntoLadder() {
-        return dataTracker.get(CLIMBING);
+        return dataTracker.get(CLINGING);
     }
 
     public void setIsHoldingIntoLadder(boolean flag) {
-        dataTracker.set(CLIMBING, flag);
+        dataTracker.set(CLINGING, flag);
     }
 
     @Override
     public boolean isClimbing() {
-        return dataTracker.get(CLINGING);
+        return dataTracker.get(CLIMBING);
+    }
+
+    protected void setClimbing(boolean climbing) {
+        dataTracker.set(CLIMBING, climbing);
     }
 
     public boolean readyToRally() {
@@ -879,7 +860,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
-        int height = getJumpHeight();
+        int height = MathHelper.ceil(getStepHeight());
         for (int i = 1; i <= height; i++) {
             if (getCollide(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == DestructableType.UNBREAKABLE) {
                 height = i - 1;
@@ -1108,23 +1089,17 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         dataTracker.set(MOVE_STATE, moveState.ordinal());
     }
 
-    protected void setDestructiveness(int x) {
-        destructiveness = x;
-    }
-
     protected void setGroundFriction(float frictionCoefficient) {
         groundFriction = frictionCoefficient;
     }
 
-    protected void setCanClimb(boolean flag) {
-        canClimb = flag;
-    }
-
+    @Deprecated
     protected void setBaseMoveSpeedStat(float speed) {
         moveSpeedBase = speed;
         setMovementSpeed(speed);
     }
 
+    @Deprecated
     public void setMoveSpeedStat(float speed) {
         setMovementSpeed(speed);
     }
@@ -1135,20 +1110,12 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         getNavigatorNew().setSpeed(speed);
     }
 
-    public void resetMoveSpeed() {
-        setMovementSpeed(moveSpeedBase);
-    }
-
     public void setTurnRate(float rate) {
         this.turnRate = rate;
     }
 
+    @Deprecated
     protected void setName(String name) {
-        setCustomName(Text.literal(name));
-    }
-
-    protected void setGender(int gender) {
-        this.gender = gender;
     }
 
     protected void onDebugChange() {

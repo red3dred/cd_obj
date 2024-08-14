@@ -13,6 +13,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.world.World;
 
 public class EntityIMBird extends EntityIMFlying {
+    private static final TrackedData<Integer> TIER = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> CLAWS_FORWARD = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> BEAK_DOWN = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> ATTACKING_WITH_WINGS = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -22,7 +23,6 @@ public class EntityIMBird extends EntityIMFlying {
     private final MouthController beakController = AnimationRegistry.instance().getAnimation("bird_beak").createState(this, AnimationAction.MOUTH_CLOSE, MouthController::new);
 
     private float carriedEntityYawOffset;
-    private int tier;
 
     public EntityIMBird(EntityType<? extends EntityIMBird> type, World world) {
         this(type, world, null);
@@ -31,8 +31,7 @@ public class EntityIMBird extends EntityIMFlying {
     public EntityIMBird(EntityType<? extends EntityIMBird> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
         setName("Bird");
-        setGender(2);
-        setBaseMoveSpeedStat(1.0F);
+        setMovementSpeed(1.0F);
         setAttackStrength(1);
         setGravity(0.025F);
         setThrust(0.1F);
@@ -41,25 +40,24 @@ public class EntityIMBird extends EntityIMFlying {
         setThrustComponentRatioMin(0);
         setThrustComponentRatioMax(0.5F);
         setMaxTurnForce((float)getGravity() * 8);
-        setMoveState(MoveState.STANDING);
-        setFlyState(FlyState.GROUNDED);
-        setTier(1);
     }
 
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
+        builder.add(TIER, 1);
         builder.add(CLAWS_FORWARD, false);
         builder.add(ATTACKING_WITH_WINGS, false);
     }
 
     @Override
     public int getTier() {
-        return tier;
+        return dataTracker.get(TIER);
     }
 
     protected void setTier(int tier) {
-        this.tier = tier;
+        tier = Math.max(1, tier);
+        dataTracker.set(TIER, tier);
     }
 
     public boolean getClawsForward() {

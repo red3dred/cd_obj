@@ -7,7 +7,6 @@ import invmod.common.entity.Path;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.MathHelper;
 
 public class EntityAIBirdFight<T extends LivingEntity> extends EntityAIMeleeFight<T> {
     private final EntityIMBird theEntity;
@@ -71,12 +70,11 @@ public class EntityAIBirdFight<T extends LivingEntity> extends EntityAIMeleeFigh
 
     protected boolean isInStartMeleeRange() {
         LivingEntity target = mob.getTarget();
-        return target != null && mob.squaredDistanceTo(target) < MathHelper.square(mob.getWidth() + mob.getAttackRange() + 3.0D);
+        return target != null && mob.isInRange(target, mob.getWidth() + 3);
     }
 
     protected void doWingBuffetAttack(LivingEntity target) {
         target.takeKnockback(2, target.getX() - mob.getX(), target.getZ() - mob.getZ());
-        target.getWorld().playSound(null, target.getBlockPos(), SoundEvents.ENTITY_GENERIC_BIG_FALL,
-                target.getSoundCategory(), 1, 1);
+        target.getWorld().playSoundAtBlockCenter(target.getBlockPos(), SoundEvents.ENTITY_GENERIC_BIG_FALL, target.getSoundCategory(), 1, 1, true);
     }
 }

@@ -26,7 +26,6 @@ public class EntityIMImp extends EntityIMMob {
         setMovementSpeed(0.3F);
         setAttackStrength(3);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setGender(1);
         setJumpHeight(1);
         setCanClimb(true);
     }

@@ -33,13 +33,10 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
 
     public EntityIMBurrower(EntityType<EntityIMBurrower> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-
-        setGender(0);
         // this.setSize(0.5F, 0.5F);
         setJumpHeight(0);
         setCanClimb(true);
-        setDestructiveness(2);
-        maxDestructiveness = 2;
+        setCanDestroyBlocks(true);
         blockRemoveSpeed = 0.5F;
 
         Arrays.fill(segments3D, PosRotate3D.ZERO);
@@ -145,10 +142,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
         float factor = !block.isAir() && (block.isSolidBlock(worldMap, node.pos) || EntityIMLiving.getBlockCost(block).isPresent()) ? 1.3F : 1;
 
         return prevNode.distanceTo(node) * factor * penalty;
-    }
-
-    @Override
-    public void onBlockRemoved(BlockPos pos, BlockState state) {
     }
 
     @Override

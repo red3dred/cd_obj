@@ -1,12 +1,21 @@
 package invmod.common.entity.ai;
 
+import invmod.common.InvasionMod;
 import invmod.common.entity.EntityIMLiving;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
+    private static final EntityAttributeModifier SPRINTING_SPEED_BOOST = new EntityAttributeModifier(
+            InvasionMod.id("sprinting"), 2.3F, Operation.ADD_MULTIPLIED_BASE
+    );
+
     protected final EntityIMLiving theEntity;
 
     private int updateTimer;
@@ -14,7 +23,6 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
     private int missingTarget;
 
     private boolean isExecuting = true;
-    private boolean isSprinting;
     private boolean isInWindup;
 
     protected Vec3d lastPos = Vec3d.ZERO;
@@ -27,7 +35,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
     public boolean canStart() {
         if (--updateTimer <= 0) {
             updateTimer = 20;
-            if ((theEntity.getTarget() != null && theEntity.getVisibilityCache().canSee(theEntity.getTarget())) || isSprinting) {
+            if ((theEntity.getTarget() != null && theEntity.getVisibilityCache().canSee(theEntity.getTarget())) || theEntity.isSprinting()) {
                 return true;
             }
 
@@ -46,7 +54,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public void tick() {
-        if (this.isSprinting) {
+        if (theEntity.isSprinting()) {
             Entity target = theEntity.getTarget();
             if (!theEntity.isSprinting() || target == null || (missingTarget > 0 && ++missingTarget > 20)) {
                 endSprint();
@@ -71,7 +79,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
 
         if (--timer <= 0) {
             if (!isInWindup) {
-                if (!isSprinting) {
+                if (!theEntity.isSprinting()) {
                     startSprint();
                 } else {
                     endSprint();
@@ -93,7 +101,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
         if (dAngle < 10) {
             isInWindup = true;
             timer = 20;
-            theEntity.setMoveSpeedStat(0);
+            theEntity.stopMovement();
         } else {
             timer = 10;
         }
@@ -101,21 +109,20 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
 
     protected void sprint() {
         isInWindup = false;
-        isSprinting = true;
         missingTarget = 0;
         timer = 35;
-
-        theEntity.resetMoveSpeed();
-        theEntity.setMovementSpeed(theEntity.getMovementSpeed() * 2.3F);
+        EntityAttributeInstance attribute = theEntity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        if (!attribute.hasModifier(SPRINTING_SPEED_BOOST.id())) {
+            attribute.addTemporaryModifier(SPRINTING_SPEED_BOOST);
+        }
         theEntity.setSprinting(true);
         theEntity.setTurnRate(4.9F);
         theEntity.setAttacking(false);
     }
 
     protected void endSprint() {
-        isSprinting = false;
         timer = 180;
-        theEntity.resetMoveSpeed();
+        theEntity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).removeModifier(SPRINTING_SPEED_BOOST.id());
         theEntity.setTurnRate(30);
         theEntity.setSprinting(false);
     }

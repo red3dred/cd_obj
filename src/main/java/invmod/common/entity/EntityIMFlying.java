@@ -199,11 +199,11 @@ public abstract class EntityIMFlying extends EntityIMLiving {
     }
 
     protected void setThrustComponentRatioMin(float ratio) {
-        this.thrustComponentRatioMin = ratio;
+        thrustComponentRatioMin = ratio;
     }
 
     protected void setThrustComponentRatioMax(float ratio) {
-        this.thrustComponentRatioMax = ratio;
+        thrustComponentRatioMax = ratio;
     }
 
     protected void setMaxTurnForce(float maxTurnForce) {
@@ -211,11 +211,11 @@ public abstract class EntityIMFlying extends EntityIMLiving {
     }
 
     protected void setOptimalPitch(float pitch) {
-        this.optimalPitch = pitch;
+        optimalPitch = pitch;
     }
 
     protected void setMaxRunSpeed(float speed) {
-        this.maxRunSpeed = speed;
+        maxRunSpeed = speed;
     }
 
 	@Override
@@ -254,8 +254,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
                 /** IM additions **/
                 // added air resistance
-                float airResistance = getAirResistance();
-                groundFriction *= getAirResistance();
+                groundFriction *= airResistance;
 
                 // added accelleration
                 addVelocity(accelleration);

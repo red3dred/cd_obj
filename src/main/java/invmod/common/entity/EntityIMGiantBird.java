@@ -39,7 +39,6 @@ public class EntityIMGiantBird extends EntityIMBird {
     public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
         setName("Bird");
-        setGender(2);
         setAttackStrength(5);
         //setSize(1.9F, 2.8F);
         setGravity(0.03F);
@@ -50,7 +49,7 @@ public class EntityIMGiantBird extends EntityIMBird {
         setThrustComponentRatioMax(0.5F);
         setMaxTurnForce((float)getGravity() * 8.0F);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setBaseMoveSpeedStat(0.4F);
+        setMovementSpeed(0.4F);
     }
 
     @Override

@@ -3,6 +3,7 @@ package invmod.common.entity.ai;
 import invmod.common.entity.EntityIMThrower;
 import invmod.common.nexus.INexusAccess;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.util.math.Vec3d;
 
 public class EntityAIRandomBoulder extends Goal {
     private final EntityIMThrower theEntity;
@@ -29,15 +30,11 @@ public class EntityAIRandomBoulder extends Goal {
         randomAmmo--;
         timer = 240;
         INexusAccess nexus = theEntity.getNexus();
-        int d = (int) (theEntity.findDistanceToNexus() * 0.37D);
-        if (d == 0) {
-            d = 1;
-        }
-        theEntity.throwProjectile(
+        int d = Math.max(1, (int) (theEntity.findDistanceToNexus() * 0.37D));
+        theEntity.throwProjectile(new Vec3d(
                 nexus.getXCoord() - d + theEntity.getRandom().nextInt(2 * d),
                 nexus.getYCoord() - 5 + theEntity.getRandom().nextInt(10),
-                nexus.getZCoord() - d + theEntity.getRandom().nextInt(2 * d),
-                theEntity.createProjectile(0)
-        );
+                nexus.getZCoord() - d + theEntity.getRandom().nextInt(2 * d)
+        ), theEntity.createProjectile(0));
     }
 }

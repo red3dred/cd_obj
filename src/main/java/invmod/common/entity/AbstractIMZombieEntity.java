@@ -225,18 +225,12 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
 
     @Override
     public boolean isBlockDestructible(BlockView terrainMap, BlockPos pos, BlockState block) {
-        return getDestructiveness() != 0
-                && getCurrentTargetPos().getInclinationTo(pos) <= 2.144D
-                && super.isBlockDestructible(terrainMap, pos, block);
-    }
-
-    @Override
-    public void onBlockRemoved(BlockPos pos, BlockState state) {
+        return super.isBlockDestructible(terrainMap, pos, block) && getCurrentTargetPos().getInclinationTo(pos) <= 2.144D;
     }
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        setDestructiveness(entity instanceof EntityIMPigEngy || entity instanceof EntityIMCreeper ? 0 : 1);
+        setCanDestroyBlocks(entity instanceof EntityIMPigEngy || entity instanceof EntityIMCreeper);
     }
 
     @Override

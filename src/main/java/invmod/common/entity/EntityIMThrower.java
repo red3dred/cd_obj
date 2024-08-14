@@ -57,11 +57,11 @@ public class EntityIMThrower extends EntityIMMob {
         super(type, world, nexus);
         setMovementSpeed(0.13F);
         setAttackStrength(10);
-        this.selfDamage = 0;
-        this.maxSelfDamage = 0;
-        this.experiencePoints = 20;
+        selfDamage = 0;
+        maxSelfDamage = 0;
+        experiencePoints = 20;
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setDestructiveness(2);
+        setCanDestroyBlocks(true);
         // setSize(1.8F, 1.95F);
     }
 
@@ -155,20 +155,20 @@ public class EntityIMThrower extends EntityIMMob {
         maxSelfDamage = 0;
         clearingPoint = false;
         if (tier == 1) {
-            setBaseMoveSpeedStat(0.13F);
+            setMovementSpeed(0.13F);
             setAttackStrength(10);
             experiencePoints = 20;
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             setName("Thrower");
-            setDestructiveness(2);
+            setCanDestroyBlocks(true);
             // setSize(1.8F, 1.95F);
         } else if (tier == 2) {
-            setBaseMoveSpeedStat(0.23F);
+            setMovementSpeed(0.23F);
             setAttackStrength(15);
             experiencePoints = 25;
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             setName("Big Thrower");
-            setDestructiveness(4);
+            setCanDestroyBlocks(true);
             // setSize(2F, 2F);
         }
 
@@ -190,11 +190,6 @@ public class EntityIMThrower extends EntityIMMob {
         super.readCustomDataFromNbt(compound);
         setTexture(compound.getInt("tier"));
         setTier(compound.getInt("tier"));
-    }
-
-    @Override
-    public int getGender() {
-        return 1;
     }
 
     @Override

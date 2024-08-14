@@ -97,7 +97,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 	}
 
 	protected FlyState fly() {
-		entity.setGroundFriction(1.0F);
+		entity.setGroundFriction(1);
 		Vec3d delta = new Vec3d(targetX, targetY, targetZ).subtract(entity.getPos());
 
 		double dXZSq = delta.horizontalLengthSquared();
