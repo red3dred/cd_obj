@@ -1,8 +1,9 @@
 package invmod.common.entity;
 
+import java.util.List;
+
 import invmod.common.INotifyTask;
 import invmod.common.InvasionMod;
-import invmod.common.mod_Invasion;
 import invmod.common.block.InvBlocks;
 import invmod.common.entity.ai.EntityAIAttackNexus;
 import invmod.common.entity.ai.EntityAIGoToNexus;
@@ -12,402 +13,328 @@ import invmod.common.entity.ai.EntityAIThrowerKillEntity;
 import invmod.common.entity.ai.EntityAIWanderIM;
 import invmod.common.nexus.EntityConstruct;
 import invmod.common.nexus.INexusAccess;
-import invmod.common.util.CoordsInt;
-import invmod.common.util.IPosition;
-import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class EntityIMThrower extends EntityIMMob
-{
-	private int throwTime;
-	private int punchTimer;
-	private boolean clearingPoint;
-	private IPosition pointToClear;
-	private INotifyTask clearPointNotifee;
-	private int tier;
-	private byte metaChanged;
+public class EntityIMThrower extends EntityIMMob {
+    private static final TrackedData<Integer> TIER = DataTracker.registerData(EntityIMThrower.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> TEXTURE = DataTracker.registerData(EntityIMThrower.class, TrackedDataHandlerRegistry.INTEGER);
 
-	public EntityIMThrower(EntityType<EntityIMThrower> type, World world)
-	{
-		this(type, world, null);
-	}
+    private int throwTime;
+    private int punchTimer;
 
-	public EntityIMThrower(EntityType<EntityIMThrower> type, World world, INexusAccess nexus)
-	{
-		super(type, world, nexus);
+    private boolean clearingPoint;
 
-		setBaseMoveSpeedStat(0.13F);
-		this.attackStrength = 10;
-		this.selfDamage = 0;
-		this.maxSelfDamage = 0;
-		this.experienceValue = 20;
-		this.clearingPoint = false;
-		this.tier=1;
-		setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-		setName("Thrower");
-		setDestructiveness(2);
-		setSize(1.8F, 1.95F);
-		setAI();
+    private BlockPos pointToClear;
 
-		DataWatcher dataWatcher = getDataWatcher();
-		dataWatcher.addObject(29, Byte.valueOf(this.metaChanged));
-		dataWatcher.addObject(30, Integer.valueOf(this.tier));
-		dataWatcher.addObject(31, Integer.valueOf(1));
+    private INotifyTask clearPointNotifee;
 
-	}
+    private float launchSpeed = 1.0F;
 
-	protected void setAI() {
-		this.tasks = new EntityAITasks(this.worldObj.theProfiler);
-		this.tasks.addTask(0, new EntityAISwimming(this));
-		if(this.getTier()==1)
-		{
-		this.tasks.addTask(1, new EntityAIThrowerKillEntity(this, EntityPlayer.class, 55, 60.0F, 1.0F));
-		this.tasks.addTask(1, new EntityAIThrowerKillEntity(this, EntityPlayerMP.class, 55, 60.0F, 1.0F));
-		}else{
-		this.tasks.addTask(1, new EntityAIThrowerKillEntity(this, EntityPlayer.class, 60, 90.0F, 1.5F));
-		this.tasks.addTask(1, new EntityAIThrowerKillEntity(this, EntityPlayerMP.class, 60, 90.0F, 1.5F));
-		}
-		this.tasks.addTask(2, new EntityAIAttackNexus(this));
-		this.tasks.addTask(3, new EntityAIRandomBoulder(this, 3));
-		this.tasks.addTask(4, new EntityAIGoToNexus(this));
-		this.tasks.addTask(7, new EntityAIWanderIM(this));
-		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-		this.tasks.addTask(9, new EntityAIWatchClosest(this, EntityIMCreeper.class, 12.0F));
-		this.tasks.addTask(10, new EntityAIWatchClosest(this, EntityPlayer.class, 16.0F));
-		this.tasks.addTask(10, new EntityAILookIdle(this));
+    public EntityIMThrower(EntityType<EntityIMThrower> type, World world) {
+        this(type, world, null);
+    }
 
-		this.targetTasks = new EntityAITasks(this.worldObj.theProfiler);
-		this.targetTasks.addTask(1, new EntityAISimpleTarget(this, EntityPlayer.class, this.getSenseRange(), false));
-		this.targetTasks.addTask(2, new EntityAISimpleTarget(this, EntityPlayer.class, this.getAggroRange(), true));
-		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, false));
-	}
+    public EntityIMThrower(EntityType<EntityIMThrower> type, World world, INexusAccess nexus) {
+        super(type, world, nexus);
+        setMovementSpeed(0.13F);
+        setAttackStrength(10);
+        this.selfDamage = 0;
+        this.maxSelfDamage = 0;
+        this.experiencePoints = 20;
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+        setDestructiveness(2);
+        // setSize(1.8F, 1.95F);
+    }
 
-	@Override
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(TIER, 1);
+        builder.add(TEXTURE, 0);
+    }
+
+    @Override
+    protected void initGoals() {
+        goalSelector.add(0, new SwimGoal(this));
+        if (getTier() == 1) {
+            goalSelector.add(1, new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 55, 60.0F, 1.0F));
+        } else {
+            goalSelector.add(1, new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 60, 90.0F, 1.5F));
+        }
+        goalSelector.add(2, new EntityAIAttackNexus(this));
+        goalSelector.add(3, new EntityAIRandomBoulder(this, 3));
+        goalSelector.add(4, new EntityAIGoToNexus(this));
+        goalSelector.add(7, new EntityAIWanderIM(this));
+        goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8));
+        goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
+        goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 16));
+        goalSelector.add(10, new LookAroundGoal(this));
+
+        targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getSenseRange(), false));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getAggroRange(), true));
+        targetSelector.add(3, new RevengeGoal(this));
+    }
+
+    @Override
     public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
-	    super.onSpawned(nexus, spawnConditions);
+        super.onSpawned(nexus, spawnConditions);
         setTexture(spawnConditions.tier());
         setTier(spawnConditions.tier());
-	}
+    }
 
+    @Override
+    public void mobTick() {
+        super.mobTick();
+        throwTime--;
+        if (clearingPoint && clearPoint()) {
+            clearingPoint = false;
+            if (clearPointNotifee != null) {
+                clearPointNotifee.notifyTask(INotifyTask.Status.SUCCESS);
+            }
+        }
+    }
 
-@Override
-	public void onUpdate(){
-		super.onUpdate();
-		if ((this.worldObj.isRemote) && (this.metaChanged !=Byte.valueOf((byte)getDataWatcher().getWatchableObjectByte(29)))) {
-			DataWatcher data = getDataWatcher();
-			this.metaChanged = data.getWatchableObjectByte(29);
-			setTexture(data.getWatchableObjectInt(31));
+    @Override
+    public void takeKnockback(double strength, double x, double z) {
+        if (getTier() != 2) {
+            super.takeKnockback(strength, x, z);
+        }
+    }
 
-			if (this.tier != data.getWatchableObjectInt(30))
-			{
-				setTier(data.getWatchableObjectInt(30));
-			}
-		}
-	}
-	@Override
-	public void updateAITick() {
-		super.updateAITick();
-		this.throwTime -= 1;
-		if (this.clearingPoint) {
-			if (clearPoint()) {
-				this.clearingPoint = false;
-				if (this.clearPointNotifee != null)
-					this.clearPointNotifee.notifyTask(0);
-			}
-		}
-	}
+    public boolean canThrow() {
+        return throwTime <= 0;
+    }
 
-	@Override
-	public void knockBack(Entity par1Entity, float par2, double par3, double par5)
-	{
-		if (this.tier == 2)
-		{
-			return;
-		}
-		this.isAirBorne = true;
-		float f = MathHelper.sqrt_double(par3 * par3 + par5 * par5);
-		float f1 = 0.2F;
-		this.motionX /= 2.0D;
-		this.motionY /= 2.0D;
-		this.motionZ /= 2.0D;
-		this.motionX -= par3 / f * f1;
-		this.motionY += f1;
-		this.motionZ -= par5 / f * f1;
+    @Override
+    public boolean onPathBlocked(Path path, INotifyTask notifee) {
+        if (!path.isFinished()) {
+            PathNode node = path.getPathPointFromIndex(path.getCurrentPathIndex());
+            clearingPoint = true;
+            clearPointNotifee = notifee;
+            pointToClear = node.pos;
+            return true;
+        }
+        return false;
+    }
 
-		if (this.motionY > 0.4000000059604645D)
-		{
-			this.motionY = 0.4000000059604645D;
-		}
-	}
+    public void setTexture(int textureId) {
+        dataTracker.set(TEXTURE, textureId);
+    }
 
-	@Override
-	public boolean isAIEnabled() {
-		return true;
-	}
+    public int getTextureId() {
+        return dataTracker.get(TEXTURE);
+    }
 
-	public boolean canThrow() {
-		return this.throwTime <= 0;
-	}
+    @Override
+    public int getTier() {
+        return dataTracker.get(TIER);
+    }
 
-	@Override
-	public boolean onPathBlocked(Path path, INotifyTask notifee) {
-		if (!path.isFinished()) {
-			PathNode node = path.getPathPointFromIndex(path.getCurrentPathIndex());
-			this.clearingPoint = true;
-			this.clearPointNotifee = notifee;
-			this.pointToClear = new CoordsInt(node.xCoord, node.yCoord, node.zCoord);
-			return true;
-		}
-		return false;
-	}
+    public void setTier(int tier) {
+        dataTracker.set(TIER, tier);
+        selfDamage = 0;
+        maxSelfDamage = 0;
+        clearingPoint = false;
+        if (tier == 1) {
+            setBaseMoveSpeedStat(0.13F);
+            setAttackStrength(10);
+            experiencePoints = 20;
+            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+            setName("Thrower");
+            setDestructiveness(2);
+            // setSize(1.8F, 1.95F);
+        } else if (tier == 2) {
+            setBaseMoveSpeedStat(0.23F);
+            setAttackStrength(15);
+            experiencePoints = 25;
+            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+            setName("Big Thrower");
+            setDestructiveness(4);
+            // setSize(2F, 2F);
+        }
 
-	public void setTier(int tier) {
-		this.tier = tier;
-		getDataWatcher().updateObject(30, Integer.valueOf(tier));
-		this.selfDamage = 0;
-		this.maxSelfDamage = 0;
-		this.clearingPoint = false;
-		if (tier == 1) {
-			setBaseMoveSpeedStat(0.13F);
-			this.attackStrength = 10;
-			this.experienceValue = 20;
-			setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-			setName("Thrower");
-			setDestructiveness(2);
-			setSize(1.8F, 1.95F);
-			setAI();
+        if (tier == 1) {
+            setTexture(1);
+        } else if (tier == 2) {
+            setTexture(2);
+        }
+    }
 
-		} else if (tier == 2) {
-			setBaseMoveSpeedStat(0.23F);
-			this.attackStrength = 15;
-			this.experienceValue = 25;
-			setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-			setName("Big Thrower");
-			setDestructiveness(4);
-			setSize(2F, 2F);
-			setAI();
-		}
+    @Override
+    public void writeCustomDataToNbt(NbtCompound compound) {
+        super.writeCustomDataToNbt(compound);
+        compound.putInt("tier", getTier());
+    }
 
-		if (getDataWatcher().getWatchableObjectInt(31) == 1) {
-			if (tier == 1) {
-				setTexture(1);
-			} else if (tier == 2) {
-				setTexture(2);
-			}
-		}
-	}
+    @Override
+    public void readCustomDataFromNbt(NbtCompound compound) {
+        super.readCustomDataFromNbt(compound);
+        setTexture(compound.getInt("tier"));
+        setTier(compound.getInt("tier"));
+    }
 
-	@Override
-	public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
-		nbttagcompound.setInteger("tier", this.tier);
-		super.writeEntityToNBT(nbttagcompound);
-	}
+    @Override
+    public int getGender() {
+        return 1;
+    }
 
-	@Override
-	public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
-		super.readEntityFromNBT(nbttagcompound);
-		setTexture(nbttagcompound.getInteger("tier"));
-		this.tier = nbttagcompound.getInteger("tier");
-		setTier(this.tier);
-	}
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return SoundEvents.ENTITY_ZOMBIE_AMBIENT;
+    }
 
-	@Override
-	public String getSpecies() {
-		return "Zombie";
-	}
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return SoundEvents.ENTITY_ZOMBIE_HURT;
+    }
 
-	@Override
-	public int getTier() {
-		return this.tier;
-	}
+    @Override
+    protected SoundEvent getDeathSound() {
+        return SoundEvents.ENTITY_ZOMBIE_DEATH;
+    }
 
-	@Override
-	public int getGender() {
-		return 1;
-	}
+    protected boolean clearPoint() {
+        if (--punchTimer <= 0) {
+            int xOffsetR = 0;
+            int zOffsetR = 0;
+            int axisX = 0;
+            int axisZ = 0;
 
-	@Override
-	protected String getLivingSound() {
-		return "mob.zombie.say";
-	}
+            float facing = MathHelper.wrapDegrees(getYaw());
 
-	@Override
-	protected String getHurtSound() {
-		return "mob.zombie.hurt";
-	}
+            if (facing >= 45 && facing < 135) {
+                zOffsetR = -1;
+                axisX = -1;
+            } else if (facing >= 135 && facing < 225) {
+                xOffsetR = -1;
+                axisZ = -1;
+            } else if (facing >= 225 && facing < 315) {
+                zOffsetR = -1;
+                axisX = 1;
+            } else {
+                xOffsetR = -1;
+                axisZ = 1;
+            }
+            // this is a cheat, I should fix it where it get's the point to clear
+            BlockPos targetPos = pointToClear.down();
+            List<BlockPos> wideArea = List.of(
+                    targetPos,
+                    pointToClear,
+                    targetPos.add(xOffsetR, 0, zOffsetR),
+                    pointToClear.add(xOffsetR, 0, zOffsetR)
+            );
+            List<BlockPos> narrowArea = List.of(
+                    pointToClear.add(-axisX, 0, -axisZ),
+                    pointToClear.add(-axisX, 0, -axisZ).add(xOffsetR, 0, zOffsetR)
+            );
+            List<BlockPos> singleTarget = List.of(
+                    pointToClear.add(-2 * axisX, 0, -2 * axisZ),
+                    pointToClear.add(-2 * axisX, 0, -2 * axisZ).add(xOffsetR, 0, zOffsetR)
+            );
 
-	@Override
-	protected String getDeathSound() {
-		return "mob.zombie.death";
-	}
+            if (tryDestroyArea(wideArea) || tryDestroyArea(narrowArea) || tryDestroyArea(singleTarget)) {
+                this.punchTimer = 160;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	protected boolean clearPoint() {
-		if (--this.punchTimer <= 0) {
-			//this is a cheat, I should fix it where it get's the point to clear
-			int x = this.pointToClear.getXCoord()+1;
-			int y = this.pointToClear.getYCoord();
-			int z = this.pointToClear.getZCoord();
-			int mobX = MathHelper.floor_double(this.posX);
-			int mobZ = MathHelper.floor_double(this.posZ);
-			int xOffsetR = 0;
-			int zOffsetR = 0;
-			int axisX = 0;
-			int axisZ = 0;
+    protected final boolean tryDestroyArea(List<BlockPos> positions) {
+        if (positions.stream().anyMatch(pos -> getWorld().getBlockState(pos).isSolidBlock(getWorld(), pos))) {
+            positions.forEach(this::tryDestroyBlock);
+            return true;
+        }
+        return false;
+    }
 
-			float facing = this.rotationYaw % 360.0F;
-			if (facing < 0.0F) {
-				facing += 360.0F;
-			}
-			if ((facing >= 45.0F) && (facing < 135.0F)) {
-				zOffsetR = -1;
-				axisX = -1;
-			} else if ((facing >= 135.0F) && (facing < 225.0F)) {
-				xOffsetR = -1;
-				axisZ = -1;
-			} else if ((facing >= 225.0F) && (facing < 315.0F)) {
-				zOffsetR = -1;
-				axisX = 1;
-			} else {
-				xOffsetR = -1;
-				axisZ = 1;
-			}
-			if (((this.worldObj.getBlock(x, y, z) != null) && (this.worldObj.getBlock(x, y, z).getMaterial().isSolid())) || ((this.worldObj.getBlock(x, y + 1, z) != null) && (this.worldObj.getBlock(x, y + 1, z).getMaterial().isSolid()))
-					|| ((this.worldObj.getBlock(x + xOffsetR, y, z + zOffsetR) != null) && (this.worldObj.getBlock(x + xOffsetR, y, z + zOffsetR).getMaterial().isSolid())) || ((this.worldObj.getBlock(x + xOffsetR, y + 1, z + zOffsetR) != null) && (this.worldObj.getBlock(x + xOffsetR, y + 1, z + zOffsetR).getMaterial().isSolid()))) {
-				tryDestroyBlock(x, y, z);
-				tryDestroyBlock(x, y + 1, z);
-				tryDestroyBlock(x + xOffsetR, y, z + zOffsetR);
-				tryDestroyBlock(x + xOffsetR, y + 1, z + zOffsetR);
-				this.punchTimer = 160;
-			} else if (((this.worldObj.getBlock(x - axisX, y + 1, z - axisZ) != null) && (this.worldObj.getBlock(x - axisX, y + 1, z - axisZ).getMaterial().isSolid())) || ((this.worldObj.getBlock(x - axisX + xOffsetR, y + 1, z - axisZ + zOffsetR) != null) && (this.worldObj.getBlock(x - axisX + xOffsetR, y + 1, z - axisZ + zOffsetR).getMaterial().isSolid()))) {
-				tryDestroyBlock(x - axisX, y + 1, z - axisZ);
-				tryDestroyBlock(x - axisX + xOffsetR, y + 1, z - axisZ + zOffsetR);
-				this.punchTimer = 160;
-			} else if (((this.worldObj.getBlock(x - 2 * axisX, y + 1, z - 2 * axisZ) != null) && (this.worldObj.getBlock(x - 2 * axisX, y + 1, z - 2 * axisZ).getMaterial().isSolid())) || ((this.worldObj.getBlock(x - 2 * axisX + xOffsetR, y + 1, z - 2 * axisZ + zOffsetR) != null) && (this.worldObj.getBlock(x - 2 * axisX + xOffsetR, y + 1, z - 2 * axisZ + zOffsetR).getMaterial().isSolid()))) {
-				tryDestroyBlock(x - 2 * axisX, y + 1, z - 2 * axisZ);
-				tryDestroyBlock(x - 2 * axisX + xOffsetR, y + 1, z - 2 * axisZ + zOffsetR);
-				this.punchTimer = 160;
-			} else {
-				return true;
-			}
-		}
-		return false;
-	}
+    protected void tryDestroyBlock(BlockPos pos) {
+        BlockState block = getWorld().getBlockState(pos);
+        if (this.j != null) {
+            if (block.isOf(InvBlocks.NEXUS_CORE)) {
+                if (hasNexus() && canAttack() && pos.equals(getNexus().toBlockPos())) {
+                    getNexus().attackNexus(5);
+                }
+            } else {
+                getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
+                if (throttled == 0) {
+                    playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1, 0.4F);
+                    throttled = 5;
+                }
+            }
+        }
+    }
 
-	protected void tryDestroyBlock(int x, int y, int z) {
-		Block block = this.worldObj.getBlock(x, y, z);
-		//if ((block != null) && ((isNexusBound()) || (this.j != null))) {
-		if ((block != null) || (this.j != null)) {
-			if ((block == InvBlocks.NEXUS_CORE) && (this.attackTime == 0) && (x == getNexus().getXCoord()) && (y == getNexus().getYCoord()) && (z == getNexus().getZCoord())) {
-				getNexus().attackNexus(5);
-				this.attackTime = 60;
-			} else if (block != InvBlocks.NEXUS_CORE) {
-				int meta = this.worldObj.getBlockMetadata(x, y, z);
-				this.worldObj.setBlock(x, y, z, Blocks.air);
-				block.onBlockDestroyedByPlayer(this.worldObj, x, y, z, meta);
+    public boolean canAttack() {
+        return getLastAttackTime() < (age - 60);
+    }
 
-				if(InvasionMod.getConfig().destructedBlocksDrop)
-				{
-				block.dropBlockAsItem(this.worldObj, x, y, z, meta, 0);
-				}
-				if (this.throttled == 0) {
-					this.worldObj.playSoundAtEntity(this, "random.explode", 1.0F, 0.4F);
+    @Override
+    public boolean tryAttack(Entity entity) {
+        float distance = entity.distanceTo(this);
+        if (throwTime <= 0 && distance > 4) {
+            throwTime = 120;
+            if (distance < 50) {
+                if (canAttack()) {
+                    throwProjectile(entity.getEyePos(), createProjectile(0));
+                }
+                throwTime = 120;
+                return true;
+            }
+        }
+        return super.tryAttack(entity);
+    }
 
-					this.throttled = 5;
-				}
-			}
-		}
-	}
+    public float getLaunchSpeed() {
+        return launchSpeed;
+    }
 
-	@Override
-	protected void attackEntity(Entity entity, float f) {
-		if ((this.throwTime <= 0) && (f > 4.0F)) {
-			this.throwTime = 120;
-			//f is the throwdistance
-			if (f < 50.0F) {
-				throwBoulder(entity.posX, entity.posY + entity.getEyeHeight() - 0.7D, entity.posZ, false);
-			}
-		} else {
-			super.attackEntity(entity, f);
-		}
-	}
+    public PersistentProjectileEntity createProjectile(int tier) {
+        return tier == 1 ? InvEntities.TNT.create(getWorld()) : InvEntities.BOULDER.create(getWorld());
+    }
 
-	protected void throwBoulder(double entityX, double entityY, double entityZ, boolean forced) {
-		float launchSpeed = 1.0F;
-		double dX = entityX - this.posX;
-		double dZ = entityZ - this.posZ;
-		double dXY = MathHelper.sqrt_double(dX * dX + dZ * dZ);
+    public void throwProjectile(Vec3d targetPosition) {
+        throwProjectile(targetPosition, createProjectile(getTier()));
+    }
 
-		if ((0.025D * dXY / (launchSpeed * launchSpeed) <= 1.0D) && (this.attackTime == 0)) {
-			EntityIMBoulder entityBoulder = new EntityIMBoulder(this.worldObj, this, launchSpeed);
-			double dY = entityY - entityBoulder.posY;
-			double angle = 0.5D * Math.asin(0.025D * dXY / (launchSpeed * launchSpeed));
-			dY += dXY * Math.tan(angle);
-			entityBoulder.setVelocity(dX, dY, dZ, launchSpeed, 0.05F);
-			this.worldObj.spawnEntityInWorld(entityBoulder);
-		} else if (forced) {
-			EntityIMBoulder entityBoulder = new EntityIMBoulder(this.worldObj, this, launchSpeed);
-			double dY = entityY - entityBoulder.posY;
-			dY += dXY * Math.tan(0.7853981633974483D);
-			entityBoulder.setVelocity(dX, dY, dZ, launchSpeed, 0.05F);
-			this.worldObj.spawnEntityInWorld(entityBoulder);
-		}
+    public void throwProjectile(Vec3d targetPosition, PersistentProjectileEntity projectile) {
+        this.throwTime = 40;
+        Vec3d eyePos = getEyePos();
+        Vec3d delta = targetPosition.subtract(eyePos);
+        double dXZ = delta.horizontalLength();
 
-	}
+        projectile.setOwner(this);
+        projectile.setPosition(eyePos);
+        projectile.setVelocity(delta.x, delta.y + (dXZ * Math.tan(getThrowAngle(dXZ))), delta.z, getLaunchSpeed(), 0.05F);
+        getWorld().spawnEntity(projectile);
+    }
 
-	public void throwBoulder(double entityX, double entityY, double entityZ) {
-		this.throwTime = 40;
-		float launchSpeed = 1.0F;
-		double dX = entityX - this.posX;
-		double dZ = entityZ - this.posZ;
-		double dXY = MathHelper.sqrt_double(dX * dX + dZ * dZ);
-		double p = 0.025D * dXY / (launchSpeed * launchSpeed);
-		double angle;
-		if (p <= 1.0D)
-			angle = 0.5D * p;
-		else {
-			angle = 0.7853981633974483D;
-		}
-		EntityIMBoulder entityBoulder = new EntityIMBoulder(this.worldObj, this, launchSpeed);
-		double dY = entityY - entityBoulder.posY;
-		dY += dXY * Math.tan(angle);
-		entityBoulder.setVelocity(dX, dY, dZ, launchSpeed, 0.05F);
-		this.worldObj.spawnEntityInWorld(entityBoulder);
-	}
+    private double getThrowAngle(double horDifference) {
+        double p = getThrowPower(horDifference);
+        return p <= 1 ? 0.5D * Math.asin(p) : 0.7853981633974483D;
+    }
 
-	public void throwTNT(double entityX, double entityY, double entityZ) {
-		this.throwTime = 40;
-		float launchSpeed = 1.0F;
-		double dX = entityX - this.posX;
-		double dZ = entityZ - this.posZ;
-		double dXY = MathHelper.sqrt_double(dX * dX + dZ * dZ);
-		double p = 0.025D * dXY / (launchSpeed * launchSpeed);
-		double angle;
-		if (p <= 1.0D)
-			angle = 0.5D * p;
-		else {
-			angle = 0.7853981633974483D;
-		}
-		EntityIMPrimedTNT entityTNT = new EntityIMPrimedTNT(this.worldObj, this, launchSpeed);
-		double dY = entityY - entityTNT.posY;
-		dY += dXY * Math.tan(angle);
-		entityTNT.setBoulderHeading(dX, dY, dZ, launchSpeed, 0.05F);
-		this.worldObj.spawnEntityInWorld(entityTNT);
-	}
-
-	@Override
-	protected void dropFewItems(boolean flag, int bonus) {
-		super.dropFewItems(flag, bonus);
-		entityDropItem(new ItemStack(mod_Invasion.itemSmallRemnants, 1), 0.0F);
-	}
-
-	public void setTexture(int textureId) {
-		getDataWatcher().updateObject(31, Integer.valueOf(textureId));
-	}
-
-	public int getTextureId() {
-		return getDataWatcher().getWatchableObjectInt(31);
-	}
+    public double getThrowPower(double horDifference) {
+        return 0.025D * horDifference / MathHelper.square(getLaunchSpeed());
+    }
 }

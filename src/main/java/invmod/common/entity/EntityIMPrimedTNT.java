@@ -13,14 +13,6 @@ public class EntityIMPrimedTNT extends EntityIMBoulder {
         super(type, world);
     }
 
-    public EntityIMPrimedTNT(EntityType<EntityIMPrimedTNT> type, World world, double x, double y, double z) {
-        super(type, world, x, y, z);
-    }
-
-    public EntityIMPrimedTNT(EntityType<EntityIMPrimedTNT> type, World world, LivingEntity owner, float f) {
-        super(type, world, owner, f);
-    }
-
     @Override
     protected ItemStack getDefaultItemStack() {
         return ItemStack.EMPTY;

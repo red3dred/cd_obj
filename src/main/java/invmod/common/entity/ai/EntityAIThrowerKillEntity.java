@@ -3,16 +3,15 @@ package invmod.common.entity.ai;
 import invmod.common.entity.EntityIMThrower;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.Vec3d;
 
 public class EntityAIThrowerKillEntity<T extends LivingEntity> extends EntityAIKillEntity<T> {
     private boolean melee;
-    private float launchSpeed;
     private final EntityIMThrower theEntity;
     private int maxBoulderAmount = 3;
 
     public EntityAIThrowerKillEntity(EntityIMThrower entity, Class<? extends T> targetClass, int attackDelay, float throwRange, float launchSpeed) {
         super(entity, targetClass, attackDelay);
-        this.launchSpeed = launchSpeed;
         this.theEntity = entity;
     }
 
@@ -31,11 +30,7 @@ public class EntityAIThrowerKillEntity<T extends LivingEntity> extends EntityAIK
                 double y = (target.getY() - missDistance + 1) + theEntity.getRandom().nextInt((missDistance + 1) * 2);
                 double z = (target.getZ() - missDistance) + theEntity.getRandom().nextInt((missDistance + 1) * 2);
 
-                if (theEntity.getTier() == 1) {
-                    theEntity.throwBoulder(x, y, z);
-                } else {
-                    theEntity.throwTNT(x, y, z);
-                }
+                theEntity.throwProjectile(new Vec3d(x, y, z));
             }
         }
     }
@@ -51,7 +46,6 @@ public class EntityAIThrowerKillEntity<T extends LivingEntity> extends EntityAIK
         }
 
         double dXY = theEntity.getPos().subtract(target.getPos()).horizontalLength();
-        return getAttackTime() <= 0 && theEntity.getVisibilityCache().canSee(target)
-                && (0.025D * dXY / (launchSpeed * launchSpeed) <= 1);
+        return getAttackTime() <= 0 && theEntity.getVisibilityCache().canSee(target) && theEntity.getThrowPower(dXY) <= 1;
     }
 }

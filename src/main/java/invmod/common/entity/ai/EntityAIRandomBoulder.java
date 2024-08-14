@@ -33,10 +33,11 @@ public class EntityAIRandomBoulder extends Goal {
         if (d == 0) {
             d = 1;
         }
-        theEntity.throwBoulder(
+        theEntity.throwProjectile(
                 nexus.getXCoord() - d + theEntity.getRandom().nextInt(2 * d),
                 nexus.getYCoord() - 5 + theEntity.getRandom().nextInt(10),
-                nexus.getZCoord() - d + theEntity.getRandom().nextInt(2 * d)
+                nexus.getZCoord() - d + theEntity.getRandom().nextInt(2 * d),
+                theEntity.createProjectile(0)
         );
     }
 }

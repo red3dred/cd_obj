@@ -13,7 +13,6 @@ public class EntityAIKillEntity<T extends LivingEntity> extends EntityAIMoveToEn
     public EntityAIKillEntity(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay) {
         super(entity, targetClass);
         this.attackDelay = attackDelay;
-        this.nextAttack = 0;
     }
 
     @Override
