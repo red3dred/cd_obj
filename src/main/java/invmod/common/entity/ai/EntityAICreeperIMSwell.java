@@ -23,7 +23,7 @@ public class EntityAICreeperIMSwell extends Goal {
     @Override
     public boolean canStart() {
         LivingEntity target = theEntity.getTarget();
-        return theEntity.getCreeperState() > 0 || (target != null
+        return theEntity.getFuseSpeed() > 0 || (target != null
                     && theEntity.squaredDistanceTo(target) < 9
                     && (target instanceof PlayerEntity || target instanceof WolfEntity));
     }
@@ -41,7 +41,7 @@ public class EntityAICreeperIMSwell extends Goal {
 
     @Override
     public void tick() {
-        theEntity.setCreeperState(targetEntity != null
+        theEntity.setFuseSpeed(targetEntity != null
             && theEntity.squaredDistanceTo(targetEntity) <= 49
             && theEntity.getVisibilityCache().canSee(targetEntity) ? 1 : -1);
     }

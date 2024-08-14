@@ -170,14 +170,6 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 		setTexture(compound.getInt("textureId"));
 	}
 
-	public boolean avoidsBlock(int id) {
-		if ((id == 51) || (id == 7)) {
-			return true;
-		}
-
-		return false;
-	}
-
 	@Override
     public float getScaleFactor() {
 		if (getTier() == 1 && getFlavour() == 1) {

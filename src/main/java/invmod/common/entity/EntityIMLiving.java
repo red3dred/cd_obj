@@ -439,30 +439,24 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
         }
     }
 
-    public boolean avoidsBlock(BlockState block) {
-        return !isInvulnerable()
-                && (!isFireImmune() && (block.isIn(BlockTags.FIRE)
-                        || block.isIn(BlockTags.CAMPFIRES)
-                        || block.getFluidState().isIn(FluidTags.LAVA))
-                || block.isOf(Blocks.BEDROCK) || block.isOf(Blocks.CACTUS));
-    }
-
-    public boolean ignoresBlock(BlockState state) {
-        return ignoresBlock(state.getBlock());
-    }
-
     @Deprecated
-    public boolean ignoresBlock(Block block) {
-        if ((block == Blocks.TALL_GRASS) || (block == Blocks.DEAD_BUSH) || (block == Blocks.POPPY)
-                || (block == Blocks.DANDELION) || (block == Blocks.BROWN_MUSHROOM)
-                || (block == Blocks.RED_MUSHROOM) || (block == Blocks.OAK_PRESSURE_PLATE)
-                || (block == Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE) || (block == Blocks.STONE_PRESSURE_PLATE)) {
-            return true;
-        }
+    public boolean avoidsBlock(int block) {
         return false;
     }
 
+    public boolean avoidsBlock(BlockState state) {
+        return !isInvulnerable()
+                && (!isFireImmune() && (state.isIn(BlockTags.FIRE)
+                        || state.isIn(BlockTags.CAMPFIRES)
+                        || state.getFluidState().isIn(FluidTags.LAVA))
+                || state.isOf(Blocks.BEDROCK)
+                || state.isOf(Blocks.CACTUS));
+    }
+
     public boolean isBlockDestructible(BlockView world, BlockPos pos, BlockState state) {
+        if (state.getHardness(world, pos) < 0 || state.isOf(Blocks.COMMAND_BLOCK) || state.isOf(Blocks.CHAIN_COMMAND_BLOCK) || state.isOf(Blocks.REPEATING_COMMAND_BLOCK)) {
+            return false;
+        }
         if (state.isAir() || !canDestroyBlocks() || UNDESTRUCTABLE_BLOCKS.contains(state.getBlock()) || blockHasLadder(world, pos)) {
             return false;
         }

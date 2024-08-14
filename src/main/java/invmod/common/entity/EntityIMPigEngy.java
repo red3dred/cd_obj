@@ -25,6 +25,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
@@ -207,13 +208,9 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
         return block.isAir() || isBlockDestructible(getWorld(), pos, block);
     }
 
-    @Deprecated
-    public boolean avoidsBlock(int id) {
-        if ((id == 51) || (id == 7) || (id == 64) || (id == 8) || (id == 9) || (id == 10) || (id == 11)) {
-            return true;
-        }
-
-        return false;
+    @Override
+    public boolean avoidsBlock(BlockState state) {
+        return !avoidsBlock(state) || state.isIn(BlockTags.DOORS);
     }
 
     public void supportForTick(EntityIMLiving entity, float amount) {

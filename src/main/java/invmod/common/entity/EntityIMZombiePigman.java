@@ -131,7 +131,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
                     boolean mobgriefing = getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
 
                     if (!block.isAir()) {
-                        if (block.getHardness(getWorld(), pos) >= 0 && isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
+                        if (isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
                             playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.2F, 0.5F);
                             if (mobgriefing) {
                                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
