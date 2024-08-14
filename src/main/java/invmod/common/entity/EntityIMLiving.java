@@ -202,6 +202,7 @@ public abstract class EntityIMLiving extends HostileEntity implements IPathfinda
 
     protected int selfDamage = 2;
     protected int maxSelfDamage = 6;
+    @Deprecated
     protected int maxDestructiveness;
     protected float blockRemoveSpeed = 1.0F;
     protected boolean floatsInWater = true;

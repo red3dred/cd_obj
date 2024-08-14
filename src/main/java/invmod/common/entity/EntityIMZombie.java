@@ -206,86 +206,72 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         if (tier == 1) {
             if (flavour == 0) {
                 setName("Zombie");
-                setGender(1);
-                setBaseMoveSpeedStat(0.19F);
+                setMovementSpeed(0.19F);
                 setAttackStrength(4);
                 selfDamage = 3;
                 maxSelfDamage = 6;
-                maxDestructiveness = 2;
                 flammability = 3;
-                setDestructiveness(2);
+                setCanDestroyBlocks(true);
             } else if (flavour == 1) {
                 setName("Zombie");
-                setGender(1);
-                setBaseMoveSpeedStat(0.19F);
+                setMovementSpeed(0.19F);
                 setAttackStrength(6);
                 selfDamage = 3;
                 maxSelfDamage = 6;
-                maxDestructiveness = 0;
                 flammability = 3;
                 setStackInHand(Hand.MAIN_HAND, Items.WOODEN_SWORD.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
-                setDestructiveness(0);
+                setCanDestroyBlocks(false);
             }
         } else if (tier == 2) {
             if (flavour == 0) {
                 setName("Zombie");
-                setGender(1);
-                setBaseMoveSpeedStat(0.19F);
+                setMovementSpeed(0.19F);
                 setAttackStrength(7);
                 selfDamage = 4;
                 maxSelfDamage = 12;
-                maxDestructiveness = 2;
                 flammability = 4;
                 equipStack(EquipmentSlot.CHEST, Items.IRON_CHESTPLATE.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
-                setDestructiveness(2);
+                setCanDestroyBlocks(true);
             } else if (flavour == 1) {
                 setName("Zombie");
-                setGender(1);
-                setBaseMoveSpeedStat(0.19F);
+                setMovementSpeed(0.19F);
                 setAttackStrength(10);
                 selfDamage = 3;
                 maxSelfDamage = 9;
-                maxDestructiveness = 0;
                 setStackInHand(Hand.MAIN_HAND, Items.IRON_SWORD.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.25F);
-                setDestructiveness(0);
+                setCanDestroyBlocks(false);
             } else if (flavour == 2) {
                 setName("Tar Zombie");
-                setGender(1);
-                setBaseMoveSpeedStat(0.19F);
+                setMovementSpeed(0.19F);
                 setAttackStrength(5);
                 selfDamage = 3;
                 maxSelfDamage = 9;
-                maxDestructiveness = 2;
                 flammability = 30;
                 floatsInWater = false;
-                setDestructiveness(2);
+                setCanDestroyBlocks(true);
             } else if (flavour == 3) {
                 setName("Zombie Pigman");
-                setGender(1);
-                setBaseMoveSpeedStat(0.25F);
+                setMovementSpeed(0.25F);
                 setAttackStrength(8);
-                maxDestructiveness = 2;
                 setFireImmune(true);
                 setStackInHand(Hand.MAIN_HAND, Items.GOLDEN_SWORD.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
-                setDestructiveness(2);
+                setCanDestroyBlocks(true);
             }
         } else if (tier == 3) {
             if (flavour == 0) {
                 setName("Zombie Brute");
-                setGender(1);
-                setBaseMoveSpeedStat(0.17F);
+                setMovementSpeed(0.17F);
                 setAttackStrength(18);
                 selfDamage = 4;
                 maxSelfDamage = 20;
-                maxDestructiveness = 2;
                 flammability = 4;
                 equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
-                setDestructiveness(2);
+                setCanDestroyBlocks(true);
             }
         }
     }

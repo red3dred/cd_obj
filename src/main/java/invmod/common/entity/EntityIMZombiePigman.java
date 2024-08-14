@@ -171,24 +171,19 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     protected void setAttributes(int tier, int flavour) {
         if (tier == 1) {
             setName("Zombie Pigman");
-            setGender(1);
-            setBaseMoveSpeedStat(0.25F);
+            setMovementSpeed(0.25F);
             setAttackStrength(8);
-            maxDestructiveness = 2;
             setFireImmune(true);
             equipStack(EquipmentSlot.MAINHAND, Items.GOLDEN_SWORD.getDefaultStack());
-            setDestructiveness(2);
+            setCanDestroyBlocks(true);
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 
         } else if (tier == 2) {
             setName("Zombie Pigman");
-            setGender(1);
-            setBaseMoveSpeedStat(0.35F);
+            setMovementSpeed(0.35F);
             setAttackStrength(12);
-            maxDestructiveness = 2;
+            setCanDestroyBlocks(true);
             setFireImmune(true);
-
-            setDestructiveness(2);
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 
             if (getRandom().nextInt(5) == 1) {
@@ -208,12 +203,10 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             }
         } else if (tier == 3) {
             setName("Zombie Pigman Brute");
-            setGender(1);
-            setBaseMoveSpeedStat(0.20F);
+            setMovementSpeed(0.20F);
             setAttackStrength(18);
-            maxDestructiveness = 2;
             setFireImmune(true);
-            setDestructiveness(2);
+            setCanDestroyBlocks(true);
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         }
     }
