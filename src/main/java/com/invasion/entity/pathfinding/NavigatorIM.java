@@ -640,7 +640,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	}
 
 	@SuppressWarnings("deprecation")
-    protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
+	protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
 		if (to.getY() > from.getY()) {
 			BlockState block = theEntity.getWorld().getBlockState(from.add(0, entity.getCollideSize().getY(), 0));
 			if (!block.isAir() && block.blocksMovement()) {
@@ -651,6 +651,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return isPositionClear(to, entity);
 	}
 
+	@SuppressWarnings("deprecation")
 	protected boolean isPositionClear(BlockPos pos, EntityIMLiving entity) {
 	    return BlockPos.stream(entity.getDimensions(entity.getPose()).getBoxAt(pos.toBottomCenterPos())).allMatch(p -> {
 	        BlockState block = theEntity.getWorld().getBlockState(p);
