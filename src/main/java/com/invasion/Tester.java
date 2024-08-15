@@ -38,7 +38,7 @@ public class Tester {
         IMWaveSpawner spawner = new IMWaveSpawner(nexus, 45);
         spawner.giveSpawnPoints(spawnPoints);
         spawner.debugMode(true);
-        spawner.setSpawnMode(false);
+        spawner.setPermitSpawns(false);
 
         IMWaveBuilder waveBuilder = new IMWaveBuilder();
         Wave wave = waveBuilder.generateWave(difficulty, tierLevel, lengthSeconds);
@@ -80,7 +80,7 @@ public class Tester {
         IMWaveSpawner spawner = new IMWaveSpawner(nexus, 45);
         spawner.giveSpawnPoints(spawnPoints);
         spawner.debugMode(true);
-        spawner.setSpawnMode(false);
+        spawner.setPermitSpawns(false);
 
         int successfulSpawns = 0;
         int definedSpawns = 0;

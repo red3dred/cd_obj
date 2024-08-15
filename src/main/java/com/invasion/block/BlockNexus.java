@@ -1,15 +1,21 @@
 package com.invasion.block;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.item.InvItems;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.Hand;
@@ -88,6 +94,12 @@ public class BlockNexus extends BlockWithEntity {
     @Override
     public TileEntityNexus createBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityNexus(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return world.isClient ? null : validateTicker(type, InvBlockEntities.NEXUS, (w, pos, s, entity) -> entity.tick((ServerWorld)w, pos, s));
     }
 
     @Override

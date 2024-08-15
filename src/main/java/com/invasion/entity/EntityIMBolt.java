@@ -26,7 +26,7 @@ public class EntityIMBolt extends Entity {
     private double distance;
     private float widthVariance = 6;
     private Vec3d ray;
-    private int soundMade;
+    private boolean soundMade;
 
     public EntityIMBolt(EntityType<EntityIMBolt> type, World world) {
         super(type, world);
@@ -38,7 +38,7 @@ public class EntityIMBolt extends Entity {
         setPosition(x, y, z);
     }
 
-    public EntityIMBolt(World world, Vec3d pos, Vec3d targetPos, int ticksToRender, int soundMade) {
+    public EntityIMBolt(World world, Vec3d pos, Vec3d targetPos, int ticksToRender, boolean soundMade) {
         this(InvEntities.BOLT, world);
         setPosition(pos);
         ray = targetPos.subtract(pos);
@@ -60,7 +60,7 @@ public class EntityIMBolt extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (++age == 1 && soundMade == 1) {
+        if (++age == 1 && soundMade) {
             playSound(InvSounds.ENTITY_LIGHTNING_ZAP, 1, 1);
         }
         if (age > ticksToRender) {

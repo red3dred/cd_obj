@@ -2,6 +2,7 @@ package com.invasion.client.screen;
 
 import com.invasion.InvasionMod;
 import com.invasion.block.container.ContainerNexus;
+import com.invasion.nexus.Mode;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -23,17 +24,17 @@ public class GuiNexus extends HandledScreen<ContainerNexus> {
         context.drawText(textRenderer, handler.getKills() + " mobs killed", 96, 60, 0x404040, false);
         context.drawText(textRenderer, "R: " + handler.getSpawnRadius(), 142, 72, 0x404040, false);
 
-        if ((handler.getMode() == 1) || (handler.getMode() == 3)) {
+        if (handler.getMode() == Mode.STARTED || handler.getMode() == Mode.WAITING) {
             context.drawText(textRenderer, "Activated!", 13, 62, 4210752, false);
             context.drawText(textRenderer, "Wave " + handler.getCurrentWave(), 55, 37, 0x404040, false);
-        } else if (handler.getMode() == 2) {
+        } else if (handler.getMode() == Mode.CONTINUOUS) {
             context.drawText(textRenderer, "Power:", 56, 31, 4210752, false);
             context.drawText(textRenderer, "" + handler.getPowerLevel(), 61, 44, 0x404040, false);
         }
 
-        if (handler.isActivating() && handler.getMode() == 0) {
+        if (handler.isActivating() && handler.getMode() == Mode.STOPPED) {
             context.drawText(textRenderer, "Activating...", 13, 62, 0x404040, false);
-            if (handler.getMode() != 4) {
+            if (handler.getMode() != Mode.STABLE) {
                 context.drawText(textRenderer, "Are you sure?", 8, 72, 0x404040, false);
             }
         }
@@ -49,17 +50,17 @@ public class GuiNexus extends HandledScreen<ContainerNexus> {
         context.drawTexture(BACKGROUND, j + 126, k + 28 + 26 - l, 185, 26 - l, 9, l);
         context.drawTexture(BACKGROUND, j + 31, k + 51, 204, 0, handler.getCookProgressScaled(18), 2);
 
-        if (handler.getMode() == 1 || handler.getMode() == 3) {
+        if (handler.getMode() == Mode.STARTED || handler.getMode() == Mode.WAITING) {
             context.drawTexture(BACKGROUND, j + 19, k + 29, 176, 0, 9, 31);
             context.drawTexture(BACKGROUND, j + 19, k + 19, 194, 0, 9, 9);
-        } else if (handler.getMode() == 2) {
+        } else if (handler.getMode() == Mode.CONTINUOUS) {
             context.drawTexture(BACKGROUND, j + 19, k + 29, 176, 31, 9, 31);
         }
 
-        if ((handler.getMode() == 0 || handler.getMode() == 2) && handler.isActivating()) {
+        if ((handler.getMode() == Mode.STOPPED || handler.getMode() == Mode.CONTINUOUS) && handler.isActivating()) {
             l = handler.getActivationProgressScaled(31);
             context.drawTexture(BACKGROUND, j + 19, k + 29 + 31 - l, 176, 31 - l, 9, l);
-        } else if (handler.getMode() == 4 && handler.isActivating()) {
+        } else if (handler.getMode() == Mode.STABLE && handler.isActivating()) {
             l = handler.getActivationProgressScaled(31);
             context.drawTexture(BACKGROUND, j + 19, k + 29 + 31 - l, 176, 62 - l, 9, l);
         }

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.InvBlocks;
 import com.invasion.block.TileEntityNexus;
+import com.invasion.nexus.ControllableNexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -43,20 +44,21 @@ class ItemProbe extends Item {
             return ActionResult.FAIL;
         }
         if (state.isOf(InvBlocks.NEXUS_CORE)) {
-            TileEntityNexus nexus = (TileEntityNexus) world.getBlockEntity(pos);
-            int newRange = nexus.getSpawnRadius();
+            if (((TileEntityNexus) world.getBlockEntity(pos)).getNexus() instanceof ControllableNexusAccess nexus) {
+                int newRange = nexus.getSpawnRadius();
 
-            // check if the player wants to increase or decrease the range
-            newRange += player.isSneaking() ? -8 : 8;
-            // TODO: this check should be handled by the block entity, not here
-            newRange = MathHelper.clamp(newRange, 32, 128);
+                // check if the player wants to increase or decrease the range
+                newRange += player.isSneaking() ? -8 : 8;
+                // TODO: this check should be handled by the block entity, not here
+                newRange = MathHelper.clamp(newRange, 32, 128);
 
-            if (nexus.setSpawnRadius(newRange)) {
-                player.sendMessage(Text.translatable("invmod.message.probe.rangechanged", Text.literal(nexus.getSpawnRadius() + "").formatted(Formatting.GREEN)).formatted(Formatting.DARK_GREEN));
-            } else if (nexus.isActive()) {
-                player.sendMessage(Text.translatable("invmod.message.probe.cannotchangerange", Text.literal(nexus.getSpawnRadius() + "")).formatted(Formatting.RED));
+                if (nexus.setSpawnRadius(newRange)) {
+                    player.sendMessage(Text.translatable("invmod.message.probe.rangechanged", Text.literal(nexus.getSpawnRadius() + "").formatted(Formatting.GREEN)).formatted(Formatting.DARK_GREEN));
+                } else if (nexus.isActive()) {
+                    player.sendMessage(Text.translatable("invmod.message.probe.cannotchangerange", Text.literal(nexus.getSpawnRadius() + "")).formatted(Formatting.RED));
+                }
+                return ActionResult.SUCCESS;
             }
-            return ActionResult.SUCCESS;
         }
 
         if (isProbe) {

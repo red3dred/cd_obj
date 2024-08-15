@@ -45,7 +45,7 @@ public class EntityAIAttackNexus extends net.minecraft.entity.ai.goal.Goal {
                 if (mob instanceof EntityIMZombie) {
                     ((EntityIMZombie) mob).updateAnimation(true);
                 }
-                mob.getNexus().attackNexus(2);
+                mob.getNexus().damage(2);
             }
             cooldown = 20;
             attacked = true;

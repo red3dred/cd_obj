@@ -2,10 +2,10 @@ package com.invasion.item;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.block.TileEntityNexus;
 import com.invasion.entity.EntityIMWolf;
-import com.invasion.entity.IHasNexus;
 import com.invasion.entity.InvEntities;
+import com.invasion.nexus.IHasNexus;
+import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -29,7 +29,7 @@ class ItemStrangeBone extends Item {
         }
 
         @Nullable
-        TileEntityNexus nexus = IHasNexus.findNexus(entity.getWorld(), entity.getBlockPos());
+        INexusAccess nexus = IHasNexus.findNexus(entity.getWorld(), entity.getBlockPos());
 
         if (nexus == null) {
             user.sendMessage(Text.translatable("invmod.message.bone.nonearbynexus1").formatted(Formatting.RED));

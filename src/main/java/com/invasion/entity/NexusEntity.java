@@ -1,19 +1,26 @@
 package com.invasion.entity;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.INotifyTask;
 import com.invasion.InvasionMod;
 import com.invasion.entity.ai.Goal;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
+import com.invasion.nexus.EntityConstruct;
+import com.invasion.nexus.EntityConstruct.BuildableMob;
+import com.invasion.nexus.IHasNexus;
+import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
+import net.minecraft.world.entity.EntityLike;
 
-public interface NexusEntity extends IHasNexus, IHasAiGoals {
+public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, EntityLike {
     float DEFAULT_AIR_RESISTANCE = 0.9995F;
     float DEFAULT_GROUND_FRICTION = 0.546F;
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
@@ -31,6 +38,11 @@ public interface NexusEntity extends IHasNexus, IHasAiGoals {
     }
 
     PathAwareEntity asEntity();
+
+    @Override
+    default void onSpawned(@Nullable INexusAccess nexus, EntityConstruct spawnConditions) {
+        setNexus(nexus);
+    }
 
     default void onFollowingEntity(Entity entity) {
     }

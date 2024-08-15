@@ -17,13 +17,15 @@ import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.Nexus;
+import com.invasion.nexus.Participants.Entry;
 import com.invasion.util.math.CoordsInt;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -33,7 +35,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.chunk.ChunkCache;
 
 public class AttackerAI {
-    private final INexusAccess nexus;
+    private final Nexus nexus;
     private final IPathSource pathSource = new PathCreator();
 
     private final Long2ObjectMap<Integer> entityDensityData = new Long2ObjectOpenHashMap<>();
@@ -46,13 +48,17 @@ public class AttackerAI {
     private int updateScaffoldTimer;
     private int nextEntityDensityUpdate;
 
-    public AttackerAI(INexusAccess nexus) {
+    public AttackerAI(Nexus nexus) {
         this.nexus = nexus;
         pathSource.setSearchDepth(8500);
         pathSource.setQuickFailDepth(8500);
     }
 
-    public void update() {
+    public void onResume() {
+        scaffolds.forEach(Scaffold::forceStatusUpdate);
+    }
+
+    public void tick() {
         nextScaffoldCalcTimer--;
         if (--updateScaffoldTimer <= 0) {
             updateScaffoldTimer = 40;
@@ -163,11 +169,7 @@ public class AttackerAI {
         return null;
     }
 
-    public void onResume() {
-        scaffolds.forEach(Scaffold::forceStatusUpdate);
-    }
-
-    public void readFromNBT(NbtCompound compound) {
+    public void readNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
         scaffolds = compound.getList("scaffolds", NbtElement.COMPOUND_TYPE).stream().map(element -> {
             Scaffold scaffold = new Scaffold(nexus);
             scaffold.readFromNBT((NbtCompound) element);
@@ -175,7 +177,7 @@ public class AttackerAI {
         }).collect(Collectors.toList());
     }
 
-    public void writeToNBT(NbtCompound compound) {
+    public NbtCompound writeNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
         NbtList nbttaglist = new NbtList();
         for (Scaffold scaffold : scaffolds) {
             NbtCompound nbtscaffold = new NbtCompound();
@@ -281,7 +283,7 @@ public class AttackerAI {
 
     private void updateDensityData() {
         entityDensityData.clear();
-        for (EntityIMLiving mob : nexus.getMobList()) {
+        for (EntityIMLiving mob : nexus.getCombatants()) {
             entityDensityData.compute(mob.getBlockPos().asLong(), (key, old) -> old == null ? 1 : old + 1);
         }
     }

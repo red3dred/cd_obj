@@ -1,11 +1,11 @@
 package com.invasion;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.invasion.entity.EntityIMBolt;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.ControllableNexusAccess;
+import com.invasion.nexus.WorldNexusStorage;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -54,19 +54,15 @@ public class InvasionCommand {
                 );
     }
 
-    private static void handleWithNexus(ServerCommandSource source, Consumer<INexusAccess> nexusConsumer) {
-        getNexus(source).ifPresentOrElse(nexusConsumer, () -> {
+    private static void handleWithNexus(ServerCommandSource source, Consumer<ControllableNexusAccess> nexusConsumer) {
+        WorldNexusStorage.of(source.getWorld()).getNexus().ifPresentOrElse(nexusConsumer, () -> {
             source.sendFeedback(() -> Text.literal("Right-click the Nexus first to set target for commands.").formatted(Formatting.GOLD), false);
         });
     }
 
-    private static Optional<INexusAccess> getNexus(ServerCommandSource source) {
-        return mod_Invasion.getNexus(source.getWorld());
-    }
-
     private static int start(ServerCommandSource source, int startingWave) {
         handleWithNexus(source, nexus -> {
-            nexus.forceStart(startingWave);
+            nexus.start(startingWave);
             source.getServer().sendMessage(Text.literal(source.getName() + " has started the invasion!").formatted(Formatting.YELLOW));
         });
         return 0;
@@ -130,7 +126,7 @@ public class InvasionCommand {
 	private static int bolt(ServerCommandSource source, Vec3i offset) {
 	    handleWithNexus(source, nexus -> {
 	        BlockPos nexusPos = nexus.getOrigin();
-	        source.getWorld().spawnEntity(new EntityIMBolt(source.getWorld(), nexusPos.toCenterPos(), nexusPos.add(offset).toCenterPos(), 40, 1));
+	        source.getWorld().spawnEntity(new EntityIMBolt(source.getWorld(), nexusPos.toCenterPos(), nexusPos.add(offset).toCenterPos(), 40, true));
 	    });
         return 0;
     }

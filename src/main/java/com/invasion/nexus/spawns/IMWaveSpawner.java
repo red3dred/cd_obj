@@ -1,5 +1,7 @@
 package com.invasion.nexus.spawns;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -20,6 +22,7 @@ import com.invasion.nexus.wave.WaveSpawnerException;
 
 public class IMWaveSpawner implements ISpawnerAccess {
 	private static final int MAX_SPAWN_TRIES = 20;
+	public static final int MIN_SPAWN_RADIUS = 8;
 	private static final int NORMAL_SPAWN_HEIGHT = 30;
 	private static final int MIN_SPAWN_POINTS_TO_KEEP = 15;
 	private static final int MIN_SPAWN_POINTS_TO_KEEP_BELOW_HEIGHT_CUTOFF = 20;
@@ -35,7 +38,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	private boolean active;
 	private boolean waveComplete;
-	private boolean spawnMode = true;
+	private boolean permitSpawns = true;
 	private boolean debugMode;
 
 	private int spawnRadius;
@@ -51,8 +54,14 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		return elapsed;
 	}
 
-	public void setRadius(int radius) {
-	    spawnRadius = Math.max(8, radius);
+	public boolean setRadius(int radius) {
+	    radius = Math.max(8, radius);
+	    spawnRadius = radius;
+	    return spawnRadius != radius;
+	}
+
+	public int getRadius() {
+	    return spawnRadius;
 	}
 
 	public void beginNextWave(int waveNumber) throws WaveSpawnerException {
@@ -96,30 +105,28 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		}
 	}
 
-	public int resumeFromState(Wave wave, long elapsedTime, int radius) throws WaveSpawnerException {
-		spawnRadius = radius;
+	public int resumeFromState(Wave wave) throws WaveSpawnerException {
 		stop();
 		beginNextWave(wave);
-
-		setSpawnMode(false);
+		setPermitSpawns(false);
 		int numberOfSpawns = 0;
-		for (; elapsed < elapsedTime; elapsed += 100L) {
+		for (long i = 0; i < elapsed; i += 100L) {
 			numberOfSpawns += currentWave.doNextSpawns(100, this);
 		}
-		setSpawnMode(true);
+		setPermitSpawns(true);
 		return numberOfSpawns;
 	}
 
-	public void resumeFromState(int waveNumber, long elapsedTime, int radius) throws WaveSpawnerException {
-		this.spawnRadius = radius;
+	public int resumeFromState(int waveNumber) throws WaveSpawnerException {
 		stop();
 		beginNextWave(waveNumber);
-		setSpawnMode(false);
-
-		for (; elapsed < elapsedTime; elapsed += 100L) {
-			currentWave.doNextSpawns(100, this);
+		setPermitSpawns(false);
+		int numberOfSpawns = 0;
+		for (long i = 0; i < elapsed; i += 100L) {
+		    numberOfSpawns += currentWave.doNextSpawns(100, this);
 		}
-		setSpawnMode(true);
+		setPermitSpawns(true);
+		return numberOfSpawns;
 	}
 
 	public void stop() {
@@ -168,7 +175,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		if (debugMode) {
 		    InvasionMod.log(message);
 		}
-		nexus.sendMessage(color, message);
+		nexus.getParticipants().sendMessage(color, message);
 	}
 
 	@Override
@@ -184,8 +191,8 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		return spawnPointContainer.getNumberOfSpawnPoints(type, minAngle, maxAngle);
 	}
 
-	public void setSpawnMode(boolean flag) {
-		spawnMode = flag;
+	public void setPermitSpawns(boolean flag) {
+		permitSpawns = flag;
 	}
 
 	public void giveSpawnPoints(SpawnPointContainer spawnPointContainer) {
@@ -194,7 +201,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	@Override
 	public boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle) {
-		if (nexus.getWorld() == null && spawnMode) {
+		if (nexus.getWorld() == null && permitSpawns) {
 			return false;
 		}
 
@@ -210,7 +217,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			if (spawnPoint == null) {
 				return false;
 			}
-			if (!spawnMode) {
+			if (!permitSpawns) {
 				successfulSpawns++;
 				if (debugMode) {
 				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + spawnPoint + "  Specified: " + minAngle + "," + maxAngle);
@@ -290,4 +297,15 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			spawnPoints.add(new SpawnPoint(pos.toImmutable(), angle, SpawnType.HUMANOID));
 		}
 	}
+
+    public void readNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
+        setRadius(compound.getInt("spawnRadius"));
+        elapsed = compound.getLong("elapsed");
+    }
+
+    public NbtCompound writeNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
+        compound.putInt("spawnRadius", spawnRadius);
+        compound.putLong("elapsed", elapsed);
+        return compound;
+    }
 }

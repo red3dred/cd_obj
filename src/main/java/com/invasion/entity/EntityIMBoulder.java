@@ -2,8 +2,7 @@ package com.invasion.entity;
 
 import com.invasion.block.BlockSpecial;
 import com.invasion.block.InvBlocks;
-import com.invasion.nexus.INexusAccess;
-
+import com.invasion.block.TileEntityNexus;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -43,8 +42,8 @@ public class EntityIMBoulder extends PersistentProjectileEntity {
     protected void onBlockHit(BlockHitResult hit) {
         super.onBlockHit(hit);
         BlockState state = getWorld().getBlockState(hit.getBlockPos());
-        if (state.isOf(InvBlocks.NEXUS_CORE) && getWorld().getBlockEntity(hit.getBlockPos()) instanceof INexusAccess nexus) {
-            nexus.attackNexus(2);
+        if (state.isOf(InvBlocks.NEXUS_CORE) && getWorld().getBlockEntity(hit.getBlockPos()) instanceof TileEntityNexus nexus) {
+            nexus.getNexus().damage(2);
         } else if (state.getHardness(getWorld(), hit.getBlockPos()) >= 0) {
 
             if (!state.isIn(BlockTags.WITHER_IMMUNE) && !state.isIn(BlockTags.DRAGON_IMMUNE)) {

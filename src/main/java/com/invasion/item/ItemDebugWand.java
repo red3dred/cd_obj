@@ -1,5 +1,7 @@
 package com.invasion.item;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.block.InvBlocks;
 import com.invasion.block.TileEntityNexus;
 import com.invasion.entity.EntityIMBird;
@@ -10,6 +12,7 @@ import com.invasion.entity.EntityIMSpider;
 import com.invasion.entity.EntityIMThrower;
 import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.InvEntities;
+import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -27,7 +30,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 
 class ItemDebugWand extends Item {
-    private TileEntityNexus nexus;
+    @Nullable
+    private INexusAccess nexus;
 
     public ItemDebugWand(Settings settings) {
         super(settings);
@@ -42,8 +46,12 @@ class ItemDebugWand extends Item {
 
         BlockState state = world.getBlockState(context.getBlockPos());
         if (state.isOf(InvBlocks.NEXUS_CORE)) {
-            this.nexus = ((TileEntityNexus) world.getBlockEntity(context.getBlockPos()));
+            this.nexus = ((TileEntityNexus) world.getBlockEntity(context.getBlockPos())).getNexus();
             return ActionResult.SUCCESS;
+        }
+
+        if (nexus != null && nexus.getWorld() != world) {
+            nexus = null;
         }
 
         BlockPos pos = context.getBlockPos().offset(context.getSide());

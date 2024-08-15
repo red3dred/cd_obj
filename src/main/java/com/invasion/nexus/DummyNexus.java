@@ -1,26 +1,30 @@
 package com.invasion.nexus;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.ai.AttackerAI;
 
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class DummyNexus implements INexusAccess {
+public class DummyNexus implements ControllableNexusAccess {
     private World world;
+
+    private final UUID uuid = UUID.randomUUID();
+
+    @Override
+    public UUID getUuid() {
+        return uuid;
+    }
 
     public void setWorld(World world) {
         this.world = world;
     }
 
     @Override
-    public void attackNexus(int damage) {
+    public void damage(int damage) {
     }
 
     @Override
@@ -37,6 +41,10 @@ public class DummyNexus implements INexusAccess {
         return 0;
     }
 
+    @Override
+    public int getLevel() {
+        return 0;
+    }
 
     @Override
     public int getSpawnRadius() {
@@ -59,30 +67,17 @@ public class DummyNexus implements INexusAccess {
     }
 
     @Override
-    public List<EntityIMLiving> getMobList() {
-        return List.of();
-    }
-
-    @Override
-    public void askForRespawn(EntityIMLiving entity) {
-    }
-
-    @Override
     public AttackerAI getAttackerAI() {
         return null;
     }
 
     @Override
-    public Map<UUID, Long> getBoundPlayers() {
-        return Map.of();
+    public Participants getParticipants() {
+        return null;
     }
 
     @Override
-    public void sendMessage(Formatting color, String translationKey, Object... params) {
-    }
-
-    @Override
-    public boolean forceStart(int wave) {
+    public boolean start(int wave) {
         return true;
     }
 

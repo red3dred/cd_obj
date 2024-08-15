@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.InvScreenHandlers;
 import com.invasion.block.InvBlocks;
+import com.invasion.nexus.Mode;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -49,8 +50,8 @@ public class ContainerNexus extends ScreenHandler {
         return properties.get(0);
     }
 
-    public int getMode() {
-        return properties.get(1);
+    public Mode getMode() {
+        return Mode.forId(properties.get(1));
     }
 
     public int getCurrentWave() {

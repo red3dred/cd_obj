@@ -11,9 +11,8 @@ import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
-import com.invasion.nexus.EntityConstruct;
+import com.invasion.nexus.IHasNexus;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.nexus.EntityConstruct.BuildableMob;
 import com.invasion.util.math.MathUtil;
 
 import net.minecraft.entity.Entity;
@@ -35,21 +34,18 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.entity.EntityChangeListener;
 
-public abstract class EntityIMLiving extends HostileEntity implements NexusEntity, BuildableMob, Stunnable {
+public abstract class EntityIMLiving extends HostileEntity implements NexusEntity, Stunnable {
     private static final TrackedData<Integer> MOVE_STATE = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<String> LABEL = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<Boolean> JUMPING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> CLINGING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     protected float airResistance = DEFAULT_AIR_RESISTANCE;
     private float groundFriction = DEFAULT_GROUND_FRICTION;
 
     private float turnRate = 30;
 
-    @Nullable
-    private INexusAccess targetNexus;
+    private final IHasNexus.Handle nexus = new IHasNexus.Handle(this::getWorld);
 
     protected int selfDamage = 2;
     protected int maxSelfDamage = 6;
@@ -91,16 +87,19 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(MOVE_STATE, MoveState.STANDING.ordinal());
-        builder.add(JUMPING, false);
         builder.add(CLIMBING, false);
-        builder.add(CLINGING, false);
         builder.add(ANGLES, MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0));
         builder.add(LABEL, "");
     }
 
     @Override
+    public INexusAccess getNexus() {
+        return nexus.get();
+    }
+
+    @Override
     public void setNexus(@Nullable INexusAccess nexus) {
-        targetNexus = nexus;
+        this.nexus.set(nexus);
         setBurnsInDay(nexus != null && InvasionMod.getConfig().nightMobsBurnInDay);
         setAggroRange(nexus != null ? 12 : InvasionMod.getConfig().nightMobSightRange);
         setSenseRange(nexus != null ? 6 : InvasionMod.getConfig().nightMobSenseRange);
@@ -121,17 +120,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     }
 
     @Override
-    public boolean isAlwaysIndependant() {
-        return alwaysIndependent;
-    }
-
-    @Override
-    public void setEntityIndependent() {
-        setNexus(null);
-        alwaysIndependent = true;
-    }
-
-    @Override
     public void tickMovement() {
         super.tickMovement();
         if (!getWorld().isClient) {
@@ -143,17 +131,8 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     }
 
     @Override
-    public void onSpawned(@Nullable INexusAccess nexus, EntityConstruct spawnConditions) {
-        setNexus(nexus);
-        if (nexus == null) {
-            setEntityIndependent();
-        }
-    }
-
-    @Override
     public void tick() {
         if (!getWorld().isClient) {
-            dataTracker.set(CLINGING, super.isClimbing());
             if (stunTimer > 0) {
                 stunTimer--;
                 return;
@@ -186,9 +165,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
             setBodyYaw(MathUtil.unpackAnglesDeg_1(packedAngles));
             setHeadYaw(MathUtil.unpackAnglesDeg_2(packedAngles));
             setPitch(MathUtil.unpackAnglesDeg_3(packedAngles));
-        }
-        if (data == JUMPING) {
-            super.setJumping(dataTracker.get(JUMPING));
         }
     }
 
@@ -234,6 +210,7 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         super.writeCustomDataToNbt(compound);
         compound.putBoolean("alwaysIndependent", alwaysIndependent);
         compound.putInt("stunTimer", stunTimer);
+        nexus.writeNbt(compound);
     }
 
     @Override
@@ -241,6 +218,7 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         super.readCustomDataFromNbt(compound);
         alwaysIndependent = compound.getBoolean("alwaysIndependent");
         stunTimer = compound.getInt("stunTimer");
+        nexus.readNbt(compound);
         if (alwaysIndependent) {
             ConfigInvasion config = InvasionMod.getConfig();
             setAggroRange(config.nightMobSightRange);
@@ -299,22 +277,13 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         return hasNexus() ? 0 : 0.5F - world.getLightLevel(pos);
     }
 
-    @Override
-    public INexusAccess getNexus() {
-        return targetNexus;
-    }
-
     public String getRenderLabel() {
         return dataTracker.get(LABEL);
     }
 
-    @Override
-    public boolean isHoldingOntoLadder() {
-        return dataTracker.get(CLINGING);
-    }
-
+    @Deprecated
     public void setIsHoldingIntoLadder(boolean flag) {
-        dataTracker.set(CLINGING, flag);
+        setSneaking(flag);
     }
 
     @Override
@@ -329,12 +298,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     @Override
     public boolean shouldRenderName() {
         return getDebugMode() || super.shouldRenderName();
-    }
-
-    @Override
-    public void setJumping(boolean jumping) {
-        super.setJumping(jumping);
-        dataTracker.set(JUMPING, jumping);
     }
 
     @Deprecated

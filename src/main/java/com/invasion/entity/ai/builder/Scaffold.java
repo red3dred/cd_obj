@@ -38,7 +38,7 @@ public class Scaffold implements IPathfindable {
         this.targetHeight = height;
         this.nexus = nexus;
         setPosition(x, y, z);
-        calcPlatforms();
+        createPlatforms();
     }
 
     public void setPosition(int x, int y, int z) {
@@ -66,18 +66,11 @@ public class Scaffold implements IPathfindable {
 
     public void setHeight(int height) {
         targetHeight = height;
-        calcPlatforms();
+        createPlatforms();
     }
 
     public int getTargetHeight() {
         return targetHeight;
-    }
-
-    public void forceStatusUpdate() {
-        latestPercentIntact = (evaluateIntegrity() - initialCompletion) / (1 - initialCompletion);
-        if (latestPercentIntact > latestPercentCompleted) {
-            latestPercentCompleted = latestPercentIntact;
-        }
     }
 
     public float getPercentIntactCached() {
@@ -116,7 +109,7 @@ public class Scaffold implements IPathfindable {
         orientation = Direction.fromHorizontal(compound.getInt("orientation"));
         initialCompletion = compound.getFloat("initialCompletion");
         latestPercentCompleted = compound.getFloat("latestPercentCompleted");
-        calcPlatforms();
+        createPlatforms();
     }
 
     public void writeToNBT(NbtCompound compound) {
@@ -129,7 +122,14 @@ public class Scaffold implements IPathfindable {
         compound.putFloat("latestPercentCompleted", latestPercentCompleted);
     }
 
-    private void calcPlatforms() {
+    public void forceStatusUpdate() {
+        latestPercentIntact = (evaluateIntegrity() - initialCompletion) / (1 - initialCompletion);
+        if (latestPercentIntact > latestPercentCompleted) {
+            latestPercentCompleted = latestPercentIntact;
+        }
+    }
+
+    private void createPlatforms() {
         int spanningPlatforms = this.targetHeight < 16 ? this.targetHeight / MIN_SCAFFOLD_HEIGHT - 1 : this.targetHeight / 5 - 1;
         if (spanningPlatforms > 0) {
             int avgSpace = this.targetHeight / (spanningPlatforms + 1);
