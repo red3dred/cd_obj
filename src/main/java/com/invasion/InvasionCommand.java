@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import com.invasion.entity.EntityIMBolt;
 import com.invasion.nexus.ControllableNexusAccess;
 import com.invasion.nexus.WorldNexusStorage;
+import com.invasion.nexus.test.Tester;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -25,7 +26,7 @@ import net.minecraft.util.math.Vec3i;
 
 public class InvasionCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> create(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registries) {
-        return CommandManager.literal("invasion")
+        return addTestCommands(CommandManager.literal("invasion")
                 .then(CommandManager.literal("help").executes(context -> help(dispatcher, context.getSource())))
                 .then(CommandManager.literal("status").executes(context -> status(context.getSource())))
                 .then(CommandManager.literal("start").then(CommandManager.argument("wave", IntegerArgumentType.integer(1)).executes(context -> start(context.getSource(), IntegerArgumentType.getInteger(context, "wave")))))
@@ -35,23 +36,29 @@ public class InvasionCommand {
                         .then(CommandManager.literal("set").then(CommandManager.argument("radius", IntegerArgumentType.integer(32, 128)).executes(context -> setRadius(context.getSource(), IntegerArgumentType.getInteger(context, "radius"))))))
                 .then(CommandManager.literal("bolt").executes(context -> bolt(context.getSource(), Vec3i.ZERO))
                     .then(CommandManager.argument("offset", BlockPosArgumentType.blockPos()).executes(context -> bolt(context.getSource(), BlockPosArgumentType.getBlockPos(context, "offset"))))
-                )
-                .then(CommandManager.literal("test")
-                        .then(CommandManager.literal("status").executes(context -> printDebugStatus(context.getSource())))
-                        .then(CommandManager.literal("spawner").executes(context -> testSpawner(context.getSource(), IntRange.between(1, 11)))
-                                .then(CommandManager.argument("waves", NumberRangeArgumentType.intRange()).executes(context -> testSpawner(context.getSource(), NumberRangeArgumentType.IntRangeArgumentType.getRangeArgument(context, "waves")))))
-                        .then(CommandManager.literal("spawnPoints").executes(context -> testSpawnpoints(context.getSource())))
-                        .then(CommandManager.literal("waveBuilder").executes(context -> testWaveBuilder(context.getSource(), 1, 1, 160))
-                                .then(CommandManager.argument("difficuly", FloatArgumentType.floatArg(0)).executes(context -> testWaveBuilder(context.getSource(),
-                                                FloatArgumentType.getFloat(context, "difficuly"), 1, 160))
-                                        .then(CommandManager.argument("tier", FloatArgumentType.floatArg(1)).executes(context -> testWaveBuilder(context.getSource(),
-                                                    FloatArgumentType.getFloat(context, "difficuly"),
-                                                    FloatArgumentType.getFloat(context, "tier"), 160))
-                                                .then(CommandManager.argument("duration", IntegerArgumentType.integer(1, 1000)).executes(context -> testWaveBuilder(context.getSource(),
-                                                        FloatArgumentType.getFloat(context, "difficuly"),
-                                                        FloatArgumentType.getFloat(context, "tier"),
-                                                        IntegerArgumentType.getInteger(context, "duration")))))))
-                );
+                ));
+    }
+
+    private static LiteralArgumentBuilder<ServerCommandSource> addTestCommands(LiteralArgumentBuilder<ServerCommandSource> builder) {
+        if (!InvasionMod.getConfig().debugMode) {
+            return builder;
+        }
+        return builder.then(CommandManager.literal("test").requires(source -> InvasionMod.getConfig().debugMode)
+                .then(CommandManager.literal("status").executes(context -> printDebugStatus(context.getSource())))
+                .then(CommandManager.literal("spawner").executes(context -> testSpawner(context.getSource(), IntRange.between(1, 11)))
+                        .then(CommandManager.argument("waves", NumberRangeArgumentType.intRange()).executes(context -> testSpawner(context.getSource(), NumberRangeArgumentType.IntRangeArgumentType.getRangeArgument(context, "waves")))))
+                .then(CommandManager.literal("spawnPoints").executes(context -> testSpawnpoints(context.getSource())))
+                .then(CommandManager.literal("waveBuilder").executes(context -> testWaveBuilder(context.getSource(), 1, 1, 160))
+                        .then(CommandManager.argument("difficuly", FloatArgumentType.floatArg(0)).executes(context -> testWaveBuilder(context.getSource(),
+                                        FloatArgumentType.getFloat(context, "difficuly"), 1, 160))
+                                .then(CommandManager.argument("tier", FloatArgumentType.floatArg(1)).executes(context -> testWaveBuilder(context.getSource(),
+                                            FloatArgumentType.getFloat(context, "difficuly"),
+                                            FloatArgumentType.getFloat(context, "tier"), 160))
+                                        .then(CommandManager.argument("duration", IntegerArgumentType.integer(1, 1000)).executes(context -> testWaveBuilder(context.getSource(),
+                                                FloatArgumentType.getFloat(context, "difficuly"),
+                                                FloatArgumentType.getFloat(context, "tier"),
+                                                IntegerArgumentType.getInteger(context, "duration")))))))
+        );
     }
 
     private static void handleWithNexus(ServerCommandSource source, Consumer<ControllableNexusAccess> nexusConsumer) {

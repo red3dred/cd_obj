@@ -1,11 +1,10 @@
-package com.invasion;
+package com.invasion.nexus.test;
 
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Random;
 import java.util.function.Consumer;
 
-import com.invasion.nexus.DummyNexus;
 import com.invasion.nexus.spawns.IMWaveSpawner;
 import com.invasion.nexus.spawns.SpawnPoint;
 import com.invasion.nexus.spawns.SpawnPointContainer;

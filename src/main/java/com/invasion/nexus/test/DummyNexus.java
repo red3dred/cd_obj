@@ -1,9 +1,11 @@
-package com.invasion.nexus;
+package com.invasion.nexus.test;
 
 import java.util.List;
 import java.util.UUID;
 
 import com.invasion.entity.ai.AttackerAI;
+import com.invasion.nexus.ControllableNexusAccess;
+import com.invasion.nexus.Participants;
 
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
