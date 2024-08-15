@@ -51,6 +51,10 @@ public interface NexusEntity extends IHasNexus, IHasAiGoals {
         asEntity().setHealth(health);
     }
 
+    default void setGravity(float acceleration) {
+        asEntity().getAttributeInstance(EntityAttributes.GENERIC_GRAVITY).setBaseValue(acceleration);
+    }
+
     @Deprecated
     default void setJumpHeight(int height) {
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(height);

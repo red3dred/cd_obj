@@ -41,7 +41,6 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, INexusAccess nexus, float diggingSpeed) {
         super(type, world, nexus);
-        floatsInWater = true;
         terrainModifier = new TerrainModifier(this, diggingSpeed);
         terrainDigger = new TerrainDigger(this, terrainModifier, 1);
     }

@@ -20,7 +20,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -55,7 +54,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     protected int selfDamage = 2;
     protected int maxSelfDamage = 6;
 
-    protected boolean floatsInWater = true;
     protected int blockBreakSoundCooldown;
 
     private boolean alwaysIndependent;
@@ -286,10 +284,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
 
     public void setTurnRate(float rate) {
         this.turnRate = rate;
-    }
-
-    protected void setGravity(float acceleration) {
-        getAttributeInstance(EntityAttributes.GENERIC_GRAVITY).setBaseValue(acceleration);
     }
 
     public float getGroundFriction() {

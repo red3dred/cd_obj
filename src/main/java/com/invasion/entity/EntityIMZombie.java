@@ -53,7 +53,9 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     @Override
     protected void initGoals() {
         // added EntityAISwimming and increased all other tasks order numbers with 1
-        goalSelector.add(0, new SwimGoal(this));
+        if (getTier() != 2 || getFlavour() != 2) {
+            goalSelector.add(0, new SwimGoal(this));
+        }
         goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
         goalSelector.add(1, new EntityAIKillEntity<>(this, ServerPlayerEntity.class, 40));
         goalSelector.add(1, new EntityAIKillEntity<>(this, IronGolemEntity.class, 30));
@@ -146,7 +148,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 selfDamage = 3;
                 maxSelfDamage = 9;
                 flammability = 30;
-                floatsInWater = false;
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 3) {
                 setName("Zombie Pigman");
