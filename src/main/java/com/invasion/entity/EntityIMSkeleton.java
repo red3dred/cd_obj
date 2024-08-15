@@ -30,7 +30,7 @@ public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
     public EntityIMSkeleton(EntityType<EntityIMSkeleton> type, World world) {
         super(type, world, null);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setBaseMoveSpeedStat(0.21F);
+        setMovementSpeed(0.21F);
     }
 
     @Override

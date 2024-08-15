@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.invasion.IBlockAccessExtended;
-import com.invasion.IPathfindable;
 import com.invasion.TerrainDataLayer;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.ai.builder.Scaffold;
 import com.invasion.entity.pathfinding.IPathSource;
+import com.invasion.entity.pathfinding.IPathfindable;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
@@ -85,7 +85,7 @@ public class AttackerAI {
             return false;
         }
         nextScaffoldCalcTimer = 200;
-        List<Scaffold> newScaffolds = findMinScaffolds(entity, entity.getBlockPos());
+        List<Scaffold> newScaffolds = findMinScaffolds(entity.getNavigatorNew().getActor(), entity.getBlockPos());
         if (!newScaffolds.isEmpty()) {
             addNewScaffolds(newScaffolds);
             return true;

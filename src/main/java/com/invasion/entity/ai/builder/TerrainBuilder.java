@@ -146,8 +146,8 @@ public class TerrainBuilder implements ITerrainBuild {
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         if (mob.getWorld().isAir(mutable.move(Direction.DOWN))) {
-            boolean needsSupport = mob.avoidsBlock(mob.getWorld().getBlockState(mutable.set(pos).move(Direction.DOWN, 2)))
-                                || mob.avoidsBlock(mob.getWorld().getBlockState(mutable.set(pos).move(Direction.DOWN, 3)));
+            boolean needsSupport = mob.getNavigatorNew().getActor().avoidsBlock(mob.getWorld().getBlockState(mutable.set(pos).move(Direction.DOWN, 2)))
+                                || mob.getNavigatorNew().getActor().avoidsBlock(mob.getWorld().getBlockState(mutable.set(pos).move(Direction.DOWN, 3)));
             modList.add(new ModifyBlockEntry(pos.down(),
                     (needsSupport ? Blocks.COBBLESTONE : Blocks.OAK_PLANKS).getDefaultState(),
                     (int) ((needsSupport ? COBBLE_COST : PLANKS_COST) / buildRate))

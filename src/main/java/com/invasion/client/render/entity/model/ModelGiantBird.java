@@ -130,7 +130,7 @@ public class ModelGiantBird<T extends EntityIMBird> extends SinglePartEntityMode
 
     @Override
     public void animateModel(T entity, float limbAngle, float limbDistance, float tickDelta) {
-        float roll = MathHelper.lerpAngleDegrees(tickDelta, entity.getPrevRotationRoll(), entity.getRotationRoll());
+        float roll = entity.getRoll(tickDelta);
         float headYaw = MathHelper.lerpAngleDegrees(tickDelta, entity.prevHeadYaw, entity.getHeadYaw());
         float headPitch = entity.getPitch(tickDelta);
         resetSkeleton();

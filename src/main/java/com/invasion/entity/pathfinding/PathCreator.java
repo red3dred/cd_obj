@@ -1,7 +1,5 @@
 package com.invasion.entity.pathfinding;
 
-import com.invasion.IPathfindable;
-
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 

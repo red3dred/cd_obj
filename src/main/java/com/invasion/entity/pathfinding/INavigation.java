@@ -3,11 +3,15 @@ package com.invasion.entity.pathfinding;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.INotifyTask;
+import com.invasion.entity.IHasAiGoals;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
-public interface INavigation extends INotifyTask {
+public interface INavigation extends INotifyTask, IHasAiGoals {
+
+    Actor<?> getActor();
+
     PathAction getCurrentWorkingAction();
 
     void setSpeed(float paramFloat);

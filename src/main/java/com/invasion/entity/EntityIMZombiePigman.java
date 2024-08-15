@@ -98,11 +98,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    protected void updateTexture() {
-        setTexture(MathHelper.clamp(getTier() - 1, 0, 2));
-    }
-
-    @Override
     public boolean isBigRenderTempHack() {
         return getTier() == 3;
     }
@@ -120,19 +115,19 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
                 setSwinging(false);
             }
         } else {
-            this.swingTimer = 0;
+            swingTimer = 0;
         }
-        handSwingProgress = (float) this.swingTimer / (float) swingSpeed;
+        handSwingProgress = (float) swingTimer / (float) swingSpeed;
 
         if (isCharging()) {
-            this.limbAnimator.updateLimbs(0.5F, 1);
+            limbAnimator.updateLimbs(0.5F, 1);
             if (!getWorld().isClient) {
                 for (BlockPos pos : BlockPos.iterateOutwards(getBlockPos(), 2, 2, 2)) {
                     BlockState block = getWorld().getBlockState(pos);
                     boolean mobgriefing = getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
 
                     if (!block.isAir()) {
-                        if (isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
+                        if (getNavigatorNew().getActor().isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
                             playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.2F, 0.5F);
                             if (mobgriefing) {
                                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
@@ -142,10 +137,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
                 }
             }
         }
-    }
-
-    protected int getSwingSpeed() {
-        return 10;
     }
 
     @Override
@@ -169,8 +160,8 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    protected void setAttributes(int tier, int flavour) {
-        if (tier == 1) {
+    protected void initTieredAttributes() {
+        if (getTier() == 1) {
             setName("Zombie Pigman");
             setMovementSpeed(0.25F);
             setAttackStrength(8);
@@ -179,7 +170,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             setCanDestroyBlocks(true);
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 
-        } else if (tier == 2) {
+        } else if (getTier() == 2) {
             setName("Zombie Pigman");
             setMovementSpeed(0.35F);
             setAttackStrength(12);
@@ -202,7 +193,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             if (getRandom().nextInt(5) == 1) {
                 equipStack(EquipmentSlot.FEET, Items.GOLDEN_BOOTS.getDefaultStack());
             }
-        } else if (tier == 3) {
+        } else if (getTier() == 3) {
             setName("Zombie Pigman Brute");
             setMovementSpeed(0.20F);
             setAttackStrength(18);
@@ -210,5 +201,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             setCanDestroyBlocks(true);
             setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         }
+
+        setTexture(MathHelper.clamp(getTier() - 1, 0, 2));
     }
 }

@@ -2,7 +2,7 @@ package com.invasion.entity.ai.builder;
 
 import java.util.List;
 
-import com.invasion.IPathfindable;
+import com.invasion.entity.pathfinding.IPathfindable;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.entity.pathfinding.PathfinderIM;

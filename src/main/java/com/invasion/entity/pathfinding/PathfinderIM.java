@@ -2,8 +2,6 @@ package com.invasion.entity.pathfinding;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.IPathfindable;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
@@ -23,7 +21,7 @@ public class PathfinderIM {
     private int nodesOpened;
 
     @Nullable
-    public synchronized Path createPath(IPathfindable entity, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView iblockaccess, int searchDepth, int quickFailDepth) {
+    public synchronized Path createPath(IPathfindable pather, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView iblockaccess, int searchDepth, int quickFailDepth) {
         worldMap = iblockaccess;
         nodeLimit = searchDepth;
         nodesOpened = 1;
@@ -34,11 +32,11 @@ public class PathfinderIM {
         PathNode target = openPoint(to);
         finalTarget = target;
         this.targetRadius = targetRadius;
-        return addToPath(entity, start, target);
+        return addToPath(pather, start, target);
     }
 
     @Nullable
-    private Path addToPath(IPathfindable entity, PathNode start, PathNode target) {
+    private Path addToPath(IPathfindable pather, PathNode start, PathNode target) {
         start.totalPathDistance = 0;
         start.distanceToNext = start.distanceTo(target);
         start.distanceToTarget = start.distanceToNext;
@@ -61,13 +59,13 @@ public class PathfinderIM {
             }
             examiningPoint.isFirst = true;
 
-            int i = findPathOptions(entity, examiningPoint, target);
+            int i = findPathOptions(pather, examiningPoint, target);
 
             int j = 0;
             while (j < i) {
                 PathNode newPoint = pathOptions[j];
 
-                float actualCost = examiningPoint.totalPathDistance + entity.getBlockPathCost(examiningPoint, newPoint, this.worldMap);
+                float actualCost = examiningPoint.totalPathDistance + pather.getBlockPathCost(examiningPoint, newPoint, this.worldMap);
 
                 if (!newPoint.isAssigned() || actualCost < newPoint.totalPathDistance) {
                     newPoint.setPrevious(examiningPoint);

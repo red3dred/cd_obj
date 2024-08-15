@@ -79,8 +79,8 @@ public class EntityIMTrap extends Entity {
 
             for (Entity entity : getWorld().getOtherEntities(this, getBoundingBox().expand(2, 1, 2))) {
                 entity.damage(getDamageSources().magic(), 8);
-                if (entity instanceof EntityIMLiving l) {
-                    l.stunEntity(60);
+                if (entity instanceof Stunnable l) {
+                    l.stun(60);
                 }
             }
             playSound(SoundEvents.ENTITY_ITEM_BREAK, 1.5F, getRandom().nextFloat() * 0.25F + 0.55F);

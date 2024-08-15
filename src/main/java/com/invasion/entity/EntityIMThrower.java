@@ -2,6 +2,8 @@ package com.invasion.entity;
 
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.INotifyTask;
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
@@ -24,12 +26,9 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -37,10 +36,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class EntityIMThrower extends EntityIMMob {
-    private static final TrackedData<Integer> TIER = DataTracker.registerData(EntityIMThrower.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> TEXTURE = DataTracker.registerData(EntityIMThrower.class, TrackedDataHandlerRegistry.INTEGER);
-
+public class EntityIMThrower extends TieredIMMobEntity {
     private int throwTime;
     private int punchTimer;
 
@@ -51,6 +47,9 @@ public class EntityIMThrower extends EntityIMMob {
     private INotifyTask clearPointNotifee;
 
     private float launchSpeed = 1.0F;
+
+    @Nullable
+    protected Entity j;
 
     public EntityIMThrower(EntityType<EntityIMThrower> type, World world) {
         this(type, world, null);
@@ -66,13 +65,6 @@ public class EntityIMThrower extends EntityIMMob {
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         setCanDestroyBlocks(true);
         // setSize(1.8F, 1.95F);
-    }
-
-    @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(TIER, 1);
-        builder.add(TEXTURE, 0);
     }
 
     @Override
@@ -117,6 +109,20 @@ public class EntityIMThrower extends EntityIMMob {
     }
 
     @Override
+    public boolean damage(DamageSource source, float damage) {
+        if (super.damage(source, damage)) {
+            @Nullable
+            Entity attacker = source.getAttacker();
+            if (attacker != null && attacker != this && isConnectedThroughVehicle(attacker)) {
+                j = attacker;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public void takeKnockback(double strength, double x, double z) {
         if (getTier() != 2) {
             super.takeKnockback(strength, x, z);
@@ -139,25 +145,12 @@ public class EntityIMThrower extends EntityIMMob {
         return false;
     }
 
-    public void setTexture(int textureId) {
-        dataTracker.set(TEXTURE, textureId);
-    }
-
-    public int getTextureId() {
-        return dataTracker.get(TEXTURE);
-    }
-
     @Override
-    public int getTier() {
-        return dataTracker.get(TIER);
-    }
-
-    public void setTier(int tier) {
-        dataTracker.set(TIER, tier);
+    public void initTieredAttributes() {
         selfDamage = 0;
         maxSelfDamage = 0;
         clearingPoint = false;
-        if (tier == 1) {
+        if (getTier() == 1) {
             setMovementSpeed(0.13F);
             setAttackStrength(10);
             experiencePoints = 20;
@@ -165,7 +158,7 @@ public class EntityIMThrower extends EntityIMMob {
             setName("Thrower");
             setCanDestroyBlocks(true);
             // setSize(1.8F, 1.95F);
-        } else if (tier == 2) {
+        } else if (getTier() == 2) {
             setMovementSpeed(0.23F);
             setAttackStrength(15);
             experiencePoints = 25;
@@ -175,24 +168,11 @@ public class EntityIMThrower extends EntityIMMob {
             // setSize(2F, 2F);
         }
 
-        if (tier == 1) {
+        if (getTier() == 1) {
             setTexture(1);
-        } else if (tier == 2) {
+        } else if (getTier() == 2) {
             setTexture(2);
         }
-    }
-
-    @Override
-    public void writeCustomDataToNbt(NbtCompound compound) {
-        super.writeCustomDataToNbt(compound);
-        compound.putInt("tier", getTier());
-    }
-
-    @Override
-    public void readCustomDataFromNbt(NbtCompound compound) {
-        super.readCustomDataFromNbt(compound);
-        setTexture(compound.getInt("tier"));
-        setTier(compound.getInt("tier"));
     }
 
     @Override
@@ -275,9 +255,9 @@ public class EntityIMThrower extends EntityIMMob {
                 }
             } else {
                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
-                if (throttled == 0) {
+                if (blockBreakSoundCooldown == 0) {
                     playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1, 0.4F);
-                    throttled = 5;
+                    blockBreakSoundCooldown = 5;
                 }
             }
         }

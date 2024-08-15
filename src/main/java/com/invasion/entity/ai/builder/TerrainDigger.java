@@ -24,7 +24,7 @@ public class TerrainDigger implements ITerrainDig, INotifyTask {
     }
 
     public float getDigRate() {
-        return this.digRate;
+        return digRate;
     }
 
     @SuppressWarnings("deprecation")

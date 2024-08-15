@@ -5,7 +5,6 @@ import java.util.Arrays;
 import org.joml.Vector3f;
 
 import com.invasion.INotifyTask;
-import com.invasion.block.BlockMetadata;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.INavigation;
@@ -13,16 +12,10 @@ import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorBurrower;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.util.math.CoordsInt;
 import com.invasion.util.math.PosRotate3D;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 
@@ -45,9 +38,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
         super(type, world, nexus);
         // this.setSize(0.5F, 0.5F);
         setJumpHeight(0);
-        setCanClimb(true);
-        setCanDestroyBlocks(true);
-        blockRemoveSpeed = 0.5F;
 
         Arrays.fill(segments3D, PosRotate3D.ZERO);
         Arrays.fill(segments3DLastTick, PosRotate3D.ZERO);
@@ -61,27 +51,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     @Override
     protected INavigation createIMNavigation(IPathSource pathSource) {
         return new NavigatorBurrower(this, pathSource, 16, -4);
-    }
-
-    @Override
-    public BlockPos toBlockPos() {
-        return getBlockPos();
-    }
-
-    @Override
-    public BlockView getTerrain() {
-        return getWorld();
-    }
-
-    @Override
-    public float getBlockRemovalCost(BlockPos pos) {
-        return getBlockStrength(pos) * 20;
-    }
-
-    @Override
-    public boolean canClearBlock(BlockPos pos) {
-        BlockState block = getWorld().getBlockState(pos);
-        return block.isAir() || isBlockDestructible(getWorld(), pos, block);
     }
 
     @Override
@@ -126,37 +95,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     public void mobTick() {
         super.mobTick();
         terrainModifier.onUpdate();
-    }
-
-    @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView worldMap) {
-        BlockState block = worldMap.getBlockState(node.pos);
-
-        float penalty = 0.0F;
-        int enclosedLevelSide = 0;
-
-        BlockPos.Mutable mutable = node.pos.mutableCopy();
-        if (!getWorld().getBlockState(mutable.move(Direction.DOWN)).isFullCube(getWorld(), mutable)) {
-            penalty += 0.3F;
-        }
-        if (!getWorld().getBlockState(mutable.set(node.pos).move(Direction.UP)).isFullCube(getWorld(), mutable)) {
-            penalty += 2;
-        }
-
-        for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-            if (!getWorld().getBlockState(mutable.set(node.pos).move(offset)).isFullCube(getWorld(), mutable)) {
-                enclosedLevelSide++;
-            }
-        }
-
-        if (enclosedLevelSide > 2) {
-            enclosedLevelSide = 2;
-        }
-        penalty += enclosedLevelSide * 0.5F;
-
-        float factor = !block.isAir() && (block.isSolidBlock(worldMap, node.pos) || BlockMetadata.getCost(block).isPresent()) ? 1.3F : 1;
-
-        return prevNode.distanceTo(node) * factor * penalty;
     }
 
     @Override

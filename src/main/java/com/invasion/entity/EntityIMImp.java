@@ -28,7 +28,7 @@ public class EntityIMImp extends EntityIMMob {
         setAttackStrength(3);
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         setJumpHeight(1);
-        setCanClimb(true);
+        getNavigatorNew().getActor().setCanClimb(true);
     }
 
     public EntityIMImp(EntityType<EntityIMImp> type, World world) {
@@ -63,5 +63,4 @@ public class EntityIMImp extends EntityIMMob {
         }
         return false;
     }
-
 }

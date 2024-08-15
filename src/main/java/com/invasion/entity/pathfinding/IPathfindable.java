@@ -1,7 +1,4 @@
-package com.invasion;
-
-import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.entity.pathfinding.PathfinderIM;
+package com.invasion.entity.pathfinding;
 
 import net.minecraft.world.BlockView;
 

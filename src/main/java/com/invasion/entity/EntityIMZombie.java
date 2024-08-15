@@ -97,7 +97,80 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     }
 
     @Override
-    protected void updateTexture() {
+    protected void initTieredAttributes() {
+        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+        if (getTier() == 1) {
+            if (getFlavour() == 0) {
+                setName("Zombie");
+                setMovementSpeed(0.19F);
+                setAttackStrength(4);
+                selfDamage = 3;
+                maxSelfDamage = 6;
+                flammability = 3;
+                setCanDestroyBlocks(true);
+            } else if (getFlavour() == 1) {
+                setName("Zombie");
+                setMovementSpeed(0.19F);
+                setAttackStrength(6);
+                selfDamage = 3;
+                maxSelfDamage = 6;
+                flammability = 3;
+                setStackInHand(Hand.MAIN_HAND, Items.WOODEN_SWORD.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
+                setCanDestroyBlocks(false);
+            }
+        } else if (getTier() == 2) {
+            if (getFlavour() == 0) {
+                setName("Zombie");
+                setMovementSpeed(0.19F);
+                setAttackStrength(7);
+                selfDamage = 4;
+                maxSelfDamage = 12;
+                flammability = 4;
+                equipStack(EquipmentSlot.CHEST, Items.IRON_CHESTPLATE.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
+                setCanDestroyBlocks(true);
+            } else if (getFlavour() == 1) {
+                setName("Zombie");
+                setMovementSpeed(0.19F);
+                setAttackStrength(10);
+                selfDamage = 3;
+                maxSelfDamage = 9;
+                setStackInHand(Hand.MAIN_HAND, Items.IRON_SWORD.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.25F);
+                setCanDestroyBlocks(false);
+            } else if (getFlavour() == 2) {
+                setName("Tar Zombie");
+                setMovementSpeed(0.19F);
+                setAttackStrength(5);
+                selfDamage = 3;
+                maxSelfDamage = 9;
+                flammability = 30;
+                floatsInWater = false;
+                setCanDestroyBlocks(true);
+            } else if (getFlavour() == 3) {
+                setName("Zombie Pigman");
+                setMovementSpeed(0.25F);
+                setAttackStrength(8);
+                setFireImmune(true);
+                setStackInHand(Hand.MAIN_HAND, Items.GOLDEN_SWORD.getDefaultStack());
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
+                setCanDestroyBlocks(true);
+            }
+        } else if (getTier() == 3) {
+            if (getFlavour() == 0) {
+                setName("Zombie Brute");
+                setMovementSpeed(0.17F);
+                setAttackStrength(18);
+                selfDamage = 4;
+                maxSelfDamage = 20;
+                flammability = 4;
+                equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
+                setCanDestroyBlocks(true);
+            }
+        }
+
         if (getTier() == 1) {
             int r = random.nextInt(2);
             if (r == 0)
@@ -124,11 +197,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     @Override
     public boolean isBigRenderTempHack() {
         return getFlavour() == 3;
-    }
-
-    @Override
-    public int getTier() {
-        return super.getTier() < 3 ? 2 : 3;
     }
 
     @Override
@@ -164,10 +232,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         }
     }
 
-    protected int getSwingSpeed() {
-        return 10;
-    }
-
     @Override
     public SoundEvent getAmbientSound() {
         if (super.getTier() == 3) {
@@ -199,81 +263,5 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             entities.get(el).setFireTicks(8);
         }
         damage(getDamageSources().explosion(this, this), 500);
-    }
-
-    @Override
-    protected void setAttributes(int tier, int flavour) {
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        if (tier == 1) {
-            if (flavour == 0) {
-                setName("Zombie");
-                setMovementSpeed(0.19F);
-                setAttackStrength(4);
-                selfDamage = 3;
-                maxSelfDamage = 6;
-                flammability = 3;
-                setCanDestroyBlocks(true);
-            } else if (flavour == 1) {
-                setName("Zombie");
-                setMovementSpeed(0.19F);
-                setAttackStrength(6);
-                selfDamage = 3;
-                maxSelfDamage = 6;
-                flammability = 3;
-                setStackInHand(Hand.MAIN_HAND, Items.WOODEN_SWORD.getDefaultStack());
-                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
-                setCanDestroyBlocks(false);
-            }
-        } else if (tier == 2) {
-            if (flavour == 0) {
-                setName("Zombie");
-                setMovementSpeed(0.19F);
-                setAttackStrength(7);
-                selfDamage = 4;
-                maxSelfDamage = 12;
-                flammability = 4;
-                equipStack(EquipmentSlot.CHEST, Items.IRON_CHESTPLATE.getDefaultStack());
-                setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
-                setCanDestroyBlocks(true);
-            } else if (flavour == 1) {
-                setName("Zombie");
-                setMovementSpeed(0.19F);
-                setAttackStrength(10);
-                selfDamage = 3;
-                maxSelfDamage = 9;
-                setStackInHand(Hand.MAIN_HAND, Items.IRON_SWORD.getDefaultStack());
-                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.25F);
-                setCanDestroyBlocks(false);
-            } else if (flavour == 2) {
-                setName("Tar Zombie");
-                setMovementSpeed(0.19F);
-                setAttackStrength(5);
-                selfDamage = 3;
-                maxSelfDamage = 9;
-                flammability = 30;
-                floatsInWater = false;
-                setCanDestroyBlocks(true);
-            } else if (flavour == 3) {
-                setName("Zombie Pigman");
-                setMovementSpeed(0.25F);
-                setAttackStrength(8);
-                setFireImmune(true);
-                setStackInHand(Hand.MAIN_HAND, Items.GOLDEN_SWORD.getDefaultStack());
-                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
-                setCanDestroyBlocks(true);
-            }
-        } else if (tier == 3) {
-            if (flavour == 0) {
-                setName("Zombie Brute");
-                setMovementSpeed(0.17F);
-                setAttackStrength(18);
-                selfDamage = 4;
-                maxSelfDamage = 20;
-                flammability = 4;
-                equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
-                setCanDestroyBlocks(true);
-            }
-        }
     }
 }

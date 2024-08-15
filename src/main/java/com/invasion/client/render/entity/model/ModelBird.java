@@ -89,7 +89,6 @@ public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
     public void setAngles(EntityIMBird entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
         body.pitch = 1.570796F - headPitch * MathHelper.RADIANS_PER_DEGREE;
         body.yaw = 0;
-        body.roll = -entity.getRotationRoll() * MathHelper.RADIANS_PER_DEGREE;
     }
 
     @Override
@@ -102,6 +101,7 @@ public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
             i.pitch = 0.08726647F * legSweepProgress;
         }
 
+        body.roll = -entity.getRoll(tickDelta) * MathHelper.RADIANS_PER_DEGREE;
         body.pivotY = (7 + MathHelper.cos(flapProgress * MathHelper.TAU) * 1.4F);
         rightThigh.pitch += MathHelper.cos(flapProgress * MathHelper.TAU) * 0.08726646324990228D;
         leftThigh.pitch += MathHelper.cos(flapProgress * MathHelper.TAU) * 0.08726646324990228D;

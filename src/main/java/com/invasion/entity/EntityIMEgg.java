@@ -8,7 +8,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
 public class EntityIMEgg extends EntityIMLiving {
@@ -38,11 +37,6 @@ public class EntityIMEgg extends EntityIMLiving {
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(HATCHED, false);
-    }
-
-    @Override
-    public boolean isThreatTo(Entity entity) {
-        return entity instanceof PlayerEntity;
     }
 
     public boolean isHatched() {

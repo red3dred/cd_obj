@@ -2,6 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.InvasionMod;
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.Stunnable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
@@ -129,7 +130,9 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
     }
 
     protected void crash() {
-        theEntity.stunEntity(40);
+        if (theEntity instanceof Stunnable i) {
+            i.stun(40);
+        }
         theEntity.damage(theEntity.getDamageSources().generic(), 5);
         theEntity.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1F, 0.6F);
         endSprint();

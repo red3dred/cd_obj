@@ -12,6 +12,10 @@ import com.invasion.entity.ai.goal.EntityAISimpleTarget;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
+import com.invasion.entity.pathfinding.Actor;
+import com.invasion.entity.pathfinding.INavigation;
+import com.invasion.entity.pathfinding.IPathSource;
+import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.INexusAccess;
@@ -51,9 +55,8 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.World.ExplosionSourceType;
 
-public class EntityIMCreeper extends EntityIMMob implements ILeader, SkinOverlayOwner {
+public class EntityIMCreeper extends TieredIMMobEntity implements ILeader, SkinOverlayOwner {
     private static final TrackedData<Integer> FUSE_SPEED = DataTracker.registerData(EntityIMCreeper.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> TIER = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.INTEGER);
 
     private int currentFuseTime;
     private int lastFuseTime;
@@ -80,7 +83,6 @@ public class EntityIMCreeper extends EntityIMMob implements ILeader, SkinOverlay
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(FUSE_SPEED, 0);
-        builder.add(TIER, 1);
     }
 
     @Override
@@ -97,13 +99,34 @@ public class EntityIMCreeper extends EntityIMMob implements ILeader, SkinOverlay
         goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 4.8F));
         goalSelector.add(9, new LookAroundGoal(this));
         targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, 12.0F));
-        if (this.hasNexus()) {
+        if (hasNexus()) {
             targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, 20.0F, true));
         } else {
             targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getSenseRange(), false));
             targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getAggroRange(), true));
         }
         targetSelector.add(3, new RevengeGoal(this));
+    }
+
+    @Override
+    protected INavigation createIMNavigation(IPathSource pathSource) {
+        return new NavigatorIM(this, pathSource) {
+            @Override
+            protected <T extends Entity> Actor<T> createActor(T entity) {
+                return new Actor<>(entity) {
+                    @SuppressWarnings("deprecation")
+                    @Override
+                    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+                        BlockState state = terrainMap.getBlockState(node.pos);
+                        if (!state.isAir() && !state.blocksMovement() && !state.isOf(InvBlocks.NEXUS_CORE)) {
+                            return prevNode.distanceTo(node) * 12.0F;
+                        }
+
+                        return super.getBlockPathCost(prevNode, node, terrainMap);
+                    }
+                };
+            }
+        };
     }
 
     @Override
@@ -186,15 +209,6 @@ public class EntityIMCreeper extends EntityIMMob implements ILeader, SkinOverlay
     }
 
     @Override
-    public int getTier() {
-        return dataTracker.get(TIER);
-    }
-
-    public void setTier(int tier) {
-        dataTracker.set(TIER, tier);
-    }
-
-    @Override
     public boolean shouldRenderOverlay() {
         return getTier() > 1;
     }
@@ -206,17 +220,6 @@ public class EntityIMCreeper extends EntityIMMob implements ILeader, SkinOverlay
 
     public float getClientFuseTime(float tickDelta) {
         return MathHelper.lerp(tickDelta, (float)lastFuseTime, (float)currentFuseTime) / (fuseTime - 2);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        BlockState state = terrainMap.getBlockState(node.pos);
-        if (!state.isAir() && !state.blocksMovement() && !state.isOf(InvBlocks.NEXUS_CORE)) {
-            return prevNode.distanceTo(node) * 12.0F;
-        }
-
-        return super.getBlockPathCost(prevNode, node, terrainMap);
     }
 
     protected void explode() {
@@ -240,17 +243,19 @@ public class EntityIMCreeper extends EntityIMMob implements ILeader, SkinOverlay
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        nbt.putInt("tier", getTier());
         nbt.putShort("Fuse", (short)fuseTime);
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        setTier(nbt.getInt("tier"));
         if (nbt.contains("Fuse", NbtElement.NUMBER_TYPE)) {
             fuseTime = nbt.getShort("Fuse");
         }
     }
 
+    @Override
+    protected void initTieredAttributes() {
+
+    }
 }

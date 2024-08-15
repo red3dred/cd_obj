@@ -3,10 +3,14 @@ package com.invasion.entity.pathfinding;
 
 import org.joml.Vector3f;
 
+import com.invasion.IBlockAccessExtended;
+import com.invasion.block.BlockMetadata;
+import com.invasion.block.DestructableType;
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.Goal;
 import com.invasion.entity.ai.MoveState;
+import com.invasion.util.math.CoordsInt;
 import com.invasion.util.math.MathUtil;
 
 import it.unimi.dsi.fastutil.floats.FloatFloatPair;
@@ -15,10 +19,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult.Type;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.RaycastContext;
 
 public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
@@ -54,6 +60,94 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 		targetYaw = entityFlying.getYaw();
 		targetSpeed = entityFlying.getMaxPoweredFlightSpeed();
 	}
+
+    @Override
+    protected <T extends Entity> Actor<T> createActor(T entity) {
+        return new Actor<>(entity) {
+
+            @Override
+            public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+                if (!theEntity.getPathFindFlying()) {
+                    super.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
+                    return;
+                }
+
+                if (terrainMap.isOutOfHeightLimit(currentNode.pos)) {
+                    return;
+                }
+
+                BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
+
+                if (getCollide(terrainMap, mutable.move(Direction.UP)) > DestructableType.UNBREAKABLE) {
+                    pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
+                }
+
+                if (getCollide(terrainMap, mutable.move(Direction.DOWN, 2)) > DestructableType.UNBREAKABLE) {
+                    pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
+                }
+
+                for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+                    if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
+                        pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
+                    }
+                }
+
+                if (canSwimHorizontal()) {
+                    for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+                        if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
+                            pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+                float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
+
+                BlockPos.Mutable mutable = node.pos.mutableCopy();
+
+                for (int i = -1; i > -6; i--) {
+                    BlockState state = terrainMap.getBlockState(mutable.set(node.pos).move(Direction.UP, i));
+                    if (!state.isAir()) {
+                        int blockType = BlockMetadata.getBlockType(state);
+                        if (blockType != 1) {
+                            multiplier += 1 + i * 0.2F;
+                            if (blockType != 2 || i < -2) {
+                                break;
+                            }
+                            multiplier += 6 + i * 2;
+                            break;
+                        }
+                    }
+                }
+
+                for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+                    for (int j = 1; j <= 2; j++) {
+                        int blockType = BlockMetadata.getBlockType(terrainMap.getBlockState(mutable.set(node.pos).move(offset, j)));
+                        if (blockType != 1) {
+                            multiplier += 1.5F - j * 0.5F;
+                            if (blockType != 2) {
+                                break;
+                            }
+                            multiplier += 6 - j * 2;
+                            break;
+                        }
+
+                    }
+
+                }
+
+                if (node.action == PathAction.SWIM) {
+                    multiplier *= (node.pos.getY() <= prevNode.pos.getY() && !terrainMap.getBlockState(node.pos.up()).isAir() ? 3 : 1);
+                    return prevNode.distanceTo(node) * 1.3F * multiplier;
+                }
+
+                BlockState state = terrainMap.getBlockState(node.pos);
+                return prevNode.distanceTo(node) * BlockMetadata.getCost(state).orElse(state.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
+            }
+        };
+    }
 
 	@Override
     public void setMovementType(INavigationFlying.MoveType moveType) {
@@ -476,7 +570,7 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 			BlockHitResult hit = theEntity.getWorld().raycast(new RaycastContext(origin, new Vec3d(x, y, z), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, theEntity));
 			if (hit != null && hit.getType() == Type.BLOCK) {
 				BlockState Block = theEntity.getWorld().getBlockState(hit.getBlockPos());
-				if (!theEntity.avoidsBlock(Block)) {
+				if (!actor.avoidsBlock(Block)) {
 					safety += 0.7F;
 				}
 				if (hit.getSide() == Direction.UP) {

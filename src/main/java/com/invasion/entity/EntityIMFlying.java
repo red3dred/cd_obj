@@ -2,9 +2,6 @@ package com.invasion.entity;
 
 import org.joml.Vector3f;
 
-import com.invasion.IBlockAccessExtended;
-import com.invasion.block.BlockMetadata;
-import com.invasion.block.DestructableType;
 import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.IMLookHelper;
 import com.invasion.entity.ai.IMMoveHelperFlying;
@@ -12,13 +9,8 @@ import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.INavigationFlying;
 import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorFlying;
-import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.entity.pathfinding.PathfinderIM;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.util.math.CoordsInt;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
@@ -27,9 +19,8 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public abstract class EntityIMFlying extends EntityIMLiving {
@@ -44,6 +35,9 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	private float thrustComponentRatioMin = 0;
 	private float thrustComponentRatioMax = 0.1F;
 	private float maxTurnForce = (float)(getGravity() * 3);
+
+    private float rotationRoll;
+    private float prevRotationRoll;
 
 	private float optimalPitch = 52;
 	private float maxRunSpeed = 0.45F;
@@ -117,6 +111,14 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 		return FlyState.of(dataTracker.get(FLY_STATE));
 	}
 
+    public float getRoll(float tickDelta) {
+        return MathHelper.lerpAngleDegrees(tickDelta, prevRotationRoll, rotationRoll);
+    }
+
+    public void setRoll(float roll) {
+        rotationRoll = roll;
+    }
+
 	public boolean isThrustOn() {
 		return dataTracker.get(THRUSTING);
 	}
@@ -145,6 +147,10 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
     public void setPathfindFlying(boolean flag) {
         this.flyPathfind = flag;
+    }
+
+    public boolean getPathFindFlying() {
+        return flyPathfind;
     }
 
     public void setFlyState(FlyState flyState) {
@@ -284,88 +290,4 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
 	}
 
-	@Override
-	public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-		if (!flyPathfind) {
-			super.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
-		} else {
-			calcPathOptionsFlying(terrainMap, currentNode, pathFinder);
-		}
-	}
-
-	protected void calcPathOptionsFlying(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-		if (terrainMap.isOutOfHeightLimit(currentNode.pos)) {
-			return;
-		}
-
-		BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
-
-		if (getCollide(terrainMap, mutable.move(Direction.UP)) > DestructableType.UNBREAKABLE) {
-			pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
-		}
-
-		if (getCollide(terrainMap, mutable.move(Direction.DOWN, 2)) > DestructableType.UNBREAKABLE) {
-			pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
-		}
-
-		for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
-                pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
-            }
-        }
-
-        if (canSwimHorizontal()) {
-            for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
-                    pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
-                }
-            }
-        }
-	}
-
-	@Override
-	public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
-		float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
-
-		BlockPos.Mutable mutable = node.pos.mutableCopy();
-
-		for (int i = -1; i > -6; i--) {
-			BlockState state = terrainMap.getBlockState(mutable.set(node.pos).move(Direction.UP, i));
-			if (!state.isAir()) {
-				int blockType = BlockMetadata.getBlockType(state);
-				if (blockType != 1) {
-					multiplier += 1 + i * 0.2F;
-					if (blockType != 2 || i < -2) {
-						break;
-					}
-					multiplier += 6 + i * 2;
-					break;
-				}
-			}
-		}
-
-		for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-			for (int j = 1; j <= 2; j++) {
-				int blockType = BlockMetadata.getBlockType(terrainMap.getBlockState(mutable.set(node.pos).move(offset, j)));
-				if (blockType != 1) {
-					multiplier += 1.5F - j * 0.5F;
-					if (blockType != 2) {
-						break;
-					}
-					multiplier += 6 - j * 2;
-					break;
-				}
-
-			}
-
-		}
-
-		if (node.action == PathAction.SWIM) {
-			multiplier *= (node.pos.getY() <= prevNode.pos.getY() && !terrainMap.getBlockState(node.pos.up()).isAir() ? 3 : 1);
-			return prevNode.distanceTo(node) * 1.3F * multiplier;
-		}
-
-		BlockState state = terrainMap.getBlockState(node.pos);
-		return prevNode.distanceTo(node) * BlockMetadata.getCost(state).orElse(state.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
-	}
 }

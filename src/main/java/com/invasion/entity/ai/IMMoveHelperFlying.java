@@ -87,7 +87,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 	@Override
     protected MoveState doGroundMovement() {
 		entity.setGroundFriction(0);
-		entity.setRotationRoll(correctRotation(entity.getRotationRoll(), 0, 6));
+		entity.setRoll(correctRotation(entity.getRoll(1), 0, 6));
 		targetSpeed = entity.getMovementSpeed();
 		entity.setPitch(correctRotation(entity.getPitch(), 50, 4));
 		return super.doGroundMovement();
@@ -186,7 +186,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 				newYaw = correctRotation(entity.getYaw(), (float) newYaw, entity.getTurnRate());
 				entity.updatePositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), (float) newYaw, (float) newPitch);
 				double newRoll = 60 * bankForce / turnForce;
-				entity.setRotationRoll(correctRotation(entity.getRotationRoll(), (float) newRoll, 6));
+				entity.setRoll(correctRotation(entity.getRoll(1), (float) newRoll, 6));
 				double horizontalForce = velocity.y > 0 ? -climbAccel : forwardForce;
 				int xDirection = velocity.x > 0 ? 1 : -1;
 				int zDirection = velocity.z > 0 ? 1 : -1;
@@ -266,7 +266,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 				return FlyState.GROUNDED;
 			}
 
-			entity.setRotationRoll(correctRotation(entity.getRotationRoll(), 40, 6));
+			entity.setRoll(correctRotation(entity.getRoll(1), 40, 6));
 			return FlyState.TOUCHDOWN;
 		}
 

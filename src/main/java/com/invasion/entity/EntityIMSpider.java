@@ -23,9 +23,6 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -34,11 +31,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
-    private static final TrackedData<Integer> TIER = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> FLAVOUR = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> TEXTURE = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.INTEGER);
-
+public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffspring {
 	private int airborneTime;
 
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
@@ -49,17 +42,8 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world, INexusAccess nexus) {
 		super(type, world, nexus);
 		moveControl = new IMMoveHelperSpider(this);
-		setCanClimb(true);
-		setAttributes(getTier(), getFlavour());
+		getNavigatorNew().getActor().setCanClimb(true);
 	}
-
-    @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(TIER, 1);
-        builder.add(FLAVOUR, 0);
-        builder.add(TEXTURE, 0);
-    }
 
 	@Override
     protected void initGoals() {
@@ -111,38 +95,57 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 	    return super.getJumpVelocity(strength + 0.41F);
 	}
 
-	public void setTier(int tier) {
-	    tier = Math.max(1, tier);
-		dataTracker.set(TIER, tier);
-		initGoals();
-		setAttributes(tier, getFlavour());
+	@Override
+	protected void initTieredAttributes() {
+	    setGravity(0.08F);
+        //setSize(1.4F, 0.9F);
+        if (getTier() == 1) {
+            if (getFlavour() == 0) {
+                setName("Spider");
+                setMovementSpeed(0.29F);
+                setAttackStrength(3);
+                setCanDestroyBlocks(false);
+                setAggroRange(10);
+                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+            } else if (getFlavour() == 1) {
+                setName("Baby-Spider");
+                //setSize(0.42F, 0.3F);
+                setMovementSpeed(0.34F);
+                setAttackStrength(1);
+                setCanDestroyBlocks(false);
+                setAggroRange(10);
+                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+            }
+        } else if (getTier() == 2) {
+            if (getFlavour() == 0) {
+                setName("Jumping-Spider");
+                setMovementSpeed(0.3F);
+                setAttackStrength(5);
+                setCanDestroyBlocks(false);
+                setAggroRange(18);
+                setGravity(0.043F);
 
-		if (tier == 1) {
+                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+            } else if (getFlavour() == 1) {
+                setName("Mother-Spider");
+                //setSize(2.8F, 1.8F);
+                setMovementSpeed(0.22F);
+                setAttackStrength(4);
+                setCanDestroyBlocks(false);
+                setAggroRange(18);
+                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+            }
+        }
+
+		if (getTier() == 1) {
 			setTexture(0);
-		} else if (tier == 2) {
+		} else if (getTier() == 2) {
 			if (getFlavour() == 0) {
 				setTexture(1);
 			} else {
 				setTexture(2);
 			}
 		}
-	}
-
-    public int getTextureId() {
-        return dataTracker.get(TEXTURE);
-    }
-
-	public void setTexture(int textureId) {
-		dataTracker.set(TEXTURE, textureId);
-	}
-
-	public int getFlavour() {
-        return dataTracker.get(FLAVOUR);
-    }
-
-	public void setFlavour(int flavour) {
-		dataTracker.set(FLAVOUR, flavour);
-		setAttributes(getTier(), flavour);
 	}
 
 	@Deprecated
@@ -211,11 +214,6 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
 		return horizontalCollision;
 	}
 
-	@Override
-	public int getTier() {
-		return dataTracker.get(TIER);
-	}
-
 	public void setAirborneTime(int time) {
 		this.airborneTime = time;
 	}
@@ -239,47 +237,5 @@ public class EntityIMSpider extends EntityIMMob implements ISpawnsOffspring {
     public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
 	    // TODO: Add this to EntityTypeTags.FALL_DAMAGE_IMMUNE
 	    return false;
-	}
-
-	private void setAttributes(int tier, int flavour) {
-		setGravity(0.08F);
-		//setSize(1.4F, 0.9F);
-		if (tier == 1) {
-			if (flavour == 0) {
-				setName("Spider");
-				setMovementSpeed(0.29F);
-				setAttackStrength(3);
-				setCanDestroyBlocks(false);
-				setAggroRange(10);
-				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-			} else if (flavour == 1) {
-				setName("Baby-Spider");
-				//setSize(0.42F, 0.3F);
-				setMovementSpeed(0.34F);
-				setAttackStrength(1);
-				setCanDestroyBlocks(false);
-				setAggroRange(10);
-				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-			}
-		} else if (tier == 2) {
-			if (flavour == 0) {
-				setName("Jumping-Spider");
-				setMovementSpeed(0.3F);
-				setAttackStrength(5);
-				setCanDestroyBlocks(false);
-				setAggroRange(18);
-				setGravity(0.043F);
-
-				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-			} else if (flavour == 1) {
-				setName("Mother-Spider");
-				//setSize(2.8F, 1.8F);
-				setMovementSpeed(0.22F);
-				setAttackStrength(4);
-				setCanDestroyBlocks(false);
-				setAggroRange(18);
-				setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-			}
-		}
 	}
 }

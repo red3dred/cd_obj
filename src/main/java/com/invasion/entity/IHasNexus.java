@@ -15,9 +15,13 @@ public interface IHasNexus {
 
     void setNexus(@Nullable INexusAccess nexus);
 
-    boolean isAlwaysIndependant();
+    default boolean isAlwaysIndependant() {
+        return false;
+    }
 
-    void setEntityIndependent();
+    default void setEntityIndependent() {
+
+    }
 
     default boolean hasNexus() {
         return getNexus() != null;

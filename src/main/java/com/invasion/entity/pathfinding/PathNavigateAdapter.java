@@ -16,6 +16,10 @@ public class PathNavigateAdapter extends EntityNavigation {
         this.navigator = navigator;
     }
 
+    public INavigation getNewNavigator() {
+        return navigator;
+    }
+
     @Override
     public void tick() {
         navigator.onUpdateNavigation();

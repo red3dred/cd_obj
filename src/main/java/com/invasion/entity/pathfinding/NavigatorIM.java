@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.INotifyTask;
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.ai.Goal;
 import com.invasion.nexus.INexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -53,10 +54,42 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	private boolean haltMovement;
 	private boolean autoPathToEntity;
 
+    protected Goal currentGoal = Goal.NONE;
+    protected Goal prevGoal = Goal.NONE;
+
+	protected final Actor<?> actor;
+
 	public NavigatorIM(EntityIMLiving entity, IPathSource pathSource) {
 		this.theEntity = entity;
 		this.pathSource = pathSource;
+		actor = createActor(entity);
 	}
+
+	@Override
+    public Actor<?> getActor() {
+	    return actor;
+	}
+
+	protected <T extends Entity> Actor<T> createActor(T entity) {
+	    return new Actor<>(entity);
+	}
+
+    @Override
+    public Goal getAIGoal() {
+        return currentGoal;
+    }
+
+    @Override
+    public Goal getPrevAIGoal() {
+        return prevGoal;
+    }
+
+    @Override
+    public Goal transitionAIGoal(Goal newGoal) {
+        prevGoal = currentGoal;
+        currentGoal = newGoal;
+        return newGoal;
+    }
 
 	@Override
     public PathAction getCurrentWorkingAction() {
@@ -214,6 +247,18 @@ public class NavigatorIM implements INotifyTask, INavigation {
 
 	@Override
     public void onUpdateNavigation() {
+	    if (theEntity.getTarget() != null) {
+            transitionAIGoal(Goal.TARGET_ENTITY);
+        } else if (theEntity.getNexus() != null) {
+            transitionAIGoal(Goal.BREAK_NEXUS);
+        } else {
+            transitionAIGoal(Goal.CHILL);
+        }
+
+	    tickPathFinding();
+	}
+
+	private void tickPathFinding() {
 		totalTicks++;
 		if (autoPathToEntity) {
 			updateAutoPathToEntity();
@@ -348,7 +393,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	}
 
 	protected Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius) {
-		this.theEntity.setCurrentTargetPos(pos);
+		actor.setCurrentTargetPos(pos);
 		BlockView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
 		INexusAccess nexus = entity.getNexus();
 		if (nexus != null) {
@@ -374,7 +419,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 			if (prevIndex >= 0 && path.getPathPointFromIndex(prevIndex).action != PathAction.NONE) {
 				canConsolidate = false;
 			}
-			if (canConsolidate && theEntity.canStandAt(theEntity.getWorld(), theEntity.getBlockPos())) {
+			if (canConsolidate && actor.canStandAt(theEntity.getWorld(), theEntity.getBlockPos())) {
 				while (maxNextLegIndex < path.getCurrentPathLength() - 1
 				        && path.getPathPointFromIndex(maxNextLegIndex).pos.getY() == (int) pos.y
 				        && path.getPathPointFromIndex(maxNextLegIndex).action == PathAction.NONE) {
@@ -521,7 +566,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		for (int vertical = 0; vertical < verticalRange; vertical = vertical > 0 ? vertical * -1 : vertical * -1 + 1) {
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
-					if (theEntity.canStandAtAndIsValid(theEntity.getWorld(), mutable.set(xi + i, y + vertical, zi + j))) {
+					if (actor.canStandAtAndIsValid(theEntity.getWorld(), mutable.set(xi + i, y + vertical, zi + j))) {
 						return new Vec3d(xi + i, y + vertical, zi + j);
 					}
 				}
@@ -642,7 +687,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	@SuppressWarnings("deprecation")
 	protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
 		if (to.getY() > from.getY()) {
-			BlockState block = theEntity.getWorld().getBlockState(from.add(0, entity.getCollideSize().getY(), 0));
+			BlockState block = theEntity.getWorld().getBlockState(from.add(0, MathHelper.ceil(entity.getHeight()), 0));
 			if (!block.isAir() && block.blocksMovement()) {
 				return false;
 			}

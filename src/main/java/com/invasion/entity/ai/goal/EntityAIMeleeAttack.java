@@ -2,20 +2,21 @@ package com.invasion.entity.ai.goal;
 
 import java.util.EnumSet;
 
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.Goal;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.MathHelper;
 
-public class EntityAIMeleeAttack<T extends LivingEntity> extends net.minecraft.entity.ai.goal.Goal {
-	protected final EntityIMLiving mob;
+public class EntityAIMeleeAttack<T extends LivingEntity, E extends PathAwareEntity & NexusEntity> extends net.minecraft.entity.ai.goal.Goal {
+	protected final E mob;
 	private final Class<? extends T> targetClass;
 	private float attackRange = 0.6F;
 	private int attackDelay;
 	private int nextAttack;
 
-	public EntityAIMeleeAttack(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay) {
+	public EntityAIMeleeAttack(E entity, Class<? extends T> targetClass, int attackDelay) {
 		this.mob = entity;
 		this.targetClass = targetClass;
 		this.attackDelay = attackDelay;

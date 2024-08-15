@@ -1,6 +1,5 @@
 package com.invasion.entity;
 
-import com.google.common.base.Predicates;
 import com.invasion.IBlockAccessExtended;
 import com.invasion.INotifyTask;
 import com.invasion.InvSounds;
@@ -8,6 +7,10 @@ import com.invasion.block.DestructableType;
 import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
+import com.invasion.entity.pathfinding.Actor;
+import com.invasion.entity.pathfinding.INavigation;
+import com.invasion.entity.pathfinding.IPathSource;
+import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathNode;
@@ -20,86 +23,63 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICanDig {
-    private static final TrackedData<Integer> TIER = DataTracker.registerData(AbstractIMZombieEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> FLAVOUR = DataTracker.registerData(AbstractIMZombieEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> TEXTURE = DataTracker.registerData(AbstractIMZombieEntity.class, TrackedDataHandlerRegistry.INTEGER);
+public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implements ICanDig {
     private static final TrackedData<Boolean> SWINGING = DataTracker.registerData(AbstractIMZombieEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     protected final TerrainModifier terrainModifier;
     protected final TerrainDigger terrainDigger;
 
     protected int swingTimer;
+    protected int scrapeSoundCooldown;
+    private boolean fireImmune;
 
     protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, INexusAccess nexus, float diggingSpeed) {
         super(type, world, nexus);
         floatsInWater = true;
         terrainModifier = new TerrainModifier(this, diggingSpeed);
         terrainDigger = new TerrainDigger(this, terrainModifier, 1);
-        setAttributes(getTier(), getFlavour());
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(TIER, 1);
-        builder.add(FLAVOUR, 0);
-        builder.add(TEXTURE, 0);
-    }
+    protected INavigation createIMNavigation(IPathSource pathSource) {
+        return new NavigatorIM(this, pathSource) {
+            @Override
+            protected <T extends Entity> Actor<T> createActor(T entity) {
+                return new Actor<>(entity) {
+                    @Override
+                    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+                        if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
+                            float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
-    private void reInitGoals() {
-        goalSelector.clear(Predicates.alwaysTrue());
-        targetSelector.clear(Predicates.alwaysTrue());
-        initGoals();
+                            if (node.pos.getY() > prevNode.pos.getY() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
+                                multiplier += 2;
+                            }
+
+                            return prevNode.distanceTo(node) * 1.2F * multiplier;
+                        }
+
+                        return super.getBlockPathCost(prevNode, node, terrainMap);
+                    }
+
+                    @Override
+                    public boolean isBlockDestructible(BlockView terrainMap, BlockPos pos, BlockState block) {
+                        return super.isBlockDestructible(terrainMap, pos, block)
+                                && getCurrentTargetPos().isPresent()
+                                && CoordsInt.getInclination(getCurrentTargetPos().get(), pos) <= 2.144D;
+                    }
+                };
+            }
+        };
     }
 
     protected ITerrainDig getTerrainDig() {
         return this.terrainDigger;
-    }
-
-    @Override
-    public BlockPos toBlockPos() {
-        return getBlockPos();
-    }
-
-    public void setTexture(int textureId) {
-        dataTracker.set(TEXTURE, textureId);
-    }
-
-    public int getTextureId() {
-        return dataTracker.get(TEXTURE);
-    }
-
-    @Override
-    public int getTier() {
-        return dataTracker.get(TIER);
-    }
-
-    public final void setTier(int tier) {
-        tier = Math.max(1, tier);
-        dataTracker.set(TIER, tier);
-        setAttributes(tier, getFlavour());
-        updateTexture();
-        reInitGoals();
-
-    }
-
-    public final int getFlavour() {
-        return dataTracker.get(FLAVOUR);
-    }
-
-    public final void setFlavour(int flavour) {
-        dataTracker.set(FLAVOUR, flavour);
-        setAttributes(getTier(), flavour);
-        updateTexture();
-        reInitGoals();
     }
 
     protected boolean isSwinging() {
@@ -111,6 +91,15 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     @Override
+    public boolean isFireImmune() {
+        return fireImmune || super.isFireImmune();
+    }
+
+    protected void setFireImmune(boolean fireImmune) {
+        this.fireImmune = fireImmune;
+    }
+
+    @Override
     public void baseTick() {
         super.baseTick();
         updateAnimation(false);
@@ -118,13 +107,19 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
     }
 
     protected void updateSound() {
-        if (terrainModifier.isBusy() && --throttled2 <= 0) {
+        if (terrainModifier.isBusy() && --scrapeSoundCooldown <= 0) {
             playSound(InvSounds.SCRAPE, 0.85F, 1 / (getRandom().nextFloat() * 0.5F + 1));
-            throttled2 = 45 + getRandom().nextInt(20);
+            scrapeSoundCooldown = 45 + getRandom().nextInt(20);
         }
     }
 
     public abstract void updateAnimation(boolean override);
+
+
+    protected int getSwingSpeed() {
+        return 10;
+    }
+
 
     @Override
     public void mobTick() {
@@ -174,35 +169,9 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
         }
     }
 
-    protected abstract void updateTexture();
-
-    public abstract boolean isBigRenderTempHack();
-
-    protected abstract void setAttributes(int tier, int flavour);
-
-    public float scaleAmount() {
-        if (getTier() == 2)
-            return 1.12F;
-        if (getTier() == 3) {
-            return 1.21F;
-        }
-        return 1.0F;
-    }
-
     @Override
-    public BlockView getTerrain() {
-        return getWorld();
-    }
-
-    @Override
-    public float getBlockRemovalCost(BlockPos pos) {
-        return getBlockStrength(pos) * 20;
-    }
-
-    @Override
-    public boolean canClearBlock(BlockPos pos) {
-        BlockState block = getWorld().getBlockState(pos);
-        return block.isAir() || (isBlockDestructible(getWorld(), pos, block));
+    public void onFollowingEntity(Entity entity) {
+        getNavigatorNew().getActor().setCanDestroyBlocks(entity instanceof EntityIMPigEngy || entity instanceof EntityIMCreeper);
     }
 
     @Override
@@ -220,46 +189,14 @@ public abstract class AbstractIMZombieEntity extends EntityIMMob implements ICan
         return false;
     }
 
-    @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
-            float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
+    public abstract boolean isBigRenderTempHack();
 
-            if (node.pos.getY() > prevNode.pos.getY() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
-                multiplier += 2;
-            }
-
-            return prevNode.distanceTo(node) * 1.2F * multiplier;
+    public float scaleAmount() {
+        if (getTier() == 2)
+            return 1.12F;
+        if (getTier() == 3) {
+            return 1.21F;
         }
-
-        return super.getBlockPathCost(prevNode, node, terrainMap);
-    }
-
-    @Override
-    public boolean isBlockDestructible(BlockView terrainMap, BlockPos pos, BlockState block) {
-        return super.isBlockDestructible(terrainMap, pos, block)
-                && getCurrentTargetPos().isPresent()
-                && CoordsInt.getInclination(getCurrentTargetPos().get(), pos) <= 2.144D;
-    }
-
-    @Override
-    public void onFollowingEntity(Entity entity) {
-        setCanDestroyBlocks(entity instanceof EntityIMPigEngy || entity instanceof EntityIMCreeper);
-    }
-
-    @Override
-    public void writeCustomDataToNbt(NbtCompound compound) {
-        super.writeCustomDataToNbt(compound);
-        compound.putInt("tier", getTier());
-        compound.putInt("flavour", getFlavour());
-        compound.putInt("textureId", getTextureId());
-    }
-
-    @Override
-    public void readCustomDataFromNbt(NbtCompound compound) {
-        super.readCustomDataFromNbt(compound);
-        setTexture(compound.getInt("textureId"));
-        setFlavour(compound.getInt("flavour"));
-        setTier(compound.getInt("tier"));
+        return 1.0F;
     }
 }

@@ -8,6 +8,8 @@ import net.minecraft.entity.LivingEntity;
 public class EntityAIRallyBehindEntity<T extends LivingEntity> extends EntityAIFollowEntity<T> {
     private static final float DEFAULT_FOLLOW_DISTANCE = 5;
 
+    private int rallyCooldown;
+
     public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader) {
         this(entity, leader, DEFAULT_FOLLOW_DISTANCE);
     }
@@ -18,19 +20,25 @@ public class EntityAIRallyBehindEntity<T extends LivingEntity> extends EntityAIF
 
     @Override
     public boolean canStart() {
-        return mob.readyToRally() && (super.canStart());
+        if (rallyCooldown > 0) {
+            rallyCooldown--;
+        }
+        return rallyCooldown <= 0 && super.canStart();
     }
 
     @Override
     public boolean shouldContinue() {
-        return mob.readyToRally() && super.shouldContinue();
+        return rallyCooldown <= 0 && super.shouldContinue();
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (mob.readyToRally() && getTarget() instanceof ILeader leader && leader.isMartyr()) {
-            mob.rally(leader);
+        if (rallyCooldown > 0) {
+            rallyCooldown--;
+        }
+        if (rallyCooldown <= 0 && getTarget() instanceof ILeader leader && leader.isMartyr()) {
+            rallyCooldown = 30;
         }
     }
 }

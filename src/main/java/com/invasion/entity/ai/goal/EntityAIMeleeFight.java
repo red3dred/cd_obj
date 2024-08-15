@@ -1,19 +1,20 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.Goal;
 import com.invasion.entity.pathfinding.INavigation;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 
-public class EntityAIMeleeFight<T extends LivingEntity> extends EntityAIMeleeAttack<T> {
+public class EntityAIMeleeFight<T extends LivingEntity, E extends PathAwareEntity & NexusEntity> extends EntityAIMeleeAttack<T, E> {
 	private int time;
 	private float startingHealth;
 	private int damageDealt;
 	private int invulnCount;
 	private float retreatHealthLossPercent;
 
-	public EntityAIMeleeFight(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
+	public EntityAIMeleeFight(E entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
 		super(entity, targetClass, attackDelay);
 		this.retreatHealthLossPercent = retreatHealthLossPercent;
 	}
