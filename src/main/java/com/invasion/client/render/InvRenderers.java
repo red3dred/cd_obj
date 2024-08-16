@@ -16,9 +16,11 @@ import com.invasion.client.render.entity.RenderSpiderIM;
 import com.invasion.client.render.entity.RenderThrower;
 import com.invasion.client.render.entity.RenderTrap;
 import com.invasion.entity.InvEntities;
-
+import com.invasion.item.InvItems;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
+import net.minecraft.util.Identifier;
 
 public interface InvRenderers {
     static void bootstrap() {
@@ -39,5 +41,9 @@ public interface InvRenderers {
         EntityRendererRegistry.register(InvEntities.CREEPER, RenderIMCreeper::new);
         EntityRendererRegistry.register(InvEntities.BIRD, RenderB::new);
         EntityRendererRegistry.register(InvEntities.VULTURE, RenderGiantBird::new);
+
+        ModelPredicateProviderRegistry.register(InvItems.SEARING_BOW, Identifier.ofVanilla("pull"), (stack, world, entity, seed) -> {
+            return entity == null || entity.getActiveItem() != stack ? 0.0F : (stack.getMaxUseTime(entity) - entity.getItemUseTimeLeft()) / 20F;
+        });
     }
 }

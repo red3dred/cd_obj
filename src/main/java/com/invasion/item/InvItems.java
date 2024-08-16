@@ -28,7 +28,7 @@ public interface InvItems {
 
     Item INFUSED_SWORD = register("infused_sword", new ItemInfusedSword());
     Item SEARING_BOW = register("searing_bow", new ItemSearingBow(new Item.Settings().maxDamage(384)));
-    Item ENGY_HAMMER = register("engineer_hammer", new Item(new Item.Settings())); // TODO: has 3d model
+    Item ENGY_HAMMER = register("engineer_hammer", new Item(new Item.Settings()));
 
     Item EMPTY_TRAP = register("empty_trap", new Item(new Item.Settings()));
     Item RIFT_TRAP = register("rift_trap", new ItemTrap(new Item.Settings(), EntityIMTrap.Type.RIFT));
@@ -40,7 +40,7 @@ public interface InvItems {
     Item STABLE_CATALYST_MIXTURE = register("stable_catalyst_mixture", new Item(new Item.Settings()));
 
     Item NEXUS_CATALYST = register("nexus_catalyst", new Item(new Item.Settings()));
-    Item STABLE_NEXUS_CATALYST = register("stable_nexus_catalys", new Item(new Item.Settings()));
+    Item STABLE_NEXUS_CATALYST = register("stable_nexus_catalyst", new Item(new Item.Settings()));
     Item STRONG_NEXUS_CATALYST = register("strong_nexus_catalyst", new Item(new Item.Settings()));
 
     Item DAMPING_AGENT = register("damping_agent", new Item(new Item.Settings()));
