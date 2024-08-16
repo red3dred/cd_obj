@@ -13,14 +13,22 @@ import com.invasion.nexus.EntityConstruct.BuildableMob;
 import com.invasion.nexus.IHasNexus;
 import com.invasion.nexus.INexusAccess;
 
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.entity.EntityLike;
 
 public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, EntityLike {
+    static NbtComponent createVariant(int flavour, int tier) {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putInt("flavour", flavour);
+        nbt.putInt("tier", tier);
+        return NbtComponent.of(nbt);
+    }
     float DEFAULT_AIR_RESISTANCE = 0.9995F;
     float DEFAULT_GROUND_FRICTION = 0.546F;
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;

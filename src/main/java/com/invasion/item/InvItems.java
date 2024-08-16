@@ -2,15 +2,22 @@ package com.invasion.item;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.EntityIMTrap;
-
+import com.invasion.entity.InvEntities;
+import com.invasion.entity.NexusEntity;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.registry.FuelRegistry;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -21,6 +28,7 @@ import net.minecraft.util.Util;
 
 public interface InvItems {
     List<Item> REGISTRY = new ArrayList<>();
+    List<Item> SPAWN_EGGS = new ArrayList<>();
 
     Item PHASE_CRYSTAL = register("phase_crystal", new Item(new Item.Settings()));
     Item RIFT_FLUX = register("rift_flux", new Item(new Item.Settings()));
@@ -57,6 +65,35 @@ public interface InvItems {
 
     Item NEXUS_CORE = register("nexus_core", new BlockItem(InvBlocks.NEXUS_CORE, new Item.Settings()));
 
+    Item TIER_ONE_ZOMBIE_SPAWN_EGG = register("tier_one_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x6B753F, 0x281B0A, NexusEntity.createVariant(0, 1)));
+    Item TIER_TWO_ZOMBIE_SPAWN_EGG = register("tier_two_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x497533, 0x7C7C7C, NexusEntity.createVariant(0, 2)));
+    Item TAR_ZOMBIE_SPAWN_EGG = register("tar_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x3A4225, 0x191C13, NexusEntity.createVariant(2, 2)));
+    Item ZOMBIE_BRUTE_SPAWN_EGG = register("zombie_brute_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x3A4225, 0x191C13, NexusEntity.createVariant(0, 3)));
+    Item TIER_ONE_SKELETON_SPAWN_EGG = register("tier_one_skeleton_spawn_egg", createSpawnEgg(InvEntities.SKELETON, 0x9B9B9B, 0x797979));
+    Item TIER_ONE_SPIDER_SPAWN_EGG = register("tier_one_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C));
+    Item BABY_SPIDER_SPAWN_EGG = register("baby_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C, NexusEntity.createVariant(1, 1)));
+    Item JUMPING_SPIDER_SPAWN_EGG = register("jumping_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(1, 1)));
+    Item MOTHER_SPIDER_SPAWN_EGG = register("mother_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(1, 2)));
+    Item TIER_ONE_CREEPER_SPAWN_EGG = register("tier_one_creeper_spawn_egg", createSpawnEgg(InvEntities.CREEPER, 0x238F1F, 0xA5AAA6));
+    Item PIGMAN_ENGINEER_SPAWN_EGG = register("pigman_engineer_spawn_egg", createSpawnEgg(InvEntities.PIGMAN_ENGINEER, 0xEC9695, 0x420000));
+    Item THROWER_SPAWN_EGG = register("thrower_spawn_egg", createSpawnEgg(InvEntities.THROWER, 0x545F37, 0x1D2D3E));
+    Item BIG_THROWER_SPAWN_EGG = register("big_thrower_spawn_egg", createSpawnEgg(InvEntities.THROWER, 0x5303814, 0x632808, NexusEntity.createVariant(0, 2)));
+    Item IMP_SPAWN_EGG = register("imp_spawn_egg", createSpawnEgg(InvEntities.IMP, 0xB40113, 0xFF0000));
+    Item ZOMBIE_PIGMAN_SPAWN_EGG = register("pigman_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE_PIGMAN, 0xEB8E91, 0x49652F, NexusEntity.createVariant(1, 1)));
+    Item TIER_TWO_ZOMBIE_PIGMAN_SPAWN_EGG = register("tier_two_pigman_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE_PIGMAN, 0xEB8E91, 0x49652F, NexusEntity.createVariant(1, 2)));
+    Item ZOMBIE_PIGMAN_BRUTE_SPAWN_EGG = register("zombie_pigman_brute_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE_PIGMAN, 0xEB8E91, 0x49652F, NexusEntity.createVariant(1, 3)));
+
+    RegistryKey<Item> BIRD_SPAWN_EGG = RegistryKey.of(RegistryKeys.ITEM, InvasionMod.id("bird_spawn_egg"));
+    RegistryKey<Item> VULTURE_SPAWN_EGG = RegistryKey.of(RegistryKeys.ITEM, InvasionMod.id("vulture_spawn_egg"));
+
+    private static Item createSpawnEgg(EntityType<? extends MobEntity> type, int primaryColor, int secondaryColor, NbtComponent data) {
+        return new SpawnEggItem(type, primaryColor, secondaryColor, new Item.Settings().component(DataComponentTypes.ENTITY_DATA, data));
+    }
+
+    private static Item createSpawnEgg(EntityType<? extends MobEntity> type, int primaryColor, int secondaryColor) {
+        return new SpawnEggItem(type, primaryColor, secondaryColor, new Item.Settings());
+    }
+
     private static <T extends Item> T register(String name, T item) {
         REGISTRY.add(item);
         return Registry.register(Registries.ITEM, InvasionMod.id(name), item);
@@ -65,42 +102,19 @@ public interface InvItems {
     static void bootstrap() {
         if (InvasionMod.getConfig().debugMode) {
             register("debug_wand", new ItemDebugWand(new Item.Settings().maxCount(1)));
+            register("bird_spawn_egg", createSpawnEgg(InvEntities.BIRD, 0x2B2B2B, 0xEA7EDC));
+            register("vulture_spawn_egg", createSpawnEgg(InvEntities.VULTURE, 0x2B2B2B, 0xEA7EDC));
         }
         Identifier tabId = InvasionMod.id("invasion_mod");
         Registry.register(Registries.ITEM_GROUP, tabId, FabricItemGroup.builder().entries((context, entries) -> {
             REGISTRY.forEach(item -> entries.add(item.getDefaultStack()));
         }).icon(NEXUS_CORE::getDefaultStack).displayName(Text.translatable(Util.createTranslationKey("itemGroup", tabId))).build());
 
-        // spawneggs' needed things and dispenser behavior
-        //GameRegistry.registerItem(itemSpawnEgg, itemSpawnEgg.getUnlocalizedName());
-        //BlockDispenser.dispenseBehaviorRegistry.putObject(itemSpawnEgg, new DispenserBehaviorSpawnEgg());
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(event -> {
+            SPAWN_EGGS.forEach(event::add);
+        });
 
-        // Add spawneggs
-        /*
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 1, "IMZombie", "Zombie T1", CustomTags.IMZombie_T1(), 0x6B753F, 0x281B0A));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 2, "IMZombie", "Zombie T2", CustomTags.IMZombie_T2(), 0x497533, 0x7C7C7C));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 3, "IMZombie", "Tar Zombie T2", CustomTags.IMZombie_T2_tar(), 0x3A4225, 0x191C13));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 4, "IMZombie", "Zombie Brute T3", CustomTags.IMZombie_T3(), 0x586146, 0x1E4639));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 5, "IMSkeleton", "Skeleton T1", new NBTTagCompound(), 0x9B9B9B, 0x797979));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 6, "IMSpider", "Spider T1", new NBTTagCompound(), 0x504A3E, 0xA4121C));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 7, "IMSpider", "Spider T1 Baby", CustomTags.IMSpider_T1_baby(), 0x504A3E, 0xA4121C));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 8, "IMSpider", "Spider T2 Jumper", CustomTags.IMSpider_T2(), 0x444167, 0x0A0328));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 9, "IMSpider", "Spider T2 Mother", CustomTags.IMSpider_T2_mother(), 0x444167, 0x0A0328));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 10, "IMCreeper", "Creeper T1", new NBTTagCompound(), 0x238F1F, 0xA5AAA6));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 11, "IMPigEngy", "Pigman Engineer T1", new NBTTagCompound(), 0xEC9695, 0x420000));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 12, "IMThrower", "Thrower T1", new NBTTagCompound(), 0x545F37, 0x1D2D3E));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 13, "IMThrower", "Thrower T2", CustomTags.IMThrower_T2(), 0x5303814, 0x632808));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 14, "IMImp", "Imp T1", new NBTTagCompound(), 0xB40113, 0xFF0000));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 15, "IMZombiePigman", "Zombie Pigman T1", CustomTags.IMZombiePigman_T1(), 0xEB8E91, 0x49652F));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 16, "IMZombiePigman", "Zombie Pigman T2", CustomTags.IMZombiePigman_T2(), 0xEB8E91, 0x49652F));
-        SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 17, "IMZombiePigman", "Zombie Pigman T3", CustomTags.IMZombiePigman_T3(), 0xEB8E91, 0x49652F));
-
-        if (debugMode) {
-            SpawnEggRegistry.registerSpawnEgg(new SpawnEggInfo((short) 18, "IMGiantBird", "Vulture T1", new NBTTagCompound(), 0x2B2B2B, 0xEA7EDC));
-        }*/
-
-        // TODO: Check whether we want this, lol
-        FuelRegistry.INSTANCE.add(NEXUS_CATALYST, 1);
-        FuelRegistry.INSTANCE.add(STABLE_NEXUS_CATALYST, 1);
+        FuelRegistry.INSTANCE.add(NEXUS_CATALYST, 10);
+        FuelRegistry.INSTANCE.add(STABLE_NEXUS_CATALYST, 16);
     }
 }

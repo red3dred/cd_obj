@@ -102,8 +102,8 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     protected void initTieredAttributes() {
         setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         if (getTier() == 1) {
+            setName("Zombie");
             if (getFlavour() == 0) {
-                setName("Zombie");
                 setMovementSpeed(0.19F);
                 setAttackStrength(4);
                 selfDamage = 3;
@@ -111,7 +111,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 flammability = 3;
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
-                setName("Zombie");
                 setMovementSpeed(0.19F);
                 setAttackStrength(6);
                 selfDamage = 3;
@@ -122,8 +121,8 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setCanDestroyBlocks(false);
             }
         } else if (getTier() == 2) {
+            setName("Zombie");
             if (getFlavour() == 0) {
-                setName("Zombie");
                 setMovementSpeed(0.19F);
                 setAttackStrength(7);
                 selfDamage = 4;
@@ -133,7 +132,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
-                setName("Zombie");
                 setMovementSpeed(0.19F);
                 setAttackStrength(10);
                 selfDamage = 3;
