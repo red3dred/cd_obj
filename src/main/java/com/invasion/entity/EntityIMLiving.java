@@ -37,7 +37,6 @@ import net.minecraft.world.entity.EntityChangeListener;
 public abstract class EntityIMLiving extends HostileEntity implements NexusEntity, Stunnable {
     private static final TrackedData<Integer> MOVE_STATE = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<String> LABEL = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     protected float airResistance = DEFAULT_AIR_RESISTANCE;
@@ -49,8 +48,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
 
     protected int selfDamage = 2;
     protected int maxSelfDamage = 6;
-
-    protected int blockBreakSoundCooldown;
 
     private boolean alwaysIndependent;
     private boolean burnsInDay;
@@ -65,9 +62,7 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         super(type, world);
         moveControl = new IMMoveHelper(this);
         setNexus(nexus);
-        setAttackStrength(2);
-        setMovementSpeed(0.26F);
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
+        resetHealth();
     }
 
     @Override
@@ -89,7 +84,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         builder.add(MOVE_STATE, MoveState.STANDING.ordinal());
         builder.add(CLIMBING, false);
         builder.add(ANGLES, MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0));
-        builder.add(LABEL, "");
     }
 
     @Override
@@ -122,11 +116,13 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     @Override
     public void tickMovement() {
         super.tickMovement();
-        if (!getWorld().isClient) {
-            int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
-            if (packedAngles != dataTracker.get(ANGLES)) {
-                dataTracker.set(ANGLES, packedAngles);
-            }
+        int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
+        if (packedAngles != dataTracker.get(ANGLES)) {
+            dataTracker.set(ANGLES, packedAngles);
+        }
+
+        if (!hasNexus() && getBurnsInDay() && isAffectedByDaylight()) {
+            sunlightDamageTick();
         }
     }
 
@@ -140,21 +136,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         }
 
         super.tick();
-    }
-
-    @Override
-    public void baseTick() {
-        if (!hasNexus()) {
-            @SuppressWarnings("deprecation")
-            float brightness = getBrightnessAtEyes();
-            if (brightness > 0.5F || getY() < 55) {
-                age += 2;
-            }
-            if (getBurnsInDay() && isAffectedByDaylight()) {
-                sunlightDamageTick();
-            }
-        }
-        super.baseTick();
     }
 
     @Override
@@ -277,10 +258,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         return hasNexus() ? 0 : 0.5F - world.getLightLevel(pos);
     }
 
-    public String getRenderLabel() {
-        return dataTracker.get(LABEL);
-    }
-
     @Deprecated
     public void setIsHoldingIntoLadder(boolean flag) {
         setSneaking(flag);
@@ -298,11 +275,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     @Override
     public boolean shouldRenderName() {
         return getDebugMode() || super.shouldRenderName();
-    }
-
-    @Deprecated
-    public void setRenderLabel(String label) {
-        dataTracker.set(LABEL, label);
     }
 
     @Override
@@ -336,9 +308,5 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     public void setMovementSpeed(float movementSpeed) {
         super.setMovementSpeed(movementSpeed);
         getNavigatorNew().setSpeed(speed);
-    }
-
-    @Deprecated
-    protected void setName(String name) {
     }
 }

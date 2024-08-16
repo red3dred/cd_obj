@@ -3,7 +3,6 @@ package com.invasion.entity;
 import java.util.List;
 
 import com.invasion.InvSounds;
-import com.invasion.InvasionMod;
 import com.invasion.entity.ai.goal.EntityAIAttackNexus;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAIKillEntity;
@@ -26,7 +25,10 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -40,10 +42,60 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class EntityIMZombie extends AbstractIMZombieEntity {
+    static final int OLD_ZOMBIE = 0;
+    static final int ZOMBIE = 1;
+    static final int ZOMBIE_T2 = 2;
+    static final int ZOMBIE_PIGMAN = 3;
+    static final int ZOMBIE_T2A = 4;
+    static final int TAR = 5;
+    static final int BRUTE = 6;
 
     public EntityIMZombie(EntityType<EntityIMZombie> type, World world) {
         this(type, world, null);
 
+    }
+
+    private static DefaultAttributeContainer.Builder createBaseAttributes() {
+        return ZombieEntity.createZombieAttributes().add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.19F);
+    }
+
+    public static DefaultAttributeContainer.Builder createTierT1V0Attributes() {
+        return createBaseAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0);
+    }
+
+    public static DefaultAttributeContainer.Builder createTierT1V1Attributes() {
+        return createBaseAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 6.0);
+    }
+
+    public static DefaultAttributeContainer.Builder createTierT2V0Attributes() {
+        return createBaseAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 7.0);
+    }
+
+    public static DefaultAttributeContainer.Builder createTierT2V1Attributes() {
+        return createBaseAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 10.0);
+    }
+
+    /**
+     * Tar Zombie
+     */
+    public static DefaultAttributeContainer.Builder createTierT2V2ttributes() {
+        return createBaseAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0);
+    }
+    /**
+     * Zombie Pigman
+     */
+    public static DefaultAttributeContainer.Builder createTierT2V3ttributes() {
+        return createBaseAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.25F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 8.0);
+    }
+    /**
+     * Zombie Brute
+     */
+    public static DefaultAttributeContainer.Builder createTierT3V0Attributes() {
+        return createBaseAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.17F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 18.0);
     }
 
     public EntityIMZombie(EntityType<EntityIMZombie> type, World world, INexusAccess nexus) {
@@ -100,7 +152,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
     @Override
     protected void initTieredAttributes() {
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         if (getTier() == 1) {
             setName("Zombie");
             if (getFlavour() == 0) {
@@ -122,8 +173,8 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             }
         } else if (getTier() == 2) {
             setName("Zombie");
+            setMovementSpeed(0.19F);
             if (getFlavour() == 0) {
-                setMovementSpeed(0.19F);
                 setAttackStrength(7);
                 selfDamage = 4;
                 maxSelfDamage = 12;
@@ -132,7 +183,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
-                setMovementSpeed(0.19F);
+
                 setAttackStrength(10);
                 selfDamage = 3;
                 maxSelfDamage = 9;
@@ -141,7 +192,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setCanDestroyBlocks(false);
             } else if (getFlavour() == 2) {
                 setName("Tar Zombie");
-                setMovementSpeed(0.19F);
                 setAttackStrength(5);
                 selfDamage = 3;
                 maxSelfDamage = 9;
@@ -156,40 +206,34 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
                 setCanDestroyBlocks(true);
             }
-        } else if (getTier() == 3) {
-            if (getFlavour() == 0) {
-                setName("Zombie Brute");
-                setMovementSpeed(0.17F);
-                setAttackStrength(18);
-                selfDamage = 4;
-                maxSelfDamage = 20;
-                flammability = 4;
-                equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-                setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
-                setCanDestroyBlocks(true);
-            }
+        } else if (getTier() == 3 && getFlavour() == 0) {
+            setName("Zombie Brute");
+            setMovementSpeed(0.17F);
+            setAttackStrength(18);
+            selfDamage = 4;
+            maxSelfDamage = 20;
+            flammability = 4;
+            equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
+            setCanDestroyBlocks(true);
         }
 
         if (getTier() == 1) {
-            int r = random.nextInt(2);
-            if (r == 0)
-                setTexture(0);
-            else if (r == 1)
-                setTexture(1);
+            setTexture(random.nextInt(2)); // 0,1
         } else if (getTier() == 2) {
             if (getFlavour() == 2) {
-                setTexture(5);
+                setTexture(TAR);
             } else if (getFlavour() == 3) {
-                setTexture(3);
+                setTexture(ZOMBIE_PIGMAN);
             } else {
                 int r = random.nextInt(2);
                 if (r == 0)
-                    setTexture(2);
+                    setTexture(ZOMBIE_T2);
                 else if (r == 1)
-                    setTexture(4);
+                    setTexture(ZOMBIE_T2A);
             }
         } else if (getTier() == 3) {
-            setTexture(6);
+            setTexture(BRUTE);
         }
     }
 

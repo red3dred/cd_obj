@@ -3,7 +3,6 @@ package com.invasion.entity;
 import org.joml.Vector3f;
 
 import com.invasion.InvSounds;
-import com.invasion.InvasionMod;
 import com.invasion.entity.ai.goal.EntityAIBirdFight;
 import com.invasion.entity.ai.goal.EntityAIBoP;
 import com.invasion.entity.ai.goal.EntityAICircleTarget;
@@ -19,9 +18,12 @@ import com.invasion.nexus.INexusAccess;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -39,18 +41,19 @@ public class EntityIMGiantBird extends EntityIMBird {
 
     public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-        setName("Bird");
-        setAttackStrength(5);
-        //setSize(1.9F, 2.8F);
-        setGravity(0.03F);
         setThrust(0.028F);
         setMaxPoweredFlightSpeed(0.9F);
         setLiftFactor(0.35F);
         setThrustComponentRatioMin(0.0F);
         setThrustComponentRatioMax(0.5F);
         setMaxTurnForce((float)getGravity() * 8.0F);
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setMovementSpeed(0.4F);
+    }
+
+    public static DefaultAttributeContainer.Builder createVultureAttributes() {
+        return createBirdAttributes()
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5)
+                .add(EntityAttributes.GENERIC_GRAVITY, 0.03F)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4F);
     }
 
     @Override
@@ -73,7 +76,7 @@ public class EntityIMGiantBird extends EntityIMBird {
     public void tick() {
         super.tick();
         if (getDebugMode() && !getWorld().isClient) {
-            setRenderLabel(getAIGoal() + "\n" + getNavigatorNew());
+            setCustomName(Text.literal(getAIGoal() + "\n" + getNavigatorNew()));
         }
     }
 

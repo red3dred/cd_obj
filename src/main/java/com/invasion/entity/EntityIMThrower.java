@@ -16,7 +16,6 @@ import com.invasion.entity.ai.goal.EntityAIThrowerKillEntity;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.block.BlockState;
@@ -26,7 +25,10 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.sound.SoundEvent;
@@ -41,6 +43,8 @@ public class EntityIMThrower extends TieredIMMobEntity {
     private int punchTimer;
 
     private boolean clearingPoint;
+
+    private int blockBreakSoundCooldown;
 
     private BlockPos pointToClear;
 
@@ -57,15 +61,19 @@ public class EntityIMThrower extends TieredIMMobEntity {
 
     public EntityIMThrower(EntityType<EntityIMThrower> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-        setMovementSpeed(0.13F);
-        setAttackStrength(10);
         selfDamage = 0;
         maxSelfDamage = 0;
         experiencePoints = 20;
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         setCanDestroyBlocks(true);
         // setSize(1.8F, 1.95F);
     }
+
+    public static DefaultAttributeContainer.Builder createT1V0Attributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.13F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 10);
+    }
+
 
     @Override
     protected void initGoals() {
@@ -87,13 +95,6 @@ public class EntityIMThrower extends TieredIMMobEntity {
         targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getSenseRange(), false));
         targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getAggroRange(), true));
         targetSelector.add(3, new RevengeGoal(this));
-    }
-
-    @Override
-    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
-        super.onSpawned(nexus, spawnConditions);
-        setTexture(spawnConditions.tier());
-        setTier(spawnConditions.tier());
     }
 
     @Override
@@ -154,17 +155,13 @@ public class EntityIMThrower extends TieredIMMobEntity {
             setMovementSpeed(0.13F);
             setAttackStrength(10);
             experiencePoints = 20;
-            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             setName("Thrower");
-            setCanDestroyBlocks(true);
             // setSize(1.8F, 1.95F);
         } else if (getTier() == 2) {
             setMovementSpeed(0.23F);
             setAttackStrength(15);
             experiencePoints = 25;
-            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             setName("Big Thrower");
-            setCanDestroyBlocks(true);
             // setSize(2F, 2F);
         }
 

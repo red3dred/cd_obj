@@ -25,10 +25,13 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvent;
@@ -47,6 +50,26 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
 
     public EntityIMZombiePigman(EntityType<EntityIMZombiePigman> type, World world, INexusAccess nexus) {
         super(type, world, nexus, 0.75F);
+        setFireImmune(true);
+        setCanDestroyBlocks(true);
+    }
+
+    public static DefaultAttributeContainer.Builder createT1Attributes() {
+        return ZombieEntity.createZombieAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.25F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 8);
+    }
+
+    public static DefaultAttributeContainer.Builder createT2Attributes() {
+        return ZombieEntity.createZombieAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.35F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 12);
+    }
+
+    public static DefaultAttributeContainer.Builder createT3Attributes() {
+        return ZombieEntity.createZombieAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.2F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 18);
     }
 
     @Override
@@ -165,18 +188,11 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             setName("Zombie Pigman");
             setMovementSpeed(0.25F);
             setAttackStrength(8);
-            setFireImmune(true);
             equipStack(EquipmentSlot.MAINHAND, Items.GOLDEN_SWORD.getDefaultStack());
-            setCanDestroyBlocks(true);
-            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-
         } else if (getTier() == 2) {
             setName("Zombie Pigman");
             setMovementSpeed(0.35F);
             setAttackStrength(12);
-            setCanDestroyBlocks(true);
-            setFireImmune(true);
-            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
 
             if (getRandom().nextInt(5) == 1) {
                 equipStack(EquipmentSlot.HEAD, Items.GOLDEN_HELMET.getDefaultStack());
@@ -197,9 +213,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             setName("Zombie Pigman Brute");
             setMovementSpeed(0.20F);
             setAttackStrength(18);
-            setFireImmune(true);
-            setCanDestroyBlocks(true);
-            setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
         }
 
         setTexture(MathHelper.clamp(getTier() - 1, 0, 2));

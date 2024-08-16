@@ -10,10 +10,13 @@ import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.world.World;
 
 public class EntityIMBird extends EntityIMFlying {
@@ -47,6 +50,13 @@ public class EntityIMBird extends EntityIMFlying {
         setMaxTurnForce((float)getGravity() * 8);
     }
 
+    public static DefaultAttributeContainer.Builder createBirdAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 1)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1)
+                .add(EntityAttributes.GENERIC_GRAVITY, 0.025);
+    }
+
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
@@ -56,7 +66,6 @@ public class EntityIMBird extends EntityIMFlying {
     }
 
     @Deprecated
-    @Override
     public int getTier() {
         return dataTracker.get(TIER);
     }

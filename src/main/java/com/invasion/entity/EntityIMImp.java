@@ -1,6 +1,5 @@
 package com.invasion.entity;
 
-import com.invasion.InvasionMod;
 import com.invasion.entity.ai.goal.EntityAIAttackNexus;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAIKillEntity;
@@ -17,6 +16,8 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
@@ -24,15 +25,18 @@ import net.minecraft.world.World;
 public class EntityIMImp extends EntityIMMob {
     public EntityIMImp(EntityType<EntityIMImp> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-        setMovementSpeed(0.3F);
-        setAttackStrength(3);
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setJumpHeight(1);
         getNavigatorNew().getActor().setCanClimb(true);
     }
 
     public EntityIMImp(EntityType<EntityIMImp> type, World world) {
         this(type, world, null);
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 3)
+                .add(EntityAttributes.GENERIC_STEP_HEIGHT, 1);
     }
 
     @Override

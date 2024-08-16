@@ -4,13 +4,14 @@ import java.lang.reflect.Field;
 
 import com.invasion.ConfigInvasion;
 import com.invasion.InvasionMod;
-
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAttachmentType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.math.Vec3d;
@@ -70,6 +71,21 @@ public interface InvEntities {
     }
 
     static void bootstrap() {
+        FabricDefaultAttributeRegistry.register(SKELETON, EntityIMSkeleton.createIMSkeletonAttributes());
+        FabricDefaultAttributeRegistry.register(ZOMBIE, EntityIMZombie.createTierT1V0Attributes());
+        FabricDefaultAttributeRegistry.register(ZOMBIE_PIGMAN, EntityIMZombiePigman.createT1Attributes());
+        FabricDefaultAttributeRegistry.register(PIGMAN_ENGINEER, EntityIMPigEngy.createAttributes());
+        FabricDefaultAttributeRegistry.register(CREEPER, EntityIMCreeper.createAttributes());
+        FabricDefaultAttributeRegistry.register(SPIDER, EntityIMSpider.createT1V0Attributes());
+        FabricDefaultAttributeRegistry.register(THROWER, EntityIMThrower.createT1V0Attributes());
+        FabricDefaultAttributeRegistry.register(BURROWER, EntityIMBurrower.createAttributes());
+        FabricDefaultAttributeRegistry.register(IMP, EntityIMImp.createAttributes());
+        FabricDefaultAttributeRegistry.register(WOLF, EntityIMWolf.createAttributes());
+        FabricDefaultAttributeRegistry.register(SPIDER_EGG, EntityIMEgg.createAttributes());
+        FabricDefaultAttributeRegistry.register(SPAWN_PROXY, MobEntity.createMobAttributes());
+        FabricDefaultAttributeRegistry.register(BIRD, EntityIMBird.createBirdAttributes());
+        FabricDefaultAttributeRegistry.register(VULTURE, EntityIMGiantBird.createVultureAttributes());
+
         ConfigInvasion config = InvasionMod.getConfig();
 
         if (config.nightSpawnsEnabled) {

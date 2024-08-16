@@ -3,6 +3,7 @@ package com.invasion.entity;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicates;
+import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.EntityType;
@@ -12,7 +13,6 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 
-@Deprecated
 public abstract class TieredIMMobEntity extends EntityIMMob {
     private static final TrackedData<Integer> TIER = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> FLAVOUR = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -34,6 +34,11 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
     }
 
     @Override
+    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
+        super.onSpawned(nexus, spawnConditions);
+        setAppearance(spawnConditions.tier(), spawnConditions.flavour(), spawnConditions.texture());
+    }
+
     public final int getTier() {
         return dataTracker.get(TIER);
     }
@@ -67,7 +72,7 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
         }
     }
 
-    protected void setAppearance(int tier, int flavour, int texture) {
+    private void setAppearance(int tier, int flavour, int texture) {
         if (tier != getTier() || flavour != getFlavour() || texture != getTextureId()) {
             dataTracker.set(TIER, tier);
             dataTracker.set(FLAVOUR, flavour);
@@ -94,6 +99,7 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
                 goalSelector.clear(Predicates.alwaysTrue());
                 targetSelector.clear(Predicates.alwaysTrue());
                 initGoals();
+                resetHealth();
             }
             initTieredAttributes();
         } finally {
@@ -115,5 +121,11 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
     public void readCustomDataFromNbt(NbtCompound compound) {
         super.readCustomDataFromNbt(compound);
         setAppearance(compound.getInt("tier"), compound.getInt("flavour"), compound.getInt("texture"));
+    }
+
+    @Override
+    @Deprecated
+    public String getLegacyName() {
+        return String.format("%s-T1", getClass().getName().replace("Entity", ""), getTier());
     }
 }

@@ -10,13 +10,14 @@ import com.invasion.block.BlockNexus;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.EntityIMBolt;
 import com.invasion.entity.EntityIMLiving;
-import com.invasion.entity.EntityIMWolf;
 import com.invasion.entity.ai.AttackerAI;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.spawns.IMWaveSpawner;
 import com.invasion.nexus.wave.IMWaveBuilder;
 import com.invasion.nexus.wave.Wave;
 import com.invasion.nexus.wave.WaveSpawnerException;
+
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -352,7 +353,8 @@ public class Nexus implements ControllableNexusAccess {
     public void registerMobClose() {
     }
 
-    public void askForRespawn(EntityIMLiving entity) {
+    // TODO: Nothing calls this?
+    public void askForRespawn(Combatant<?> entity) {
         InvasionMod.LOGGER.warn("Stuck entity asking for respawn: " + entity);
         this.waveSpawner.askForRespawn(entity);
     }
@@ -623,16 +625,9 @@ public class Nexus implements ControllableNexusAccess {
 
     private void killAllMobs() {
         DamageSource source = getWorld().getDamageSources().magic();
-        // monsters
-        for (EntityIMLiving mob : getWorld().getEntitiesByClass(EntityIMLiving.class, boundingBoxToRadius, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)) {
+        for (LivingEntity mob : getWorld().getEntitiesByClass(LivingEntity.class, boundingBoxToRadius, Combatant.PREDICATE)) {
             mob.damage(source, mob.getMaxHealth());
             mob.kill();
-        }
-
-        // wolves
-        for (EntityIMWolf wolf : getWorld().getEntitiesByClass(EntityIMWolf.class, boundingBoxToRadius, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)) {
-            wolf.damage(source, wolf.getMaxHealth());
-            wolf.kill();
         }
     }
 

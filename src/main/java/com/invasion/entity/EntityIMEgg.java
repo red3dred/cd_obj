@@ -3,20 +3,27 @@ package com.invasion.entity;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.InvSounds;
-import com.invasion.InvasionMod;
+import com.invasion.nexus.Combatant;
+import com.invasion.nexus.IHasNexus;
+import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.world.World;
 
-public class EntityIMEgg extends EntityIMLiving {
+public class EntityIMEgg extends MobEntity implements Combatant<EntityIMEgg> {
     private static final TrackedData<Boolean> HATCHED = DataTracker.registerData(EntityIMEgg.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     private int hatchTime;
@@ -24,19 +31,23 @@ public class EntityIMEgg extends EntityIMLiving {
 
     private List<Entity> contents;
 
+    private final IHasNexus.Handle nexus = new IHasNexus.Handle(this::getWorld);
+
     public EntityIMEgg(EntityType<EntityIMEgg> type, World world) {
-        super(type, world, null);
+        super(type, world);
     }
 
     public EntityIMEgg(Entity parent, Entity[] contents, int hatchTime) {
-        super(InvEntities.SPIDER_EGG, parent.getWorld(), null);
+        super(InvEntities.SPIDER_EGG, parent.getWorld());
         this.contents = contents == null ? List.of() : Arrays.asList(contents);
         this.hatchTime = hatchTime;
-        setBurnsInDay(false);
-        setMovementSpeed(0.01F);
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setName("Spider Egg");
+        resetHealth();
         setPosition(parent.getPos());
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.01);
     }
 
     @Override
@@ -59,13 +70,23 @@ public class EntityIMEgg extends EntityIMLiving {
         if (!getWorld().isClient) {
             ticks++;
             if (isHatched()) {
-                if (ticks > hatchTime + 40)
+                if (ticks > hatchTime + 40) {
                     discard();
+                }
             } else if (ticks > hatchTime) {
                 hatch();
             }
         }
     }
+    @Override
+    public void tickMovement() {
+        if (isAlive() && !hasNexus() && isAffectedByDaylight()) {
+            setOnFireFor(8);
+        }
+
+        super.tickMovement();
+    }
+
 
     private void hatch() {
         playSound(InvSounds.ENTITY_SPIDER_EGG_HATCH, 1, 1);
@@ -103,5 +124,25 @@ public class EntityIMEgg extends EntityIMLiving {
     @Override
     public String getLegacyName() {
         return "IMSpider-egg";
+    }
+
+    @Override
+    public @Nullable INexusAccess getNexus() {
+        return nexus.get();
+    }
+
+    @Override
+    public void setNexus(@Nullable INexusAccess nexus) {
+        this.nexus.set(nexus);
+    }
+
+    @Override
+    public double findDistanceToNexus() {
+        return 0;
+    }
+
+    @Override
+    public EntityIMEgg asEntity() {
+        return this;
     }
 }

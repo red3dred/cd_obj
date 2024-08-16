@@ -15,6 +15,7 @@ import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
@@ -39,6 +40,10 @@ public class EntityIMWolf extends WolfEntity implements IHasNexus {
     public EntityIMWolf(EntityType<EntityIMWolf> type, World world, @Nullable INexusAccess nexus) {
         super(type, world);
         setNexus(nexus);
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return WolfEntity.createWolfAttributes();
     }
 
     @Override

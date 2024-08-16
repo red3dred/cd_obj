@@ -1,7 +1,6 @@
 package com.invasion.entity;
 
 import com.invasion.INotifyTask;
-import com.invasion.InvasionMod;
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.ai.Goal;
 import com.invasion.entity.ai.builder.ITerrainBuild;
@@ -28,7 +27,10 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -55,10 +57,16 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
 
     public EntityIMPigEngy(EntityType<EntityIMPigEngy> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-        setMovementSpeed(0.23F);
-        setAttackStrength(2);
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setJumpHeight(1);
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return HostileEntity.createHostileAttributes()
+                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 35.0)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.23F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2)
+                .add(EntityAttributes.GENERIC_ARMOR, 2.0)
+                .add(EntityAttributes.ZOMBIE_SPAWN_REINFORCEMENTS)
+                .add(EntityAttributes.GENERIC_STEP_HEIGHT, 1);
     }
 
     @Override
@@ -214,6 +222,6 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
     @Deprecated
     @Override
     public String getLegacyName() {
-        return "IMPigManEngineer-T" + getTier();
+        return "IMPigManEngineer-T1";
     }
 }

@@ -16,6 +16,9 @@ import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.PosRotate3D;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.world.World;
 
 
@@ -36,11 +39,13 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
 
     public EntityIMBurrower(EntityType<EntityIMBurrower> type, World world, INexusAccess nexus) {
         super(type, world, nexus);
-        // this.setSize(0.5F, 0.5F);
-        setJumpHeight(0);
-
         Arrays.fill(segments3D, PosRotate3D.ZERO);
         Arrays.fill(segments3DLastTick, PosRotate3D.ZERO);
+    }
+
+    public static DefaultAttributeContainer.Builder createAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_STEP_HEIGHT, 0);
     }
 
     @Override
@@ -51,12 +56,6 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     @Override
     protected INavigation createIMNavigation(IPathSource pathSource) {
         return new NavigatorBurrower(this, pathSource, 16, -4);
-    }
-
-    @Deprecated
-    @Override
-    public int getTier() {
-        return 3;
     }
 
     @Override

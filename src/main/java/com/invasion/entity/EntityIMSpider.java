@@ -1,6 +1,5 @@
 package com.invasion.entity;
 
-import com.invasion.InvasionMod;
 import com.invasion.entity.ai.IMMoveHelperSpider;
 import com.invasion.entity.ai.goal.EntityAIAttackNexus;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
@@ -22,8 +21,11 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvent;
@@ -44,6 +46,12 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 		moveControl = new IMMoveHelperSpider(this);
 		getNavigatorNew().getActor().setCanClimb(true);
 	}
+
+    public static DefaultAttributeContainer.Builder createT1V0Attributes() {
+        return SpiderEntity.createSpiderAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.29F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 3);
+    }
 
 	@Override
     protected void initGoals() {
@@ -97,6 +105,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 
 	@Override
 	protected void initTieredAttributes() {
+	    resetHealth();
 	    setGravity(0.08F);
         //setSize(1.4F, 0.9F);
         if (getTier() == 1) {
@@ -104,36 +113,27 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
                 setName("Spider");
                 setMovementSpeed(0.29F);
                 setAttackStrength(3);
-                setCanDestroyBlocks(false);
                 setAggroRange(10);
-                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             } else if (getFlavour() == 1) {
                 setName("Baby-Spider");
                 //setSize(0.42F, 0.3F);
                 setMovementSpeed(0.34F);
                 setAttackStrength(1);
-                setCanDestroyBlocks(false);
                 setAggroRange(10);
-                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             }
         } else if (getTier() == 2) {
             if (getFlavour() == 0) {
                 setName("Jumping-Spider");
                 setMovementSpeed(0.3F);
                 setAttackStrength(5);
-                setCanDestroyBlocks(false);
                 setAggroRange(18);
                 setGravity(0.043F);
-
-                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             } else if (getFlavour() == 1) {
                 setName("Mother-Spider");
                 //setSize(2.8F, 1.8F);
                 setMovementSpeed(0.22F);
                 setAttackStrength(4);
-                setCanDestroyBlocks(false);
                 setAggroRange(18);
-                setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
             }
         }
 

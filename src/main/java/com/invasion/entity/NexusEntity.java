@@ -8,6 +8,7 @@ import com.invasion.entity.ai.Goal;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
+import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.EntityConstruct.BuildableMob;
 import com.invasion.nexus.IHasNexus;
@@ -22,7 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.entity.EntityLike;
 
-public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, EntityLike {
+public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, EntityLike, Combatant<PathAwareEntity> {
     @Deprecated
     static NbtComponent createVariant(int flavour, int tier) {
         NbtCompound nbt = new NbtCompound();
@@ -34,19 +35,9 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
     float DEFAULT_GROUND_FRICTION = 0.546F;
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
 
-    @Override
-    default double findDistanceToNexus() {
-        if (!hasNexus()) {
-            return Double.MAX_VALUE;
-        }
-        return Math.sqrt(getNexus().getOrigin().toCenterPos().squaredDistanceTo(asEntity().getX(), asEntity().getBodyY(0.5), asEntity().getZ()));
-    }
-
     default INavigation getNavigatorNew() {
         return ((PathNavigateAdapter)asEntity().getNavigation()).getNewNavigator();
     }
-
-    PathAwareEntity asEntity();
 
     @Override
     default void onSpawned(@Nullable INexusAccess nexus, EntityConstruct spawnConditions) {
@@ -63,15 +54,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
         return false;
     }
 
-    default void setMaxHealth(float health) {
-        asEntity().getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(health);
-    }
-
-    default void setMaxHealthAndHealth(float health) {
-        setMaxHealth(health);
-        asEntity().setHealth(health);
-    }
-
+    @Deprecated
     default void setGravity(float acceleration) {
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_GRAVITY).setBaseValue(acceleration);
     }
@@ -81,6 +64,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(height);
     }
 
+    @Deprecated
     default void setAttackStrength(double attackStrength) {
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(attackStrength);
     }
@@ -99,18 +83,14 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
             && asEntity().getWorld().getLightLevel(LightType.BLOCK, pos) <= asEntity().getRandom().nextInt(8);
     }
 
-    @Deprecated
-    default int getTier() {
-        return 1;
-    }
-
     default boolean getDebugMode() {
         return InvasionMod.getConfig().debugMode;
     }
 
+    @Override
     @Deprecated
     default String getLegacyName() {
-        return String.format("%s-T%d", getClass().getName().replace("Entity", ""), getTier());
+        return String.format("%s-T1", getClass().getName().replace("Entity", ""));
     }
 
     @Override
@@ -126,5 +106,9 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
     @Override
     default Goal transitionAIGoal(Goal newGoal) {
         return getNavigatorNew().transitionAIGoal(newGoal);
+    }
+
+    @Deprecated
+    default void setName(String name) {
     }
 }

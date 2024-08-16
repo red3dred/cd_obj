@@ -2,7 +2,6 @@ package com.invasion.entity;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.InvasionMod;
 import com.invasion.entity.ai.goal.EntityAIAttackNexus;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
@@ -16,7 +15,10 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -29,8 +31,11 @@ import net.minecraft.world.World;
 public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
     public EntityIMSkeleton(EntityType<EntityIMSkeleton> type, World world) {
         super(type, world, null);
-        setMaxHealthAndHealth(InvasionMod.getConfig().getHealth(this));
-        setMovementSpeed(0.21F);
+    }
+
+    public static DefaultAttributeContainer.Builder createIMSkeletonAttributes() {
+        return SkeletonEntity.createAbstractSkeletonAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.21);
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.invasion.InvasionMod;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.InvEntities;
+import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.nexus.wave.IMWaveBuilder;
@@ -161,11 +162,14 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		return currentWave.getTotalMobAmount();
 	}
 
-	public void askForRespawn(EntityIMLiving entity) {
+	public void askForRespawn(Combatant<?> entity) {
 		if (spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID) > 10) {
 			SpawnPoint spawnPoint = spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID);
 			if (spawnPoint != null) {
-			    spawnPoint.applyTo(entity);
+			    final byte statusAddDeathParticles = (byte)60;
+			    spawnPoint.applyTo(entity.asEntity());
+			    entity.resetHealth();
+			    entity.asEntity().getWorld().sendEntityStatus(entity.asEntity(), statusAddDeathParticles);
 			}
 		}
 	}
