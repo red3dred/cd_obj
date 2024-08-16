@@ -68,7 +68,7 @@ public class EntityIMEgg extends EntityIMLiving {
     }
 
     private void hatch() {
-        playSound(InvSounds.ENTITY_EGG_HATCH, 1, 1);
+        playSound(InvSounds.ENTITY_SPIDER_EGG_HATCH, 1, 1);
         setHatched(true);
         if (!getWorld().isClient) {
             for (Entity entity : contents) {

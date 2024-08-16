@@ -1,5 +1,6 @@
 package com.invasion.entity.ai.goal;
 
+import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.Stunnable;
@@ -9,7 +10,6 @@ import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -134,7 +134,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
             i.stun(40);
         }
         theEntity.damage(theEntity.getDamageSources().generic(), 5);
-        theEntity.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1F, 0.6F);
+        theEntity.playSound(InvSounds.ENTITY_CRASH, 1F, 0.6F);
         endSprint();
     }
 }

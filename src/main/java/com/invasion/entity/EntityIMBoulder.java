@@ -1,5 +1,6 @@
 package com.invasion.entity;
 
+import com.invasion.InvSounds;
 import com.invasion.block.BlockSpecial;
 import com.invasion.block.InvBlocks;
 import com.invasion.block.TileEntityNexus;
@@ -9,12 +10,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.World.ExplosionSourceType;
+import net.minecraft.world.event.GameEvent;
 
 public class EntityIMBoulder extends PersistentProjectileEntity {
     public EntityIMBoulder(EntityType<? extends EntityIMBoulder> type, World world) {
@@ -35,7 +36,8 @@ public class EntityIMBoulder extends PersistentProjectileEntity {
 
     @Override
     protected void onEntityHit(EntityHitResult hit) {
-        playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1.0F, 0.9F / (getRandom().nextFloat() * 0.2F + 0.9F));
+        playSound(InvSounds.ENTITY_BOULDER_LAND, 1, 0.9F / (getRandom().nextFloat() * 0.2F + 0.9F));
+        getWorld().emitGameEvent(this, GameEvent.HIT_GROUND, getBlockPos());
     }
 
     @Override
@@ -47,6 +49,7 @@ public class EntityIMBoulder extends PersistentProjectileEntity {
         } else if (state.getHardness(getWorld(), hit.getBlockPos()) >= 0) {
 
             if (!state.isIn(BlockTags.WITHER_IMMUNE) && !state.isIn(BlockTags.DRAGON_IMMUNE)) {
+                getWorld().emitGameEvent(this, GameEvent.HIT_GROUND, hit.getBlockPos());
                 if (BlockSpecial.of(state) == BlockSpecial.DEFLECTION_1 && getRandom().nextInt(2) == 0) {
                     discard();
                     return;

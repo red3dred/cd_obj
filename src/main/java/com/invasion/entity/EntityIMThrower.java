@@ -5,6 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.INotifyTask;
+import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.ai.goal.EntityAIAttackNexus;
@@ -28,7 +29,6 @@ import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -256,7 +256,7 @@ public class EntityIMThrower extends TieredIMMobEntity {
             } else {
                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
                 if (blockBreakSoundCooldown == 0) {
-                    playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1, 0.4F);
+                    playSound(InvSounds.ENTITY_THROWER_RAGE, 1, 0.4F);
                     blockBreakSoundCooldown = 5;
                 }
             }

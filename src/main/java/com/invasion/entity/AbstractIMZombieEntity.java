@@ -107,7 +107,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     protected void updateSound() {
         if (terrainModifier.isBusy() && --scrapeSoundCooldown <= 0) {
-            playSound(InvSounds.SCRAPE, 0.85F, 1 / (getRandom().nextFloat() * 0.5F + 1));
+            playSound(InvSounds.ENTITY_SCRAPE, 0.85F, 1 / (getRandom().nextFloat() * 0.5F + 1));
             scrapeSoundCooldown = 45 + getRandom().nextInt(20);
         }
     }
