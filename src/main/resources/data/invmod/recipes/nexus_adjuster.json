@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": { "item": "minecraft:iron_ingot" }
+  },
+  "pattern": [
+    " X",
+    "XX",
+    "XX"
+  ],
+  "result": {
+    "item": "invmod:nexus_adjuster"
+  }
+}
