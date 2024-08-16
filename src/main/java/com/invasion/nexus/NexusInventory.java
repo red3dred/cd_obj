@@ -54,12 +54,10 @@ public class NexusInventory extends SimpleInventory {
     }
 
     private void tickCookTime(INexusAccess nexus, ItemStack firstStack, ItemStack secondStack) {
-        int mode = nexus.getMode();
-        int nexusLevel = nexus.getLevel();
         if (!firstStack.isEmpty()) {
             if (firstStack.isOf(InvItems.EMPTY_TRAP)) {
                 if (cookTime < MAX_TRAP_COOK_TIME) {
-                    cookTime += mode == 0 ? 1 : 9;
+                    cookTime += nexus.getMode() == Mode.STOPPED ? 1 : 9;
                 } else {
                     if (secondStack.isEmpty()) {
                         setStack(1, InvItems.FLAME_TRAP.getDefaultStack());
@@ -72,7 +70,7 @@ public class NexusInventory extends SimpleInventory {
                     }
                 }
             } else if (firstStack.isOf(InvItems.RIFT_FLUX)) {
-                if (cookTime < MAX_TRAP_COOK_TIME && nexusLevel >= 10) {
+                if (cookTime < MAX_TRAP_COOK_TIME && nexus.getLevel() >= 10) {
                     cookTime += 5;
                 }
 

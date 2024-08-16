@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.invasion.entity.ai.AttackerAI;
 import com.invasion.nexus.ControllableNexusAccess;
+import com.invasion.nexus.Mode;
 import com.invasion.nexus.Participants;
 
 import net.minecraft.text.Text;
@@ -39,8 +40,8 @@ public class DummyNexus implements ControllableNexusAccess {
     }
 
     @Override
-    public int getMode() {
-        return 0;
+    public Mode getMode() {
+        return Mode.STOPPED;
     }
 
     @Override
@@ -100,5 +101,10 @@ public class DummyNexus implements ControllableNexusAccess {
     @Override
     public List<Text> getStatus() {
         return List.of();
+    }
+
+    @Override
+    public boolean isDiscarded() {
+        return false;
     }
 }

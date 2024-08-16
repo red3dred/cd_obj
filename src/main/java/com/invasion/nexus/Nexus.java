@@ -236,39 +236,41 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     public void tick() {
-        if (mode.isActive()) {
-            try {
-                tickCount = (tickCount + 1) % 60;
-                if (tickCount == 0) {
-                    boundPlayers.bindPlayers(boundingBoxToRadius);
-                    mobList.updateMobList(boundingBoxToRadius);
-                }
-
-                if (mode == Mode.STARTED || mode == Mode.WAITING) {
-                    doInvasion(50);
-                } else if (mode == Mode.CONTINUOUS) {
-                    doContinuous(50);
-                }
-                storage.setActiveNexus(this);
-            } catch (WaveSpawnerException e) {
-                InvasionMod.LOGGER.error("Exception occured whilst updating invasion", e);
-                stop(false);
+        if (!mode.isActive()) {
+            return;
+        }
+        try {
+            tickCount = (tickCount + 1) % 60;
+            if (tickCount == 0) {
+                boundPlayers.bindPlayers(boundingBoxToRadius);
+                mobList.updateMobList(boundingBoxToRadius);
             }
+
+            if (mode == Mode.STARTED || mode == Mode.WAITING) {
+                doInvasion(50);
+            } else if (mode == Mode.CONTINUOUS) {
+                doContinuous(50);
+            }
+            storage.setActiveNexus(this);
+        } catch (WaveSpawnerException e) {
+            InvasionMod.LOGGER.error("Exception occured whilst updating invasion", e);
+            stop(false);
         }
     }
 
     public void onLoaded() {
-        if (mode.isActive()) {
-            boundingBoxToRadius = getChunkBox(world);
-            if (mode == Mode.CONTINUOUS && continuousAttack) {
-                if (resumeSpawnerContinuous()) {
-                    mobsLeftInWave = (lastMobsLeftInWave += acquireEntities());
-                }
-            } else {
-                resumeSpawnerInvasion();
-            }
-            attackerAI.onResume();
+        if (!mode.isActive()) {
+            return;
         }
+        boundingBoxToRadius = getChunkBox(world);
+        if (mode == Mode.CONTINUOUS && continuousAttack) {
+            if (resumeSpawnerContinuous()) {
+                mobsLeftInWave = (lastMobsLeftInWave += acquireEntities());
+            }
+        } else {
+            resumeSpawnerInvasion();
+        }
+        attackerAI.onResume();
     }
 
     @Override

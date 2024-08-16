@@ -33,7 +33,7 @@ public class WorldNexusStorage extends PersistentState {
 
     private final ServerWorld world;
 
-    private Map<UUID, Nexus> instances = new HashMap<>();
+    private final Map<UUID, Nexus> instances = new HashMap<>();
 
     private Optional<UUID> activeNexus = Optional.empty();
 
@@ -58,14 +58,17 @@ public class WorldNexusStorage extends PersistentState {
 
     public synchronized void tick() {
         cleanupTimer = (cleanupTimer + 1) % 40;
-        instances.values().forEach(nexus -> {
+        instances.values().removeIf(nexus -> {
+            if (tickCleanup(nexus)) {
+                return true;
+            }
             nexus.tickInventory();
             nexus.getAttackerAI().tick();
             if (resumed) {
                 nexus.onLoaded();
             }
-            nexus.tick(world);
-            tickCleanup(nexus);
+            nexus.tick();
+            return false;
         });
         resumed = false;
 
@@ -79,13 +82,13 @@ public class WorldNexusStorage extends PersistentState {
         }
     }
 
-    private void tickCleanup(Nexus nexus) {
-        if (cleanupTimer == 0) {
-            if (!world.getBlockState(nexus.getOrigin()).isOf(InvBlocks.NEXUS_CORE)) {
-                nexus.stop(false);
-                InvasionMod.LOGGER.warn("Stranded Nexus entity trying to delete itself...");
-            }
+    private boolean tickCleanup(Nexus nexus) {
+        if (cleanupTimer == 0 && !world.getBlockState(nexus.getOrigin()).isOf(InvBlocks.NEXUS_CORE)) {
+            nexus.stop(true);
+            InvasionMod.LOGGER.warn("Stranded Nexus entity trying to delete itself...");
+            return true;
         }
+        return false;
     }
 
 

@@ -18,7 +18,6 @@ import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.Nexus;
-import com.invasion.nexus.Participants.Entry;
 import com.invasion.util.math.CoordsInt;
 
 import net.minecraft.nbt.NbtCompound;
@@ -185,6 +184,7 @@ public class AttackerAI {
             nbttaglist.add(nbtscaffold);
         }
         compound.put("scaffolds", nbttaglist);
+        return compound;
     }
 
     private Path createPath(IPathfindable pather, BlockPos p1, BlockPos p2, BlockView terrainMap) {

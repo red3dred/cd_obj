@@ -8,6 +8,8 @@ import com.invasion.InvasionMod;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.IHasNexus;
 import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.Mode;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
@@ -103,7 +105,7 @@ public class EntityIMWolf extends WolfEntity implements IHasNexus {
     }
 
     public boolean respawnAtNexus() {
-        if (getWorld().isClient || !hasNexus() || getNexus().getMode() == 0) {
+        if (getWorld().isClient || !hasNexus() || getNexus().getMode() == Mode.STOPPED) {
             return false;
         }
 
