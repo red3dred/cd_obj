@@ -53,6 +53,7 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
         return new NavigatorBurrower(this, pathSource, 16, -4);
     }
 
+    @Deprecated
     @Override
     public int getTier() {
         return 3;

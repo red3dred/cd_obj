@@ -17,6 +17,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.world.World;
 
 public class EntityIMBird extends EntityIMFlying {
+    @Deprecated
     private static final TrackedData<Integer> TIER = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> CLAWS_FORWARD = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> BEAK_DOWN = DataTracker.registerData(EntityIMBird.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -54,11 +55,13 @@ public class EntityIMBird extends EntityIMFlying {
         builder.add(ATTACKING_WITH_WINGS, false);
     }
 
+    @Deprecated
     @Override
     public int getTier() {
         return dataTracker.get(TIER);
     }
 
+    @Deprecated
     protected void setTier(int tier) {
         tier = Math.max(1, tier);
         dataTracker.set(TIER, tier);

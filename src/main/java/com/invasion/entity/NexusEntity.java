@@ -23,6 +23,7 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.entity.EntityLike;
 
 public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, EntityLike {
+    @Deprecated
     static NbtComponent createVariant(int flavour, int tier) {
         NbtCompound nbt = new NbtCompound();
         nbt.putInt("flavour", flavour);
@@ -98,6 +99,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
             && asEntity().getWorld().getLightLevel(LightType.BLOCK, pos) <= asEntity().getRandom().nextInt(8);
     }
 
+    @Deprecated
     default int getTier() {
         return 1;
     }
