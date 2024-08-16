@@ -28,7 +28,7 @@ public interface InvItems {
 
     Item INFUSED_SWORD = register("infused_sword", new ItemInfusedSword());
     Item SEARING_BOW = register("searing_bow", new ItemSearingBow(new Item.Settings().maxDamage(384)));
-    Item ENGY_HAMMER = register("engy_hammer", new Item(new Item.Settings())); // TODO: has 3d model
+    Item ENGY_HAMMER = register("engineer_hammer", new Item(new Item.Settings())); // TODO: has 3d model
 
     Item EMPTY_TRAP = register("empty_trap", new Item(new Item.Settings()));
     Item RIFT_TRAP = register("rift_trap", new ItemTrap(new Item.Settings(), EntityIMTrap.Type.RIFT));
