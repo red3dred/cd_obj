@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:block/cube_top_bottom",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
     "top": "invmod:block/lit_nexus_core_top",
     "bottom": "minecraft:block/obsidian",
