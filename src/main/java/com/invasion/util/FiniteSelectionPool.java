@@ -41,7 +41,9 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
 	@Override
     public FiniteSelectionPool<T> clone() {
 		FiniteSelectionPool<T> clone = new FiniteSelectionPool<>();
-		clone.currentPool.addAll(currentPool);
+		for (Entry<T> entry : currentPool) {
+		    clone.currentPool.add(entry.clone());
+		}
 		clone.totalAmount = totalAmount;
 		clone.originalAmount = originalAmount;
 		return clone;
@@ -88,6 +90,11 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
         public void reset() {
             amount = initialAmount;
             value.reset();
+        }
+
+        @Override
+        public Entry<T> clone() {
+            return new Entry<>(value.clone(), initialAmount);
         }
 	}
 }

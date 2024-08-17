@@ -14,4 +14,10 @@ public record SingleSelection<T>(T object) implements ISelect<T> {
     public String toString() {
         return object.toString();
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public SingleSelection<T> clone() {
+        return object instanceof ISelect<?> i ? new SingleSelection<>((T)i.clone()) : this;
+    }
 }

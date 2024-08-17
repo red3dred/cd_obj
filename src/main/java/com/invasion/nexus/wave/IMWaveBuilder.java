@@ -451,7 +451,7 @@ public class IMWaveBuilder {
             RandomSelectionPool<IEntityIMPattern> wave11BurstPool = new RandomSelectionPool<>();
             wave11BurstPool.addEntry(getPattern("pigengy_t1_any"), 1);
             wave11BurstPool.addEntry(getPattern("zombiePigman_t1_any"), 2);
-            wave11BurstPool.addEntry(getPattern("zombie_t2_any"), 3);
+            wave11BurstPool.addEntry(getPattern("zombie_t2_any_basic"), 3);
             wave11BurstPool.addEntry(getPattern("zombie_t1_any"), 1);
             wave11BurstPool.addEntry(getPattern("skeleton_t1_any"), 1);
             wave11BurstPool.addEntry(getPattern("thrower_t1"), 0.8F);
@@ -503,8 +503,7 @@ public class IMWaveBuilder {
                         .addEntry(getPattern("zombie_t3_any"), 0.5F)
                         .addEntry(getPattern("creeper_t1_basic"), 0.42F)
                         .addEntry(getPattern("imp_t1"), 0.4F), 25, 3),
-                new WaveEntry((int) (timeScale * 95000), (int) (timeScale * 97000),
-                        (int) (mobScale * 6), 500, new FiniteSelectionPool<IEntityIMPattern>()
+                new WaveEntry((int) (timeScale * 95000), (int) (timeScale * 97000), (int) (mobScale * 6), 500, new FiniteSelectionPool<IEntityIMPattern>()
                         .addEntry(getPattern("zombie_t2_any_basic"), 2)
                         .addEntry(getPattern("zombie_t1_any"), 3)
                         .addEntry(getPattern("spider_t2_any"), 1), 45, 2)

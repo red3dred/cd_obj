@@ -42,7 +42,10 @@ public class RandomSelectionPool<T> implements ISelect<T> {
     @Override
     public RandomSelectionPool<T> clone() {
         RandomSelectionPool<T> clone = new RandomSelectionPool<>();
-        clone.pool.addAll(pool);
+        for (Entry<T> entry : pool) {
+            clone.addEntry(entry.value.clone(), entry.weight);
+        }
+        clone.totalWeight = totalWeight;
         return clone;
     }
 
