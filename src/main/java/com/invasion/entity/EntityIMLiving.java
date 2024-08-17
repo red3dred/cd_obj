@@ -7,8 +7,6 @@ import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.nexus.IHasNexus;
-import com.invasion.util.math.MathUtil;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
@@ -28,7 +26,7 @@ import net.minecraft.world.WorldView;
 
 public abstract class EntityIMLiving extends HostileEntity implements NexusEntity, Stunnable {
     private static final TrackedData<Integer> MOVE_STATE = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
+    //private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
 
     private final IHasNexus.Handle nexus = new IHasNexus.Handle(this::getWorld);
 
@@ -65,10 +63,10 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     @Override
     public void tickMovement() {
         super.tickMovement();
-        int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
+        /*int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
         if (packedAngles != dataTracker.get(ANGLES)) {
             dataTracker.set(ANGLES, packedAngles);
-        }
+        }*/
 
         if (!hasNexus() && getBurnsInDay() && isAffectedByDaylight()) {
             sunlightDamageTick();
@@ -90,12 +88,12 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     @Override
     public void onTrackedDataSet(TrackedData<?> data) {
         super.onTrackedDataSet(data);
-        if (data == ANGLES) {
+        /*if (data == ANGLES) {
             int packedAngles = dataTracker.get(ANGLES);
             setBodyYaw(MathUtil.unpackAnglesDeg_1(packedAngles));
             setHeadYaw(MathUtil.unpackAnglesDeg_2(packedAngles));
             setPitch(MathUtil.unpackAnglesDeg_3(packedAngles));
-        }
+        }*/
     }
 
     @Override

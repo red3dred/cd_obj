@@ -104,9 +104,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     @Override
     protected void initGoals() {
         // added EntityAISwimming and increased all other tasks order numbers with 1
-        if (getTier() != 2 || getFlavour() != 2) {
-            goalSelector.add(0, new SwimGoal(this));
-        }
+        goalSelector.add(0, new PredicatedGoal(new SwimGoal(this), () -> getTier() != 2 || getFlavour() != 2));
         goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
         goalSelector.add(1, new EntityAIKillEntity<>(this, ServerPlayerEntity.class, 40));
         goalSelector.add(1, new EntityAIKillEntity<>(this, IronGolemEntity.class, 30));
@@ -123,7 +121,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
         targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, this::getAggroRange));
         targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> getTier() != 3));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
         targetSelector.add(3, new PredicatedGoal(new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3));
         targetSelector.add(5, new RevengeGoal(this));
     }
@@ -235,11 +233,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     @Override
     public int getTextureId() {
         return texture;
-    }
-
-    @Override
-    public boolean isBigRenderTempHack() {
-        return getFlavour() == 3;
     }
 
     @Override

@@ -103,11 +103,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    public boolean isBigRenderTempHack() {
-        return getTier() == 3;
-    }
-
-    @Override
     public void updateAnimation(boolean override) {
         if (!getWorld().isClient && (terrainModifier.isBusy() || override)) {
             setSwinging(true);

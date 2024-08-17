@@ -77,6 +77,12 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
         };
     }
 
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(SWINGING, false);
+    }
+
     protected ITerrainDig getTerrainDig() {
         return this.terrainDigger;
     }
@@ -189,8 +195,6 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
         }
         return false;
     }
-
-    public abstract boolean isBigRenderTempHack();
 
     public float scaleAmount() {
         if (getTier() == 2)

@@ -63,8 +63,12 @@ public class RenderIMZombie extends BipedEntityRenderer<AbstractIMZombieEntity, 
 
     @Override
     public void render(AbstractIMZombieEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertices, int light) {
-        this.model = entity.isBigRenderTempHack() ? bigModel : normalModel;
+        this.model = isBrute(entity) ? bigModel : normalModel;
         super.render(entity, yaw, tickDelta, matrices, vertices, light);
+    }
+
+    protected boolean isBrute(AbstractIMZombieEntity entity) {
+        return entity.getTextureId() == 3 || entity.getTextureId() == 6;
     }
 
     @Override
@@ -84,7 +88,7 @@ public class RenderIMZombie extends BipedEntityRenderer<AbstractIMZombieEntity, 
         return textures.get(id >= textures.size() ? 0 : id);
     }
 
-    private static final class ArmorFeature extends ArmorFeatureRenderer<AbstractIMZombieEntity, BipedEntityModel<AbstractIMZombieEntity>, BipedEntityModel<AbstractIMZombieEntity>> {
+    private final class ArmorFeature extends ArmorFeatureRenderer<AbstractIMZombieEntity, BipedEntityModel<AbstractIMZombieEntity>, BipedEntityModel<AbstractIMZombieEntity>> {
         private final boolean isBig;
 
         public ArmorFeature(
@@ -99,7 +103,7 @@ public class RenderIMZombie extends BipedEntityRenderer<AbstractIMZombieEntity, 
 
         @Override
         public void render(MatrixStack matrices, VertexConsumerProvider vertices, int light, AbstractIMZombieEntity entity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
-            if (entity.isBigRenderTempHack() == isBig) {
+            if (isBrute(entity) == isBig) {
                 super.render(matrices, vertices, light, entity, limbAngle, limbDistance, tickDelta, animationProgress, headYaw, headPitch);
             }
         }

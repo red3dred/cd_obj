@@ -41,7 +41,7 @@ public class NavigatorEngy extends NavigatorIM {
 
             @Override
             public boolean avoidsBlock(BlockState state) {
-                return !avoidsBlock(state) || state.isIn(BlockTags.DOORS);
+                return super.avoidsBlock(state) || state.isIn(BlockTags.DOORS);
             }
 
             @Override

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.invasion.InvasionMod;
+import com.invasion.entity.AbstractIMZombieEntity;
 
 public class RenderIMZombiePigman extends RenderIMZombie {
     static final List<Identifier> TEXTURES = Stream.of(
@@ -18,6 +19,13 @@ public class RenderIMZombiePigman extends RenderIMZombie {
 	public RenderIMZombiePigman(EntityRendererFactory.Context ctx) {
 		super(ctx);
 	}
+
+
+    @Override
+    protected boolean isBrute(AbstractIMZombieEntity entity) {
+        return entity.getTier() == 3;
+    }
+
 
     @Override
     protected List<Identifier> getTextures() {

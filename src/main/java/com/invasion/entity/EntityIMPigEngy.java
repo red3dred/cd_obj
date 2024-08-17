@@ -13,6 +13,7 @@ import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAIKillEntity;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
+import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.NavigatorEngy;
 import com.invasion.entity.pathfinding.Path;
@@ -79,12 +80,9 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
         goalSelector.add(9, new LookAroundGoal(this));
 
-        if (hasNexus()) {
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, 3, true));
-        } else {
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
-            targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
-        }
+        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, 3, true), this::hasNexus));
+        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
+        targetSelector.add(2, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
         targetSelector.add(3, new RevengeGoal(this));
     }
 

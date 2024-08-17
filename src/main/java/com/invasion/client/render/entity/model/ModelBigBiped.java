@@ -23,7 +23,7 @@ public class ModelBigBiped<T extends LivingEntity> extends BipedEntityModel<T> {
   }
 
   public static TexturedModelData getTexturedModelData(Dilation dilation, float pivotOffsetY) {
-      return TexturedModelData.of(getModelData(dilation, pivotOffsetY), 64, 32);
+      return TexturedModelData.of(getModelData(dilation, pivotOffsetY), 64, 64);
   }
 
   public static ModelData getModelData(Dilation dilation, float pivotOffsetY) {
