@@ -11,7 +11,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class GuiNexus extends HandledScreen<ContainerNexus> {
-    private static final Identifier BACKGROUND = InvasionMod.id("textures/nexusgui.png");
+    private static final Identifier BACKGROUND = InvasionMod.id("textures/gui/nexus.png");
 
     public GuiNexus(ContainerNexus container, PlayerInventory inventory, Text title) {
         super(container, inventory, title);
@@ -42,9 +42,9 @@ public class GuiNexus extends HandledScreen<ContainerNexus> {
 
     @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        int j = (this.width - this.backgroundWidth) / 2;
-        int k = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(BACKGROUND, j, k, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        int j = (width - backgroundWidth) / 2;
+        int k = (height - backgroundHeight) / 2;
+        context.drawTexture(BACKGROUND, j, k, 0, 0, backgroundWidth, backgroundHeight);
 
         int l = handler.getGenerationProgressScaled(26);
         context.drawTexture(BACKGROUND, j + 126, k + 28 + 26 - l, 185, 26 - l, 9, l);
