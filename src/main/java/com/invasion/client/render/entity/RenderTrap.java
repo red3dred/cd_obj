@@ -12,7 +12,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 
 public class RenderTrap extends EntityRenderer<EntityIMTrap> {
-	private static final Identifier TEXTURE = InvasionMod.id("textures/trap.png");
+	private static final Identifier TEXTURE = InvasionMod.id("textures/entity/trap.png");
 
 	private final ModelTrap model;
 

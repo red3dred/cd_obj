@@ -33,7 +33,7 @@ public class ItemTrap extends Item {
         if (context.getSide() == Direction.UP) {
             World world = context.getWorld();
             Vec3d pos = context.getBlockPos().offset(context.getSide()).toBottomCenterPos();
-            EntityIMTrap trap = new EntityIMTrap(InvEntities.TRAP, world, pos.getX(), pos.getY() + 1, pos.getZ(), trapType);
+            EntityIMTrap trap = new EntityIMTrap(InvEntities.TRAP, world, pos.getX(), pos.getY(), pos.getZ(), trapType);
 
             if (trap.isValidPlacement()
                     && world.getEntitiesByClass(EntityIMTrap.class, trap.getBoundingBox(),
