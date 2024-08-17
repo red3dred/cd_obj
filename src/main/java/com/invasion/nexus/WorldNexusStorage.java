@@ -68,7 +68,7 @@ public class WorldNexusStorage extends PersistentState {
                 nexus.onLoaded();
             }
             nexus.tick();
-            return false;
+            return nexus.isDiscarded();
         });
         resumed = false;
 
