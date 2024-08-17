@@ -72,7 +72,7 @@ public interface InvItems {
     Item TIER_ONE_SKELETON_SPAWN_EGG = register("tier_one_skeleton_spawn_egg", createSpawnEgg(InvEntities.SKELETON, 0x9B9B9B, 0x797979));
     Item TIER_ONE_SPIDER_SPAWN_EGG = register("tier_one_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C));
     Item BABY_SPIDER_SPAWN_EGG = register("baby_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C, NexusEntity.createVariant(1, 1)));
-    Item JUMPING_SPIDER_SPAWN_EGG = register("jumping_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(1, 1)));
+    Item JUMPING_SPIDER_SPAWN_EGG = register("jumping_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(0, 2)));
     Item MOTHER_SPIDER_SPAWN_EGG = register("mother_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(1, 2)));
     Item TIER_ONE_CREEPER_SPAWN_EGG = register("tier_one_creeper_spawn_egg", createSpawnEgg(InvEntities.CREEPER, 0x238F1F, 0xA5AAA6));
     Item PIGMAN_ENGINEER_SPAWN_EGG = register("pigman_engineer_spawn_egg", createSpawnEgg(InvEntities.PIGMAN_ENGINEER, 0xEC9695, 0x420000));
