@@ -83,7 +83,7 @@ public class Nexus implements ControllableNexusAccess {
     private final NexusInventory nexusItemStacks = new NexusInventory();
 
     private final Participants boundPlayers = new Participants(this);
-    private final Combatants mobList = new Combatants(this);
+    private final Combatants mobList;
     private final AttackerAI attackerAI = new AttackerAI(this);
 
     private final ConfigInvasion config = InvasionMod.getConfig();
@@ -148,6 +148,7 @@ public class Nexus implements ControllableNexusAccess {
         this.world = world;
         this.storage = storage;
         this.pos = pos;
+        mobList = new Combatants(this);
         boundingBoxToRadius = computeSpawnArea();
         nexusItemStacks.addListener(i -> storage.markDirty());
     }
