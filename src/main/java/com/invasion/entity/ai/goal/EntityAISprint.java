@@ -2,23 +2,25 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 import com.invasion.entity.Stunnable;
+import com.invasion.entity.ai.IMMoveHelper;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
+public class EntityAISprint<T extends PathAwareEntity & NexusEntity> extends net.minecraft.entity.ai.goal.Goal {
     private static final EntityAttributeModifier SPRINTING_SPEED_BOOST = new EntityAttributeModifier(
             InvasionMod.id("sprinting"), 2.3F, Operation.ADD_MULTIPLIED_BASE
     );
 
-    protected final EntityIMLiving theEntity;
+    protected final T theEntity;
 
     private int updateTimer;
     private int timer;
@@ -29,7 +31,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
 
     protected Vec3d lastPos = Vec3d.ZERO;
 
-    public EntityAISprint(EntityIMLiving entity) {
+    public EntityAISprint(T entity) {
         theEntity = entity;
     }
 
@@ -67,7 +69,7 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
             double dZ = target.getZ() - theEntity.getZ();
             double dAngle = MathHelper.wrapDegrees(Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90 - theEntity.getYaw());
             if (dAngle > 60) {
-                theEntity.setTurnRate(2);
+                ((IMMoveHelper)theEntity.getMoveControl()).setTurnRate(2);
                 missingTarget = 1;
             }
 
@@ -118,14 +120,14 @@ public class EntityAISprint extends net.minecraft.entity.ai.goal.Goal {
             attribute.addTemporaryModifier(SPRINTING_SPEED_BOOST);
         }
         theEntity.setSprinting(true);
-        theEntity.setTurnRate(4.9F);
+        ((IMMoveHelper)theEntity.getMoveControl()).setTurnRate(4.9F);
         theEntity.setAttacking(false);
     }
 
     protected void endSprint() {
         timer = 180;
         theEntity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).removeModifier(SPRINTING_SPEED_BOOST.id());
-        theEntity.setTurnRate(30);
+        ((IMMoveHelper)theEntity.getMoveControl()).setTurnRate(30);
         theEntity.setSprinting(false);
     }
 

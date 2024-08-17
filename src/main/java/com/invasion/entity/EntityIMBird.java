@@ -6,8 +6,6 @@ import com.invasion.client.render.animation.AnimationState;
 import com.invasion.entity.animation.LegController;
 import com.invasion.entity.animation.MouthController;
 import com.invasion.entity.animation.WingController;
-import com.invasion.nexus.INexusAccess;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -33,15 +31,7 @@ public class EntityIMBird extends EntityIMFlying {
     private float carriedEntityYawOffset;
 
     public EntityIMBird(EntityType<? extends EntityIMBird> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMBird(EntityType<? extends EntityIMBird> type, World world, INexusAccess nexus) {
-        super(type, world, nexus);
-        setName("Bird");
-        setMovementSpeed(1.0F);
-        setAttackStrength(1);
-        setGravity(0.025F);
+        super(type, world);
         setThrust(0.1F);
         setMaxPoweredFlightSpeed(0.5F);
         setLiftFactor(0.35F);

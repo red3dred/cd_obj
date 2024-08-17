@@ -12,14 +12,13 @@ import com.invasion.entity.ai.goal.EntityAISimpleTarget;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
+import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.pathfinding.Actor;
 import com.invasion.entity.pathfinding.INavigation;
-import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.Path;
+import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.nexus.INexusAccess;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -67,11 +66,7 @@ public class EntityIMCreeper extends TieredIMMobEntity implements ILeader, SkinO
     private Direction explodeDirection = Direction.UP;
 
     public EntityIMCreeper(EntityType<EntityIMCreeper> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMCreeper(EntityType<EntityIMCreeper> type, World world, INexusAccess nexus) {
-        super(type, world, nexus);
+        super(type, world);
     }
 
     public static DefaultAttributeContainer.Builder createAttributes() {
@@ -98,18 +93,15 @@ public class EntityIMCreeper extends TieredIMMobEntity implements ILeader, SkinO
         goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 4.8F));
         goalSelector.add(9, new LookAroundGoal(this));
         targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, 12.0F));
-        if (hasNexus()) {
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, 20.0F, true));
-        } else {
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getSenseRange(), false));
-            targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getAggroRange(), true));
-        }
+        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, 20.0F, true), this::hasNexus));
+        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
+        targetSelector.add(2, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
         targetSelector.add(3, new RevengeGoal(this));
     }
 
     @Override
-    protected INavigation createIMNavigation(IPathSource pathSource) {
-        return new NavigatorIM(this, pathSource) {
+    protected INavigation createIMNavigation() {
+        return new NavigatorIM(this, new PathCreator(700, 50)) {
             @Override
             protected <T extends Entity> Actor<T> createActor(T entity) {
                 return new Actor<>(entity) {

@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import com.invasion.entity.EntityIMLiving;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.control.MoveControl;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
@@ -20,6 +21,8 @@ public class IMMoveHelper extends MoveControl {
     protected boolean needsUpdate;
     protected boolean isRunning;
 
+    private float turnRate = 30;
+
     public IMMoveHelper(EntityIMLiving par1EntityLiving) {
         super(par1EntityLiving);
         this.needsUpdate = false;
@@ -32,8 +35,12 @@ public class IMMoveHelper extends MoveControl {
         return this.needsUpdate;
     }
 
-    public void setMoveSpeed(float speed) {
-        this.speed = speed;
+    public float getTurnRate() {
+        return turnRate;
+    }
+
+    public void setTurnRate(float rate) {
+        this.turnRate = rate;
     }
 
     @Override
@@ -89,7 +96,7 @@ public class IMMoveHelper extends MoveControl {
                 newYaw = (float) (Math.atan2(dZ + orientation.x, dX + orientation.z) * MathHelper.DEGREES_PER_RADIAN)
                         - 90;
             }
-            entity.setYaw(correctRotation(entity.getYaw(), newYaw, entity.getTurnRate()));
+            entity.setYaw(correctRotation(entity.getYaw(), newYaw, getTurnRate()));
             double moveSpeed;
             if (distanceSquared >= 0.064D || entity.isSprinting()) {
                 moveSpeed = targetSpeed;
@@ -99,7 +106,7 @@ public class IMMoveHelper extends MoveControl {
             if ((entity.isTouchingWater()) && (moveSpeed < 0.6D)) {
                 moveSpeed = 0.6000000238418579D;
             }
-            entity.setMovementSpeed((float) moveSpeed);
+            entity.setMovementSpeed((float)( moveSpeed * entity.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED)));
         }
 
         if (dY > 0 && dX * dX + dZ * dZ <= MathHelper.square(entity.getWidth() * 0.5F + 1) || isInLiquid) {

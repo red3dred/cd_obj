@@ -29,7 +29,7 @@ public class RenderThrower extends BipedEntityRenderer<EntityIMThrower, ModelThr
 
 	@Override
     public Identifier getTexture(EntityIMThrower entity) {
-	    int id = entity.getTextureId() - 1;
+	    int id = entity.getTier() - 1;
 	    return TEXTURES.get(id < 0 || id >= TEXTURES.size() ? 0 : id);
 	}
 

@@ -13,9 +13,7 @@ import com.invasion.entity.ai.goal.EntityAITargetOnNoNexusPath;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
-import com.invasion.nexus.EntityConstruct;
-import com.invasion.nexus.INexusAccess;
-
+import com.invasion.entity.ai.goal.PredicatedGoal;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -37,6 +35,7 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -50,10 +49,10 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     static final int TAR = 5;
     static final int BRUTE = 6;
 
-    public EntityIMZombie(EntityType<EntityIMZombie> type, World world) {
-        this(type, world, null);
+    protected int selfDamage = 2;
+    protected int maxSelfDamage = 6;
 
-    }
+    private int texture;
 
     private static DefaultAttributeContainer.Builder createBaseAttributes() {
         return ZombieEntity.createZombieAttributes().add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.19F);
@@ -98,8 +97,8 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 18.0);
     }
 
-    public EntityIMZombie(EntityType<EntityIMZombie> type, World world, INexusAccess nexus) {
-        super(type, world, nexus, 2F);
+    public EntityIMZombie(EntityType<EntityIMZombie> type, World world) {
+        super(type, world, 2F);
     }
 
     @Override
@@ -113,33 +112,20 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         goalSelector.add(1, new EntityAIKillEntity<>(this, IronGolemEntity.class, 30));
         goalSelector.add(2, new EntityAIAttackNexus(this));
         goalSelector.add(3, new EntityAIWaitForEngy(this, 4.0F, true));
+        goalSelector.add(3, new PredicatedGoal(new EntityAISprint<>(this), () -> getTier() == 3));
         goalSelector.add(4, new EntityAIKillEntity<>(this, AnimalEntity.class, 40));
+        goalSelector.add(4, new PredicatedGoal(new EntityAIStoop(this), () -> getTier() == 3));
         goalSelector.add(5, new EntityAIGoToNexus(this));
         goalSelector.add(6, new EntityAIWanderIM(this));
         goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         goalSelector.add(8, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
         goalSelector.add(8, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, getAggroRange()));
+        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, this::getAggroRange));
+        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> getTier() != 3));
         targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
+        targetSelector.add(3, new PredicatedGoal(new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3));
         targetSelector.add(5, new RevengeGoal(this));
-
-        if (getTier() == 3) {
-            goalSelector.add(4, new EntityAIStoop(this));
-            goalSelector.add(3, new EntityAISprint(this));
-        } else {
-            // track players from sensing them
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, getSenseRange(), false));
-            targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
-        }
-    }
-
-    @Override
-    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
-        super.onSpawned(nexus, spawnConditions);
-        setTexture(spawnConditions.texture());
-        setFlavour(spawnConditions.flavour());
-        setTier(spawnConditions.tier());
     }
 
     @Override
@@ -151,9 +137,22 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     }
 
     @Override
+    protected Text getDefaultName() {
+        if (getTier() == 2 && getFlavour() == 2) {
+            return Text.translatable(getType().getUntranslatedName() + ".tar");
+        }
+        if (getTier() == 2 && getFlavour() == 3) {
+            return Text.translatable(getType().getUntranslatedName() + ".pigman");
+        }
+        if (getTier() == 3 && getFlavour() == 0) {
+            return Text.translatable(getType().getUntranslatedName() + ".brute");
+        }
+        return super.getDefaultName();
+    }
+
+    @Override
     protected void initTieredAttributes() {
         if (getTier() == 1) {
-            setName("Zombie");
             if (getFlavour() == 0) {
                 setMovementSpeed(0.19F);
                 setAttackStrength(4);
@@ -172,7 +171,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setCanDestroyBlocks(false);
             }
         } else if (getTier() == 2) {
-            setName("Zombie");
             setMovementSpeed(0.19F);
             if (getFlavour() == 0) {
                 setAttackStrength(7);
@@ -191,14 +189,12 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.25F);
                 setCanDestroyBlocks(false);
             } else if (getFlavour() == 2) {
-                setName("Tar Zombie");
                 setAttackStrength(5);
                 selfDamage = 3;
                 maxSelfDamage = 9;
                 flammability = 30;
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 3) {
-                setName("Zombie Pigman");
                 setMovementSpeed(0.25F);
                 setAttackStrength(8);
                 setFireImmune(true);
@@ -207,7 +203,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setCanDestroyBlocks(true);
             }
         } else if (getTier() == 3 && getFlavour() == 0) {
-            setName("Zombie Brute");
             setMovementSpeed(0.17F);
             setAttackStrength(18);
             selfDamage = 4;
@@ -219,22 +214,27 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         }
 
         if (getTier() == 1) {
-            setTexture(random.nextInt(2)); // 0,1
+            texture = random.nextInt(2); // 0,1
         } else if (getTier() == 2) {
             if (getFlavour() == 2) {
-                setTexture(TAR);
+                texture = TAR;
             } else if (getFlavour() == 3) {
-                setTexture(ZOMBIE_PIGMAN);
+                texture = ZOMBIE_PIGMAN;
             } else {
                 int r = random.nextInt(2);
                 if (r == 0)
-                    setTexture(ZOMBIE_T2);
+                    texture = ZOMBIE_T2;
                 else if (r == 1)
-                    setTexture(ZOMBIE_T2A);
+                    texture = ZOMBIE_T2A;
             }
         } else if (getTier() == 3) {
-            setTexture(BRUTE);
+            texture = BRUTE;
         }
+    }
+
+    @Override
+    public int getTextureId() {
+        return texture;
     }
 
     @Override

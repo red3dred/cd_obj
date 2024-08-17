@@ -1,8 +1,5 @@
 package com.invasion.entity;
 
-import org.jetbrains.annotations.Nullable;
-
-import com.google.common.base.Predicates;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
 
@@ -16,12 +13,11 @@ import net.minecraft.world.World;
 public abstract class TieredIMMobEntity extends EntityIMMob {
     private static final TrackedData<Integer> TIER = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> FLAVOUR = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> TEXTURE = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
     private boolean updatingAttributes;
 
-    public TieredIMMobEntity(EntityType<? extends EntityIMMob> type, World world, @Nullable INexusAccess nexus) {
-        super(type, world, nexus);
+    public TieredIMMobEntity(EntityType<? extends EntityIMMob> type, World world) {
+        super(type, world);
         initTieredAttributes();
     }
 
@@ -30,13 +26,12 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
         super.initDataTracker(builder);
         builder.add(TIER, 1);
         builder.add(FLAVOUR, 0);
-        builder.add(TEXTURE, 0);
     }
 
     @Override
     public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
         super.onSpawned(nexus, spawnConditions);
-        setAppearance(spawnConditions.tier(), spawnConditions.flavour(), spawnConditions.texture());
+        setAppearance(spawnConditions.tier(), spawnConditions.flavour());
     }
 
     public final int getTier() {
@@ -46,17 +41,6 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
     public final void setTier(int tier) {
         if (tier != getTier()) {
             dataTracker.set(TIER, tier);
-            onAttributesChanged();
-        }
-    }
-
-    public final int getTextureId() {
-        return dataTracker.get(TEXTURE);
-    }
-
-    public final void setTexture(int textureId) {
-        if (textureId != getTextureId()) {
-            dataTracker.set(TEXTURE, textureId);
             onAttributesChanged();
         }
     }
@@ -72,11 +56,10 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
         }
     }
 
-    private void setAppearance(int tier, int flavour, int texture) {
-        if (tier != getTier() || flavour != getFlavour() || texture != getTextureId()) {
+    private void setAppearance(int tier, int flavour) {
+        if (tier != getTier() || flavour != getFlavour()) {
             dataTracker.set(TIER, tier);
             dataTracker.set(FLAVOUR, flavour);
-            dataTracker.set(TEXTURE, texture);
             onAttributesChanged();
         }
     }
@@ -84,7 +67,7 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
     @Override
     public void onTrackedDataSet(TrackedData<?> data) {
         super.onTrackedDataSet(data);
-        if (data == TIER || data == FLAVOUR || data == TEXTURE) {
+        if (data == TIER || data == FLAVOUR) {
             onAttributesChanged();
         }
     }
@@ -96,9 +79,6 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
         updatingAttributes = true;
         try {
             if (!getWorld().isClient) {
-                goalSelector.clear(Predicates.alwaysTrue());
-                targetSelector.clear(Predicates.alwaysTrue());
-                initGoals();
                 resetHealth();
             }
             initTieredAttributes();
@@ -114,13 +94,12 @@ public abstract class TieredIMMobEntity extends EntityIMMob {
         super.writeCustomDataToNbt(compound);
         compound.putInt("tier", getTier());
         compound.putInt("flavour", getFlavour());
-        compound.putInt("texture", getTextureId());
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound compound) {
         super.readCustomDataFromNbt(compound);
-        setAppearance(compound.getInt("tier"), compound.getInt("flavour"), compound.getInt("texture"));
+        setAppearance(compound.getInt("tier"), compound.getInt("flavour"));
     }
 
     @Override

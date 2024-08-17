@@ -8,11 +8,9 @@ import com.invasion.INotifyTask;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.INavigation;
-import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorBurrower;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.PosRotate3D;
 
 import net.minecraft.entity.EntityType;
@@ -34,11 +32,7 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     protected final Vector3f prevRot = new Vector3f();
 
     public EntityIMBurrower(EntityType<EntityIMBurrower> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMBurrower(EntityType<EntityIMBurrower> type, World world, INexusAccess nexus) {
-        super(type, world, nexus);
+        super(type, world);
         Arrays.fill(segments3D, PosRotate3D.ZERO);
         Arrays.fill(segments3DLastTick, PosRotate3D.ZERO);
     }
@@ -49,13 +43,8 @@ public class EntityIMBurrower extends EntityIMMob implements ICanDig {
     }
 
     @Override
-    protected IPathSource createPathSource() {
-        return new PathCreator(800, 400);
-    }
-
-    @Override
-    protected INavigation createIMNavigation(IPathSource pathSource) {
-        return new NavigatorBurrower(this, pathSource, 16, -4);
+    protected INavigation createIMNavigation() {
+        return new NavigatorBurrower(this, new PathCreator(800, 400), 16, -4);
     }
 
     @Override

@@ -12,9 +12,8 @@ import com.invasion.entity.ai.goal.EntityAITargetOnNoNexusPath;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
+import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.nexus.EntityConstruct;
-import com.invasion.nexus.INexusAccess;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -24,25 +23,25 @@ import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffspring {
+    private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.BOOLEAN);
+
 	private int airborneTime;
-
+    // TODO: Add this entity to EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
-		this(type, world, null);
-		// TODO: Add this entity to EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS
-	}
-
-	public EntityIMSpider(EntityType<EntityIMSpider> type, World world, INexusAccess nexus) {
-		super(type, world, nexus);
+		super(type, world);
 		moveControl = new IMMoveHelperSpider(this);
 		getNavigatorNew().getActor().setCanClimb(true);
 	}
@@ -50,7 +49,14 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
     public static DefaultAttributeContainer.Builder createT1V0Attributes() {
         return SpiderEntity.createSpiderAttributes()
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.29F)
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 3);
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 3)
+                .add(EntityAttributes.GENERIC_GRAVITY, 0.08);
+    }
+
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(CLIMBING, false);
     }
 
 	@Override
@@ -58,38 +64,24 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 		goalSelector.add(0, new SwimGoal(this));
 		goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
 		goalSelector.add(1, new EntityAIRallyBehindEntity<>(this, EntityIMCreeper.class, 4));
+		goalSelector.add(1, new PredicatedGoal(new EntityAILayEgg(this, 1), () -> getTier() == 2 && getFlavour() == 1));
 		goalSelector.add(2, new EntityAIAttackNexus(this));
 		goalSelector.add(3, new EntityAIWaitForEngy(this, 5, false));
+		goalSelector.add(3, new PredicatedGoal(new EntityAIPounce(this, 0.2F, 1.55F, 18), () -> getTier() == 2 && getFlavour() == 0));
+		goalSelector.add(3, new PredicatedGoal(new EntityAIPounce(this, 0.2F, 1.55F, 18), () -> getTier() != 2 && getFlavour() == 1));
 		goalSelector.add(4, new EntityAIKillEntity<>(this, MobEntity.class, 40));
 		goalSelector.add(5, new EntityAIGoToNexus(this));
 		goalSelector.add(7, new EntityAIWanderIM(this));
 		goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8));
 		goalSelector.add(9, new LookAroundGoal(this));
         goalSelector.add(10, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
-
-        if (getTier() == 2) {
-            if (getFlavour() == 0) {
-                goalSelector.add(3, new EntityAIPounce(this, 0.2F, 1.55F, 18));
-            } else if (getFlavour() == 1) {
-                goalSelector.add(1, new EntityAILayEgg(this, 1));
-            }
-        }else if (getFlavour() == 1) {
-            goalSelector.add(3, new EntityAIPounce(this, 0.2F, 1.55F, 18));
-        }
 		targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, 12));
-		targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getSenseRange(), false));
-		targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getAggroRange(), true));
+		targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
+		targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
 		targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
 		targetSelector.add(4, new RevengeGoal(this));
 	}
 
-	@Override
-    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
-	    super.onSpawned(nexus, spawnConditions);
-        setTexture(spawnConditions.texture());
-        setFlavour(spawnConditions.flavour());
-        setTier(spawnConditions.tier());
-	}
     @Override
     public void tick() {
         super.tick();
@@ -98,54 +90,57 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
         }
     }
 
+    protected void setClimbing(boolean climbing) {
+        dataTracker.set(CLIMBING, climbing);
+    }
+
 	@Override
 	protected float getJumpVelocity(float strength) {
 	    return super.getJumpVelocity(strength + 0.41F);
 	}
 
 	@Override
+    public int getNexusBoundAggroRange() {
+	    return 2 + (8 * getTier());
+	}
+
+	@Override
+    protected Text getDefaultName() {
+	    if (getTier() == 1 && getFlavour() == 1) {
+	        return Text.translatable(getType().getUntranslatedName() + ".baby");
+	    }
+	    if (getTier() == 2 && getFlavour() == 0) {
+            return Text.translatable(getType().getUntranslatedName() + ".jumping");
+        }
+	    if (getTier() == 2 && getFlavour() == 1) {
+            return Text.translatable(getType().getUntranslatedName() + ".mother");
+        }
+	    return super.getDefaultName();
+	}
+
+	@Override
 	protected void initTieredAttributes() {
-	    resetHealth();
-	    setGravity(0.08F);
         //setSize(1.4F, 0.9F);
         if (getTier() == 1) {
             if (getFlavour() == 0) {
-                setName("Spider");
                 setMovementSpeed(0.29F);
                 setAttackStrength(3);
-                setAggroRange(10);
             } else if (getFlavour() == 1) {
-                setName("Baby-Spider");
                 //setSize(0.42F, 0.3F);
                 setMovementSpeed(0.34F);
                 setAttackStrength(1);
-                setAggroRange(10);
             }
         } else if (getTier() == 2) {
             if (getFlavour() == 0) {
-                setName("Jumping-Spider");
                 setMovementSpeed(0.3F);
                 setAttackStrength(5);
-                setAggroRange(18);
                 setGravity(0.043F);
             } else if (getFlavour() == 1) {
-                setName("Mother-Spider");
                 //setSize(2.8F, 1.8F);
                 setMovementSpeed(0.22F);
                 setAttackStrength(4);
-                setAggroRange(18);
             }
         }
-
-		if (getTier() == 1) {
-			setTexture(0);
-		} else if (getTier() == 2) {
-			if (getFlavour() == 0) {
-				setTexture(1);
-			} else {
-				setTexture(2);
-			}
-		}
 	}
 
 	@Deprecated
@@ -157,22 +152,6 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 	@Override
 	public Vec3d getVehicleAttachmentPos(Entity vehicle) {
 		return super.getVehicleAttachmentPos(vehicle).multiply(1, 0.75D, 1).subtract(0, 0.5D, 0);
-	}
-
-	@Override
-	public void writeCustomDataToNbt(NbtCompound compound) {
-	    compound.putInt("tier", getTier());
-	    compound.putInt("flavour", getFlavour());
-	    compound.putInt("textureId", getTextureId());
-		super.writeCustomDataToNbt(compound);
-	}
-
-	@Override
-	public void readCustomDataFromNbt(NbtCompound compound) {
-		super.readCustomDataFromNbt(compound);
-		setFlavour(compound.getInt("flavour"));
-		setTier(compound.getInt("tier"));
-		setTexture(compound.getInt("textureId"));
 	}
 
 	@Override
@@ -211,7 +190,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 
 	@Override
 	public boolean isClimbing() {
-		return horizontalCollision;
+		return dataTracker.get(CLIMBING);
 	}
 
 	public void setAirborneTime(int time) {

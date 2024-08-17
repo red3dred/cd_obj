@@ -53,13 +53,8 @@ public class EntityIMWolf extends WolfEntity implements IHasNexus {
     }
 
     @Override
-    public INexusAccess getNexus() {
-        return nexus.get();
-    }
-
-    @Override
-    public void setNexus(@Nullable INexusAccess nexus) {
-        this.nexus.set(nexus);
+    public Handle getNexusHandle() {
+        return nexus;
     }
 
     @Override

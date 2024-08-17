@@ -7,10 +7,8 @@ import com.invasion.entity.ai.IMLookHelper;
 import com.invasion.entity.ai.IMMoveHelperFlying;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.INavigationFlying;
-import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorFlying;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.nexus.INexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
@@ -47,12 +45,11 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	private boolean flyPathfind = true;
 	private boolean debugFlying = true;
 
-	public EntityIMFlying(EntityType<? extends EntityIMFlying> type, World world) {
-		this(type, world, null);
-	}
+    protected float airResistance = DEFAULT_AIR_RESISTANCE;
+    protected float groundFriction = DEFAULT_GROUND_FRICTION;
 
-	public EntityIMFlying(EntityType<? extends EntityIMFlying> type, World world, INexusAccess nexus) {
-		super(type, world, nexus);
+	public EntityIMFlying(EntityType<? extends EntityIMFlying> type, World world) {
+		super(type, world);
 		moveControl = new IMMoveHelperFlying(this);
 		lookControl = new IMLookHelper(this);
 	}
@@ -75,14 +72,9 @@ public abstract class EntityIMFlying extends EntityIMLiving {
     }
 
 	@Override
-    protected INavigation createIMNavigation(IPathSource pathSource) {
-	    return new NavigatorFlying(this, pathSource);
+    protected INavigation createIMNavigation() {
+	    return new NavigatorFlying(this, new PathCreator(800, 200));
 	}
-
-    @Override
-    protected IPathSource createPathSource() {
-        return new PathCreator(800, 200);
-    }
 
     @Override
     protected BodyControl createBodyControl() {
@@ -92,20 +84,6 @@ public abstract class EntityIMFlying extends EntityIMLiving {
             }
         };
     }
-
-	@Override
-	public void baseTick() {
-		super.baseTick();
-		/*if (!this.getWorld().isClient) {
-			byte thrustData = this.dataWatcher.getWatchableObjectByte(META_THRUST_DATA);
-			int oldThrustOn = thrustData & 0x1;
-			int oldThrustEffortEncoded = thrustData >> 1 & 0xF;
-			int thrustEffortEncoded = (int) (this.thrustEffort * 15.0F);
-			if (this.thrustOn == oldThrustOn > 0) {
-				if (thrustEffortEncoded == oldThrustEffortEncoded)
-					;
-		}*/
-	}
 
 	public FlyState getFlyState() {
 		return FlyState.of(dataTracker.get(FLY_STATE));
@@ -117,6 +95,10 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 
     public void setRoll(float roll) {
         rotationRoll = roll;
+    }
+
+    public void setGroundFriction(float frictionCoefficient) {
+        groundFriction = frictionCoefficient;
     }
 
 	public boolean isThrustOn() {
@@ -263,7 +245,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
                 }
 
                 float landMoveSpeed = 0.16277137F / (groundFriction * groundFriction * groundFriction);
-                groundFriction = getGroundFriction();
+                groundFriction = this.groundFriction;
                 if (isOnGround()) {
                     groundFriction = getWorld().getBlockState(getVelocityAffectingPos()).getBlock().getSlipperiness() * 0.91F;
                 }

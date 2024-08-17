@@ -14,10 +14,9 @@ import com.invasion.entity.ai.goal.EntityAIRandomBoulder;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
 import com.invasion.entity.ai.goal.EntityAIThrowerKillEntity;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
+import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.nexus.INexusAccess;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -33,6 +32,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -56,13 +56,7 @@ public class EntityIMThrower extends TieredIMMobEntity {
     protected Entity j;
 
     public EntityIMThrower(EntityType<EntityIMThrower> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMThrower(EntityType<EntityIMThrower> type, World world, INexusAccess nexus) {
-        super(type, world, nexus);
-        selfDamage = 0;
-        maxSelfDamage = 0;
+        super(type, world);
         experiencePoints = 20;
         setCanDestroyBlocks(true);
         // setSize(1.8F, 1.95F);
@@ -78,11 +72,8 @@ public class EntityIMThrower extends TieredIMMobEntity {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        if (getTier() == 1) {
-            goalSelector.add(1, new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 55, 60.0F, 1.0F));
-        } else {
-            goalSelector.add(1, new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 60, 90.0F, 1.5F));
-        }
+        goalSelector.add(1, new PredicatedGoal(new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 55, 60.0F, 1.0F), () -> getTier() == 1));
+        goalSelector.add(1, new PredicatedGoal(new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 60, 90.0F, 1.5F), () -> getTier() == 1));
         goalSelector.add(2, new EntityAIAttackNexus(this));
         goalSelector.add(3, new EntityAIRandomBoulder(this, 3));
         goalSelector.add(4, new EntityAIGoToNexus(this));
@@ -92,8 +83,8 @@ public class EntityIMThrower extends TieredIMMobEntity {
         goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 16));
         goalSelector.add(10, new LookAroundGoal(this));
 
-        targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getSenseRange(), false));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this.getAggroRange(), true));
+        targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
         targetSelector.add(3, new RevengeGoal(this));
     }
 
@@ -147,28 +138,26 @@ public class EntityIMThrower extends TieredIMMobEntity {
     }
 
     @Override
+    protected Text getDefaultName() {
+        if (getTier() == 2) {
+            return Text.translatable(getType().getUntranslatedName() + ".big");
+        }
+        return super.getDefaultName();
+    }
+
+    @Override
     public void initTieredAttributes() {
-        selfDamage = 0;
-        maxSelfDamage = 0;
         clearingPoint = false;
         if (getTier() == 1) {
             setMovementSpeed(0.13F);
             setAttackStrength(10);
             experiencePoints = 20;
-            setName("Thrower");
             // setSize(1.8F, 1.95F);
         } else if (getTier() == 2) {
             setMovementSpeed(0.23F);
             setAttackStrength(15);
             experiencePoints = 25;
-            setName("Big Thrower");
             // setSize(2F, 2F);
-        }
-
-        if (getTier() == 1) {
-            setTexture(1);
-        } else if (getTier() == 2) {
-            setTexture(2);
         }
     }
 

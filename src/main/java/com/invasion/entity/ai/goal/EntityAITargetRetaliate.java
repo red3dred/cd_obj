@@ -3,12 +3,17 @@ package com.invasion.entity.ai.goal;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.util.FloatSupplier;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 
 public class EntityAITargetRetaliate<T extends LivingEntity> extends EntityAISimpleTarget<T> {
-	public EntityAITargetRetaliate(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
+    public EntityAITargetRetaliate(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
+        super(entity, targetType, distance);
+    }
+
+	public EntityAITargetRetaliate(EntityIMLiving entity, Class<? extends T> targetType, FloatSupplier distance) {
 		super(entity, targetType, distance);
 	}
 

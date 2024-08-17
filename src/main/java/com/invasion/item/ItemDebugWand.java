@@ -69,7 +69,6 @@ class ItemDebugWand extends Item {
 
         EntityIMZombie zombie = InvEntities.ZOMBIE.create(world);
         zombie.setNexus(nexus);
-        zombie.setTexture(0);
         zombie.setFlavour(0);
         zombie.setTier(1);
 
@@ -80,9 +79,8 @@ class ItemDebugWand extends Item {
             entity.setNexus(nexus);
             entity.setPosition(pos.toBottomCenterPos());
 
-            zombie = new EntityIMZombie(InvEntities.ZOMBIE, world, this.nexus);
+            zombie = new EntityIMZombie(InvEntities.ZOMBIE, world);
             zombie.setNexus(nexus);
-            zombie.setTexture(0);
             zombie.setFlavour(0);
             zombie.setTier(2);
             zombie.setPosition(pos.toBottomCenterPos());
@@ -97,7 +95,6 @@ class ItemDebugWand extends Item {
 
             EntityIMSpider spider = InvEntities.SPIDER.create(world);
             spider.setNexus(nexus);
-            spider.setTexture(0);
             spider.setFlavour(0);
             spider.setTier(2);
 
@@ -110,7 +107,6 @@ class ItemDebugWand extends Item {
 
         EntityIMSpider entity = InvEntities.SPIDER.create(world);
         entity.setNexus(nexus);
-        entity.setTexture(0);
         entity.setFlavour(1);
         entity.setTier(2);
 

@@ -20,8 +20,8 @@ import com.invasion.entity.EntityIMSpider;
 public class RenderSpiderIM extends LivingEntityRenderer<EntityIMSpider, SpiderEntityModel<EntityIMSpider>> {
     private static final Identifier NORMAL = Identifier.ofVanilla("textures/entity/spider/spider.png");
 
-	private static final Identifier JUMPER = InvasionMod.id("textures/spiderT2.png");
-	private static final Identifier MOTHER = InvasionMod.id("textures/spiderT2b.png");
+	private static final Identifier JUMPER = InvasionMod.id("textures/entity/spider/jumping_spider.png");
+	private static final Identifier MOTHER = InvasionMod.id("textures/entity/spider/mother_spider.png");
 
 	private static final List<Identifier> TEXTURES = List.of(NORMAL, JUMPER, MOTHER);
 
@@ -37,7 +37,7 @@ public class RenderSpiderIM extends LivingEntityRenderer<EntityIMSpider, SpiderE
 
     @Override
     public Identifier getTexture(EntityIMSpider entity) {
-        int id = entity.getTextureId();
+        int id = entity.getTier() == 2 ? entity.getFlavour() == 0 ? 1 : 2 : 0;
         return TEXTURES.get(id < 0 || id >= TEXTURES.size() ? 0 : id);
     }
 }

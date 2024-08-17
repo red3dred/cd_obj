@@ -4,11 +4,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.EnumSet;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.util.FloatSupplier;
 import com.invasion.util.math.ComparatorDistanceFrom;
 
 public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
@@ -16,14 +18,22 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 	private LivingEntity targetEntity;
 	private Class<? extends T> targetClass;
 	private int outOfLosTimer;
-	private float distance;
+	private final FloatSupplier distance;
 	private boolean needsLos;
 
-	public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
+    public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
+        this(entity, targetType, distance, true);
+    }
+
+    public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance, boolean needsLoS) {
+        this(entity, targetType, () -> distance, needsLoS);
+    }
+
+	public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, FloatSupplier distance) {
 		this(entity, targetType, distance, true);
 	}
 
-	public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance, boolean needsLoS) {
+	public EntityAISimpleTarget(EntityIMLiving entity, Class<? extends T> targetType, FloatSupplier distance, boolean needsLoS) {
 		this.mob = entity;
 		this.targetClass = targetType;
 		this.outOfLosTimer = 0;
@@ -38,6 +48,7 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 
 	@Override
     public boolean canStart() {
+	    float distance = this.distance.getAsFloat();
 		if (targetClass == PlayerEntity.class) {
 		    @SuppressWarnings("unchecked")
             T entityplayer = (T)mob.getWorld().getClosestPlayer(mob, distance);
@@ -61,7 +72,7 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 	@Override
 	public boolean shouldContinue() {
 		LivingEntity entityliving = mob.getTarget();
-		if (entityliving == null || !entityliving.isAlive() || mob.squaredDistanceTo(entityliving) > distance * distance) {
+		if (entityliving == null || !entityliving.isAlive() || mob.squaredDistanceTo(entityliving) > MathHelper.square(distance.getAsFloat())) {
 			return false;
 		}
 		if (needsLos) {
@@ -94,7 +105,7 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
 	}
 
 	public float getAggroRange() {
-		return distance;
+		return distance.getAsFloat();
 	}
 
 	protected void setTarget(T entity) {
@@ -108,5 +119,4 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends Goal {
                 || entity instanceof PlayerEntity player && player.getAbilities().creativeMode
                 || (needsLos && (!mob.canSee(entity))));
 	}
-
 }

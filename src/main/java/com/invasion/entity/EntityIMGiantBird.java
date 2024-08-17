@@ -13,8 +13,6 @@ import com.invasion.entity.ai.goal.EntityAISimpleTarget;
 import com.invasion.entity.ai.goal.EntityAIStabiliseFlying;
 import com.invasion.entity.ai.goal.EntityAISwoop;
 import com.invasion.entity.ai.goal.EntityAIWatchTarget;
-import com.invasion.nexus.INexusAccess;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
@@ -36,11 +34,7 @@ public class EntityIMGiantBird extends EntityIMBird {
     private static final byte TRIGGER_DEATHSOUND = 12;
 
     public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMGiantBird(EntityType<EntityIMGiantBird> type, World world, INexusAccess nexus) {
-        super(type, world, nexus);
+        super(type, world);
         setThrust(0.028F);
         setMaxPoweredFlightSpeed(0.9F);
         setLiftFactor(0.35F);

@@ -14,13 +14,11 @@ import com.invasion.entity.ai.goal.EntityAIKillEntity;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
 import com.invasion.entity.pathfinding.INavigation;
-import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorEngy;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.item.InvItems;
-import com.invasion.nexus.INexusAccess;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -52,11 +50,7 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
     private float supportThisTick;
 
     public EntityIMPigEngy(EntityType<EntityIMPigEngy> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMPigEngy(EntityType<EntityIMPigEngy> type, World world, INexusAccess nexus) {
-        super(type, world, nexus);
+        super(type, world);
     }
 
     public static DefaultAttributeContainer.Builder createAttributes() {
@@ -70,13 +64,8 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
     }
 
     @Override
-    protected IPathSource createPathSource() {
-        return new PathCreator(1200, 1500);
-    }
-
-    @Override
-    protected INavigation createIMNavigation(IPathSource pathSource) {
-        return new NavigatorEngy(this, pathSource);
+    protected INavigation createIMNavigation() {
+        return new NavigatorEngy(this, new PathCreator(1200, 1500));
     }
 
     @Override
@@ -93,8 +82,8 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
         if (hasNexus()) {
             targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, 3, true));
         } else {
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, getSenseRange(), false));
-            targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
+            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
+            targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
         }
         targetSelector.add(3, new RevengeGoal(this));
     }

@@ -30,7 +30,7 @@ import net.minecraft.world.World;
 
 public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
     public EntityIMSkeleton(EntityType<EntityIMSkeleton> type, World world) {
-        super(type, world, null);
+        super(type, world);
     }
 
     public static DefaultAttributeContainer.Builder createIMSkeletonAttributes() {
@@ -50,7 +50,7 @@ public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
         goalSelector.add(6, new LookAroundGoal(this));
         goalSelector.add(6, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
 
-        targetSelector.add(0, new EntityAISimpleTarget<>(this, PlayerEntity.class, getSenseRange(), false));
+        targetSelector.add(0, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
         targetSelector.add(1, new RevengeGoal(this));
     }
 

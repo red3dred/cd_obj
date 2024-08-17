@@ -3,13 +3,9 @@ package com.invasion.entity;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.invasion.InvSounds;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.IHasNexus;
-import com.invasion.nexus.INexusAccess;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -127,13 +123,8 @@ public class EntityIMEgg extends MobEntity implements Combatant<EntityIMEgg> {
     }
 
     @Override
-    public @Nullable INexusAccess getNexus() {
-        return nexus.get();
-    }
-
-    @Override
-    public void setNexus(@Nullable INexusAccess nexus) {
-        this.nexus.set(nexus);
+    public Handle getNexusHandle() {
+        return nexus;
     }
 
     @Override

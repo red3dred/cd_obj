@@ -14,11 +14,11 @@ public interface INavigation extends INotifyTask, IHasAiGoals {
 
     PathAction getCurrentWorkingAction();
 
-    void setSpeed(float paramFloat);
+    void setSpeed(float speed);
 
     Path getPathToXYZ(Vec3d pos, float paramFloat);
 
-    boolean tryMoveToXYZ(Vec3d pos, float paramFloat1, float paramFloat2);
+    boolean tryMoveToXYZ(Vec3d pos, float targetRadius, float speed);
 
     Path getPathTowardsXZ(double paramDouble1, double paramDouble2, int paramInt1, int paramInt2, int paramInt3);
 

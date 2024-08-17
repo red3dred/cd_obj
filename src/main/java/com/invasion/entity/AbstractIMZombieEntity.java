@@ -9,12 +9,11 @@ import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.Actor;
 import com.invasion.entity.pathfinding.INavigation;
-import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
+import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.CoordsInt;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -37,17 +36,18 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     protected int swingTimer;
     protected int scrapeSoundCooldown;
+
     private boolean fireImmune;
 
-    protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, INexusAccess nexus, float diggingSpeed) {
-        super(type, world, nexus);
+    protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, float diggingSpeed) {
+        super(type, world);
         terrainModifier = new TerrainModifier(this, diggingSpeed);
         terrainDigger = new TerrainDigger(this, terrainModifier, 1);
     }
 
     @Override
-    protected INavigation createIMNavigation(IPathSource pathSource) {
-        return new NavigatorIM(this, pathSource) {
+    protected INavigation createIMNavigation() {
+        return new NavigatorIM(this, new PathCreator(700, 50)) {
             @Override
             protected <T extends Entity> Actor<T> createActor(T entity) {
                 return new Actor<>(entity) {
@@ -114,6 +114,8 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     public abstract void updateAnimation(boolean override);
 
+
+    public abstract int getTextureId();
 
     protected int getSwingSpeed() {
         return 10;

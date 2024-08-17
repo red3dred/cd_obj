@@ -47,7 +47,7 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public boolean startMovingTo(double x, double y, double z, double movespeed) {
-        return navigator.tryMoveToXYZ(new Vec3d(x, y, z), 0.0F, (float) movespeed);
+        return navigator.tryMoveToXYZ(new Vec3d(x, y, z), 0, (float) movespeed);
     }
 
     @Override

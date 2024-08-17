@@ -18,10 +18,17 @@ import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 
 public interface IHasNexus {
-    @Nullable
-    INexusAccess getNexus();
 
-    void setNexus(@Nullable INexusAccess nexus);
+    Handle getNexusHandle();
+
+    @Nullable
+    default INexusAccess getNexus() {
+        return getNexusHandle().get();
+    }
+
+    default void setNexus(@Nullable INexusAccess nexus) {
+        getNexusHandle().set(nexus);
+    }
 
     default boolean hasNexus() {
         return getNexus() != null;

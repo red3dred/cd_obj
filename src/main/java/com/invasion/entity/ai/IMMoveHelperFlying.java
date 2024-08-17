@@ -123,7 +123,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 
 			float minFlightSpeed = 0.05F;
 			if (flySpeed < minFlightSpeed) {
-				entity.setYaw(correctRotation(entity.getYaw(), (float) (Math.atan2(delta.z, delta.x) * MathHelper.DEGREES_PER_RADIAN - 90), entity.getTurnRate()));
+				entity.setYaw(correctRotation(entity.getYaw(), (float) (Math.atan2(delta.z, delta.x) * MathHelper.DEGREES_PER_RADIAN - 90), getTurnRate()));
 				if (entity.isOnGround()) {
 					return FlyState.GROUNDED;
 				}
@@ -183,7 +183,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 				}
 				newPitch = correctRotation(entity.getPitch(), (float) newPitch, 1.5F);
 				double newYaw = Math.atan2(velocity.z, velocity.x) * MathHelper.DEGREES_PER_RADIAN - 90;
-				newYaw = correctRotation(entity.getYaw(), (float) newYaw, entity.getTurnRate());
+				newYaw = correctRotation(entity.getYaw(), (float) newYaw, getTurnRate());
 				entity.updatePositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), (float) newYaw, (float) newPitch);
 				double newRoll = 60 * bankForce / turnForce;
 				entity.setRoll(correctRotation(entity.getRoll(1), (float) newRoll, 6));

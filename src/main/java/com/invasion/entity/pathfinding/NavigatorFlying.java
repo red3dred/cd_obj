@@ -248,7 +248,7 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 				Path path = createPath(theEntity, pathEndEntity, 0);
 				if ((path != null) && (path.getCurrentPathLength() < dist * 1.8D)) {
 					setWantsToBeFlying(false);
-					setPath(path, this.moveSpeed);
+					setPath(path, moveSpeed);
 				} else if (needsPathfinder) {
 					theEntity.setPathfindFlying(true);
 					path = createPath(theEntity, pathEndEntity, 0);

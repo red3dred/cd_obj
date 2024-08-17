@@ -13,6 +13,7 @@ public class EntityAIStoop extends Goal {
         theEntity = entity;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean canStart() {
         if (--updateTimer > 0) {

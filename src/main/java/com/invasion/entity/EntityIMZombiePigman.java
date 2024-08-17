@@ -14,9 +14,7 @@ import com.invasion.entity.ai.goal.EntityAITargetOnNoNexusPath;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
-import com.invasion.nexus.EntityConstruct;
-import com.invasion.nexus.INexusAccess;
-
+import com.invasion.entity.ai.goal.PredicatedGoal;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -36,6 +34,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.GameRules;
@@ -45,11 +44,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     private static final TrackedData<Boolean> CHARGING = DataTracker.registerData(EntityIMZombiePigman.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     public EntityIMZombiePigman(EntityType<EntityIMZombiePigman> type, World world) {
-        this(type, world, null);
-    }
-
-    public EntityIMZombiePigman(EntityType<EntityIMZombiePigman> type, World world, INexusAccess nexus) {
-        super(type, world, nexus, 0.75F);
+        super(type, world, 0.75F);
         setFireImmune(true);
         setCanDestroyBlocks(true);
     }
@@ -81,6 +76,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(1, new PredicatedGoal(new EntityAICharge<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
         goalSelector.add(2, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
         goalSelector.add(3, new EntityAIAttackNexus(this));
         goalSelector.add(4, new EntityAIWaitForEngy(this, 4.0F, true));
@@ -91,25 +87,11 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
         goalSelector.add(9, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, getAggroRange()));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), true));
+        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, this::getAggroRange));
+        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, false), () -> getTier() != 3));
+        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
+        targetSelector.add(3, new PredicatedGoal(new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3));
         targetSelector.add(5, new RevengeGoal(this));
-
-        if (getTier() == 3) {
-            // goalSelector.add(4, new EntityAIStoop(this));
-            goalSelector.add(1, new EntityAICharge<>(this, PlayerEntity.class, 0.75F));
-        } else {
-            // track players from sensing them
-            targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, getAggroRange(), false));
-            targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
-        }
-    }
-
-    @Override
-    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
-        super.onSpawned(nexus, spawnConditions);
-        setTexture(spawnConditions.texture());
-        setTier(spawnConditions.tier());
     }
 
     public boolean isCharging() {
@@ -183,14 +165,25 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
+    public int getTextureId() {
+        return MathHelper.clamp(getTier() - 1, 0, 2);
+    }
+
+    @Override
+    protected Text getDefaultName() {
+        if (getTier() == 3) {
+            return Text.translatable(getType().getUntranslatedName() + ".brute");
+        }
+        return super.getDefaultName();
+    }
+
+    @Override
     protected void initTieredAttributes() {
         if (getTier() == 1) {
-            setName("Zombie Pigman");
             setMovementSpeed(0.25F);
             setAttackStrength(8);
             equipStack(EquipmentSlot.MAINHAND, Items.GOLDEN_SWORD.getDefaultStack());
         } else if (getTier() == 2) {
-            setName("Zombie Pigman");
             setMovementSpeed(0.35F);
             setAttackStrength(12);
 
@@ -210,11 +203,8 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
                 equipStack(EquipmentSlot.FEET, Items.GOLDEN_BOOTS.getDefaultStack());
             }
         } else if (getTier() == 3) {
-            setName("Zombie Pigman Brute");
             setMovementSpeed(0.20F);
             setAttackStrength(18);
         }
-
-        setTexture(MathHelper.clamp(getTier() - 1, 0, 2));
     }
 }

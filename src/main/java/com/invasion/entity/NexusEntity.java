@@ -39,6 +39,30 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
         return ((PathNavigateAdapter)asEntity().getNavigation()).getNewNavigator();
     }
 
+    default int getAggroRange() {
+        return hasNexus() ? getNexusBoundAggroRange() : InvasionMod.getConfig().nightMobSightRange;
+    }
+
+    default int getSenseRange() {
+        return hasNexus() ? getNexusBoundSenseRange() : InvasionMod.getConfig().nightMobSenseRange;
+    }
+
+    default int getNexusBoundSenseRange() {
+        return 6;
+    }
+
+    default int getNexusBoundAggroRange() {
+        return 12;
+    }
+
+    default boolean getBurnsInDay() {
+        return hasNexus() && InvasionMod.getConfig().nightMobsBurnInDay;
+    }
+
+    default void setIsHoldingIntoLadder(boolean flag) {
+        asEntity().setSneaking(flag);
+    }
+
     @Override
     default void onSpawned(@Nullable INexusAccess nexus, EntityConstruct spawnConditions) {
         setNexus(nexus);
@@ -59,12 +83,6 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_GRAVITY).setBaseValue(acceleration);
     }
 
-    @Deprecated
-    default void setJumpHeight(int height) {
-        asEntity().getAttributeInstance(EntityAttributes.GENERIC_STEP_HEIGHT).setBaseValue(height);
-    }
-
-    @Deprecated
     default void setAttackStrength(double attackStrength) {
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(attackStrength);
     }
