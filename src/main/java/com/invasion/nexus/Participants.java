@@ -1,6 +1,7 @@
 package com.invasion.nexus;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,11 +20,15 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Box;
 
 public class Participants {
+    private static final Text POSSESSIVE_SUFFEX_A = Text.literal("'");
+    private static final Text POSSESSIVE_SUFFEX_B = Text.literal("'s");
+
     private final Map<UUID, Entry> entries = new HashMap<>();
 
     private final Nexus nexus;
@@ -33,23 +38,25 @@ public class Participants {
     }
 
     public void bindPlayers(Box arena) {
-        long now = System.currentTimeMillis();
+        final long now = System.currentTimeMillis();
         for (PlayerEntity player : nexus.getWorld().getEntitiesByClass(PlayerEntity.class, arena, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)) {
-            Entry entry = entries.get(player.getUuid());
-
             entries.compute(player.getUuid(), (id, oldEntry) -> {
-                if (entry == null) {
-                    sendNotice("invmod.message.nexus.lifenowbound", Formatting.GREEN + player.getDisplayName().getString() + (player.getDisplayName().getString().toLowerCase().endsWith("s") ? "'" : "'s"));
+                if (oldEntry == null || now - oldEntry.time > INexusAccess.BIND_EXPIRE_TIME) {
+                    Text message = Text.translatable("invmod.message.nexus.lifenowbound", pluralize(player.getDisplayName())).formatted(Formatting.DARK_GREEN);
+                    sendMessage(message);
+                    if (oldEntry == null) {
+                        player.sendMessage(message);
+                    }
                     return new Entry(now, player.getUuid());
                 }
-
-                if (now - entry.time > INexusAccess.BIND_EXPIRE_TIME) {
-                    entry.time = now;
-                    sendNotice("invmod.message.nexus.lifenowbound", Formatting.GREEN + player.getDisplayName().getString() + (player.getDisplayName().getString().toLowerCase().endsWith("s") ? "'" : "'s"));
-                }
-                return entry;
+                return oldEntry;
             });
         }
+    }
+
+
+    private Text pluralize(Text text) {
+        return text.copy().append(text.getString().toLowerCase(Locale.ROOT).endsWith("s") ? POSSESSIVE_SUFFEX_A : POSSESSIVE_SUFFEX_B).formatted(Formatting.GREEN);
     }
 
     public void sendWarning(String translationKey, Object...params) {
@@ -61,10 +68,14 @@ public class Participants {
     }
 
     public void sendMessage(Formatting color, String translationKey, Object...params) {
+        sendMessage(Text.translatable(translationKey, params).formatted(color));
+    }
+
+    public void sendMessage(Text message) {
         for (Entry entry : entries.values()) {
             PlayerEntity player = entry.getEntity();
             if (player != null) {
-                player.sendMessage(Text.translatable(translationKey, params).formatted(color));
+                player.sendMessage(message);
             }
         }
     }
@@ -120,16 +131,20 @@ public class Participants {
         return compound;
     }
 
-    @Override
-    public String toString() {
-        String boundPlayers = Formatting.AQUA + "";
+    public Text getParticipantsList() {
+        boolean first = true;
+        MutableText result = Text.empty();
         for (Entry entry : entries.values()) {
             PlayerEntity player = entry.getEntity();
             if (player != null) {
-                boundPlayers += player.getGameProfile().getName() + Formatting.DARK_AQUA + ", " + Formatting.AQUA;
+                if (!first) {
+                    result = result.append(Text.literal(", ").formatted(Formatting.DARK_AQUA));
+                }
+                result = result.append(player.getDisplayName().copy().formatted(Formatting.AQUA));
+                first = false;
             }
         }
-        return boundPlayers.substring(0, boundPlayers.length() - 4);
+        return Text.translatable("invmod.message.nexus.listboundplayers", result).formatted(Formatting.DARK_AQUA);
     }
 
     private class Entry {

@@ -27,6 +27,7 @@ import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -388,7 +389,7 @@ public class Nexus implements ControllableNexusAccess {
             boundPlayers.bindPlayers(boundingBoxToRadius);
             regenerateHealth();
             waveDelayTimer = -1L;
-            boundPlayers.sendMessage(Formatting.DARK_AQUA, "invmod.message.nexus.listboundplayers", boundPlayers.toString());
+            boundPlayers.sendMessage(boundPlayers.getParticipantsList());
             boundPlayers.sendWarning("invmod.message.nexus.firstwavesoon");
             boundPlayers.playSoundForBoundPlayers(InvSounds.BLOCK_NEXUS_RUMBLE);
             activated = true;
@@ -433,6 +434,7 @@ public class Nexus implements ControllableNexusAccess {
                         waveDelay = waveSpawner.getWaveRestTime();
                     } else {
                         waveDelayTimer += elapsed;
+                        InvasionMod.LOGGER.info("Next wave begins in: {}ticks", waveDelay - waveDelayTimer);
                         if (waveDelayTimer > waveDelay) {
                             currentWave += 1;
                             boundPlayers.sendWarning("invmod.message.wave.begin", "" + Formatting.DARK_RED + currentWave);
@@ -561,14 +563,19 @@ public class Nexus implements ControllableNexusAccess {
                     startContinuousPlay();
                 }
             }
-
         } else if (mode.isIdle()) {
             if (!catalyst.isEmpty()) {
                 if (catalyst.isOf(InvItems.NEXUS_CATALYST) || catalyst.isOf(InvItems.STRONG_NEXUS_CATALYST)) {
                     activationTimer++;
+                    if (activationTimer % 100 == world.getRandom().nextInt(100)) {
+                        world.playSound(null, pos, InvSounds.BLOCK_NEXUS_RUMBLE, SoundCategory.BLOCKS, 1, 1);
+                    }
                     setMode(Mode.STOPPED);
                 } else if (catalyst.isOf(InvItems.STABLE_NEXUS_CATALYST)) {
                     activationTimer++;
+                    if (activationTimer % 100 == world.getRandom().nextInt(100)) {
+                        world.playSound(null, pos, InvSounds.BLOCK_NEXUS_RUMBLE, SoundCategory.BLOCKS, 1, 1);
+                    }
                     setMode(Mode.STABLE);
                 }
             } else {
@@ -586,6 +593,10 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     protected void setMode(Mode mode) {
+        if (mode == this.mode) {
+            return;
+        }
+        InvasionMod.LOGGER.info("Nexus {} changing mode from {} to {}", this.getUuid(), this.mode, mode);
         this.mode = mode;
         if (getWorld() instanceof ServerWorld sw) {
             if (sw.getBlockState(pos).isOf(InvBlocks.NEXUS_CORE)) {

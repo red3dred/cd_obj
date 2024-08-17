@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.InvEntities;
 import com.invasion.item.InvItems;
+import com.invasion.nexus.WorldNexusStorage;
 import com.invasion.nexus.test.Tester;
 
 import net.fabricmc.api.ModInitializer;
@@ -42,6 +43,7 @@ public class InvasionMod implements ModInitializer {
         });
         ServerTickEvents.START_WORLD_TICK.register(world -> {
             BountyHunter.of(world).tick();
+            WorldNexusStorage.of(world).tick();
         });
         InvBlocks.bootstrap();
         InvItems.bootstrap();
