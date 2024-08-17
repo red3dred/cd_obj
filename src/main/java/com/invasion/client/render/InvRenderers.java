@@ -45,5 +45,8 @@ public interface InvRenderers {
         ModelPredicateProviderRegistry.register(InvItems.SEARING_BOW, Identifier.ofVanilla("pull"), (stack, world, entity, seed) -> {
             return entity == null || entity.getActiveItem() != stack ? 0.0F : (stack.getMaxUseTime(entity) - entity.getItemUseTimeLeft()) / 20F;
         });
+        ModelPredicateProviderRegistry.register(InvItems.SEARING_BOW, Identifier.ofVanilla("pulling"),
+            (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getActiveItem() == stack ? 1 : 0
+        );
     }
 }
