@@ -19,7 +19,7 @@ public class GuiNexus extends HandledScreen<ContainerNexus> {
 
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        super.drawForeground(context, mouseX, mouseY);
+        context.drawText(textRenderer, playerInventoryTitle, playerInventoryTitleX, playerInventoryTitleY, 0x404040, false);
         context.drawText(textRenderer, "Nexus - Level " + handler.getLevel(), 46, 6, 0x404040, false);
         context.drawText(textRenderer, handler.getKills() + " mobs killed", 96, 60, 0x404040, false);
         context.drawText(textRenderer, "R: " + handler.getSpawnRadius(), 142, 72, 0x404040, false);
