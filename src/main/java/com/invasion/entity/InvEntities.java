@@ -30,7 +30,7 @@ public interface InvEntities {
     EntityType<EntityIMSpider> SPIDER = register("spider", EntityType.Builder.<EntityIMSpider>create(EntityIMSpider::new, SpawnGroup.MONSTER)
             .dimensions(1.4F, 0.9F).eyeHeight(0.65F).passengerAttachments(0.765F).maxTrackingRange(8));
     EntityType<EntityIMThrower> THROWER = register("thrower", EntityType.Builder.<EntityIMThrower>create(EntityIMThrower::new, SpawnGroup.MONSTER)
-            .dimensions(0.6F, 1.99F).eyeHeight(1.74F).vehicleAttachment(-0.7F).maxTrackingRange(8));
+            .dimensions(1.8F, 1.95F).eyeHeight(1.74F).vehicleAttachment(-0.7F).maxTrackingRange(8));
     EntityType<EntityIMBurrower> BURROWER = register("burrower", EntityType.Builder.<EntityIMBurrower>create(EntityIMBurrower::new, SpawnGroup.MONSTER)
             .dimensions(0.6F, 1.99F).eyeHeight(1.74F).vehicleAttachment(-0.7F).maxTrackingRange(8));
     EntityType<EntityIMImp> IMP = register("imp", EntityType.Builder.<EntityIMImp>create(EntityIMImp::new, SpawnGroup.MONSTER)
