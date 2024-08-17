@@ -16,6 +16,7 @@ import net.minecraft.world.entity.EntityChangeListener;
 public interface Combatant<T extends LivingEntity> extends IHasNexus {
     Predicate<Entity> PREDICATE = EntityPredicates.VALID_LIVING_ENTITY.and(EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).and(i -> i instanceof Combatant);
 
+    @Deprecated
     String getLegacyName();
 
     T asEntity();

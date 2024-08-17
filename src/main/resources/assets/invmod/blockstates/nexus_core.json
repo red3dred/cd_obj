@@ -1,9 +1,9 @@
 {
   "variants": {
-    "on=true": {
+    "lit=true": {
       "model": "invmod:block/nexus_core_on"
     },
-    "on=false": {
+    "lit=false": {
       "model": "invmod:block/nexus_core_off"
     }
   }

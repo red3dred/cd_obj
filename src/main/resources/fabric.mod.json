@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "mod_invasion",
+  "id": "invmod",
   "version": "${version}",
   "name": "Invasion",
   "description": "So you think your base is tough, do you?",

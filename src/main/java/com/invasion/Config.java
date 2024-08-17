@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.Nullable;
 
 public class Config {
-    private Properties properties;
-    private Set<String> keys;
+    private Properties properties = new Properties();
+    private Set<String> keys = Set.of();
 
     public void loadConfig(File configFile) {
         InvasionMod.log("Loading config");
-        properties = new Properties();
+        properties.clear();
         try {
             if (!configFile.exists()) {
                 InvasionMod.LOGGER.info("Config not found. Creating file '" + configFile.getName() + "' in minecraft directory");
@@ -25,13 +25,13 @@ public class Config {
                 }
             } else {
                 try (FileReader configRead = new FileReader(configFile)) {
-                    this.properties.load(configRead);
-                    this.keys = properties.keySet().stream().map(i -> i.toString()).collect(Collectors.toSet());
+                    properties.load(configRead);
                 }
             }
-
         } catch (IOException e) {
             InvasionMod.LOGGER.error("Proceeding with default config", e);
+        } finally {
+            keys = properties.keySet().stream().map(i -> i.toString()).collect(Collectors.toSet());
         }
     }
 
@@ -52,7 +52,7 @@ public class Config {
     }
 
     public void setProperty(String key, String value) {
-        this.properties.setProperty(key, value);
+        properties.setProperty(key, value);
     }
 
     public Set<String> keySet() {
@@ -65,7 +65,7 @@ public class Config {
 
     public int getPropertyValueInt(String keyName, int defaultValue) {
         String property = properties.getProperty(keyName, null);
-        if (!property.equals("null")) {
+        if (property != null) {
             return Integer.parseInt(property);
         }
 

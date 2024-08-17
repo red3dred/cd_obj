@@ -10,7 +10,6 @@ import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.IEntityIMPattern;
 import com.invasion.nexus.wave.IMWaveBuilder;
@@ -105,7 +104,7 @@ public class ConfigInvasion extends Config {
         return (nightTime ? mobHealthNightspawn : mobHealthInvasion).getOrDefault(mobName, DEFAULT_MOB_HEALTHS.getOrDefault(mobName, 20));
     }
 
-    public int getHealth(Combatant mob) {
+    public int getHealth(Combatant<?> mob) {
         // TODO:
         return getHealth(mob.getLegacyName(), !mob.hasNexus());
     }

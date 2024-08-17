@@ -14,8 +14,8 @@ import com.invasion.entity.EntityIMThrower;
 
 public class RenderThrower extends BipedEntityRenderer<EntityIMThrower, ModelThrower> {
 	private static final List<Identifier> TEXTURES = Stream.of(
-	        "textures/throwerT1.png",
-	        "textures/throwerT2.png"
+	        "textures/entity/thrower/thrower.png",
+	        "textures/entity/thrower/thrower_brute.png"
     ).map(InvasionMod::id).toList();
 
 	public RenderThrower(EntityRendererFactory.Context ctx) {

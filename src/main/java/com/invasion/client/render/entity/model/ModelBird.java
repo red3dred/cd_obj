@@ -31,9 +31,9 @@ public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
 
     public ModelBird(ModelPart root) {
         this.root = root;
-        head = root.getChild("head");
         body = root.getChild("body");
-        tail = root.getChild("tail");
+        head = body.getChild("head");
+        tail = body.getChild("tail");
         leftThigh = body.getChild("left_thigh");
         rightThigh = body.getChild("right_thigh");
         ModelPart leftLeg = leftThigh.getChild("leg");
