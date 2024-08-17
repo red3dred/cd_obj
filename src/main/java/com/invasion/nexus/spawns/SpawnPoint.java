@@ -1,5 +1,6 @@
 package com.invasion.nexus.spawns;
 
+import com.invasion.InvasionMod;
 import com.invasion.util.math.IPolarAngle;
 
 import net.minecraft.entity.Entity;
@@ -19,8 +20,12 @@ public record SpawnPoint(BlockPos pos, int angle, SpawnType type) implements IPo
     }
 
     public boolean isValidFor(WorldView world, MobEntity entity) {
+        if (world.isOutOfHeightLimit(pos)) {
+            InvasionMod.LOGGER.info("[Spawn] Spawn point was outside of build limit {}", pos);
+            return false;
+        }
         applyTo(entity);
-        return entity.canSpawn(world);
+        return entity.canSpawn(world) && world.isSpaceEmpty(entity);
     }
 
     public boolean trySpawnEntity(World world, MobEntity entity) {

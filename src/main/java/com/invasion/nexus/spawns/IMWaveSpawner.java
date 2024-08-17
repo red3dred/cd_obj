@@ -205,12 +205,12 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 	@Override
 	public boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle) {
-		if (nexus.getWorld() == null && permitSpawns) {
+		if (!permitSpawns) {
 			return false;
 		}
 
 		EntityIMLiving mob = mobConstruct.createMob(nexus);
-		int spawnTries = Math.min(getNumberOfPointsInRange(minAngle, maxAngle, SpawnType.HUMANOID), MAX_SPAWN_TRIES);
+		int spawnTries = Math.min(spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID, minAngle, maxAngle), MAX_SPAWN_TRIES);
 
 		for (int j = 0; j < spawnTries; j++) {
 		    @Nullable
@@ -224,7 +224,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			if (!permitSpawns) {
 				successfulSpawns++;
 				if (debugMode) {
-				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + spawnPoint + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + spawnPoint + "  Specified: " + minAngle + "," + maxAngle);
 				}
 
 				return true;
@@ -233,29 +233,27 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			if (spawnPoint.trySpawnEntity(nexus.getWorld(), mob)) {
 				successfulSpawns++;
 				if (debugMode) {
-				    InvasionMod.log("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
 				}
 
 				return true;
 			}
 		}
-		InvasionMod.log("Could not find valid spawn for '" + mob.getName().getString() + "' after " + spawnTries + " tries");
+		InvasionMod.LOGGER.error("Could not find valid spawn for '" + mob.getName().getString() + "' after " + spawnTries + " tries");
 		return false;
 	}
 
 	private void generateSpawnPoints() {
-		if (nexus.getWorld() == null) {
-			return;
-		}
 		EntityIMZombie zombie = InvEntities.ZOMBIE.create(nexus.getWorld());
 		zombie.setNexus(nexus);
 		List<SpawnPoint> spawnPoints = new ArrayList<>();
 		BlockPos origin = nexus.getOrigin();
 		BlockPos.Mutable mutable = origin.mutableCopy();
-		for (int vertical = nexus.getWorld().getBottomY();
-		         vertical < nexus.getWorld().getTopY() - 2;
+
+		for (int vertical = 0;
+		         Math.abs(vertical) < spawnRadius && !nexus.getWorld().isOutOfHeightLimit(origin.getY() + vertical);
 		         vertical = vertical > 0 ? vertical * -1 : vertical * -1 + 1) {
-			for (int i = 0; i <= spawnRadius * 0.7D + 1.0D; i++) {
+			for (int i = 0; i <= spawnRadius * 0.7D + 1; i++) {
 				int j = (int) Math.round(spawnRadius * Math.cos(Math.asin(i / spawnRadius)));
 
 				addValidSpawn(zombie, spawnPoints, mutable.set(origin).move( i, vertical, j));
@@ -291,14 +289,19 @@ public class IMWaveSpawner implements ISpawnerAccess {
 
 		}
 
-		InvasionMod.log("Num. Spawn Points: " + Integer.toString(spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID)));
+		InvasionMod.LOGGER.info("Found {} spawn points for next nexus wave", spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID));
 	}
 
 	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, BlockPos pos) {
+	    if (nexus.getWorld().isOutOfHeightLimit(pos)) {
+	        InvasionMod.LOGGER.info("[Spawn] Spawn point was outside of build limit {}", pos);
+	        return;
+	    }
 		entity.updatePositionAndAngles(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0);
-		if (entity.canSpawn(nexus.getWorld())) {
+		if (entity.canSpawn(nexus.getWorld()) && nexus.getWorld().isSpaceEmpty(entity)) {
 			int angle = (int) (Math.atan2(nexus.getOrigin().getZ() - pos.getZ(), nexus.getOrigin().getX() - pos.getX()) * MathHelper.DEGREES_PER_RADIAN);
 			spawnPoints.add(new SpawnPoint(pos.toImmutable(), angle, SpawnType.HUMANOID));
+			InvasionMod.LOGGER.info("[Spawn] Adding spawn point at {}", pos);
 		}
 	}
 
