@@ -56,7 +56,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
     }
 
     default boolean getBurnsInDay() {
-        return hasNexus() && InvasionMod.getConfig().nightMobsBurnInDay;
+        return !hasNexus() && InvasionMod.getConfig().nightMobsBurnInDay;
     }
 
     default void setIsHoldingIntoLadder(boolean flag) {
@@ -85,6 +85,10 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
 
     default void setAttackStrength(double attackStrength) {
         asEntity().getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(attackStrength);
+    }
+
+    default void setBaseMovementSpeed(double speed) {
+        asEntity().getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
     }
 
     default double getAttackStrength() {

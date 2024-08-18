@@ -123,21 +123,21 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
         //setSize(1.4F, 0.9F);
         if (getTier() == 1) {
             if (getFlavour() == 0) {
-                setMovementSpeed(0.29F);
+                setBaseMovementSpeed(0.29F);
                 setAttackStrength(3);
             } else if (getFlavour() == 1) {
                 //setSize(0.42F, 0.3F);
-                setMovementSpeed(0.34F);
+                setBaseMovementSpeed(0.34F);
                 setAttackStrength(1);
             }
         } else if (getTier() == 2) {
             if (getFlavour() == 0) {
-                setMovementSpeed(0.3F);
+                setBaseMovementSpeed(0.3F);
                 setAttackStrength(5);
                 setGravity(0.043F);
             } else if (getFlavour() == 1) {
                 //setSize(2.8F, 1.8F);
-                setMovementSpeed(0.22F);
+                setBaseMovementSpeed(0.22F);
                 setAttackStrength(4);
             }
         }
@@ -180,7 +180,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 	}
 
 	public int getAirborneTime() {
-		return this.airborneTime;
+		return airborneTime;
 	}
 
 	@Override

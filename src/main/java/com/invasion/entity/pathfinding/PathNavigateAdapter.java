@@ -2,6 +2,7 @@ package com.invasion.entity.pathfinding;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeNavigator;
 import net.minecraft.entity.mob.MobEntity;
@@ -10,6 +11,8 @@ import net.minecraft.world.World;
 
 public class PathNavigateAdapter extends EntityNavigation {
     private final INavigation navigator;
+    private MobNavigation mobNavigation;
+    private boolean useOldNavigation;
 
     public PathNavigateAdapter(MobEntity entity, World world, INavigation navigator) {
         super(entity, world);
@@ -18,6 +21,13 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     public INavigation getNewNavigator() {
         return navigator;
+    }
+
+    protected MobNavigation getMobNavigation() {
+        if (mobNavigation == null) {
+            mobNavigation = new MobNavigation(entity, world);
+        }
+        return mobNavigation;
     }
 
     @Override
@@ -57,16 +67,17 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public PathNodeMaker getNodeMaker() {
-        return null;
+        return getMobNavigation().getNodeMaker();
     }
 
     @Override
     public void setCanSwim(boolean par1) {
+        getMobNavigation().setCanSwim(par1);
     }
 
     @Override
     public boolean canSwim() {
-        return false;
+        return getMobNavigation().canSwim();
     }
 
     @Override
@@ -81,6 +92,6 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     protected boolean isAtValidPosition() {
-        return true;
+        return false;
     }
 }

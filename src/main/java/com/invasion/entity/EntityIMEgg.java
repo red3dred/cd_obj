@@ -128,11 +128,6 @@ public class EntityIMEgg extends MobEntity implements Combatant<EntityIMEgg> {
     }
 
     @Override
-    public double findDistanceToNexus() {
-        return 0;
-    }
-
-    @Override
     public EntityIMEgg asEntity() {
         return this;
     }

@@ -5,10 +5,13 @@ import org.joml.Vector3f;
 import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.IMLookHelper;
 import com.invasion.entity.ai.IMMoveHelperFlying;
+import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.INavigationFlying;
 import com.invasion.entity.pathfinding.NavigatorFlying;
 import com.invasion.entity.pathfinding.PathCreator;
+import com.invasion.util.math.MathUtil;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
@@ -21,11 +24,13 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public abstract class EntityIMFlying extends EntityIMLiving {
+public abstract class EntityIMFlying extends EntityIMLiving implements AnimatableEntity {
     private static final TrackedData<Vector3f> TARGET_POS = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.VECTOR3F);
     private static final TrackedData<Boolean> THRUSTING = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Float> THRUST_EFFORT = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<Integer> FLY_STATE = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> MOVE_STATE = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private float liftFactor = 0.4F;
 	private float maxPoweredFlightSpeed = 0.28F;
@@ -61,6 +66,7 @@ public abstract class EntityIMFlying extends EntityIMLiving {
         builder.add(THRUSTING, false);
         builder.add(THRUST_EFFORT, 1F);
         builder.add(FLY_STATE, FlyState.GROUNDED.ordinal());
+        builder.add(MOVE_STATE, MoveState.STANDING.ordinal());
     }
 
     public Vector3f getTargetPos() {
@@ -216,6 +222,16 @@ public abstract class EntityIMFlying extends EntityIMLiving {
         maxRunSpeed = speed;
     }
 
+    @Override
+    public MoveState getMoveState() {
+        return MoveState.of(dataTracker.get(MOVE_STATE));
+    }
+
+    @Override
+    public void setMoveState(MoveState moveState) {
+        dataTracker.set(MOVE_STATE, moveState.ordinal());
+    }
+
 	@Override
 	public IMMoveHelperFlying getMoveControl() {
 		return (IMMoveHelperFlying)super.getMoveControl();
@@ -225,6 +241,15 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	public IMLookHelper getLookControl() {
 		return (IMLookHelper)super.getLookControl();
 	}
+
+    @Override
+    public void tickMovement() {
+        super.tickMovement();
+        int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
+        if (packedAngles != dataTracker.get(ANGLES)) {
+            dataTracker.set(ANGLES, packedAngles);
+        }
+    }
 
     // based on FlyingEntity (originals in comments)
 	@Override
@@ -271,5 +296,16 @@ public abstract class EntityIMFlying extends EntityIMLiving {
 	@Override
 	protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
 	}
+
+    @Override
+    public void onTrackedDataSet(TrackedData<?> data) {
+        super.onTrackedDataSet(data);
+        if (data == ANGLES) {
+            int packedAngles = dataTracker.get(ANGLES);
+            setBodyYaw(MathUtil.unpackAnglesDeg_1(packedAngles));
+            setHeadYaw(MathUtil.unpackAnglesDeg_2(packedAngles));
+            setPitch(MathUtil.unpackAnglesDeg_3(packedAngles));
+        }
+    }
 
 }

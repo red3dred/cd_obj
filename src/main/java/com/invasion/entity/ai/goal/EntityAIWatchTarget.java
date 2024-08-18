@@ -15,11 +15,11 @@ public class EntityAIWatchTarget extends Goal {
 
     @Override
     public boolean canStart() {
-        return this.theEntity.getTarget() != null;
+        return theEntity.getTarget() != null;
     }
 
     @Override
     public void tick() {
-        this.theEntity.getLookControl().lookAt(theEntity.getTarget(), 2.0F, 2.0F);
+        theEntity.getLookControl().lookAt(theEntity.getTarget(), 2, 2);
     }
 }

@@ -152,14 +152,14 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     protected void initTieredAttributes() {
         if (getTier() == 1) {
             if (getFlavour() == 0) {
-                setMovementSpeed(0.19F);
+                setBaseMovementSpeed(0.19F);
                 setAttackStrength(4);
                 selfDamage = 3;
                 maxSelfDamage = 6;
                 flammability = 3;
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
-                setMovementSpeed(0.19F);
+                setBaseMovementSpeed(0.19F);
                 setAttackStrength(6);
                 selfDamage = 3;
                 maxSelfDamage = 6;
@@ -169,7 +169,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setCanDestroyBlocks(false);
             }
         } else if (getTier() == 2) {
-            setMovementSpeed(0.19F);
+            setBaseMovementSpeed(0.19F);
             if (getFlavour() == 0) {
                 setAttackStrength(7);
                 selfDamage = 4;
@@ -179,7 +179,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
-
                 setAttackStrength(10);
                 selfDamage = 3;
                 maxSelfDamage = 9;
@@ -193,7 +192,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 flammability = 30;
                 setCanDestroyBlocks(true);
             } else if (getFlavour() == 3) {
-                setMovementSpeed(0.25F);
+                setBaseMovementSpeed(0.25F);
                 setAttackStrength(8);
                 setFireImmune(true);
                 setStackInHand(Hand.MAIN_HAND, Items.GOLDEN_SWORD.getDefaultStack());
@@ -201,7 +200,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 setCanDestroyBlocks(true);
             }
         } else if (getTier() == 3 && getFlavour() == 0) {
-            setMovementSpeed(0.17F);
+            setBaseMovementSpeed(0.17F);
             setAttackStrength(18);
             selfDamage = 4;
             maxSelfDamage = 20;

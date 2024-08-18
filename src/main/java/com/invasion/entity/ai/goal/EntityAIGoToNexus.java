@@ -26,6 +26,11 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
     }
 
     @Override
+    public boolean shouldRunEveryTick() {
+        return true;
+    }
+
+    @Override
     public boolean canStart() {
         return mob.getAIGoal() == Goal.BREAK_NEXUS;
     }
@@ -41,9 +46,9 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
 
             if (distance > 2000) {
                 Vec3d target = nexus.getOrigin().toBottomCenterPos();
-                pathSet = navigation.tryMoveTowardsXZ(target.x, target.z, 1, 6, 4, mob.getMovementSpeed());
+                pathSet = navigation.tryMoveTowardsXZ(target.x, target.z, 1, 6, 4, 1);
             } else if (distance > 1.5) {
-                pathSet = navigation.tryMoveToXYZ(nexus.getOrigin().toBottomCenterPos(), 1, mob.getMovementSpeed());
+                pathSet = navigation.tryMoveToXYZ(nexus.getOrigin().toBottomCenterPos(), 1, 1);
             }
 
             if (!pathSet || (navigation.getLastPathDistanceToTarget() > 3 && lastPathRequestPos.isPresent() && mob.getBlockPos().isWithinDistance(lastPathRequestPos.get(), 3.5))) {
@@ -65,10 +70,10 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
             INexusAccess nexus = mob.getNexus();
             if (nexus != null) {
                 Vec3d target = nexus.getOrigin().toCenterPos();
-                mob.getMoveControl().moveTo(target.x, target.y, target.z, mob.getMovementSpeed());
+                mob.getMoveControl().moveTo(target.x, target.y, target.z, 1);
             }
         }
-        if (mob.getNavigatorNew().noPath() || mob.getNavigatorNew().getStuckTime() > 40) {
+        if (mob.getNavigation().isIdle() || mob.getNavigatorNew().getStuckTime() > 40) {
             start();
         }
     }

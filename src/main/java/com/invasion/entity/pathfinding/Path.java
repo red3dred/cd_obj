@@ -16,11 +16,7 @@ public class Path {
     private int length;
     private int index;
 
-    public Path(PathNode[] nodes) {
-        this(nodes, nodes.length > 0 ? nodes[nodes.length - 1] : null);
-    }
-
-    public Path(PathNode[] nodes, @Nullable PathNode intendedTarget) {
+    Path(PathNode[] nodes, @Nullable PathNode intendedTarget) {
         points = nodes;
         length = nodes.length;
         this.intendedTarget = intendedTarget;

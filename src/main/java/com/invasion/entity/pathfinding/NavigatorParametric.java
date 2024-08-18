@@ -13,14 +13,19 @@ public abstract class NavigatorParametric extends NavigatorIM {
         this.timeParam = 0;
     }
 
-    public void onUpdateNavigation(int paramElapsed) {
+    @Override
+    public void onUpdateNavigation() {
+        onUpdateNavigation(1);
+    }
+
+    public void onUpdateNavigation(int time) {
         totalTicks++;
         if (noPath() || waitingForNotify) {
             return;
         }
         if (canNavigate() && nodeActionFinished) {
             int pathIndex = path.getCurrentPathIndex();
-            pathFollow(timeParam + paramElapsed);
+            pathFollow(timeParam + time);
             doMovementTo(timeParam);
 
             if (path.getCurrentPathIndex() != pathIndex) {
@@ -43,18 +48,12 @@ public abstract class NavigatorParametric extends NavigatorIM {
         }
     }
 
-    @Override
-    public void onUpdateNavigation() {
-        onUpdateNavigation(1);
-    }
-
-    protected void doMovementTo(int param) {
-        PosRotate3D movePos = entityPositionAtParam(param);
-        this.theEntity.getMoveControl().moveTo(movePos.position().x, movePos.position().y, movePos.position().z,
-                theEntity.getMovementSpeed());
+    protected void doMovementTo(int time) {
+        PosRotate3D movePos = entityPositionAtParam(time);
+        theEntity.getMoveControl().moveTo(movePos.position().x, movePos.position().y, movePos.position().z, 1);
 
         if (Math.abs(theEntity.squaredDistanceTo(movePos.position())) < minMoveToleranceSq) {
-            timeParam = param;
+            timeParam = time;
             ticksStuck--;
         } else {
             ticksStuck++;
@@ -65,16 +64,16 @@ public abstract class NavigatorParametric extends NavigatorIM {
 
     protected abstract boolean isReadyForNextNode(int paramInt);
 
-    protected void pathFollow(int param) {
+    protected void pathFollow(int time) {
         int nextIndex = path.getCurrentPathIndex() + 1;
-        if (isReadyForNextNode(param)) {
+        if (isReadyForNextNode(time)) {
             if (nextIndex < path.getCurrentPathLength()) {
                 timeParam = 0;
                 path.setCurrentPathIndex(nextIndex);
                 activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
             }
         } else {
-            timeParam = param;
+            timeParam = time;
         }
     }
 

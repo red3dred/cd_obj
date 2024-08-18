@@ -65,7 +65,7 @@ public class EntityAICharge<T extends LivingEntity> extends EntityAIMoveToEntity
 
     @Override
     public void tick() {
-        mob.getLookControl().lookAt(chargePos.add(0, -1, 0));//, 10.0F, mob.getTurnRate());
+        mob.getLookControl().lookAt(chargePos.x, chargePos.y, chargePos.z, 10.0F, /* mob.getTurnRate()*/ 10);
         if (windup > 0) {
             if (--windup == 0) {
                 mob.getNavigation().startMovingTo(chargePos.getX(), chargePos.getY(), chargePos.getZ(), speed);

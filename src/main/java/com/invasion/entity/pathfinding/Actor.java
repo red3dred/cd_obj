@@ -275,28 +275,22 @@ public class Actor<T extends Entity> implements IPathfindable {
 
     @SuppressWarnings("deprecation")
     public final boolean canStandAt(BlockView world, BlockPos pos) {
-        boolean isSolidBlock = false;
-        for (BlockPos p : BlockPos.stream(entity.getDimensions(entity.getPose()).getBoxAt(pos.down().toBottomCenterPos())).toList()) {
+        for (BlockPos p : BlockPos.stream(entity.getDimensions(entity.getPose()).getBoxAt(pos.toBottomCenterPos())).toList()) {
             BlockState state = world.getBlockState(p);
-            if (!state.isAir()) {
-                if (!state.blocksMovement()) {
-                    isSolidBlock = true;
-                } else if (avoidsBlock(state)) {
-                    return false;
-                }
+            if (!state.isAir() && state.blocksMovement() || avoidsBlock(state)) {
+                return false;
             }
         }
-        return isSolidBlock;
+        return canStandOnBlock(world, pos.down());
     }
 
     public boolean canStandAtAndIsValid(BlockView world, BlockPos pos) {
         return getCollide(world, pos) > DestructableType.UNBREAKABLE && canStandAt(world, pos);
     }
 
-    @SuppressWarnings("deprecation")
     protected boolean canStandOnBlock(BlockView world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
-        return !state.isAir() && state.hasSolidTopSurface(world, pos, entity) && !state.blocksMovement() && !avoidsBlock(state);
+        return state.hasSolidTopSurface(world, pos, entity) && !avoidsBlock(state);
     }
 
     protected boolean blockHasLadder(BlockView world, BlockPos pos) {

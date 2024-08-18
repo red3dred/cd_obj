@@ -1,5 +1,7 @@
 package com.invasion.entity.ai.goal;
 
+import java.util.EnumSet;
+
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.entity.NexusEntity;
@@ -7,6 +9,7 @@ import com.invasion.entity.Stunnable;
 import com.invasion.entity.ai.IMMoveHelper;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -33,6 +36,7 @@ public class EntityAISprint<T extends PathAwareEntity & NexusEntity> extends net
 
     public EntityAISprint(T entity) {
         theEntity = entity;
+        setControls(EnumSet.of(Goal.Control.MOVE));
     }
 
     @Override

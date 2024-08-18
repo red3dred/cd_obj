@@ -2,6 +2,8 @@ package com.invasion.entity.pathfinding;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.InvasionMod;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +34,11 @@ public class PathfinderIM {
         PathNode target = openPoint(to);
         finalTarget = target;
         this.targetRadius = targetRadius;
-        return addToPath(pather, start, target);
+        Path path = addToPath(pather, start, target);
+        if (path != null) {
+            InvasionMod.LOGGER.info("Path find success");
+        }
+        return path;
     }
 
     @Nullable
@@ -97,11 +103,11 @@ public class PathfinderIM {
         return (float) start.pos.getSquaredDistance(target.pos);
     }
 
-    protected PathNode openPoint(BlockPos pos) {
+    private PathNode openPoint(BlockPos pos) {
         return openPoint(pos, PathAction.NONE);
     }
 
-    protected PathNode openPoint(BlockPos pos, PathAction action) {
+    private PathNode openPoint(BlockPos pos, PathAction action) {
         int hash = PathNode.makeHash(pos, action);
         PathNode pathpoint = pointMap.get(hash);
         if (pathpoint == null) {

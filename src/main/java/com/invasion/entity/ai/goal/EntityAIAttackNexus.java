@@ -19,6 +19,11 @@ public class EntityAIAttackNexus extends net.minecraft.entity.ai.goal.Goal {
     }
 
     @Override
+    public boolean shouldRunEveryTick() {
+        return true;
+    }
+
+    @Override
     public boolean canStart() {
         if (cooldown == 0 && mob.getAIGoal() == Goal.BREAK_NEXUS && mob.findDistanceToNexus() > 4) {
             cooldown = 5;

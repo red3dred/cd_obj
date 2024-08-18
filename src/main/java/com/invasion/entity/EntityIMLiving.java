@@ -1,7 +1,6 @@
 package com.invasion.entity;
 
 import com.invasion.entity.ai.IMMoveHelper;
-import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.NavigatorIM;
 import com.invasion.entity.pathfinding.PathCreator;
@@ -9,25 +8,17 @@ import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.nexus.IHasNexus;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
 public abstract class EntityIMLiving extends HostileEntity implements NexusEntity, Stunnable {
-    private static final TrackedData<Integer> MOVE_STATE = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
-    //private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
-
     private final IHasNexus.Handle nexus = new IHasNexus.Handle(this::getWorld);
 
     private int stunTimer;
@@ -41,18 +32,17 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     }
 
     @Override
+    public PathAwareEntity asEntity() {
+        return this;
+    }
+
+    @Override
     protected final EntityNavigation createNavigation(World world) {
         return new PathNavigateAdapter(this, world, createIMNavigation());
     }
 
     protected INavigation createIMNavigation() {
         return new NavigatorIM(this, new PathCreator(700, 50));
-    }
-
-    @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(MOVE_STATE, MoveState.STANDING.ordinal());
     }
 
     @Override
@@ -63,12 +53,7 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     @Override
     public void tickMovement() {
         super.tickMovement();
-        /*int packedAngles = MathUtil.packAnglesDeg(getBodyYaw(), getHeadYaw(), getPitch(), 0);
-        if (packedAngles != dataTracker.get(ANGLES)) {
-            dataTracker.set(ANGLES, packedAngles);
-        }*/
-
-        if (!hasNexus() && getBurnsInDay() && isAffectedByDaylight()) {
+        if (getBurnsInDay() && isAffectedByDaylight()) {
             sunlightDamageTick();
         }
     }
@@ -83,17 +68,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         }
 
         super.tick();
-    }
-
-    @Override
-    public void onTrackedDataSet(TrackedData<?> data) {
-        super.onTrackedDataSet(data);
-        /*if (data == ANGLES) {
-            int packedAngles = dataTracker.get(ANGLES);
-            setBodyYaw(MathUtil.unpackAnglesDeg_1(packedAngles));
-            setHeadYaw(MathUtil.unpackAnglesDeg_2(packedAngles));
-            setPitch(MathUtil.unpackAnglesDeg_3(packedAngles));
-        }*/
     }
 
     @Override
@@ -124,13 +98,13 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     }
 
     @Override
-    public boolean canSpawn(WorldAccess world, SpawnReason spawnReason) {
-        return canSpawn(world) && (hasNexus() || getLightLevelBelow8()) && getWorld().isTopSolid(getBlockPos(), this);
+    public boolean canSpawn(WorldView world) {
+        return super.canSpawn(world) && (hasNexus() || getLightLevelBelow8()) && getWorld().isTopSolid(getBlockPos().down(), this);
     }
 
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
-        return hasNexus() ? 0 : 0.5F - world.getLightLevel(pos);
+        return hasNexus() ? 0 : super.getPathfindingFavor(pos, world);
     }
 
     @Override
@@ -145,19 +119,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
 
     protected void sunlightDamageTick() {
         setOnFireFor(8);
-    }
-
-    @Override
-    public PathAwareEntity asEntity() {
-        return this;
-    }
-
-    public MoveState getMoveState() {
-        return MoveState.of(dataTracker.get(MOVE_STATE));
-    }
-
-    public void setMoveState(MoveState moveState) {
-        dataTracker.set(MOVE_STATE, moveState.ordinal());
     }
 
     @Override

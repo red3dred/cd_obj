@@ -16,12 +16,29 @@ import net.minecraft.util.math.Vec3i;
 public class IMMoveHelperSpider extends IMMoveHelper {
     private static final Direction[] DIRECTIONS = Direction.values();
 
-    public IMMoveHelperSpider(EntityIMLiving par1EntityLiving) {
-        super(par1EntityLiving);
+    public IMMoveHelperSpider(EntityIMLiving entity) {
+        super(entity);
+    }
+
+    @Override
+    protected Optional<Direction> getClimbFace(BlockPos pos) {
+        pos = BlockPos.ofFloored(Vec3d.of(pos).subtract(entity.getWidth() * 0.5F, 0, entity.getWidth() * 0.5F));
+
+        int index = getMoveDirection();
+
+        BlockPos.Mutable mutable = pos.mutableCopy();
+        for (Vec3i offset : CoordsInt.OFFSET_ADJACENT_2) {
+            BlockState state = entity.getWorld().getBlockState(mutable.set(pos).move(offset));
+            if (state.isFullCube(entity.getWorld(), mutable)) {
+                return Optional.of(DIRECTIONS[(index % 8) / 2]);
+            }
+            index++;
+        }
+        return Optional.empty();
     }
 
     private int getMoveDirection() {
-        Path path = entity.getNavigatorNew().getPath();
+        Path path = ((EntityIMLiving)entity).getNavigatorNew().getPath();
         if (path != null && !path.isFinished()) {
             PathNode currentPoint = path.getPathPointFromIndex(path.getCurrentPathIndex());
             int pathLength = path.getCurrentPathLength();
@@ -44,20 +61,4 @@ public class IMMoveHelperSpider extends IMMoveHelper {
         return 0;
     }
 
-    @Override
-    protected Optional<Direction> getClimbFace(BlockPos pos) {
-        pos = BlockPos.ofFloored(Vec3d.of(pos).subtract(entity.getWidth() * 0.5F, 0, entity.getWidth() * 0.5F));
-
-        int index = getMoveDirection();
-
-        BlockPos.Mutable mutable = pos.mutableCopy();
-        for (Vec3i offset : CoordsInt.OFFSET_ADJACENT_2) {
-            BlockState state = entity.getWorld().getBlockState(mutable.set(pos).move(offset));
-            if (state.isFullCube(entity.getWorld(), mutable)) {
-                return Optional.of(DIRECTIONS[(index % 8) / 2]);
-            }
-            index++;
-        }
-        return Optional.empty();
-    }
 }

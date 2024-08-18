@@ -143,11 +143,7 @@ public class EntityIMCreeper extends TieredIMMobEntity implements ILeader, SkinO
 
             if (speed > 0) {
                 if (commitToExplode) {
-                    getMoveControl().moveTo(
-                            getX() + explodeDirection.getVector().getX(),
-                            getY(),
-                            getZ() + explodeDirection.getVector().getZ(), 0
-                    );
+                    getMoveControl().moveTo(getX() + explodeDirection.getVector().getX(), getY(), getZ() + explodeDirection.getVector().getZ(), 0.1);
                 }
                 if (currentFuseTime == 0) {
                     playSound(SoundEvents.ENTITY_CREEPER_PRIMED, 1, 0.5F);

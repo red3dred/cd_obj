@@ -149,12 +149,12 @@ public class EntityIMThrower extends TieredIMMobEntity {
     public void initTieredAttributes() {
         clearingPoint = false;
         if (getTier() == 1) {
-            setMovementSpeed(0.13F);
+            setBaseMovementSpeed(0.13F);
             setAttackStrength(10);
             experiencePoints = 20;
             // setSize(1.8F, 1.95F);
         } else if (getTier() == 2) {
-            setMovementSpeed(0.23F);
+            setBaseMovementSpeed(0.23F);
             setAttackStrength(15);
             experiencePoints = 25;
             // setSize(2F, 2F);

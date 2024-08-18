@@ -26,8 +26,13 @@ public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
 	public EntityAIMoveToEntity(EntityIMLiving entity, Class<? extends T> target) {
 		this.targetClass = target;
 		this.mob = entity;
-		setControls(EnumSet.of(Control.MOVE, Control.TARGET));
+		setControls(EnumSet.of(Control.MOVE, Control.LOOK));
 	}
+
+    @Override
+    public boolean shouldRunEveryTick() {
+        return true;
+    }
 
 	@Override
     @SuppressWarnings("unchecked")
@@ -65,7 +70,7 @@ public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
 			setPath();
 		}
 		if (pathFailedCount > 3) {
-			mob.getMoveControl().moveTo(target.getX(), target.getY(), target.getZ(), mob.getMovementSpeed());
+			mob.getMoveControl().moveTo(target.getX(), target.getY(), target.getZ(), 1);
 		}
 	}
 
@@ -79,7 +84,7 @@ public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
 	}
 
 	protected void setPath() {
-		if (mob.getNavigatorNew().tryMoveToEntity(target, 0.0F, mob.getMovementSpeed())) {
+		if (mob.getNavigatorNew().tryMoveToEntity(target, 0.0F, 1)) {
 			if (mob.getNavigatorNew().getLastPathDistanceToTarget() > 3) {
 				cooldown = 30 + mob.getRandom().nextInt(10);
 				if (mob.getNavigatorNew().getPath().getCurrentPathLength() > 2) {

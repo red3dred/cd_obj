@@ -12,11 +12,26 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 	private EntityIMFlying entity;
 	private double targetFlySpeed;
 	private boolean wantsToBeFlying;
+	private boolean needsUpdate;
+
+    protected double targetSpeed;
 
 	public IMMoveHelperFlying(EntityIMFlying entity) {
 		super(entity);
 		this.entity = entity;
 		this.wantsToBeFlying = false;
+	}
+
+	@Override
+    public void moveTo(double x, double y, double z, double speed) {
+	    super.moveTo(x, y, z, speed);
+	    needsUpdate = true;
+	}
+
+	@Override
+    public void strafeTo(float forward, float sideways) {
+	    super.strafeTo(forward, sideways);
+	    needsUpdate = true;
 	}
 
 	public void setHeading(float yaw, float pitch, float idealSpeed, int time) {
@@ -37,7 +52,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		if ((!needsUpdate) && (entity.getMoveState() != MoveState.FLYING)) {
 			entity.setMoveState(MoveState.STANDING);
 			entity.setFlyState(FlyState.GROUNDED);
-			entity.setPitch(correctRotation(entity.getPitch(), 50, 4));
+			entity.setPitch(wrapDegrees(entity.getPitch(), 50, 4));
 			return;
 		}
 		needsUpdate = false;
@@ -79,18 +94,12 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 			}
 			entity.setFlyState(result);
 		} else {
-			MoveState result = doGroundMovement();
-			entity.setMoveState(result);
+		    entity.setGroundFriction(0);
+	        entity.setRoll(wrapDegrees(entity.getRoll(1), 0, 6));
+	        targetSpeed = entity.getMovementSpeed();
+	        entity.setPitch(wrapDegrees(entity.getPitch(), 50, 4));
+			super.tick();
 		}
-	}
-
-	@Override
-    protected MoveState doGroundMovement() {
-		entity.setGroundFriction(0);
-		entity.setRoll(correctRotation(entity.getRoll(1), 0, 6));
-		targetSpeed = entity.getMovementSpeed();
-		entity.setPitch(correctRotation(entity.getPitch(), 50, 4));
-		return super.doGroundMovement();
 	}
 
 	protected FlyState doFlying() {
@@ -123,7 +132,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 
 			float minFlightSpeed = 0.05F;
 			if (flySpeed < minFlightSpeed) {
-				entity.setYaw(correctRotation(entity.getYaw(), (float) (Math.atan2(delta.z, delta.x) * MathHelper.DEGREES_PER_RADIAN - 90), getTurnRate()));
+				entity.setYaw(wrapDegrees(entity.getYaw(), (float) (Math.atan2(delta.z, delta.x) * MathHelper.DEGREES_PER_RADIAN - 90), getTurnRate()));
 				if (entity.isOnGround()) {
 					return FlyState.GROUNDED;
 				}
@@ -181,12 +190,12 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 					double climbForceRatio = Math.min(acelleration.y / climbForce, 1.0D);
 					newPitch = middlePitch + (pitchLimit - middlePitch) * climbForceRatio;
 				}
-				newPitch = correctRotation(entity.getPitch(), (float) newPitch, 1.5F);
+				newPitch = wrapDegrees(entity.getPitch(), (float) newPitch, 1.5F);
 				double newYaw = Math.atan2(velocity.z, velocity.x) * MathHelper.DEGREES_PER_RADIAN - 90;
-				newYaw = correctRotation(entity.getYaw(), (float) newYaw, getTurnRate());
+				newYaw = wrapDegrees(entity.getYaw(), (float) newYaw, getTurnRate());
 				entity.updatePositionAndAngles(entity.getX(), entity.getY(), entity.getZ(), (float) newYaw, (float) newPitch);
 				double newRoll = 60 * bankForce / turnForce;
-				entity.setRoll(correctRotation(entity.getRoll(1), (float) newRoll, 6));
+				entity.setRoll(wrapDegrees(entity.getRoll(1), (float) newRoll, 6));
 				double horizontalForce = velocity.y > 0 ? -climbAccel : forwardForce;
 				int xDirection = velocity.x > 0 ? 1 : -1;
 				int zDirection = velocity.z > 0 ? 1 : -1;
@@ -229,8 +238,8 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		entity.setThrustEffort(1);
 		targetSpeed = entity.getMovementSpeed();
 
-		MoveState result = doGroundMovement();
-		if (result == MoveState.STANDING) {
+		tick();
+		if (entity.getMoveState() == MoveState.STANDING) {
 			return FlyState.GROUNDED;
 		}
 		if (entity.horizontalCollision) {
@@ -239,7 +248,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 		entity.setAcceleration(calcThrust(0));
 		double speed = entity.getVelocity().length();
 
-		entity.setPitch(correctRotation(entity.getPitch(), 40, 4));
+		entity.setPitch(wrapDegrees(entity.getPitch(), 40, 4));
 
 		float gravity = (float)entity.getFinalGravity();
 		float liftConstant = gravity;
@@ -266,7 +275,7 @@ public class IMMoveHelperFlying extends IMMoveHelper {
 				return FlyState.GROUNDED;
 			}
 
-			entity.setRoll(correctRotation(entity.getRoll(1), 40, 6));
+			entity.setRoll(wrapDegrees(entity.getRoll(1), 40, 6));
 			return FlyState.TOUCHDOWN;
 		}
 

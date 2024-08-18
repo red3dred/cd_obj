@@ -175,11 +175,11 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     @Override
     protected void initTieredAttributes() {
         if (getTier() == 1) {
-            setMovementSpeed(0.25F);
+            setBaseMovementSpeed(0.25F);
             setAttackStrength(8);
             equipStack(EquipmentSlot.MAINHAND, Items.GOLDEN_SWORD.getDefaultStack());
         } else if (getTier() == 2) {
-            setMovementSpeed(0.35F);
+            setBaseMovementSpeed(0.35F);
             setAttackStrength(12);
 
             if (getRandom().nextInt(5) == 1) {
@@ -198,7 +198,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
                 equipStack(EquipmentSlot.FEET, Items.GOLDEN_BOOTS.getDefaultStack());
             }
         } else if (getTier() == 3) {
-            setMovementSpeed(0.20F);
+            setBaseMovementSpeed(0.20F);
             setAttackStrength(18);
         }
     }
