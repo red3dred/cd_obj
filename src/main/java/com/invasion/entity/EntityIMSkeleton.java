@@ -5,8 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.entity.ai.goal.EntityAIAttackNexus;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAIWanderIM;
-
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -15,6 +13,7 @@ import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -45,7 +44,7 @@ public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
         // goalSelector.add(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
         goalSelector.add(3, new EntityAIAttackNexus(this));
         goalSelector.add(4, new EntityAIGoToNexus(this));
-        goalSelector.add(5, new EntityAIWanderIM(this));
+        goalSelector.add(5, new WanderAroundFarGoal(this, 1));
         goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8));
         goalSelector.add(6, new LookAroundGoal(this));
         goalSelector.add(6, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
