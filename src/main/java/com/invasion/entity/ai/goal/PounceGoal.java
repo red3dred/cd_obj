@@ -16,6 +16,8 @@ public class PounceGoal extends Goal {
     private int pounceTimer;
     private int cooldown;
 
+    private int airborneTime;
+
     public PounceGoal(EntityIMSpider entity, float minPower, float maxPower, int cooldown) {
         this.theEntity = entity;
         this.minPower = minPower;
@@ -29,13 +31,15 @@ public class PounceGoal extends Goal {
         return --pounceTimer <= 0 && target != null && theEntity.getVisibilityCache().canSee(target) && theEntity.isOnGround();
     }
 
-    public boolean continueExecuting() {
+    @Override
+    public boolean shouldContinue() {
         return this.isPouncing;
     }
 
-    public void startExecuting() {
+    @Override
+    public void start() {
         if (pounce(theEntity.getTarget().getPos())) {
-            theEntity.setAirborneTime(0);
+            airborneTime = 0;
             isPouncing = true;
             theEntity.getNavigatorNew().haltForTick();
         } else {
@@ -43,16 +47,16 @@ public class PounceGoal extends Goal {
         }
     }
 
-    public void updateTask() {
+    @Override
+    public void tick() {
         theEntity.getNavigatorNew().haltForTick();
-        int airborneTime = theEntity.getAirborneTime();
         if (airborneTime > 20 && theEntity.isOnGround()) {
             isPouncing = false;
             pounceTimer = cooldown;
-            theEntity.setAirborneTime(0);
+            airborneTime = 0;
             theEntity.getNavigatorNew().stop();
         } else {
-            theEntity.setAirborneTime(airborneTime + 1);
+            airborneTime++;
         }
     }
 

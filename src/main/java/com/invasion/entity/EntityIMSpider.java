@@ -38,8 +38,6 @@ import net.minecraft.world.World;
 public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.BOOLEAN);
 
-	private int airborneTime;
-    // TODO: Add this entity to EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
 		super(type, world);
 		moveControl = new IMSpiderMoveControl(this);
@@ -64,11 +62,10 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 		goalSelector.add(0, new SwimGoal(this));
 		goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 40));
 		goalSelector.add(1, new RallyBehindLeaderGoal<>(this, IMCreeperEntity.class, 4));
-		goalSelector.add(1, new PredicatedGoal(new LayEggGoal(this, 1), () -> getTier() == 2 && getFlavour() == 1));
-		goalSelector.add(2, new AttackNexusGoal(this));
+		goalSelector.add(1, new PredicatedGoal(new LayEggGoal(this, 1), this::isMother));
+		goalSelector.add(2, new AttackNexusGoal<>(this));
 		goalSelector.add(3, new WaitForSupportGoal(this, 5, false));
-		goalSelector.add(3, new PredicatedGoal(new PounceGoal(this, 0.2F, 1.55F, 18), () -> getTier() == 2 && getFlavour() == 0));
-		goalSelector.add(3, new PredicatedGoal(new PounceGoal(this, 0.2F, 1.55F, 18), () -> getTier() != 2 && getFlavour() == 1));
+		goalSelector.add(3, new PredicatedGoal(new PounceGoal(this, 0.2F, 1.55F, 18), this::isJumper));
 		goalSelector.add(4, new KillEntityGoal<>(this, MobEntity.class, 40));
 		goalSelector.add(5, new GoToNexusGoal(this));
 		goalSelector.add(7, new WanderAroundFarGoal(this, 1));
@@ -107,41 +104,49 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 
 	@Override
     protected Text getDefaultName() {
-	    if (getTier() == 1 && getFlavour() == 1) {
+	    if (isBaby()) {
 	        return Text.translatable(getType().getUntranslatedName() + ".baby");
 	    }
-	    if (getTier() == 2 && getFlavour() == 0) {
+	    if (isJumper()) {
             return Text.translatable(getType().getUntranslatedName() + ".jumping");
         }
-	    if (getTier() == 2 && getFlavour() == 1) {
+	    if (isMother()) {
             return Text.translatable(getType().getUntranslatedName() + ".mother");
         }
 	    return super.getDefaultName();
 	}
 
 	@Override
+    public boolean isBaby() {
+	    return getTier() == 1 && getFlavour() == 1;
+	}
+
+	public boolean isMother() {
+	    return getTier() == 2 && getFlavour() == 1;
+	}
+
+	public boolean isJumper() {
+	    return getTier() == 2 && getFlavour() == 0;
+	}
+
+	@Override
 	protected void initTieredAttributes() {
-        //setSize(1.4F, 0.9F);
-        if (getTier() == 1) {
-            if (getFlavour() == 0) {
-                setBaseMovementSpeed(0.29F);
-                setAttackStrength(3);
-            } else if (getFlavour() == 1) {
-                //setSize(0.42F, 0.3F);
-                setBaseMovementSpeed(0.34F);
-                setAttackStrength(1);
-            }
-        } else if (getTier() == 2) {
-            if (getFlavour() == 0) {
-                setBaseMovementSpeed(0.3F);
-                setAttackStrength(5);
-                setGravity(0.043F);
-            } else if (getFlavour() == 1) {
-                //setSize(2.8F, 1.8F);
-                setBaseMovementSpeed(0.22F);
-                setAttackStrength(4);
-            }
-        }
+	    float speed = 0.29F;
+	    float strength = 3;
+
+	    if (isBaby()) {
+	        speed = 0.34F;
+            strength = 1;
+	    } else if (isJumper()) {
+	        speed = 0.3F;
+            strength = 5;
+	    } else if (isMother()) {
+	        speed = 0.22F;
+            strength = 4;
+	    }
+
+        setBaseMovementSpeed(speed);
+        setAttackStrength(strength);
 	}
 
 	@Deprecated
@@ -166,6 +171,11 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 		return 1;
 	}
 
+    @Override
+    public float getScale() {
+        return super.getScale() * getScaleFactor();
+    }
+
 	@Override
 	public Entity[] getOffspring(Entity partner) {
 		if (getTier() == 2 && getFlavour() == 1) {
@@ -180,10 +190,6 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 		return null;
 	}
 
-	public int getAirborneTime() {
-		return airborneTime;
-	}
-
 	@Override
 	public boolean isPushable() {
 		return !isClimbing();
@@ -192,10 +198,6 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 	@Override
 	public boolean isClimbing() {
 		return dataTracker.get(CLIMBING);
-	}
-
-	public void setAirborneTime(int time) {
-		this.airborneTime = time;
 	}
 
 	@Override
@@ -211,11 +213,5 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 	@Override
 	protected SoundEvent getDeathSound() {
 		return SoundEvents.ENTITY_SPIDER_DEATH;
-	}
-
-	@Override
-    public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
-	    // TODO: Add this to EntityTypeTags.FALL_DAMAGE_IMMUNE
-	    return false;
 	}
 }
