@@ -7,14 +7,14 @@ import com.invasion.entity.pathfinding.INavigation;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 
-public class EntityAIMeleeFight<T extends LivingEntity, E extends PathAwareEntity & NexusEntity> extends EntityAIMeleeAttack<T, E> {
+public class MeleeFightGoal<T extends LivingEntity, E extends PathAwareEntity & NexusEntity> extends EntityAIMeleeAttack<T, E> {
 	private int time;
 	private float startingHealth;
 	private int damageDealt;
 	private int invulnCount;
 	private float retreatHealthLossPercent;
 
-	public EntityAIMeleeFight(E entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
+	public MeleeFightGoal(E entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
 		super(entity, targetClass, attackDelay);
 		this.retreatHealthLossPercent = retreatHealthLossPercent;
 	}

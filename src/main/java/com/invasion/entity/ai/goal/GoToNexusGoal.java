@@ -9,17 +9,19 @@ import com.invasion.entity.EntityIMMob;
 import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.nexus.INexusAccess;
+
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
+public class GoToNexusGoal extends Goal {
     private EntityIMMob mob;
     private Optional<BlockPos> lastPathRequestPos = Optional.empty();
     private final INavigation navigation;
     private int pathRequestTimer;
     private int pathFailedCount;
 
-    public EntityAIGoToNexus(EntityIMMob entity) {
+    public GoToNexusGoal(EntityIMMob entity) {
         this.mob = entity;
         this.navigation = mob.getNavigatorNew();
         setControls(EnumSet.of(Control.MOVE, Control.LOOK));

@@ -6,11 +6,12 @@ import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIFlyingTackle extends net.minecraft.entity.ai.goal.Goal {
+public class FlyingTackleGoal extends Goal {
     private final EntityIMFlying theEntity;
 
-    public EntityAIFlyingTackle(EntityIMFlying entity) {
+    public FlyingTackleGoal(EntityIMFlying entity) {
         this.theEntity = entity;
     }
 

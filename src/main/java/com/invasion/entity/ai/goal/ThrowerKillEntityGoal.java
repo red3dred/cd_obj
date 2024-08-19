@@ -6,12 +6,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIThrowerKillEntity<T extends LivingEntity> extends EntityAIKillEntity<T> {
+public class ThrowerKillEntityGoal<T extends LivingEntity> extends KillEntityGoal<T> {
     private boolean melee;
     private final EntityIMThrower theEntity;
     private int maxBoulderAmount = 3;
 
-    public EntityAIThrowerKillEntity(EntityIMThrower entity, Class<? extends T> targetClass, int attackDelay, float throwRange, float launchSpeed) {
+    public ThrowerKillEntityGoal(EntityIMThrower entity, Class<? extends T> targetClass, int attackDelay, float throwRange, float launchSpeed) {
         super(entity, targetClass, attackDelay);
         this.theEntity = entity;
     }

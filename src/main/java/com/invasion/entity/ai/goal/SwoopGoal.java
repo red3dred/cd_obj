@@ -10,13 +10,14 @@ import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
-public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
+public class SwoopGoal extends Goal {
     private static final int INITIAL_LINEUP_TIME = 25;
 
     private final EntityIMBird theEntity;
@@ -37,7 +38,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
     private boolean isCommittedToFinalRun;
     private boolean endSwoop;
 
-    public EntityAISwoop(EntityIMBird entity) {
+    public SwoopGoal(EntityIMBird entity) {
         theEntity = entity;
         strikeDistance = entity.getWidth() + 1.5F;
         setControls(EnumSet.of(Control.LOOK, Control.MOVE));

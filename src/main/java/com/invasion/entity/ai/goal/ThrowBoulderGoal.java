@@ -5,12 +5,12 @@ import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIRandomBoulder extends Goal {
+public class ThrowBoulderGoal extends Goal {
     private final EntityIMThrower theEntity;
     private int randomAmmo;
     private int timer = 180;
 
-    public EntityAIRandomBoulder(EntityIMThrower entity, int ammo) {
+    public ThrowBoulderGoal(EntityIMThrower entity, int ammo) {
         theEntity = entity;
         randomAmmo = ammo;
     }

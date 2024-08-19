@@ -7,11 +7,11 @@ import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainBuilder;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
-import com.invasion.entity.ai.goal.EntityAIAttackNexus;
-import com.invasion.entity.ai.goal.EntityAIGoToNexus;
-import com.invasion.entity.ai.goal.EntityAIKillEntity;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.NavigatorEngy;
 import com.invasion.entity.pathfinding.Path;
@@ -71,17 +71,17 @@ public class EntityIMPigEngy extends EntityIMMob implements ICanDig {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 60));
-        goalSelector.add(2, new EntityAIAttackNexus(this));
-        goalSelector.add(3, new EntityAIGoToNexus(this));
+        goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 60));
+        goalSelector.add(2, new AttackNexusGoal(this));
+        goalSelector.add(3, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 7));
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
         goalSelector.add(9, new LookAroundGoal(this));
 
-        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, 3, true), this::hasNexus));
-        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
-        targetSelector.add(2, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
+        targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, 3, true), this::hasNexus));
+        targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
+        targetSelector.add(2, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
         targetSelector.add(3, new RevengeGoal(this));
     }
 

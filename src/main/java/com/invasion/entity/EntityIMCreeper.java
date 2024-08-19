@@ -4,13 +4,13 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.INotifyTask;
 import com.invasion.block.InvBlocks;
-import com.invasion.entity.ai.goal.EntityAIAttackNexus;
-import com.invasion.entity.ai.goal.EntityAICreeperIMSwell;
-import com.invasion.entity.ai.goal.EntityAIGoToNexus;
-import com.invasion.entity.ai.goal.EntityAIKillEntity;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.IMCreeperIgniteGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.KillEntityGoal;
+import com.invasion.entity.ai.goal.WaitForSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.Actor;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.NavigatorIM;
@@ -81,20 +81,20 @@ public class EntityIMCreeper extends TieredIMMobEntity implements ILeader, SkinO
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new EntityAICreeperIMSwell(this));
+        goalSelector.add(1, new IMCreeperIgniteGoal(this));
         goalSelector.add(2, new FleeEntityGoal<>(this, CatEntity.class, 6.0F, 0.25D, 0.300000011920929D));
-        goalSelector.add(3, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
-        goalSelector.add(4, new EntityAIAttackNexus(this));
-        goalSelector.add(5, new EntityAIWaitForEngy(this, 4.0F, true));
-        goalSelector.add(6, new EntityAIKillEntity<>(this, MobEntity.class, 40));
-        goalSelector.add(7, new EntityAIGoToNexus(this));
+        goalSelector.add(3, new KillEntityGoal<>(this, PlayerEntity.class, 40));
+        goalSelector.add(4, new AttackNexusGoal(this));
+        goalSelector.add(5, new WaitForSupportGoal(this, 4.0F, true));
+        goalSelector.add(6, new KillEntityGoal<>(this, MobEntity.class, 40));
+        goalSelector.add(7, new GoToNexusGoal(this));
         goalSelector.add(8, new WanderAroundFarGoal(this, 1));
         goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 4.8F));
         goalSelector.add(9, new LookAroundGoal(this));
         targetSelector.add(0, new RevengeGoal(this));
-        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, 20.0F, true), this::hasNexus));
-        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
-        targetSelector.add(2, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
+        targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, 20.0F, true), this::hasNexus));
+        targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
+        targetSelector.add(2, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
     }
 
     @Override

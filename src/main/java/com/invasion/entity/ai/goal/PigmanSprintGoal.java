@@ -2,8 +2,8 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.AbstractIMZombieEntity;
 
-public class EntityAISprinpigman extends EntityAISprint<AbstractIMZombieEntity> {
-    public EntityAISprinpigman(AbstractIMZombieEntity entity) {
+public class PigmanSprintGoal extends SprintGoal<AbstractIMZombieEntity> {
+    public PigmanSprintGoal(AbstractIMZombieEntity entity) {
         super(entity);
     }
 

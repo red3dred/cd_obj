@@ -18,7 +18,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAISprint<T extends PathAwareEntity & NexusEntity> extends net.minecraft.entity.ai.goal.Goal {
+public class SprintGoal<T extends PathAwareEntity & NexusEntity> extends net.minecraft.entity.ai.goal.Goal {
     private static final EntityAttributeModifier SPRINTING_SPEED_BOOST = new EntityAttributeModifier(
             InvasionMod.id("sprinting"), 2.3F, Operation.ADD_MULTIPLIED_BASE
     );
@@ -34,7 +34,7 @@ public class EntityAISprint<T extends PathAwareEntity & NexusEntity> extends net
 
     protected Vec3d lastPos = Vec3d.ZERO;
 
-    public EntityAISprint(T entity) {
+    public SprintGoal(T entity) {
         theEntity = entity;
         setControls(EnumSet.of(Goal.Control.MOVE));
     }

@@ -10,7 +10,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAICharge<T extends LivingEntity> extends EntityAIMoveToEntity<T> {
+public class ChargeMobGoal<T extends LivingEntity> extends MoveToEntityGoal<T> {
     @Nullable
     protected LivingEntity target;
 
@@ -23,7 +23,7 @@ public class EntityAICharge<T extends LivingEntity> extends EntityAIMoveToEntity
     protected int chargeDelay = 100;
     protected int runTime = 15;
 
-    public EntityAICharge(EntityIMLiving entity, Class<? extends T> targetClass, float f) {
+    public ChargeMobGoal(EntityIMLiving entity, Class<? extends T> targetClass, float f) {
         super(entity, targetClass);
         this.speed = f;
     }

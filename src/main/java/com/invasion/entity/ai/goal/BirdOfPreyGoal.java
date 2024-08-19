@@ -8,7 +8,7 @@ import com.invasion.entity.pathfinding.INavigationFlying;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIBoP extends Goal {
+public class BirdOfPreyGoal extends Goal {
     private static final int PATIENCE = 600;
     private static final int MIN_ATTACK_DISTANCE = 10;
 
@@ -17,7 +17,7 @@ public class EntityAIBoP extends Goal {
     private int timeWithGoal;
     private IHasAiGoals.Goal lastGoal;
 
-    public EntityAIBoP(EntityIMFlying entity) {
+    public BirdOfPreyGoal(EntityIMFlying entity) {
         mob = entity;
         lastGoal = entity.getAIGoal();
     }

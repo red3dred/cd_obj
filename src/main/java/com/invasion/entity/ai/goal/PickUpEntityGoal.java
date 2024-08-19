@@ -11,7 +11,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIPickUpEntity extends net.minecraft.entity.ai.goal.Goal {
+public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
     private final EntityIMBird theEntity;
 
     private final Vector3f pickupPoint;
@@ -27,7 +27,7 @@ public class EntityAIPickUpEntity extends net.minecraft.entity.ai.goal.Goal {
     private int abortTime;
     private boolean isHoldingEntity;
 
-    public EntityAIPickUpEntity(EntityIMBird entity, Vector3f pickupPoint, float pickupRangeY, float pickupRangeXZ, int abortTime, float abortAngleYaw, float abortAnglePitch) {
+    public PickUpEntityGoal(EntityIMBird entity, Vector3f pickupPoint, float pickupRangeY, float pickupRangeXZ, int abortTime, float abortAngleYaw, float abortAnglePitch) {
         this.theEntity = entity;
         this.pickupPoint = pickupPoint;
         this.pickupRangeY = pickupRangeY;

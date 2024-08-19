@@ -8,11 +8,11 @@ import com.invasion.INotifyTask;
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
-import com.invasion.entity.ai.goal.EntityAIAttackNexus;
-import com.invasion.entity.ai.goal.EntityAIGoToNexus;
-import com.invasion.entity.ai.goal.EntityAIRandomBoulder;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAIThrowerKillEntity;
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.ThrowBoulderGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
+import com.invasion.entity.ai.goal.ThrowerKillEntityGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNode;
@@ -72,19 +72,19 @@ public class EntityIMThrower extends TieredIMMobEntity {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new PredicatedGoal(new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 55, 60.0F, 1.0F), () -> getTier() == 1));
-        goalSelector.add(1, new PredicatedGoal(new EntityAIThrowerKillEntity<>(this, PlayerEntity.class, 60, 90.0F, 1.5F), () -> getTier() == 1));
-        goalSelector.add(2, new EntityAIAttackNexus(this));
-        goalSelector.add(3, new EntityAIRandomBoulder(this, 3));
-        goalSelector.add(4, new EntityAIGoToNexus(this));
+        goalSelector.add(1, new PredicatedGoal(new ThrowerKillEntityGoal<>(this, PlayerEntity.class, 55, 60.0F, 1.0F), () -> getTier() == 1));
+        goalSelector.add(1, new PredicatedGoal(new ThrowerKillEntityGoal<>(this, PlayerEntity.class, 60, 90.0F, 1.5F), () -> getTier() == 1));
+        goalSelector.add(2, new AttackNexusGoal(this));
+        goalSelector.add(3, new ThrowBoulderGoal(this, 3));
+        goalSelector.add(4, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8));
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
         goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 16));
         goalSelector.add(10, new LookAroundGoal(this));
 
-        targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
+        targetSelector.add(1, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false));
+        targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true));
         targetSelector.add(3, new RevengeGoal(this));
     }
 

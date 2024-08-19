@@ -9,7 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.sound.SoundEvents;
 
-public class EntityAIBirdFight<T extends LivingEntity> extends EntityAIMeleeFight<T, EntityIMBird> {
+public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T, EntityIMBird> {
     private final EntityIMBird theEntity;
     private boolean wantsToRetreat;
     private boolean buffetedTarget;

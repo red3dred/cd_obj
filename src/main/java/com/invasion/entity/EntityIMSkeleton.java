@@ -2,9 +2,10 @@ package com.invasion.entity;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.ai.goal.EntityAIAttackNexus;
-import com.invasion.entity.ai.goal.EntityAIGoToNexus;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
+
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -42,14 +43,14 @@ public class EntityIMSkeleton extends EntityIMMob implements RangedAttackMob {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(1, new BowAttackGoal<>(this, 65D, 20, 16F));
         // goalSelector.add(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
-        goalSelector.add(3, new EntityAIAttackNexus(this));
-        goalSelector.add(4, new EntityAIGoToNexus(this));
+        goalSelector.add(3, new AttackNexusGoal(this));
+        goalSelector.add(4, new GoToNexusGoal(this));
         goalSelector.add(5, new WanderAroundFarGoal(this, 1));
         goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8));
         goalSelector.add(6, new LookAroundGoal(this));
         goalSelector.add(6, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
 
-        targetSelector.add(0, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
+        targetSelector.add(0, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false));
         targetSelector.add(1, new RevengeGoal(this));
     }
 

@@ -5,10 +5,11 @@ import java.util.EnumSet;
 import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.NexusEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.MathHelper;
 
-public class EntityAIMeleeAttack<T extends LivingEntity, E extends PathAwareEntity & NexusEntity> extends net.minecraft.entity.ai.goal.Goal {
+public class EntityAIMeleeAttack<T extends LivingEntity, E extends PathAwareEntity & NexusEntity> extends Goal {
 	protected final E mob;
 	private final Class<? extends T> targetClass;
 	private float attackRange = 0.6F;

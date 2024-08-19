@@ -4,15 +4,15 @@ import org.joml.Vector3f;
 
 import com.invasion.InvSounds;
 import com.invasion.entity.ai.goal.EntityAIBirdFight;
-import com.invasion.entity.ai.goal.EntityAIBoP;
-import com.invasion.entity.ai.goal.EntityAICircleTarget;
-import com.invasion.entity.ai.goal.EntityAIFlyingStrike;
-import com.invasion.entity.ai.goal.EntityAIFlyingTackle;
-import com.invasion.entity.ai.goal.EntityAIPickUpEntity;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAIStabiliseFlying;
-import com.invasion.entity.ai.goal.EntityAISwoop;
-import com.invasion.entity.ai.goal.EntityAIWatchTarget;
+import com.invasion.entity.ai.goal.BirdOfPreyGoal;
+import com.invasion.entity.ai.goal.FlyingCircleTargetGoal;
+import com.invasion.entity.ai.goal.FlyingStrikeGoal;
+import com.invasion.entity.ai.goal.FlyingTackleGoal;
+import com.invasion.entity.ai.goal.PickUpEntityGoal;
+import com.invasion.entity.ai.goal.StabiliseFlightGoal;
+import com.invasion.entity.ai.goal.SwoopGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
+import com.invasion.entity.ai.goal.LookAtTargetGoal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
@@ -52,18 +52,18 @@ public class EntityIMGiantBird extends EntityIMBird {
 
     @Override
     protected void initGoals() {
-        goalSelector.add(0, new EntityAISwoop(this));
+        goalSelector.add(0, new SwoopGoal(this));
 
-        goalSelector.add(3, new EntityAIBoP(this));
-        goalSelector.add(4, new EntityAIFlyingStrike(this));
-        goalSelector.add(4, new EntityAIFlyingTackle(this));
-        goalSelector.add(4, new EntityAIPickUpEntity(this, PICKUP_OFFSET, 1.5F, 1.5F, 20, 45, 45));
-        goalSelector.add(4, new EntityAIStabiliseFlying(this, 35));
-        goalSelector.add(4, new EntityAICircleTarget(this, 300, 16.0F, 45.0F));
+        goalSelector.add(3, new BirdOfPreyGoal(this));
+        goalSelector.add(4, new FlyingStrikeGoal(this));
+        goalSelector.add(4, new FlyingTackleGoal(this));
+        goalSelector.add(4, new PickUpEntityGoal(this, PICKUP_OFFSET, 1.5F, 1.5F, 20, 45, 45));
+        goalSelector.add(4, new StabiliseFlightGoal(this, 35));
+        goalSelector.add(4, new FlyingCircleTargetGoal(this, 300, 16.0F, 45.0F));
         goalSelector.add(4, new EntityAIBirdFight<>(this, ZombieEntity.class, 25, 0.4F));
-        goalSelector.add(4, new EntityAIWatchTarget(this));
+        goalSelector.add(4, new LookAtTargetGoal(this));
 
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, ZombieEntity.class, 58.0F, true));
+        targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, ZombieEntity.class, 58.0F, true));
     }
 
     @Override

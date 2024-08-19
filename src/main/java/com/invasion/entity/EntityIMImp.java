@@ -1,12 +1,12 @@
 package com.invasion.entity;
 
-import com.invasion.entity.ai.goal.EntityAIAttackNexus;
-import com.invasion.entity.ai.goal.EntityAIGoToNexus;
-import com.invasion.entity.ai.goal.EntityAIKillEntity;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
-import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
-import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
+import com.invasion.entity.ai.goal.target.RetaliateGoal;
+import com.invasion.entity.ai.goal.WaitForSupportGoal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -36,21 +36,21 @@ public class EntityIMImp extends EntityIMMob {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
-        goalSelector.add(2, new EntityAIAttackNexus(this));
-        goalSelector.add(3, new EntityAIWaitForEngy(this, 4, true));
-        goalSelector.add(4, new EntityAIKillEntity<>(this, MobEntity.class, 40));
-        goalSelector.add(5, new EntityAIGoToNexus(this));
+        goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 40));
+        goalSelector.add(2, new AttackNexusGoal(this));
+        goalSelector.add(3, new WaitForSupportGoal(this, 4, true));
+        goalSelector.add(4, new KillEntityGoal<>(this, MobEntity.class, 40));
+        goalSelector.add(5, new GoToNexusGoal(this));
         goalSelector.add(6, new WanderAroundFarGoal(this, 1));
         goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 8));
         goalSelector.add(8, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
         goalSelector.add(8, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate(this));
-        targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
+        targetSelector.add(0, new RetaliateGoal(this));
+        targetSelector.add(1, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false));
+        targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true));
         targetSelector.add(5, new RevengeGoal(this));
-        targetSelector.add(3, new NoNexusPathGoal(this, new EntityAISimpleTarget<>(this, EntityIMPigEngy.class, 3.5F)));
+        targetSelector.add(3, new NoNexusPathGoal(this, new CustomRangeActiveTargetGoal<>(this, EntityIMPigEngy.class, 3.5F)));
     }
 
     @Override

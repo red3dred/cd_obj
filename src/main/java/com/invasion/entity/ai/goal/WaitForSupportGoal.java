@@ -3,10 +3,10 @@ package com.invasion.entity.ai.goal;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMPigEngy;
 
-public class EntityAIWaitForEngy extends EntityAIFollowEntity<EntityIMPigEngy> {
+public class WaitForSupportGoal extends FollowEntityGoal<EntityIMPigEngy> {
     private final boolean canHelp;
 
-    public EntityAIWaitForEngy(EntityIMLiving entity, float followDistance, boolean canHelp) {
+    public WaitForSupportGoal(EntityIMLiving entity, float followDistance, boolean canHelp) {
         super(entity, EntityIMPigEngy.class, followDistance);
         this.canHelp = canHelp;
     }

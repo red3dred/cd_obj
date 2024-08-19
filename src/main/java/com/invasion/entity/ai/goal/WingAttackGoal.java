@@ -6,10 +6,10 @@ import com.invasion.entity.EntityIMBird;
 
 import net.minecraft.entity.LivingEntity;
 
-public class EntityAIWingAttack<T extends LivingEntity> extends EntityAIMeleeAttack<T, EntityIMBird> {
+public class WingAttackGoal<T extends LivingEntity> extends EntityAIMeleeAttack<T, EntityIMBird> {
     private EntityIMBird mob;
 
-    public EntityAIWingAttack(EntityIMBird entity, Class<? extends T> targetClass, int attackDelay) {
+    public WingAttackGoal(EntityIMBird entity, Class<? extends T> targetClass, int attackDelay) {
         super(entity, targetClass, attackDelay);
         mob = entity;
     }

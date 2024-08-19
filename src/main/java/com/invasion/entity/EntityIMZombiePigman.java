@@ -5,15 +5,16 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
-import com.invasion.entity.ai.goal.EntityAIAttackNexus;
-import com.invasion.entity.ai.goal.EntityAICharge;
-import com.invasion.entity.ai.goal.EntityAIGoToNexus;
-import com.invasion.entity.ai.goal.EntityAIKillEntity;
-import com.invasion.entity.ai.goal.EntityAISimpleTarget;
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.ChargeMobGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
-import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
-import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
+import com.invasion.entity.ai.goal.WaitForSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
+import com.invasion.entity.ai.goal.target.RetaliateGoal;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
@@ -76,21 +77,21 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new PredicatedGoal(new EntityAICharge<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
-        goalSelector.add(2, new EntityAIKillEntity<>(this, PlayerEntity.class, 40));
-        goalSelector.add(3, new EntityAIAttackNexus(this));
-        goalSelector.add(4, new EntityAIWaitForEngy(this, 4.0F, true));
-        goalSelector.add(5, new EntityAIKillEntity<>(this, LivingEntity.class, 40));
-        goalSelector.add(6, new EntityAIGoToNexus(this));
+        goalSelector.add(1, new PredicatedGoal(new ChargeMobGoal<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
+        goalSelector.add(2, new KillEntityGoal<>(this, PlayerEntity.class, 40));
+        goalSelector.add(3, new AttackNexusGoal(this));
+        goalSelector.add(4, new WaitForSupportGoal(this, 4.0F, true));
+        goalSelector.add(5, new KillEntityGoal<>(this, LivingEntity.class, 40));
+        goalSelector.add(6, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
         goalSelector.add(9, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate(this));
-        targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, false), () -> getTier() != 3));
-        targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
-        targetSelector.add(3, new PredicatedGoal(new EntityAISimpleTarget<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3 && NoNexusPathGoal.isLostPathToNexus(this)));
+        targetSelector.add(0, new RetaliateGoal(this));
+        targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, false), () -> getTier() != 3));
+        targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true));
+        targetSelector.add(3, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3 && NoNexusPathGoal.isLostPathToNexus(this)));
         targetSelector.add(5, new RevengeGoal(this));
     }
 

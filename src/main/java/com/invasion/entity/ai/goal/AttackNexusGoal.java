@@ -6,12 +6,12 @@ import com.invasion.entity.IHasAiGoals;
 
 import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIAttackNexus extends Goal {
+public class AttackNexusGoal extends Goal {
     private EntityIMLiving mob;
 
     private int cooldown;
 
-    public EntityAIAttackNexus(EntityIMLiving mob) {
+    public AttackNexusGoal(EntityIMLiving mob) {
         this.mob = mob;
     }
 

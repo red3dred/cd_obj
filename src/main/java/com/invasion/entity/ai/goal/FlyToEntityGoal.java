@@ -12,10 +12,10 @@ import com.invasion.entity.pathfinding.Path;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIFlyingMoveToEntity extends Goal {
+public class FlyToEntityGoal extends Goal {
     private final EntityIMFlying theEntity;
 
-    public EntityAIFlyingMoveToEntity(EntityIMFlying entity) {
+    public FlyToEntityGoal(EntityIMFlying entity) {
         theEntity = entity;
         setControls(EnumSet.of(Control.MOVE));
     }

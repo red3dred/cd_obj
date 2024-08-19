@@ -1,11 +1,12 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 
 import net.minecraft.entity.LivingEntity;
 
 @Deprecated(since = "unused")
-public class EntityAILeaderTarget<T extends LivingEntity> extends EntityAISimpleTarget<T> {
+public class EntityAILeaderTarget<T extends LivingEntity> extends CustomRangeActiveTargetGoal<T> {
 
 	private int rallyCooldown;
 

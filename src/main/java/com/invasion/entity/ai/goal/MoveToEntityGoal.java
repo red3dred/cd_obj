@@ -8,7 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
+public class MoveToEntityGoal<T extends LivingEntity> extends Goal {
 	protected final EntityIMLiving mob;
 	private final Class<? extends T> targetClass;
 
@@ -19,11 +19,11 @@ public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
 	private int pathFailedCount;
 
 	@SuppressWarnings("unchecked")
-    public EntityAIMoveToEntity(EntityIMLiving entity) {
+    public MoveToEntityGoal(EntityIMLiving entity) {
 		this(entity, (Class<T>)LivingEntity.class);
 	}
 
-	public EntityAIMoveToEntity(EntityIMLiving entity, Class<? extends T> target) {
+	public MoveToEntityGoal(EntityIMLiving entity, Class<? extends T> target) {
 		this.targetClass = target;
 		this.mob = entity;
 		setControls(EnumSet.of(Control.MOVE, Control.LOOK));

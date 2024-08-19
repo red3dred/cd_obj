@@ -5,16 +5,16 @@ import com.invasion.entity.ILeader;
 
 import net.minecraft.entity.LivingEntity;
 
-public class EntityAIRallyBehindEntity<T extends LivingEntity> extends EntityAIFollowEntity<T> {
+public class RallyBehindLeaderGoal<T extends LivingEntity> extends FollowEntityGoal<T> {
     private static final float DEFAULT_FOLLOW_DISTANCE = 5;
 
     private int rallyCooldown;
 
-    public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader) {
+    public RallyBehindLeaderGoal(EntityIMLiving entity, Class<T> leader) {
         this(entity, leader, DEFAULT_FOLLOW_DISTANCE);
     }
 
-    public EntityAIRallyBehindEntity(EntityIMLiving entity, Class<T> leader, float followDistance) {
+    public RallyBehindLeaderGoal(EntityIMLiving entity, Class<T> leader, float followDistance) {
         super(entity, leader, followDistance);
     }
 

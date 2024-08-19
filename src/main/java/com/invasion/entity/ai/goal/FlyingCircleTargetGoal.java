@@ -5,8 +5,9 @@ import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAICircleTarget extends net.minecraft.entity.ai.goal.Goal {
+public class FlyingCircleTargetGoal extends Goal {
     private static final int ATTACK_SEARCH_TIME = 400;
     private EntityIMFlying mob;
 
@@ -15,7 +16,7 @@ public class EntityAICircleTarget extends net.minecraft.entity.ai.goal.Goal {
     private float preferredHeight;
     private float preferredRadius;
 
-    public EntityAICircleTarget(EntityIMFlying entity, int patience, float preferredHeight, float preferredRadius) {
+    public FlyingCircleTargetGoal(EntityIMFlying entity, int patience, float preferredHeight, float preferredRadius) {
         mob = entity;
         this.patience = patience;
         this.preferredHeight = preferredHeight;

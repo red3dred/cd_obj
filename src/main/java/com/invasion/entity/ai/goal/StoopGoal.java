@@ -4,12 +4,12 @@ import com.invasion.entity.EntityIMLiving;
 
 import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIStoop extends Goal {
+public class StoopGoal extends Goal {
     private final EntityIMLiving theEntity;
     private int updateTimer;
     private boolean stopStoop = true;
 
-    public EntityAIStoop(EntityIMLiving entity) {
+    public StoopGoal(EntityIMLiving entity) {
         theEntity = entity;
     }
 

@@ -1,26 +1,26 @@
-package com.invasion.entity.ai.goal;
+package com.invasion.entity.ai.goal.target;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.util.FloatSupplier;
 
-public class EntityAISimpleTarget<T extends LivingEntity> extends ActiveTargetGoal<T> {
+public class CustomRangeActiveTargetGoal<T extends LivingEntity> extends ActiveTargetGoal<T> {
 	private final FloatSupplier range;
 
-    public EntityAISimpleTarget(EntityIMLiving entity, Class<T> targetType, float range) {
+    public CustomRangeActiveTargetGoal(EntityIMLiving entity, Class<T> targetType, float range) {
         this(entity, targetType, range, true);
     }
 
-    public EntityAISimpleTarget(EntityIMLiving entity, Class<T> targetType, float range, boolean checkVisibility) {
+    public CustomRangeActiveTargetGoal(EntityIMLiving entity, Class<T> targetType, float range, boolean checkVisibility) {
         this(entity, targetType, () -> range, checkVisibility);
     }
 
-	public EntityAISimpleTarget(EntityIMLiving entity, Class<T> targetType, FloatSupplier range) {
+	public CustomRangeActiveTargetGoal(EntityIMLiving entity, Class<T> targetType, FloatSupplier range) {
 		this(entity, targetType, range, true);
 	}
 
-	public EntityAISimpleTarget(EntityIMLiving entity, Class<T> targetType, FloatSupplier range, boolean checkVisibility) {
+	public CustomRangeActiveTargetGoal(EntityIMLiving entity, Class<T> targetType, FloatSupplier range, boolean checkVisibility) {
 	    super(entity, targetType, checkVisibility, false);
 		this.range = range;
 	}
@@ -36,7 +36,7 @@ public class EntityAISimpleTarget<T extends LivingEntity> extends ActiveTargetGo
 
     @Override
     protected void findClosestTarget() {
-        this.targetPredicate.setBaseMaxDistance(getFollowRange());
+        targetPredicate.setBaseMaxDistance(getFollowRange());
         super.findClosestTarget();
     }
 }

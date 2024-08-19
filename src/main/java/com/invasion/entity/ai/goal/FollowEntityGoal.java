@@ -6,15 +6,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 
-public class EntityAIFollowEntity<T extends LivingEntity> extends EntityAIMoveToEntity<T> {
+public class FollowEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T> {
     private final float followDistanceSq;
 
     @SuppressWarnings("unchecked")
-    public EntityAIFollowEntity(EntityIMLiving entity, float followDistance) {
+    public FollowEntityGoal(EntityIMLiving entity, float followDistance) {
         this(entity, (Class<T>)LivingEntity.class, followDistance);
     }
 
-    public EntityAIFollowEntity(EntityIMLiving entity, Class<? extends T> target, float followDistance) {
+    public FollowEntityGoal(EntityIMLiving entity, Class<? extends T> target, float followDistance) {
         super(entity, target);
         followDistanceSq = MathHelper.square(followDistance);
     }

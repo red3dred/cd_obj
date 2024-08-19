@@ -7,7 +7,7 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIPounce extends Goal {
+public class PounceGoal extends Goal {
     private final EntityIMSpider theEntity;
     private final float minPower;
     private final float maxPower;
@@ -16,7 +16,7 @@ public class EntityAIPounce extends Goal {
     private int pounceTimer;
     private int cooldown;
 
-    public EntityAIPounce(EntityIMSpider entity, float minPower, float maxPower, int cooldown) {
+    public PounceGoal(EntityIMSpider entity, float minPower, float maxPower, int cooldown) {
         this.theEntity = entity;
         this.minPower = minPower;
         this.maxPower = maxPower;

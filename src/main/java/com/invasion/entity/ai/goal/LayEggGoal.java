@@ -7,7 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 
-public class EntityAILayEgg extends Goal {
+public class LayEggGoal extends Goal {
     private static final int EGG_LAY_TIME = 45;
     private static final int INITIAL_EGG_DELAY = 25;
     private static final int NEXT_EGG_DELAY = 230;
@@ -19,7 +19,7 @@ public class EntityAILayEgg extends Goal {
     private boolean isLaying;
     private int eggCount;
 
-    public EntityAILayEgg(PathAwareEntity entity, int eggs) {
+    public LayEggGoal(PathAwareEntity entity, int eggs) {
         theEntity = entity;
         eggCount = eggs;
     }

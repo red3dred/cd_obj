@@ -6,7 +6,7 @@ import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIStabiliseFlying extends Goal {
+public class StabiliseFlightGoal extends Goal {
     private static final int INITIAL_STABILISE_TIME = 50;
 
     private final EntityIMFlying theEntity;
@@ -14,7 +14,7 @@ public class EntityAIStabiliseFlying extends Goal {
 
     private int time;
 
-    public EntityAIStabiliseFlying(EntityIMFlying entity, int stabiliseTime) {
+    public StabiliseFlightGoal(EntityIMFlying entity, int stabiliseTime) {
         theEntity = entity;
         this.stabiliseTime = stabiliseTime;
     }

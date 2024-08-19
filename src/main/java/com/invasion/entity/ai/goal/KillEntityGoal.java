@@ -5,13 +5,13 @@ import com.invasion.entity.EntityIMLiving;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 
-public class EntityAIKillEntity<T extends LivingEntity> extends EntityAIMoveToEntity<T> {
+public class KillEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T> {
     private static final float ATTACK_RANGE = 1;
 
     private int attackDelay;
     private int nextAttack;
 
-    public EntityAIKillEntity(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay) {
+    public KillEntityGoal(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay) {
         super(entity, targetClass);
         this.attackDelay = attackDelay;
     }

@@ -14,7 +14,7 @@ import net.minecraft.sound.SoundEvents;
  * Is this even being used?
  */
 @Deprecated
-public class EntityAIKillWithArrow<T extends LivingEntity> extends EntityAIKillEntity<T>
+public class EntityAIKillWithArrow<T extends LivingEntity> extends KillEntityGoal<T>
 {
 	private float attackRangeSq;
 

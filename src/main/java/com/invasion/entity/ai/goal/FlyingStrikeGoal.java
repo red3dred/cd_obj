@@ -3,11 +3,12 @@ package com.invasion.entity.ai.goal;
 import com.invasion.entity.EntityIMBird;
 import com.invasion.entity.IHasAiGoals;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIFlyingStrike extends net.minecraft.entity.ai.goal.Goal {
+public class FlyingStrikeGoal extends Goal {
     private final EntityIMBird theEntity;
 
-    public EntityAIFlyingStrike(EntityIMBird entity) {
+    public FlyingStrikeGoal(EntityIMBird entity) {
         theEntity = entity;
     }
 
