@@ -43,6 +43,8 @@ public interface INavigation extends INotifyTask, IHasAiGoals {
 
     boolean noPath();
 
+    Vec3d getEntityPosition();
+
     int getStuckTime();
 
     float getLastPathDistanceToTarget();
@@ -52,6 +54,4 @@ public interface INavigation extends INotifyTask, IHasAiGoals {
     void haltForTick();
 
     Entity getTargetEntity();
-
-    String getStatus();
 }

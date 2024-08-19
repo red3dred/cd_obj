@@ -93,7 +93,7 @@ public class NavigatorEngy extends NavigatorIM {
 
                 BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
                 for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-                    if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
+                    if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
                         for (int yOffset = 0; yOffset > -MAX_LADDER_TOWER_HEIGHT; yOffset--) {
                             BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(offset).move(Direction.UP, yOffset - 1));
                             if (!block.isAir()) {
@@ -119,7 +119,7 @@ public class NavigatorEngy extends NavigatorIM {
 
                 BlockPos.Mutable mutable = currentNode.pos.mutableCopy().move(Direction.UP);
 
-                if (getCollide(terrainMap, mutable) > DestructableType.UNBREAKABLE) {
+                if (getNodeDestructability(terrainMap, mutable) > DestructableType.UNBREAKABLE) {
                     if (terrainMap.getBlockState(mutable).isAir()) {
                         if (currentNode.action == PathAction.NONE) {
                             addAnyLadderPoint(terrainMap, currentNode, pathFinder);
@@ -200,9 +200,6 @@ public class NavigatorEngy extends NavigatorIM {
             terrainCache = terrainCacheExt;
         }
         float maxSearchRange = 12 + (float) entity.getPos().distanceTo(pos.toBottomCenterPos());
-        if (!pathSource.canPathfindNice(IPathSource.PathPriority.HIGH, maxSearchRange, pathSource.getSearchDepth(), pathSource.getQuickFailDepth())) {
-            return null;
-        }
         return pathSource.createPath(entity, pos, targetRadius, maxSearchRange, terrainCache);
     }
 

@@ -24,10 +24,6 @@ public interface IPathSource {
                 targetRadius, maxSearchRange, terrainMap);
     }
 
-    default boolean canPathfindNice(PathPriority priority, float maxSearchRange, int searchDepth, int quickFailDepth) {
-        return true;
-    }
-
     static BlockPos getPathBegin(EntityIMLiving entity) {
         if (entity.getWidth() <= 1) {
             return entity.getBlockPos();

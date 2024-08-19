@@ -125,10 +125,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 
 	@Override
     public Path getPathToXYZ(Vec3d pos, float targetRadius) {
-		if (!canNavigate()) {
-			return null;
-		}
-		return createPath(this.theEntity, BlockPos.ofFloored(pos), targetRadius);
+		return createPath(theEntity, BlockPos.ofFloored(pos), targetRadius);
 	}
 
 	@Override
@@ -140,9 +137,6 @@ public class NavigatorIM implements INotifyTask, INavigation {
 
 	@Override
     public Path getPathTowardsXZ(double x, double z, int min, int max, int verticalRange) {
-		if (!canNavigate()) {
-		    return null;
-		}
 		Vec3d target = findValidPointNear(x, z, min, max, verticalRange);
 		return target == null ? null : getPathToXYZ(target, 0);
 	}
@@ -157,7 +151,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 	@Nullable
 	@Override
     public Path getPathToEntity(Entity targetEntity, float targetRadius) {
-		return !canNavigate() ? null : createPath(this.theEntity, targetEntity.getBlockPos(), targetRadius);
+		return createPath(theEntity, targetEntity.getBlockPos(), targetRadius);
 	}
 
 	@Override
@@ -276,7 +270,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 			return;
 		}
 
-		if (canNavigate() && nodeActionFinished) {
+		if (nodeActionFinished) {
 			double distance = getDistanceToActiveNode();
 			if (lastDistance - distance > 0.01D) {
 				lastDistance = distance;
@@ -375,19 +369,6 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		haltMovement = true;
 	}
 
-	@Override
-    public String getStatus() {
-		String s = autoPathToEntity ?  "Auto:" : "";
-		if (noPath()) {
-			return s + "NoPath:";
-		}
-		s += "Pathing: Node[" + path.getCurrentPathIndex() + "/" + path.getCurrentPathLength() + "]:";
-		if (!nodeActionFinished && activeNode != null) {
-			s += "Action[" + activeNode.action + "]:";
-		}
-		return s;
-	}
-
 	protected Path createPath(EntityIMLiving entity, Entity target, float targetRadius) {
 		return createPath(entity, target.getBlockPos(), targetRadius);
 	}
@@ -400,9 +381,6 @@ public class NavigatorIM implements INotifyTask, INavigation {
 			terrainCache = nexus.getAttackerAI().wrapEntityData(terrainCache);
 		}
 		float maxSearchRange = 12 + MathHelper.sqrt((float) entity.getBlockPos().getSquaredDistance(pos));
-		if (!pathSource.canPathfindNice(IPathSource.PathPriority.HIGH, maxSearchRange, pathSource.getSearchDepth(), pathSource.getQuickFailDepth())) {
-		    return null;
-		}
 		return pathSource.createPath(entity, pos, targetRadius, maxSearchRange, terrainCache);
 	}
 
@@ -509,7 +487,8 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		waitingForNotify = false;
 	}
 
-	protected Vec3d getEntityPosition() {
+	@Override
+    public Vec3d getEntityPosition() {
 		return new Vec3d(theEntity.getX(), getPathableYPos(), theEntity.getZ());
 	}
 
@@ -539,14 +518,6 @@ public class NavigatorIM implements INotifyTask, INavigation {
 		return y;
 	}
 
-	protected boolean canNavigate() {
-		return true;
-	}
-
-	protected boolean isInLiquid() {
-		return theEntity.isTouchingWater() || theEntity.isInLava();
-	}
-
 	@Nullable
 	protected Vec3d findValidPointNear(double x, double z, int min, int max, int verticalRange) {
 		double xOffset = x - theEntity.getX();
@@ -557,7 +528,7 @@ public class NavigatorIM implements INotifyTask, INavigation {
 			return null;
 		}
 
-		double distance = min + this.theEntity.getRandom().nextInt(max - min);
+		double distance = min + theEntity.getWorld().getRandom().nextInt(max - min);
 		int xi = MathHelper.floor(xOffset * (distance / h) + theEntity.getX());
 		int zi = MathHelper.floor(zOffset * (distance / h) + theEntity.getZ());
 		int y = MathHelper.floor(theEntity.getY());

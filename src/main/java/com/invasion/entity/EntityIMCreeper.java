@@ -9,7 +9,6 @@ import com.invasion.entity.ai.goal.EntityAICreeperIMSwell;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAIKillEntity;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
 import com.invasion.entity.ai.goal.PredicatedGoal;
@@ -92,11 +91,10 @@ public class EntityIMCreeper extends TieredIMMobEntity implements ILeader, SkinO
         goalSelector.add(8, new EntityAIWanderIM(this));
         goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 4.8F));
         goalSelector.add(9, new LookAroundGoal(this));
-        targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, 12.0F));
+        targetSelector.add(0, new RevengeGoal(this));
         targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, 20.0F, true), this::hasNexus));
         targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
         targetSelector.add(2, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));
-        targetSelector.add(3, new RevengeGoal(this));
     }
 
     @Override

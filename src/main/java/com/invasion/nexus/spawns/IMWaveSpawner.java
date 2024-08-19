@@ -1,5 +1,6 @@
 package com.invasion.nexus.spawns;
 
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Formatting;
@@ -11,7 +12,6 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.InvasionMod;
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.InvEntities;
 import com.invasion.nexus.Combatant;
@@ -209,7 +209,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 			return false;
 		}
 
-		EntityIMLiving mob = mobConstruct.createMob(nexus);
+		MobEntity mob = mobConstruct.createMob(nexus);
 		int spawnTries = Math.min(spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID, minAngle, maxAngle), MAX_SPAWN_TRIES);
 
 		for (int j = 0; j < spawnTries; j++) {
@@ -292,7 +292,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 		InvasionMod.LOGGER.info("Found {} spawn points for next nexus wave", spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID));
 	}
 
-	private void addValidSpawn(EntityIMLiving entity, List<SpawnPoint> spawnPoints, BlockPos pos) {
+	private void addValidSpawn(MobEntity entity, List<SpawnPoint> spawnPoints, BlockPos pos) {
 	    if (nexus.getWorld().isOutOfHeightLimit(pos)) {
 	        InvasionMod.LOGGER.info("[Spawn] Spawn point was outside of build limit {}", pos);
 	        return;

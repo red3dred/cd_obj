@@ -84,21 +84,21 @@ public class EntityAIMoveToEntity<T extends LivingEntity> extends Goal {
 	}
 
 	protected void setPath() {
-		if (mob.getNavigatorNew().tryMoveToEntity(target, 0.0F, 1)) {
+		if (mob.getNavigatorNew().tryMoveToEntity(target, 0, 1)) {
 			if (mob.getNavigatorNew().getLastPathDistanceToTarget() > 3) {
-				cooldown = 30 + mob.getRandom().nextInt(10);
+				cooldown = 30 + mob.getWorld().getRandom().nextInt(10);
 				if (mob.getNavigatorNew().getPath().getCurrentPathLength() > 2) {
 					pathFailedCount = 0;
 				} else {
 					pathFailedCount++;
 				}
 			} else {
-				cooldown = 10 + mob.getRandom().nextInt(10);
+				cooldown = 10 + mob.getWorld().getRandom().nextInt(10);
 				pathFailedCount = 0;
 			}
 		} else {
 			pathFailedCount++;
-			cooldown = 40 * pathFailedCount + mob.getRandom().nextInt(10);
+			cooldown = 40 * pathFailedCount + mob.getWorld().getRandom().nextInt(10);
 		}
 
 		lastTargetPos = target.getPos();

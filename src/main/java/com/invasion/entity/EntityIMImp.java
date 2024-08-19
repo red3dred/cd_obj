@@ -4,7 +4,7 @@ import com.invasion.entity.ai.goal.EntityAIAttackNexus;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAIKillEntity;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAITargetOnNoNexusPath;
+import com.invasion.entity.ai.goal.NoNexusPathGoal;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
@@ -46,11 +46,11 @@ public class EntityIMImp extends EntityIMMob {
         goalSelector.add(8, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
         goalSelector.add(8, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, this::getAggroRange));
+        targetSelector.add(0, new EntityAITargetRetaliate(this));
         targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
         targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
         targetSelector.add(5, new RevengeGoal(this));
-        targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
+        targetSelector.add(3, new NoNexusPathGoal(this, new EntityAISimpleTarget<>(this, EntityIMPigEngy.class, 3.5F)));
     }
 
     @Override

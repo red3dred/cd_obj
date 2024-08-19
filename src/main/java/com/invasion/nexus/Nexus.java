@@ -9,7 +9,7 @@ import com.invasion.InvasionMod;
 import com.invasion.block.BlockNexus;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.EntityIMBolt;
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.AttackerAI;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.spawns.IMWaveSpawner;
@@ -19,11 +19,11 @@ import com.invasion.nexus.wave.WaveSpawnerException;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.world.ServerWorld;
@@ -84,7 +84,7 @@ public class Nexus implements ControllableNexusAccess {
     private final NexusInventory nexusItemStacks = new NexusInventory();
 
     private final Participants boundPlayers = new Participants(this);
-    private final Combatants mobList;
+    private final Combatants<?> mobList;
     private final AttackerAI attackerAI = new AttackerAI(this);
 
     private final ConfigInvasion config = InvasionMod.getConfig();
@@ -149,7 +149,7 @@ public class Nexus implements ControllableNexusAccess {
         this.world = world;
         this.storage = storage;
         this.pos = pos;
-        mobList = new Combatants(this);
+        mobList = new Combatants<>(this);
         boundingBoxToRadius = computeSpawnArea();
         nexusItemStacks.addListener(i -> storage.markDirty());
     }
@@ -224,7 +224,7 @@ public class Nexus implements ControllableNexusAccess {
         return pos;
     }
 
-    public Combatants getCombatants() {
+    public Combatants<?> getCombatants() {
         return mobList;
     }
 
@@ -608,7 +608,7 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     private int acquireEntities() {
-        List<EntityIMLiving> entities = getWorld().getEntitiesByClass(EntityIMLiving.class, boundingBoxToRadius.expand(10, 128, 10), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
+        List<PathAwareEntity> entities = getWorld().getEntitiesByClass(PathAwareEntity.class, boundingBoxToRadius.expand(10, 128, 10), NexusEntity.PREDICATE);
         InvasionMod.log("Acquired " + entities.size() + " entities after state restore");
         return entities.size();
     }
@@ -644,7 +644,7 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     private boolean zapEnemy(boolean sfx) {
-        EntityIMLiving mob = mobList.removeNearestCombatant();
+        PathAwareEntity mob = mobList.removeNearestCombatant();
         if (mob == null) {
             return false;
         }

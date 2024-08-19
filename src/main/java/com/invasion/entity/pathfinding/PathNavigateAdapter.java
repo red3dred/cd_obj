@@ -71,8 +71,9 @@ public class PathNavigateAdapter extends EntityNavigation {
     }
 
     @Override
-    public void setCanSwim(boolean par1) {
-        getMobNavigation().setCanSwim(par1);
+    public void setCanSwim(boolean canSwim) {
+        navigator.getActor().setCanSwim(canSwim);
+        getMobNavigation().setCanSwim(canSwim);
     }
 
     @Override
@@ -87,11 +88,11 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     protected Vec3d getPos() {
-        return entity.getPos();
+        return navigator.getEntityPosition();
     }
 
     @Override
     protected boolean isAtValidPosition() {
-        return false;
+        return true;
     }
 }

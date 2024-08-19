@@ -10,7 +10,7 @@ import com.invasion.entity.ai.goal.EntityAICharge;
 import com.invasion.entity.ai.goal.EntityAIGoToNexus;
 import com.invasion.entity.ai.goal.EntityAIKillEntity;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAITargetOnNoNexusPath;
+import com.invasion.entity.ai.goal.NoNexusPathGoal;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
@@ -87,10 +87,10 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
         goalSelector.add(9, new LookAroundGoal(this));
 
-        targetSelector.add(0, new EntityAITargetRetaliate<>(this, LivingEntity.class, this::getAggroRange));
+        targetSelector.add(0, new EntityAITargetRetaliate(this));
         targetSelector.add(1, new PredicatedGoal(new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, false), () -> getTier() != 3));
         targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
-        targetSelector.add(3, new PredicatedGoal(new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3));
+        targetSelector.add(3, new PredicatedGoal(new EntityAISimpleTarget<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3 && NoNexusPathGoal.isLostPathToNexus(this)));
         targetSelector.add(5, new RevengeGoal(this));
     }
 

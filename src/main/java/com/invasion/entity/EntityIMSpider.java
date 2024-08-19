@@ -8,7 +8,7 @@ import com.invasion.entity.ai.goal.EntityAILayEgg;
 import com.invasion.entity.ai.goal.EntityAIPounce;
 import com.invasion.entity.ai.goal.EntityAIRallyBehindEntity;
 import com.invasion.entity.ai.goal.EntityAISimpleTarget;
-import com.invasion.entity.ai.goal.EntityAITargetOnNoNexusPath;
+import com.invasion.entity.ai.goal.NoNexusPathGoal;
 import com.invasion.entity.ai.goal.EntityAITargetRetaliate;
 import com.invasion.entity.ai.goal.EntityAIWaitForEngy;
 import com.invasion.entity.ai.goal.EntityAIWanderIM;
@@ -75,10 +75,11 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 		goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8));
 		goalSelector.add(9, new LookAroundGoal(this));
         goalSelector.add(10, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
-		targetSelector.add(0, new EntityAITargetRetaliate<>(this, MobEntity.class, 12));
+
+		targetSelector.add(0, new EntityAITargetRetaliate(this));
 		targetSelector.add(1, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getSenseRange, false));
 		targetSelector.add(2, new EntityAISimpleTarget<>(this, PlayerEntity.class, this::getAggroRange, true));
-		targetSelector.add(3, new EntityAITargetOnNoNexusPath<>(this, EntityIMPigEngy.class, 3.5F));
+		targetSelector.add(3, new NoNexusPathGoal(this, new EntityAISimpleTarget<>(this, EntityIMPigEngy.class, 3.5F)));
 		targetSelector.add(4, new RevengeGoal(this));
 	}
 

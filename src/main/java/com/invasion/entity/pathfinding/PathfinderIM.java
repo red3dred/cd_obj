@@ -10,7 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
 public class PathfinderIM {
-    public static final PathfinderIM INSTANCE = new PathfinderIM();
     private BlockView worldMap;
     private final NodeContainer path = new NodeContainer();
     private final Int2ObjectMap<PathNode> pointMap = new Int2ObjectOpenHashMap<>();
@@ -23,7 +22,7 @@ public class PathfinderIM {
     private int nodesOpened;
 
     @Nullable
-    public synchronized Path createPath(IPathfindable pather, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView iblockaccess, int searchDepth, int quickFailDepth) {
+    public Path createPath(IPathfindable pather, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView iblockaccess, int searchDepth, int quickFailDepth) {
         worldMap = iblockaccess;
         nodeLimit = searchDepth;
         nodesOpened = 1;

@@ -7,7 +7,6 @@ import com.invasion.IBlockAccessExtended;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.Goal;
 import com.invasion.entity.ai.MoveState;
 import com.invasion.util.math.CoordsInt;
@@ -78,23 +77,23 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 
                 BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
 
-                if (getCollide(terrainMap, mutable.move(Direction.UP)) > DestructableType.UNBREAKABLE) {
+                if (getNodeDestructability(terrainMap, mutable.move(Direction.UP)) > DestructableType.UNBREAKABLE) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
                 }
 
-                if (getCollide(terrainMap, mutable.move(Direction.DOWN, 2)) > DestructableType.UNBREAKABLE) {
+                if (getNodeDestructability(terrainMap, mutable.move(Direction.DOWN, 2)) > DestructableType.UNBREAKABLE) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
                 }
 
                 for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-                    if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
+                    if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
                         pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
                     }
                 }
 
                 if (canSwimHorizontal()) {
                     for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-                        if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
+                        if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
                             pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                         }
                     }
@@ -323,24 +322,6 @@ public class NavigatorFlying extends NavigatorIM implements INavigationFlying {
 	@Override
     public boolean isCircling() {
 		return isCircling;
-	}
-
-	@Override
-    public String getStatus() {
-		if (!noPath()) {
-			return super.getStatus();
-		}
-		String s = (isAutoPathingToEntity() ? "Auto:" : "") + "Flyer:";
-		if (isCircling) {
-			s += "Circling:";
-		} else if (wantsToBeFlying) {
-		    s += (theEntity.getFlyState() == FlyState.TAKEOFF ? "TakeOff:" : "Flying:");
-		} else if (theEntity.getFlyState() == FlyState.LANDING || theEntity.getFlyState() == FlyState.TOUCHDOWN)
-			s += "Landing:";
-		else {
-			s += "Ground";
-		}
-		return s;
 	}
 
 	@Override

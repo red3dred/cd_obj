@@ -50,8 +50,7 @@ public class EntityIMSpawnProxy extends MobEntity {
         ConfigInvasion config = InvasionMod.getConfig();
         int numberOfMobs = world.getRandom().nextInt(config.nightMobMaxGroupSize) + 1;
         for (int i = 0; i < numberOfMobs; i++) {
-            EntityIMLiving mob = config.getSpawnPool().selectNext().generateEntityConstruct().createMob(world, null);
-            spawner.accept(mob);
+            spawner.accept(config.getSpawnPool().selectNext().generateEntityConstruct().createMob(world, null));
         }
     }
 }

@@ -30,7 +30,7 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
     private static final TrackedData<Float> THRUST_EFFORT = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<Integer> FLY_STATE = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> MOVE_STATE = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMLiving.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> ANGLES = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.INTEGER);
 
 	private float liftFactor = 0.4F;
 	private float maxPoweredFlightSpeed = 0.28F;

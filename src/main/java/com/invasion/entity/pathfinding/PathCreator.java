@@ -4,9 +4,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
 public class PathCreator implements IPathSource {
+    private final PathfinderIM pathFinder = new PathfinderIM();
+    private final int[] nanosUsed = new int[6];
+
 	private int searchDepth;
 	private int quickFailDepth;
-	private int[] nanosUsed;
+
 	private int index;
 
 	public PathCreator() {
@@ -16,8 +19,6 @@ public class PathCreator implements IPathSource {
 	public PathCreator(int searchDepth, int quickFailDepth) {
 		this.searchDepth = searchDepth;
 		this.quickFailDepth = quickFailDepth;
-		this.nanosUsed = new int[6];
-		this.index = 0;
 	}
 
 	@Override
@@ -43,7 +44,7 @@ public class PathCreator implements IPathSource {
 	@Override
     public Path createPath(IPathfindable entity, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView terrainMap) {
 		final long time = System.nanoTime();
-		final Path path = PathfinderIM.INSTANCE.createPath(entity, from, to, targetRadius, maxSearchRange, terrainMap, searchDepth, quickFailDepth);
+		final Path path = pathFinder.createPath(entity, from, to, targetRadius, maxSearchRange, terrainMap, searchDepth, quickFailDepth);
 		nanosUsed[index = (index + 1) % nanosUsed.length] = (int) (System.nanoTime() - time);
 		return path;
 	}

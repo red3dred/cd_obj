@@ -4,15 +4,16 @@ import com.invasion.entity.EntityIMLiving;
 
 import net.minecraft.entity.LivingEntity;
 
+@Deprecated(since = "unused")
 public class EntityAILeaderTarget<T extends LivingEntity> extends EntityAISimpleTarget<T> {
 
 	private int rallyCooldown;
 
-	public EntityAILeaderTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance) {
+	public EntityAILeaderTarget(EntityIMLiving entity, Class<T> targetType, float distance) {
 		this(entity, targetType, distance, true);
 	}
 
-	public EntityAILeaderTarget(EntityIMLiving entity, Class<? extends T> targetType, float distance, boolean needsLos) {
+	public EntityAILeaderTarget(EntityIMLiving entity, Class<T> targetType, float distance, boolean needsLos) {
 		super(entity, targetType, distance, needsLos);
 	}
 

@@ -11,8 +11,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -26,6 +27,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     private boolean canClimb;
     private boolean canDig;
     private boolean canMin;
+    private boolean canSwim;
 
     private Optional<BlockPos> currentTargetPos = Optional.empty();
 
@@ -62,11 +64,15 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     public boolean canSwimHorizontal() {
-        return true;
+        return canSwim;
     }
 
     public boolean canSwimVertical() {
-        return true;
+        return canSwim;
+    }
+
+    public void setCanSwim(boolean flag) {
+        canSwim = flag;
     }
 
     public float getBlockStrength(BlockPos pos) {
@@ -79,11 +85,11 @@ public class Actor<T extends Entity> implements IPathfindable {
 
     public boolean avoidsBlock(BlockState state) {
         return !entity.isInvulnerable()
-                && (!entity.isFireImmune() && (state.isIn(BlockTags.FIRE)
-                        || state.isIn(BlockTags.CAMPFIRES)
-                        || state.getFluidState().isIn(FluidTags.LAVA))
-                || state.isOf(Blocks.BEDROCK)
-                || state.isOf(Blocks.CACTUS));
+                && (
+                        (!entity.isFireImmune() && PathNodeMaker.isFireDamaging(state))
+                    || state.isOf(Blocks.BEDROCK)
+                    || state.isOf(Blocks.CACTUS)
+            );
     }
 
     public boolean isBlockDestructible(BlockView world, BlockPos pos, BlockState state) {
@@ -100,7 +106,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
         float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
 
-        if (node.pos.getY() > prevNode.pos.getY() && getCollide(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
+        if (node.pos.getY() > prevNode.pos.getY() && getNodeDestructability(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
             multiplier += 2;
         }
 
@@ -132,7 +138,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         int height = MathHelper.ceil(entity.getStepHeight());
         for (int i = 1; i <= height; i++) {
-            if (getCollide(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == DestructableType.UNBREAKABLE) {
+            if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == DestructableType.UNBREAKABLE) {
                 height = i - 1;
             }
         }
@@ -182,7 +188,7 @@ public class Actor<T extends Entity> implements IPathfindable {
 
         if (canSwimHorizontal()) {
             for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
-                if (getCollide(terrainMap, mutable.set(currentNode.pos).move(offset)) == -1) {
+                if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                 }
             }
@@ -190,7 +196,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-        int collideUp = getCollide(terrainMap, currentNode.pos.up());
+        int collideUp = getNodeDestructability(terrainMap, currentNode.pos.up());
         if (collideUp > DestructableType.UNBREAKABLE) {
             BlockState state = terrainMap.getBlockState(currentNode.pos.up());
             if (state.isIn(BlockTags.CLIMBABLE)) {
@@ -212,8 +218,8 @@ public class Actor<T extends Entity> implements IPathfindable {
                 }
             }
         }
-        int below = getCollide(terrainMap, currentNode.pos.down());
-        int above = getCollide(terrainMap, currentNode.pos.up());
+        int below = getNodeDestructability(terrainMap, currentNode.pos.down());
+        int above = getNodeDestructability(terrainMap, currentNode.pos.up());
         if (getCanDigDown()) {
             if (below == DestructableType.DESTRUCTABLE) {
                 pathFinder.addNode(currentNode.pos.down(), PathAction.DIG);
@@ -236,7 +242,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     protected final void addAdjacent(BlockView terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
-        if (getCollide(terrainMap, pos) <= DestructableType.UNBREAKABLE) {
+        if (getNodeDestructability(terrainMap, pos) <= DestructableType.UNBREAKABLE) {
             return;
         }
         if (getCanClimb()) {
@@ -255,7 +261,7 @@ public class Actor<T extends Entity> implements IPathfindable {
                 : entity.getWidth() == 2 ? CoordsInt.OFFSET_ADJACENT_2
                 : CoordsInt.ZERO) {
             BlockState state = terrainMap.getBlockState(mutable.set(pos).add(offset));
-            if (!state.isAir() && state.isSolidBlock(terrainMap, mutable)) {
+            if (!state.isAir() && !state.canPathfindThrough(NavigationType.LAND)) {
                 return true;
             }
         }
@@ -264,20 +270,19 @@ public class Actor<T extends Entity> implements IPathfindable {
 
     protected final int getNextLowestSafeYOffset(BlockView world, BlockPos pos, int maxOffsetMagnitude) {
         BlockPos.Mutable mutable = pos.mutableCopy();
-        for (int i = 0; i + pos.getY() > world.getBottomY() && i < maxOffsetMagnitude; i--) {
+        for (int i = 0; !world.isOutOfHeightLimit(i + pos.getY()) && i < maxOffsetMagnitude; i--) {
             mutable.set(pos).move(Direction.UP, i);
-            if (canStandAtAndIsValid(world, mutable) || (canSwimHorizontal() && getCollide(world, mutable) == -1)) {
+            if (canStandAtAndIsValid(world, mutable) || (canSwimHorizontal() && getNodeDestructability(world, mutable) == DestructableType.FLUID)) {
                 return i;
             }
         }
         return 1;
     }
 
-    @SuppressWarnings("deprecation")
     public final boolean canStandAt(BlockView world, BlockPos pos) {
         for (BlockPos p : BlockPos.stream(entity.getDimensions(entity.getPose()).getBoxAt(pos.toBottomCenterPos())).toList()) {
             BlockState state = world.getBlockState(p);
-            if (!state.isAir() && state.blocksMovement() || avoidsBlock(state)) {
+            if ((!state.isAir() && !state.canPathfindThrough(NavigationType.LAND)) || avoidsBlock(state)) {
                 return false;
             }
         }
@@ -285,10 +290,10 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     public boolean canStandAtAndIsValid(BlockView world, BlockPos pos) {
-        return getCollide(world, pos) > DestructableType.UNBREAKABLE && canStandAt(world, pos);
+        return getNodeDestructability(world, pos) > DestructableType.UNBREAKABLE && canStandAt(world, pos);
     }
 
-    protected boolean canStandOnBlock(BlockView world, BlockPos pos) {
+    protected final boolean canStandOnBlock(BlockView world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         return state.hasSolidTopSurface(world, pos, entity) && !avoidsBlock(state);
     }
@@ -304,7 +309,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     @SuppressWarnings("deprecation")
-    protected final int getCollide(BlockView terrainMap, BlockPos pos) {
+    protected final int getNodeDestructability(BlockView terrainMap, BlockPos pos) {
         boolean destructibleFlag = false;
         boolean liquidFlag = false;
 
@@ -313,7 +318,7 @@ public class Actor<T extends Entity> implements IPathfindable {
             if (!state.isAir()) {
                 if (state.isLiquid()) {
                     liquidFlag = true;
-                } else if (!state.blocksMovement()) {
+                } else if (!state.canPathfindThrough(NavigationType.LAND)) {
                     if (!isBlockDestructible(terrainMap, p, state)) {
                         return DestructableType.UNBREAKABLE;
                     }

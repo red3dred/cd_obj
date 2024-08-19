@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import com.invasion.IBlockAccessExtended;
 import com.invasion.TerrainDataLayer;
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.builder.Scaffold;
 import com.invasion.entity.pathfinding.IPathSource;
 import com.invasion.entity.pathfinding.IPathfindable;
@@ -85,7 +85,7 @@ public class AttackerAI {
         return scaffolds;
     }
 
-    public boolean askGenerateScaffolds(EntityIMLiving entity) {
+    public boolean askGenerateScaffolds(NexusEntity entity) {
         if (nextScaffoldCalcTimer > 0 || scaffolds.size() > scaffoldLimit) {
             return false;
         }
@@ -283,7 +283,7 @@ public class AttackerAI {
 
     private void updateDensityData() {
         entityDensityData.clear();
-        for (EntityIMLiving mob : nexus.getCombatants()) {
+        for (NexusEntity mob : nexus.getCombatants()) {
             entityDensityData.compute(mob.getBlockPos().asLong(), (key, old) -> old == null ? 1 : old + 1);
         }
     }

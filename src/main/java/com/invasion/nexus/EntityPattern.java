@@ -1,9 +1,9 @@
 package com.invasion.nexus;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.util.RandomSelectionPool;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 
 public class EntityPattern implements IEntityIMPattern {
     private static final int DEFAULT_TIER = 1;
@@ -11,12 +11,12 @@ public class EntityPattern implements IEntityIMPattern {
     private static final int OPEN_TEXTURE = 0;
     private static final int OPEN_SCALING = 0;
 
-    private final EntityType<? extends EntityIMLiving> entityType;
+    private final EntityType<? extends MobEntity> entityType;
     private final RandomSelectionPool<Integer> tierPool = new RandomSelectionPool<>();
     private final RandomSelectionPool<Integer> texturePool = new RandomSelectionPool<>();
     private final RandomSelectionPool<Integer> flavourPool = new RandomSelectionPool<>();
 
-    public EntityPattern(EntityType<? extends EntityIMLiving> entityType) {
+    public EntityPattern(EntityType<? extends MobEntity> entityType) {
         this.entityType = entityType;
     }
 

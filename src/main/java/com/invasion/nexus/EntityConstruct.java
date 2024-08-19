@@ -2,13 +2,12 @@ package com.invasion.nexus;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMLiving;
-
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.world.World;
 
 public record EntityConstruct (
-        EntityType<? extends EntityIMLiving> entityType,
+        EntityType<? extends MobEntity> entityType,
         int texture,
         int tier,
         int flavour,
@@ -17,13 +16,15 @@ public record EntityConstruct (
         int maxAngle
     ) {
 
-    public EntityIMLiving createMob(INexusAccess nexus) {
+    public MobEntity createMob(INexusAccess nexus) {
         return createMob(nexus.getWorld(), nexus);
     }
 
-    public EntityIMLiving createMob(World world, @Nullable INexusAccess nexus) {
-        EntityIMLiving entity = entityType().create(world);
-        entity.onSpawned(nexus, this);
+    public MobEntity createMob(World world, @Nullable INexusAccess nexus) {
+        MobEntity entity = entityType().create(world);
+        if (entity instanceof BuildableMob b) {
+            b.onSpawned(nexus, this);
+        }
         return entity;
     }
 

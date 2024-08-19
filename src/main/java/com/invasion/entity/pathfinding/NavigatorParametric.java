@@ -4,28 +4,22 @@ import com.invasion.entity.EntityIMLiving;
 import com.invasion.util.math.PosRotate3D;
 
 public abstract class NavigatorParametric extends NavigatorIM {
-    protected double minMoveToleranceSq;
+    protected double minMoveToleranceSq = 21;
     protected int timeParam;
 
     public NavigatorParametric(EntityIMLiving entity, IPathSource pathSource) {
         super(entity, pathSource);
-        this.minMoveToleranceSq = 21.0D;
-        this.timeParam = 0;
     }
 
     @Override
     public void onUpdateNavigation() {
-        onUpdateNavigation(1);
-    }
-
-    public void onUpdateNavigation(int time) {
         totalTicks++;
         if (noPath() || waitingForNotify) {
             return;
         }
-        if (canNavigate() && nodeActionFinished) {
+        if (nodeActionFinished) {
             int pathIndex = path.getCurrentPathIndex();
-            pathFollow(timeParam + time);
+            pathFollow(timeParam + 1);
             doMovementTo(timeParam);
 
             if (path.getCurrentPathIndex() != pathIndex) {

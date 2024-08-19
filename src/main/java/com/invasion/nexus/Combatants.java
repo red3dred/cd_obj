@@ -8,15 +8,15 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 import com.invasion.util.math.ComparatorDistanceFrom;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.predicate.entity.EntityPredicates;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.Box;
 
-public class Combatants implements Iterable<EntityIMLiving> {
-    private List<EntityIMLiving> mobList = new ArrayList<>();
+public class Combatants<T extends PathAwareEntity & NexusEntity> implements Iterable<T> {
+    private List<T> mobList = new ArrayList<>();
     private boolean sorted;
 
     private final Nexus nexus;
@@ -27,13 +27,14 @@ public class Combatants implements Iterable<EntityIMLiving> {
         this.sorter = ComparatorDistanceFrom.ofComparisonEntities(nexus.getOrigin().toCenterPos());
     }
 
+    @SuppressWarnings("unchecked")
     public void updateMobList(Box arena) {
-        mobList = nexus.getWorld().getEntitiesByClass(EntityIMLiving.class, arena, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
+        mobList = (List<T>)nexus.getWorld().getEntitiesByClass(PathAwareEntity.class, arena, NexusEntity.PREDICATE);
         sorted = false;
     }
 
     @Nullable
-    public EntityIMLiving removeNearestCombatant() {
+    public T removeNearestCombatant() {
         if (mobList.isEmpty()) {
             return null;
         }
@@ -46,7 +47,7 @@ public class Combatants implements Iterable<EntityIMLiving> {
     }
 
     @Override
-    public Iterator<EntityIMLiving> iterator() {
+    public Iterator<T> iterator() {
         return mobList.iterator();
     }
 }
