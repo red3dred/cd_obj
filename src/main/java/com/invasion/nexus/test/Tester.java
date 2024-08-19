@@ -9,7 +9,7 @@ import com.invasion.nexus.spawns.IMWaveSpawner;
 import com.invasion.nexus.spawns.SpawnPoint;
 import com.invasion.nexus.spawns.SpawnPointContainer;
 import com.invasion.nexus.spawns.SpawnType;
-import com.invasion.nexus.wave.IMWaveBuilder;
+import com.invasion.nexus.wave.WaveBuilder;
 import com.invasion.nexus.wave.Wave;
 import com.invasion.nexus.wave.WaveSpawnerException;
 
@@ -39,7 +39,7 @@ public class Tester {
         spawner.debugMode(true);
         spawner.setPermitSpawns(false);
 
-        IMWaveBuilder waveBuilder = new IMWaveBuilder();
+        WaveBuilder waveBuilder = new WaveBuilder();
         Wave wave = waveBuilder.generateWave(difficulty, tierLevel, lengthSeconds);
 
         int successfulSpawns = 0;

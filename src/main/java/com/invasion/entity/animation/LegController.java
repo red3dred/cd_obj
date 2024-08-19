@@ -3,17 +3,17 @@ package com.invasion.entity.animation;
 import com.invasion.client.render.animation.AnimationAction;
 import com.invasion.client.render.animation.AnimationController;
 import com.invasion.client.render.animation.AnimationState;
-import com.invasion.entity.EntityIMBird;
+import com.invasion.entity.VultureEntity;
 import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.MoveState;
 
 import net.minecraft.util.math.MathHelper;
 
 public class LegController implements AnimationController {
-    private final EntityIMBird entity;
+    private final VultureEntity entity;
     private final AnimationState<?> animationRun;
 
-    public LegController(EntityIMBird entity, AnimationState<?> stateObject) {
+    public LegController(VultureEntity entity, AnimationState<?> stateObject) {
         this.entity = entity;
         animationRun = stateObject;
     }

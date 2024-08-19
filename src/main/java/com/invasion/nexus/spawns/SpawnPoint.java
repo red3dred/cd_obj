@@ -1,7 +1,7 @@
 package com.invasion.nexus.spawns;
 
 import com.invasion.InvasionMod;
-import com.invasion.util.math.IPolarAngle;
+import com.invasion.util.math.PolarAngle;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
-public record SpawnPoint(BlockPos pos, int angle, SpawnType type) implements IPolarAngle, Comparable<IPolarAngle> {
+public record SpawnPoint(BlockPos pos, int angle, SpawnType type) implements PolarAngle, Comparable<PolarAngle> {
     @Override
     public int getAngle() {
         return this.angle;
@@ -37,7 +37,7 @@ public record SpawnPoint(BlockPos pos, int angle, SpawnType type) implements IPo
     }
 
     @Override
-    public int compareTo(IPolarAngle polarAngle) {
+    public int compareTo(PolarAngle polarAngle) {
         if (angle < polarAngle.getAngle()) {
             return -1;
         }

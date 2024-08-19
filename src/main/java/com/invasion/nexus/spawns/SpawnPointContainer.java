@@ -57,11 +57,11 @@ public class SpawnPointContainer {
             this.sorted = true;
         }
 
-        int start = Collections.binarySearch(spawnList, new PolarAngle(minAngle));
+        int start = Collections.binarySearch(spawnList, PolarAngle.of(minAngle));
         if (start < 0) {
             start = -start - 1;
         }
-        int end = Collections.binarySearch(spawnList, new PolarAngle(maxAngle));
+        int end = Collections.binarySearch(spawnList, PolarAngle.of(maxAngle));
         if (end < 0) {
             end = -end - 1;
         }
@@ -93,11 +93,11 @@ public class SpawnPointContainer {
             sorted = true;
         }
 
-        int start = Collections.binarySearch(spawnList, new PolarAngle(minAngle));
+        int start = Collections.binarySearch(spawnList, PolarAngle.of(minAngle));
         if (start < 0) {
             start = -start - 1;
         }
-        int end = Collections.binarySearch(spawnList, new PolarAngle(maxAngle));
+        int end = Collections.binarySearch(spawnList, PolarAngle.of(maxAngle));
         if (end < 0) {
             end = -end - 1;
         }

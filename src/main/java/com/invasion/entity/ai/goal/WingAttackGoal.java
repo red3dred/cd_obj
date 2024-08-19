@@ -2,14 +2,14 @@ package com.invasion.entity.ai.goal;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMBird;
+import com.invasion.entity.VultureEntity;
 
 import net.minecraft.entity.LivingEntity;
 
-public class WingAttackGoal<T extends LivingEntity> extends EntityAIMeleeAttack<T, EntityIMBird> {
-    private EntityIMBird mob;
+public class WingAttackGoal<T extends LivingEntity> extends EntityAIMeleeAttack<T, VultureEntity> {
+    private VultureEntity mob;
 
-    public WingAttackGoal(EntityIMBird entity, Class<? extends T> targetClass, int attackDelay) {
+    public WingAttackGoal(VultureEntity entity, Class<? extends T> targetClass, int attackDelay) {
         super(entity, targetClass, attackDelay);
         mob = entity;
     }

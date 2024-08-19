@@ -1,20 +1,20 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.IHasAiGoals;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.VultureEntity;
+import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.pathfinding.FlightNavigator;
 import com.invasion.entity.pathfinding.Path;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.sound.SoundEvents;
 
-public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T, EntityIMBird> {
-    private final EntityIMBird theEntity;
+public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T, VultureEntity> {
+    private final VultureEntity theEntity;
     private boolean wantsToRetreat;
     private boolean buffetedTarget;
 
-    public EntityAIBirdFight(EntityIMBird entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
+    public EntityAIBirdFight(VultureEntity entity, Class<? extends T> targetClass, int attackDelay, float retreatHealthLossPercent) {
         super(entity, targetClass, attackDelay, retreatHealthLossPercent);
         theEntity = entity;
     }
@@ -35,14 +35,14 @@ public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T,
 
     @Override
     public void updatePath() {
-        INavigationFlying nav = (INavigationFlying)theEntity.getNavigatorNew();
+        FlightNavigator nav = (FlightNavigator)theEntity.getNavigatorNew();
         Entity target = mob.getTarget();
         if (target != nav.getTargetEntity()) {
-            nav.clearPath();
-            nav.setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
+            nav.stop();
+            nav.setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
             Path path = nav.getPathToEntity(target, 0);
             if (path != null && path.getCurrentPathLength() > 1.6D * mob.distanceTo(target)) {
-                nav.setMovementType(INavigationFlying.MoveType.MIXED);
+                nav.setMovementType(FlightNavigator.MoveType.MIXED);
             }
             nav.autoPathToEntity(target);
         }
@@ -54,8 +54,8 @@ public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T,
             if (shouldLeaveMelee()) {
                 wantsToRetreat = true;
             }
-        } else if (buffetedTarget && mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET)) {
-            mob.transitionAIGoal(IHasAiGoals.Goal.LEAVE_MELEE);
+        } else if (buffetedTarget && mob.hasGoal(HasAiGoals.Goal.MELEE_TARGET)) {
+            mob.transitionAIGoal(HasAiGoals.Goal.LEAVE_MELEE);
         }
     }
 

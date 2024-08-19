@@ -7,7 +7,7 @@ import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.entity.pathfinding.PathfinderIM;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.util.math.CoordsInt;
+import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
@@ -172,7 +172,7 @@ public class Scaffold implements IPathfindable {
                 existingMainLadderBlocks++;
             }
             if (isLayerPlatform(i)) {
-                for (Vec3i offset : CoordsInt.OFFSET_RING) {
+                for (Vec3i offset : PosUtils.OFFSET_RING) {
                     if (world.getBlockState(mutable.set(pos).move(Direction.UP, i).move(offset)).isFullCube(world, mutable)) {
                         existingPlatformBlocks++;
                     }

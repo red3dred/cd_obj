@@ -17,11 +17,11 @@ import com.invasion.entity.InvEntities;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.nexus.wave.IMWaveBuilder;
+import com.invasion.nexus.wave.WaveBuilder;
 import com.invasion.nexus.wave.Wave;
 import com.invasion.nexus.wave.WaveSpawnerException;
 
-public class IMWaveSpawner implements ISpawnerAccess {
+public class IMWaveSpawner implements Spawner {
 	private static final int MAX_SPAWN_TRIES = 20;
 	public static final int MIN_SPAWN_RADIUS = 8;
 	private static final int NORMAL_SPAWN_HEIGHT = 30;
@@ -66,7 +66,7 @@ public class IMWaveSpawner implements ISpawnerAccess {
 	}
 
 	public void beginNextWave(int waveNumber) throws WaveSpawnerException {
-		beginNextWave(IMWaveBuilder.generateMainInvasionWave(waveNumber));
+		beginNextWave(WaveBuilder.generateMainInvasionWave(waveNumber));
 	}
 
 	public void beginNextWave(Wave wave) throws WaveSpawnerException {

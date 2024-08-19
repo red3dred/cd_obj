@@ -3,7 +3,7 @@ package com.invasion.entity.pathfinding;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
-public class PathCreator implements IPathSource {
+public class PathCreator implements PathSource {
     private final PathfinderIM pathFinder = new PathfinderIM();
     private final int[] nanosUsed = new int[6];
 

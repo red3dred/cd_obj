@@ -3,7 +3,7 @@ package com.invasion.nexus.wave;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.invasion.nexus.spawns.ISpawnerAccess;
+import com.invasion.nexus.spawns.Spawner;
 
 public class Wave {
     private final List<WaveEntry> entries;
@@ -22,7 +22,7 @@ public class Wave {
         this.waveBreakTime = waveBreakTime;
     }
 
-    public int doNextSpawns(int elapsedMillis, ISpawnerAccess spawner) {
+    public int doNextSpawns(int elapsedMillis, Spawner spawner) {
         int numberOfSpawns = 0;
         elapsed += elapsedMillis;
         for (WaveEntry entry : entries) {

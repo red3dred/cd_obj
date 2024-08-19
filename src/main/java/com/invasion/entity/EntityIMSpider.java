@@ -1,6 +1,6 @@
 package com.invasion.entity;
 
-import com.invasion.entity.ai.IMMoveHelperSpider;
+import com.invasion.entity.ai.IMSpiderMoveControl;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
@@ -35,14 +35,14 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffspring {
+public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
     private static final TrackedData<Boolean> CLIMBING = DataTracker.registerData(EntityIMSpider.class, TrackedDataHandlerRegistry.BOOLEAN);
 
 	private int airborneTime;
     // TODO: Add this entity to EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
 		super(type, world);
-		moveControl = new IMMoveHelperSpider(this);
+		moveControl = new IMSpiderMoveControl(this);
 		getNavigatorNew().getActor().setCanClimb(true);
 	}
 
@@ -63,7 +63,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
     protected void initGoals() {
 		goalSelector.add(0, new SwimGoal(this));
 		goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 40));
-		goalSelector.add(1, new RallyBehindLeaderGoal<>(this, EntityIMCreeper.class, 4));
+		goalSelector.add(1, new RallyBehindLeaderGoal<>(this, IMCreeperEntity.class, 4));
 		goalSelector.add(1, new PredicatedGoal(new LayEggGoal(this, 1), () -> getTier() == 2 && getFlavour() == 1));
 		goalSelector.add(2, new AttackNexusGoal(this));
 		goalSelector.add(3, new WaitForSupportGoal(this, 5, false));
@@ -74,12 +74,12 @@ public class EntityIMSpider extends TieredIMMobEntity implements ISpawnsOffsprin
 		goalSelector.add(7, new WanderAroundFarGoal(this, 1));
 		goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8));
 		goalSelector.add(9, new LookAroundGoal(this));
-        goalSelector.add(10, new LookAtEntityGoal(this, EntityIMCreeper.class, 12));
+        goalSelector.add(10, new LookAtEntityGoal(this, IMCreeperEntity.class, 12));
 
 		targetSelector.add(0, new RetaliateGoal(this));
 		targetSelector.add(1, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false));
 		targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true));
-		targetSelector.add(3, new NoNexusPathGoal(this, new CustomRangeActiveTargetGoal<>(this, EntityIMPigEngy.class, 3.5F)));
+		targetSelector.add(3, new NoNexusPathGoal(this, new CustomRangeActiveTargetGoal<>(this, PigmanEngineerEntity.class, 3.5F)));
 		targetSelector.add(4, new RevengeGoal(this));
 	}
 

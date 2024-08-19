@@ -10,16 +10,16 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class PathNavigateAdapter extends EntityNavigation {
-    private final INavigation navigator;
+    private final Navigator navigator;
     private MobNavigation mobNavigation;
     private boolean useOldNavigation;
 
-    public PathNavigateAdapter(MobEntity entity, World world, INavigation navigator) {
+    public PathNavigateAdapter(MobEntity entity, World world, Navigator navigator) {
         super(entity, world);
         this.navigator = navigator;
     }
 
-    public INavigation getNewNavigator() {
+    public Navigator getNewNavigator() {
         return navigator;
     }
 
@@ -32,7 +32,7 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public void tick() {
-        navigator.onUpdateNavigation();
+        navigator.tick();
     }
 
     @Override
@@ -42,12 +42,12 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public boolean isIdle() {
-        return navigator.noPath();
+        return navigator.isIdle();
     }
 
     @Override
     public void stop() {
-        navigator.clearPath();
+        navigator.stop();
     }
 
     @Override
@@ -57,12 +57,12 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public boolean startMovingTo(double x, double y, double z, double movespeed) {
-        return navigator.tryMoveToXYZ(new Vec3d(x, y, z), 0, (float) movespeed);
+        return navigator.startMovingTo(new Vec3d(x, y, z), 0, (float) movespeed);
     }
 
     @Override
     public boolean startMovingTo(Entity entity, double movespeed) {
-        return navigator.tryMoveToEntity(entity, 0.0F, (float) movespeed);
+        return navigator.startMovingTo(entity, 0.0F, (float) movespeed);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     protected Vec3d getPos() {
-        return navigator.getEntityPosition();
+        return navigator.getPos();
     }
 
     @Override

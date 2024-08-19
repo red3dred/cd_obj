@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.INotifyTask;
+import com.invasion.Notifiable;
 import com.invasion.entity.EntityIMLiving;
-import com.invasion.entity.EntityIMPigEngy;
-import com.invasion.util.math.CoordsInt;
+import com.invasion.entity.PigmanEngineerEntity;
+import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -39,7 +39,7 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildScaffoldLayer(BlockPos pos, INotifyTask asker) {
+    public boolean askBuildScaffoldLayer(BlockPos pos, Notifiable asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
@@ -73,7 +73,7 @@ public class TerrainBuilder implements ITerrainBuild {
         }
 
         if (scaffold.isLayerPlatform(height)) {
-            for (Vec3i i : CoordsInt.OFFSET_RING) {
+            for (Vec3i i : PosUtils.OFFSET_RING) {
                 if (!i.equals(offset.getVector()) && !mob.getWorld().getBlockState(mutable.set(pos).move(i)).isFullCube(mob.getWorld(), mutable)) {
                     modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
                 }
@@ -84,7 +84,7 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild, INotifyTask asker) {
+    public boolean askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild, Notifiable asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
@@ -112,14 +112,14 @@ public class TerrainBuilder implements ITerrainBuild {
 
     @SuppressWarnings("deprecation")
     @Override
-    public boolean askBuildLadder(BlockPos pos, INotifyTask asker) {
+    public boolean askBuildLadder(BlockPos pos, Notifiable asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
         List<ModifyBlockEntry> modList = new ArrayList<>();
 
         if (!mob.getWorld().getBlockState(pos).isOf(Blocks.LADDER)) {
-            if (!EntityIMPigEngy.canPlaceLadderAt(mob.getWorld(), pos)) {
+            if (!PigmanEngineerEntity.canPlaceLadderAt(mob.getWorld(), pos)) {
                 return false;
             }
 
@@ -129,7 +129,7 @@ public class TerrainBuilder implements ITerrainBuild {
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         BlockState block = mob.getWorld().getBlockState(mutable.move(Direction.DOWN, 2));
-        if (!block.isAir() && block.isSolid() && EntityIMPigEngy.canPlaceLadderAt(mob.getWorld(), mutable.set(pos).move(Direction.DOWN))) {
+        if (!block.isAir() && block.isSolid() && PigmanEngineerEntity.canPlaceLadderAt(mob.getWorld(), mutable.set(pos).move(Direction.DOWN))) {
             modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
 
@@ -137,7 +137,7 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildBridge(BlockPos pos, INotifyTask asker) {
+    public boolean askBuildBridge(BlockPos pos, Notifiable asker) {
         if (!modifier.isReadyForTask(asker)) {
             return false;
         }
@@ -154,6 +154,6 @@ public class TerrainBuilder implements ITerrainBuild {
             );
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList, asker, INotifyTask.NONE);
+        return !modList.isEmpty() && modifier.requestTask(modList, asker, Notifiable.NONE);
     }
 }

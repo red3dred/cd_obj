@@ -1,6 +1,6 @@
 package com.invasion.client.render.entity.model;
 
-import com.invasion.entity.EntityIMBird;
+import com.invasion.entity.VultureEntity;
 
 import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPart;
@@ -11,7 +11,7 @@ import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.util.math.MathHelper;
 
-public class ModelB extends SinglePartEntityModel<EntityIMBird> {
+public class ModelB extends SinglePartEntityModel<VultureEntity> {
     private final ModelPart root;
 
     private final ModelPart head;
@@ -61,7 +61,7 @@ public class ModelB extends SinglePartEntityModel<EntityIMBird> {
     }
 
     @Override
-    public void setAngles(EntityIMBird entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+    public void setAngles(VultureEntity entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
         head.setAngles((headPitch / 57.295776F), (headYaw / 57.295776F), 0);
         body.pitch = (0.7853982F + MathHelper.cos(animationProgress * 0.1F) * 0.15F);
         rightWing.yaw = (MathHelper.cos(animationProgress * 1.3F) * MathHelper.PI * 0.25F);

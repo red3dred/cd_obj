@@ -84,7 +84,7 @@ public class MoveToEntityGoal<T extends LivingEntity> extends Goal {
 	}
 
 	protected void setPath() {
-		if (mob.getNavigatorNew().tryMoveToEntity(target, 0, 1)) {
+		if (mob.getNavigatorNew().startMovingTo(target, 0, 1)) {
 			if (mob.getNavigatorNew().getLastPathDistanceToTarget() > 3) {
 				cooldown = 30 + mob.getWorld().getRandom().nextInt(10);
 				if (mob.getNavigatorNew().getPath().getCurrentPathLength() > 2) {

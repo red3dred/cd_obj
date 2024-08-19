@@ -14,9 +14,9 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.InvasionMod;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.IEntityIMPattern;
-import com.invasion.nexus.spawns.ISpawnerAccess;
+import com.invasion.nexus.spawns.Spawner;
 import com.invasion.nexus.spawns.SpawnType;
-import com.invasion.util.ISelect;
+import com.invasion.util.Select;
 
 public class WaveEntry {
     static final int DEFAULT_NEXT_ALERT_TIME = Integer.MAX_VALUE;
@@ -50,21 +50,21 @@ public class WaveEntry {
     private int minPointsInRange;
     private int nextAlert = DEFAULT_NEXT_ALERT_TIME;
 
-    private final ISelect<IEntityIMPattern> mobPool;
+    private final Select<IEntityIMPattern> mobPool;
     private final List<EntityConstruct> spawnList = new ArrayList<>();
     private final Map<Integer, String> alerts = new HashMap<>();
 
-    public WaveEntry(int timeBegin, int timeEnd, int amount, int granularity, ISelect<IEntityIMPattern> mobPool) {
+    public WaveEntry(int timeBegin, int timeEnd, int amount, int granularity, Select<IEntityIMPattern> mobPool) {
         this(timeBegin, timeEnd, amount, granularity, mobPool, -MAX_VALID_ANGLE, MAX_VALID_ANGLE, 1);
     }
 
-    public WaveEntry(int timeBegin, int timeEnd, int amount, int granularity, ISelect<IEntityIMPattern> mobPool, int angleRange, int minPointsInRange) {
+    public WaveEntry(int timeBegin, int timeEnd, int amount, int granularity, Select<IEntityIMPattern> mobPool, int angleRange, int minPointsInRange) {
         this(timeBegin, timeEnd, amount, granularity, mobPool, 0, 0, minPointsInRange);
         this.minAngle = Random.create().nextInt(MAX_ANGLE) - MAX_VALID_ANGLE;
         this.maxAngle = wrapAngle(minAngle + angleRange);
     }
 
-    public WaveEntry(int timeBegin, int timeEnd, int amount, int granularity, ISelect<IEntityIMPattern> mobPool, int minAngle, int maxAngle, int minPointsInRange) {
+    public WaveEntry(int timeBegin, int timeEnd, int amount, int granularity, Select<IEntityIMPattern> mobPool, int minAngle, int maxAngle, int minPointsInRange) {
         this.timeBegin = timeBegin;
         this.timeEnd = timeEnd;
         this.amount = amount;
@@ -83,7 +83,7 @@ public class WaveEntry {
         return this;
     }
 
-    public int doNextSpawns(int elapsedMillis, ISpawnerAccess spawner) {
+    public int doNextSpawns(int elapsedMillis, Spawner spawner) {
         toNextSpawn -= elapsedMillis;
         if (nextAlert <= elapsed - toNextSpawn) {
             sendNextAlert(spawner);
@@ -161,7 +161,7 @@ public class WaveEntry {
         return granularity;
     }
 
-    private void sendNextAlert(ISpawnerAccess spawner) {
+    private void sendNextAlert(Spawner spawner) {
         @Nullable
         String message = alerts.remove(nextAlert);
         if (message != null) {
@@ -177,7 +177,7 @@ public class WaveEntry {
         }
     }
 
-    private void reviseSpawnAngles(ISpawnerAccess spawner) {
+    private void reviseSpawnAngles(Spawner spawner) {
         int angleRange = clampAngle(maxAngle - minAngle);
         List<Integer> validAngles = getAllowedAngles(spawner, angleRange);
         if (!validAngles.isEmpty()) {
@@ -198,7 +198,7 @@ public class WaveEntry {
         }
     }
 
-    private List<Integer> getAllowedAngles(ISpawnerAccess spawner, int angleRange) {
+    private List<Integer> getAllowedAngles(Spawner spawner, int angleRange) {
         List<Integer> validAngles = new ArrayList<>();
         for (int angle = -MAX_VALID_ANGLE; angle < MAX_VALID_ANGLE; angle += angleRange) {
             int nextAngle = wrapAngle(angle + angleRange);

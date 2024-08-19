@@ -9,7 +9,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.NexusEntity;
-import com.invasion.util.math.ComparatorDistanceFrom;
+import com.invasion.util.math.DistanceComparators;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -24,7 +24,7 @@ public class Combatants<T extends PathAwareEntity & NexusEntity> implements Iter
 
     public Combatants(Nexus nexus) {
         this.nexus = nexus;
-        this.sorter = ComparatorDistanceFrom.ofComparisonEntities(nexus.getOrigin().toCenterPos());
+        this.sorter = DistanceComparators.ofComparisonEntities(nexus.getOrigin().toCenterPos());
     }
 
     @SuppressWarnings("unchecked")

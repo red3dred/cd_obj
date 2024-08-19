@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.INotifyTask;
+import com.invasion.Notifiable;
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
 
@@ -23,8 +23,8 @@ public final class TerrainModifier implements ITerrainModify {
 
     private final float reach;
 
-    private INotifyTask finishCallback = INotifyTask.NONE;
-    private INotifyTask blockChangeCallback = INotifyTask.NONE;
+    private Notifiable finishCallback = Notifiable.NONE;
+    private Notifiable blockChangeCallback = Notifiable.NONE;
 
     private List<ModifyBlockEntry> modList = new ArrayList<>();
 
@@ -34,7 +34,7 @@ public final class TerrainModifier implements ITerrainModify {
     private int entryIndex;
     private int timer;
 
-    private INotifyTask.Status lastStatus = INotifyTask.Status.SUCCESS;
+    private Notifiable.Status lastStatus = Notifiable.Status.SUCCESS;
 
     public TerrainModifier(LivingEntity entity, float defaultReach) {
         this.theEntity = entity;
@@ -42,7 +42,7 @@ public final class TerrainModifier implements ITerrainModify {
     }
 
     @Override
-    public boolean isReadyForTask(INotifyTask asker) {
+    public boolean isReadyForTask(Notifiable asker) {
         return modList.isEmpty() || finishCallback == asker;
     }
 
@@ -51,11 +51,11 @@ public final class TerrainModifier implements ITerrainModify {
     }
 
     @Override
-    public boolean requestTask(Collection<ModifyBlockEntry> entries, @Nullable INotifyTask onFinished, @Nullable INotifyTask onBlockChanged) {
+    public boolean requestTask(Collection<ModifyBlockEntry> entries, @Nullable Notifiable onFinished, @Nullable Notifiable onBlockChanged) {
         if (isReadyForTask(onFinished)) {
             modList.addAll(entries);
-            finishCallback = onFinished == null ? INotifyTask.NONE : onFinished;
-            blockChangeCallback = onBlockChanged == null ? INotifyTask.NONE : onBlockChanged;
+            finishCallback = onFinished == null ? Notifiable.NONE : onFinished;
+            blockChangeCallback = onBlockChanged == null ? Notifiable.NONE : onBlockChanged;
             return true;
         }
         return false;
@@ -104,15 +104,15 @@ public final class TerrainModifier implements ITerrainModify {
         finishCallback.notifyTask(lastStatus);
     }
 
-    private INotifyTask.Status changeBlock(ModifyBlockEntry entry) {
+    private Notifiable.Status changeBlock(ModifyBlockEntry entry) {
         if (theEntity.getEyePos().squaredDistanceTo(entry.pos().toCenterPos()) > reach) {
-            return INotifyTask.Status.OUT_OF_RANGE;
+            return Notifiable.Status.OUT_OF_RANGE;
         }
 
         BlockState oldBlock = theEntity.getWorld().getBlockState(entry.pos());
         entry.setOldBlock(oldBlock);
         if (oldBlock.isOf(InvBlocks.NEXUS_CORE)) {
-            return INotifyTask.Status.UNMODIFIABLE;
+            return Notifiable.Status.UNMODIFIABLE;
         }
 
         int flags = Block.NOTIFY_NEIGHBORS | Block.NOTIFY_LISTENERS;
@@ -124,9 +124,9 @@ public final class TerrainModifier implements ITerrainModify {
                 ? theEntity.getWorld().breakBlock(entry.pos(), InvasionMod.getConfig().destructedBlocksDrop, theEntity)
                 : theEntity.getWorld().setBlockState(entry.pos(), entry.newBlock(), flags);
         if (!succeeded) {
-            return INotifyTask.Status.UNMODIFIABLE;
+            return Notifiable.Status.UNMODIFIABLE;
         }
-        return INotifyTask.Status.SUCCESS;
+        return Notifiable.Status.SUCCESS;
     }
 
     private boolean isTerrainIdentical(ModifyBlockEntry entry) {

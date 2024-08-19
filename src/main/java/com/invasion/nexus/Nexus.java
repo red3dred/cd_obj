@@ -3,17 +3,17 @@ package com.invasion.nexus;
 import java.util.List;
 import java.util.UUID;
 
-import com.invasion.ConfigInvasion;
+import com.invasion.InvasionConfig;
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
-import com.invasion.block.BlockNexus;
+import com.invasion.block.NexusBlock;
 import com.invasion.block.InvBlocks;
-import com.invasion.entity.EntityIMBolt;
+import com.invasion.entity.ElectricityBoltEntity;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.AttackerAI;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.spawns.IMWaveSpawner;
-import com.invasion.nexus.wave.IMWaveBuilder;
+import com.invasion.nexus.wave.WaveBuilder;
 import com.invasion.nexus.wave.Wave;
 import com.invasion.nexus.wave.WaveSpawnerException;
 
@@ -80,14 +80,14 @@ public class Nexus implements ControllableNexusAccess {
     private boolean discarded;
 
     private final IMWaveSpawner waveSpawner = new IMWaveSpawner(this, INITIAL_SPAWN_RADIUS);
-    private final IMWaveBuilder waveBuilder = new IMWaveBuilder();
+    private final WaveBuilder waveBuilder = new WaveBuilder();
     private final NexusInventory nexusItemStacks = new NexusInventory();
 
     private final Participants boundPlayers = new Participants(this);
     private final Combatants<?> mobList;
     private final AttackerAI attackerAI = new AttackerAI(this);
 
-    private final ConfigInvasion config = InvasionMod.getConfig();
+    private final InvasionConfig config = InvasionMod.getConfig();
 
     private Box boundingBoxToRadius;
 
@@ -600,7 +600,7 @@ public class Nexus implements ControllableNexusAccess {
         this.mode = mode;
         if (getWorld() instanceof ServerWorld sw) {
             if (sw.getBlockState(pos).isOf(InvBlocks.NEXUS_CORE)) {
-                sw.setBlockState(pos, InvBlocks.NEXUS_CORE.getDefaultState().with(BlockNexus.LIT, mode != Mode.STOPPED));
+                sw.setBlockState(pos, InvBlocks.NEXUS_CORE.getDefaultState().with(NexusBlock.LIT, mode != Mode.STOPPED));
             } else {
                 discard();
             }
@@ -649,7 +649,7 @@ public class Nexus implements ControllableNexusAccess {
             return false;
         }
         mob.damage(mob.getDamageSources().magic(), 500);
-        getWorld().spawnEntity(new EntityIMBolt(getWorld(), pos.toCenterPos(), mob.getEyePos(), 15, sfx));
+        getWorld().spawnEntity(new ElectricityBoltEntity(getWorld(), pos.toCenterPos(), mob.getEyePos(), 15, sfx));
         return true;
     }
 

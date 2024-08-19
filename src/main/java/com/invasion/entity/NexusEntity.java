@@ -2,9 +2,9 @@ package com.invasion.entity;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.INotifyTask;
+import com.invasion.Notifiable;
 import com.invasion.InvasionMod;
-import com.invasion.entity.pathfinding.INavigation;
+import com.invasion.entity.pathfinding.Navigator;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.nexus.Combatant;
@@ -22,7 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.entity.EntityLike;
 
-public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, EntityLike, Combatant<PathAwareEntity> {
+public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, EntityLike, Combatant<PathAwareEntity> {
     @Deprecated
     static NbtComponent createVariant(int flavour, int tier) {
         NbtCompound nbt = new NbtCompound();
@@ -34,7 +34,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
     float DEFAULT_GROUND_FRICTION = 0.546F;
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
 
-    default INavigation getNavigatorNew() {
+    default Navigator getNavigatorNew() {
         return ((PathNavigateAdapter)asEntity().getNavigation()).getNewNavigator();
     }
 
@@ -73,7 +73,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
     default void onPathSet() {
     }
 
-    default boolean onPathBlocked(Path path, INotifyTask asker) {
+    default boolean onPathBlocked(Path path, Notifiable asker) {
         return false;
     }
 
@@ -102,10 +102,6 @@ public interface NexusEntity extends IHasNexus, BuildableMob, IHasAiGoals, Entit
         BlockPos pos = asEntity().getBlockPos();
         return asEntity().getWorld().getLightLevel(LightType.SKY, pos) <= asEntity().getRandom().nextInt(32)
             && asEntity().getWorld().getLightLevel(LightType.BLOCK, pos) <= asEntity().getRandom().nextInt(8);
-    }
-
-    default boolean getDebugMode() {
-        return InvasionMod.getConfig().debugMode;
     }
 
     @Override

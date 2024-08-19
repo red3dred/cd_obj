@@ -3,12 +3,12 @@ package com.invasion.entity;
 import org.joml.Vector3f;
 
 import com.invasion.entity.ai.FlyState;
-import com.invasion.entity.ai.IMLookHelper;
-import com.invasion.entity.ai.IMMoveHelperFlying;
+import com.invasion.entity.ai.FlyingEntityLookControl;
+import com.invasion.entity.ai.FlyingMoveControl;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.INavigation;
-import com.invasion.entity.pathfinding.INavigationFlying;
-import com.invasion.entity.pathfinding.NavigatorFlying;
+import com.invasion.entity.pathfinding.Navigator;
+import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlyingNavigator;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.util.math.MathUtil;
 
@@ -24,7 +24,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public abstract class EntityIMFlying extends EntityIMLiving implements AnimatableEntity {
+public abstract class EntityIMFlying extends EntityIMLiving implements Animatable {
     private static final TrackedData<Vector3f> TARGET_POS = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.VECTOR3F);
     private static final TrackedData<Boolean> THRUSTING = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Float> THRUST_EFFORT = DataTracker.registerData(EntityIMFlying.class, TrackedDataHandlerRegistry.FLOAT);
@@ -55,8 +55,8 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
 
 	public EntityIMFlying(EntityType<? extends EntityIMFlying> type, World world) {
 		super(type, world);
-		moveControl = new IMMoveHelperFlying(this);
-		lookControl = new IMLookHelper(this);
+		moveControl = new FlyingMoveControl(this);
+		lookControl = new FlyingEntityLookControl(this);
 	}
 
     @Override
@@ -78,8 +78,8 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
     }
 
 	@Override
-    protected INavigation createIMNavigation() {
-	    return new NavigatorFlying(this, new PathCreator(800, 200));
+    protected Navigator createIMNavigation() {
+	    return new FlyingNavigator(this, new PathCreator(800, 200));
 	}
 
     @Override
@@ -199,7 +199,7 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
 
     protected void setMaxPoweredFlightSpeed(float speed) {
         this.maxPoweredFlightSpeed = speed;
-        ((INavigationFlying)getNavigatorNew()).setFlySpeed(speed);
+        ((FlightNavigator)getNavigatorNew()).setFlySpeed(speed);
     }
 
     protected void setThrustComponentRatioMin(float ratio) {
@@ -233,13 +233,13 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
     }
 
 	@Override
-	public IMMoveHelperFlying getMoveControl() {
-		return (IMMoveHelperFlying)super.getMoveControl();
+	public FlyingMoveControl getMoveControl() {
+		return (FlyingMoveControl)super.getMoveControl();
 	}
 
 	@Override
-	public IMLookHelper getLookControl() {
-		return (IMLookHelper)super.getLookControl();
+	public FlyingEntityLookControl getLookControl() {
+		return (FlyingEntityLookControl)super.getLookControl();
 	}
 
     @Override

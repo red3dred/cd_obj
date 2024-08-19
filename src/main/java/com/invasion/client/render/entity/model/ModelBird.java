@@ -3,9 +3,9 @@ package com.invasion.client.render.entity.model;
 import java.util.Map;
 
 import com.invasion.client.render.animation.AnimationRegistry;
-import com.invasion.client.render.animation.BonesWings;
-import com.invasion.client.render.animation.ModelAnimator;
-import com.invasion.entity.EntityIMBird;
+import com.invasion.client.render.animation.WingBone;
+import com.invasion.client.render.animation.Animator;
+import com.invasion.entity.VultureEntity;
 
 import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPart;
@@ -16,8 +16,8 @@ import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.util.math.MathHelper;
 
-public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
-    private ModelAnimator<BonesWings> animationWingFlap;
+public class ModelBird extends SinglePartEntityModel<VultureEntity> {
+    private Animator<WingBone> animationWingFlap;
     private final ModelPart root;
 
     private final ModelPart head;
@@ -44,11 +44,11 @@ public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
                 leftLeg.getChild("left_toe"), leftLeg.getChild("right_toe"), leftLeg.getChild("back_toe"),
                 rightLeg.getChild("left_toe"), rightLeg.getChild("right_toe"), rightLeg.getChild("back_toe")
         };
-        animationWingFlap = AnimationRegistry.instance().<BonesWings>getAnimation("bird_wing_flap").createAnimator(Map.of(
-                BonesWings.RIGHT_SHOULDER, body.getChild("right_wing_1"),
-                BonesWings.LEFT_SHOULDER, body.getChild("left_wing_1"),
-                BonesWings.RIGHT_ELBOW, body.getChild("right_wing_1").getChild("right_wing_2"),
-                BonesWings.LEFT_ELBOW, body.getChild("left_wing_1").getChild("left_wing_2")
+        animationWingFlap = AnimationRegistry.instance().<WingBone>get("bird_wing_flap").createAnimator(Map.of(
+                WingBone.RIGHT_SHOULDER, body.getChild("right_wing_1"),
+                WingBone.LEFT_SHOULDER, body.getChild("left_wing_1"),
+                WingBone.RIGHT_ELBOW, body.getChild("right_wing_1").getChild("right_wing_2"),
+                WingBone.LEFT_ELBOW, body.getChild("left_wing_1").getChild("left_wing_2")
         ));
     }
 
@@ -86,13 +86,13 @@ public class ModelBird extends SinglePartEntityModel<EntityIMBird> {
     }
 
     @Override
-    public void setAngles(EntityIMBird entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+    public void setAngles(VultureEntity entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
         body.pitch = 1.570796F - headPitch * MathHelper.RADIANS_PER_DEGREE;
         body.yaw = 0;
     }
 
     @Override
-    public void animateModel(EntityIMBird entity, float limbAngle, float limbDistance, float tickDelta) {
+    public void animateModel(VultureEntity entity, float limbAngle, float limbDistance, float tickDelta) {
         float legSweepProgress = entity.getLegSweepProgress();
         float flapProgress = entity.getWingAnimationState().getCurrentAnimationTimeInterp(tickDelta);
         animationWingFlap.updateAnimation(flapProgress);

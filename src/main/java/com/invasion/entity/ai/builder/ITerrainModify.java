@@ -6,18 +6,18 @@ import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.INotifyTask;
+import com.invasion.Notifiable;
 
 public interface ITerrainModify {
-    boolean isReadyForTask(INotifyTask notify);
+    boolean isReadyForTask(Notifiable notify);
 
-    boolean requestTask(Collection<ModifyBlockEntry> tasks, @Nullable INotifyTask onFinished, @Nullable INotifyTask onBlockChanged);
+    boolean requestTask(Collection<ModifyBlockEntry> tasks, @Nullable Notifiable onFinished, @Nullable Notifiable onBlockChanged);
 
-    default boolean requestTask(INotifyTask notify1, INotifyTask notify2, ModifyBlockEntry...tasks) {
+    default boolean requestTask(Notifiable notify1, Notifiable notify2, ModifyBlockEntry...tasks) {
         return requestTask(Arrays.asList(tasks), notify1, notify2);
     }
 
-    default boolean requestTask(INotifyTask notify1, INotifyTask notify2, Stream<ModifyBlockEntry> tasks) {
+    default boolean requestTask(Notifiable notify1, Notifiable notify2, Stream<ModifyBlockEntry> tasks) {
         return requestTask(tasks.toList(), notify1, notify2);
     }
 

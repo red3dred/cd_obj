@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.invasion.InvasionMod;
 import com.invasion.block.InvBlocks;
-import com.invasion.entity.EntityIMTrap;
+import com.invasion.entity.TrapEntity;
 import com.invasion.entity.InvEntities;
 import com.invasion.entity.NexusEntity;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -34,13 +34,13 @@ public interface InvItems {
     Item RIFT_FLUX = register("rift_flux", new Item(new Item.Settings()));
     Item SMALL_REMNANTS = register("small_remnants", new Item(new Item.Settings()));
 
-    Item INFUSED_SWORD = register("infused_sword", new ItemInfusedSword());
-    Item SEARING_BOW = register("searing_bow", new ItemSearingBow(new Item.Settings().maxDamage(384)));
+    Item INFUSED_SWORD = register("infused_sword", new InfusedSwordItem());
+    Item SEARING_BOW = register("searing_bow", new SearingBowItem(new Item.Settings().maxDamage(384)));
     Item ENGY_HAMMER = register("engineer_hammer", new Item(new Item.Settings()));
 
     Item EMPTY_TRAP = register("empty_trap", new Item(new Item.Settings()));
-    Item RIFT_TRAP = register("rift_trap", new ItemTrap(new Item.Settings(), EntityIMTrap.Type.RIFT));
-    Item FLAME_TRAP = register("flame_trap", new ItemTrap(new Item.Settings(), EntityIMTrap.Type.FIRE));
+    Item RIFT_TRAP = register("rift_trap", new TrapItem(new Item.Settings(), TrapEntity.Type.RIFT));
+    Item FLAME_TRAP = register("flame_trap", new TrapItem(new Item.Settings(), TrapEntity.Type.FIRE));
     // TODO: Ice trap
     // Item XYZ_TRAP = register("xyz_trap", new ItemTrap(new Item.Settings()));
 
@@ -54,9 +54,9 @@ public interface InvItems {
     Item DAMPING_AGENT = register("damping_agent", new Item(new Item.Settings()));
     Item STRONG_DAMPING_AGENT = register("strong_damping_agent", new Item(new Item.Settings()));
 
-    Item STRANGE_BONE = register("strange_bone", new ItemStrangeBone(new Item.Settings()));
-    Item NEXUS_ADJUSTER = register("nexus_adjuster", new ItemProbe(new Item.Settings().maxCount(1), false));
-    Item MATERIAL_PROBE = register("material_probe", new ItemProbe(new Item.Settings().maxCount(1), true));
+    Item STRANGE_BONE = register("strange_bone", new StrangeBoneItem(new Item.Settings()));
+    Item NEXUS_ADJUSTER = register("nexus_adjuster", new ProbeItem(new Item.Settings().maxCount(1), false));
+    Item MATERIAL_PROBE = register("material_probe", new ProbeItem(new Item.Settings().maxCount(1), true));
 
     //ItemSpawnEgg SPAWN_EGG;
     // TODO: Spawn eggs
@@ -101,7 +101,7 @@ public interface InvItems {
 
     static void bootstrap() {
         if (InvasionMod.getConfig().debugMode) {
-            register("debug_wand", new ItemDebugWand(new Item.Settings().maxCount(1)));
+            register("debug_wand", new DebugWandItem(new Item.Settings().maxCount(1)));
             register("bird_spawn_egg", createSpawnEgg(InvEntities.BIRD, 0x2B2B2B, 0xEA7EDC));
             register("vulture_spawn_egg", createSpawnEgg(InvEntities.VULTURE, 0x2B2B2B, 0xEA7EDC));
         }

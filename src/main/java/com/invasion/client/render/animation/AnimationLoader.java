@@ -23,13 +23,13 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
     @Override
     public void reload(ResourceManager manager) {
         AnimationRegistry.instance().clear();
-        AnimationRegistry.instance().registerAnimation("bird_wing_flap", createBirdWingFlap());
-        AnimationRegistry.instance().registerAnimation("bird_run", createBirdRun());
-        AnimationRegistry.instance().registerAnimation("wing_flap_2_piece", createWingFlap2Piece());
-        AnimationRegistry.instance().registerAnimation("bird_beak", createBirdBeak());
+        AnimationRegistry.instance().register("bird_wing_flap", createBirdWingFlap());
+        AnimationRegistry.instance().register("bird_run", createBirdRun());
+        AnimationRegistry.instance().register("wing_flap_2_piece", createWingFlap2Piece());
+        AnimationRegistry.instance().register("bird_beak", createBirdBeak());
     }
 
-    static Animation<BonesWings> createBirdWingFlap() {
+    static Animation<WingBone> createBirdWingFlap() {
         float frameUnit = 0.01666667F;
         List<KeyFrame> innerWingFrames = List.of(
                 new KeyFrame(0, 2, -43.5F, 0, InterpType.LINEAR),
@@ -59,15 +59,15 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
                 new KeyFrame(53 * frameUnit, -9, 71, 31, InterpType.LINEAR),
                 new KeyFrame(55 * frameUnit, -3.5F, 65.5F, 22, InterpType.LINEAR),
                 new KeyFrame(58 * frameUnit, 0, 52, 8, InterpType.LINEAR));
-        return new Animation<>(BonesWings.class, 1, 0.04651163F, new EnumMap<>(Map.of(
-                BonesWings.RIGHT_SHOULDER, innerWingFrames,
-                BonesWings.LEFT_SHOULDER, KeyFrame.mirrorFramesX(innerWingFrames),
-                BonesWings.RIGHT_ELBOW, outerWingFrames,
-                BonesWings.LEFT_ELBOW, KeyFrame.mirrorFramesX(outerWingFrames)
+        return new Animation<>(1, 0.04651163F, new EnumMap<>(Map.of(
+                WingBone.RIGHT_SHOULDER, innerWingFrames,
+                WingBone.LEFT_SHOULDER, KeyFrame.mirrorFramesX(innerWingFrames),
+                WingBone.RIGHT_ELBOW, outerWingFrames,
+                WingBone.LEFT_ELBOW, KeyFrame.mirrorFramesX(outerWingFrames)
         )), List.of());
     }
 
-    static Animation<BonesBirdLegs> createBirdRun() {
+    static Animation<BirdLegBone> createBirdRun() {
         int x = 17;
         float totalFrames = 331 + x;
         float frameUnit = 1 / totalFrames;
@@ -148,8 +148,8 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
                 new KeyFrame((251 + x) * frameUnit, -7.5F, 0, 0, InterpType.LINEAR),
                 new KeyFrame((291 + x) * frameUnit, 77, 0, 0, InterpType.LINEAR),
                 new KeyFrame((331 + x) * frameUnit, 84, 0, 0, InterpType.LINEAR));
-        return new Animation<>(BonesBirdLegs.class, 1, 0.04651163F, new EnumMap<>(Map.of(
-                BonesBirdLegs.LEFT_KNEE, Stream.concat(Stream.of(
+        return new Animation<>(1, 0.04651163F, new EnumMap<>(Map.of(
+                BirdLegBone.LEFT_KNEE, Stream.concat(Stream.of(
                         new KeyFrame(0, -15, 0, -5, InterpType.LINEAR),
                         new KeyFrame(1 * frameUnit, -15, 0, -5, InterpType.LINEAR),
                         new KeyFrame(5 * frameUnit, -12.6F, 0.2F, 5, InterpType.LINEAR),
@@ -158,23 +158,23 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
                         new KeyFrame(25 * frameUnit, -57, -6.4F, 9, InterpType.LINEAR),
                         new KeyFrame(35 * frameUnit, -76.5F, -19.299999F, 21.200001F, InterpType.LINEAR)),
                         leftThighRunCycle.stream()).toList(),
-                BonesBirdLegs.RIGHT_KNEE, Stream.concat(Stream.of(
+                BirdLegBone.RIGHT_KNEE, Stream.concat(Stream.of(
                         new KeyFrame(0, -15, 0, 0, InterpType.LINEAR),
                         new KeyFrame(1 * frameUnit, -15, 0, 0, InterpType.LINEAR),
                         new KeyFrame(37 * frameUnit, -15, 0, 0, InterpType.LINEAR)),
                         KeyFrame.offsetFramesCircular(KeyFrame.mirrorFramesX(leftThighRunCycle), runBegin, runEnd, (runEnd - runBegin) / 2).stream()).toList(),
-                BonesBirdLegs.LEFT_ANKLE, Stream.concat(Stream.of(
+                BirdLegBone.LEFT_ANKLE, Stream.concat(Stream.of(
                         new KeyFrame(0, -41, 0, 0, InterpType.LINEAR),
                         new KeyFrame(1 * frameUnit, -41, 0, 0, InterpType.LINEAR),
                         new KeyFrame(10 * frameUnit, -80.300003F, 0, 0, InterpType.LINEAR),
                         new KeyFrame(25 * frameUnit, -44.200001F, 0, 0, InterpType.LINEAR),
                         new KeyFrame(35 * frameUnit, -5.6F, 0, 0, InterpType.LINEAR)),
                         leftLegRunCycle.stream()).toList(),
-                BonesBirdLegs.RIGHT_ANKLE, Stream.concat(Stream.of(
+                BirdLegBone.RIGHT_ANKLE, Stream.concat(Stream.of(
                         new KeyFrame(0, -41, 0, 0, InterpType.LINEAR),
                         new KeyFrame(37 * frameUnit, -41, 0, 0, InterpType.LINEAR)),
                         KeyFrame.offsetFramesCircular(KeyFrame.mirrorFramesX(leftLegRunCycle), runBegin, runEnd, (runEnd - runBegin) / 2).stream()).toList(),
-                BonesBirdLegs.LEFT_METATARSOPHALANGEAL_ARTICULATIONS, Stream.concat(Stream.of(
+                BirdLegBone.LEFT_METATARSOPHALANGEAL_ARTICULATIONS, Stream.concat(Stream.of(
                         new KeyFrame(0, -0.4F, -5, 0, InterpType.LINEAR),
                         new KeyFrame(1 * frameUnit, -0.4F, -5, 0, InterpType.LINEAR),
                         new KeyFrame(5 * frameUnit, 31.700001F, -5, 0, InterpType.LINEAR),
@@ -183,39 +183,39 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
                         new KeyFrame(25 * frameUnit, 51.599998F, -5, 0, InterpType.LINEAR),
                         new KeyFrame(30 * frameUnit, 42.299999F, -5, 0, InterpType.LINEAR)),
                         leftAnkleRunCycle.stream()).toList(),
-                BonesBirdLegs.RIGHT_METATARSOPHALANGEAL_ARTICULATIONS, Stream.concat(Stream.of(
+                BirdLegBone.RIGHT_METATARSOPHALANGEAL_ARTICULATIONS, Stream.concat(Stream.of(
                         new KeyFrame(0, -0.4F, -5, 0, InterpType.LINEAR),
                         new KeyFrame(1 * frameUnit, -0.4F, -5, 0, InterpType.LINEAR),
                         new KeyFrame(37 * frameUnit, -0.4F, -5, 0, InterpType.LINEAR)),
                         KeyFrame.offsetFramesCircular(KeyFrame.mirrorFramesX(leftAnkleRunCycle), runBegin, runEnd, (runEnd - runBegin) / 2).stream()).toList(),
-                BonesBirdLegs.LEFT_BACK_CLAW, leftBackClawFrames,
-                BonesBirdLegs.RIGHT_BACK_CLAW, KeyFrame.mirrorFramesX(leftBackClawFrames)
+                BirdLegBone.LEFT_BACK_CLAW, leftBackClawFrames,
+                BirdLegBone.RIGHT_BACK_CLAW, KeyFrame.mirrorFramesX(leftBackClawFrames)
         )), List.of(
-                new AnimationPhaseInfo.Builder(AnimationAction.STAND, 0, 1 / totalFrames)
+                new Phase.Builder(AnimationAction.STAND, 0, 1 / totalFrames)
                         .defaultTransition(AnimationAction.STAND, 1 / totalFrames, 0)
                         .transition(AnimationAction.STAND_TO_RUN, 1 / totalFrames, 1 / totalFrames)
                         .transition(AnimationAction.LEGS_RETRACT, 1 / totalFrames, (211 + x) / totalFrames)
                         .transition(AnimationAction.LEGS_CLAW_ATTACK_P1, 1 / totalFrames, (171 + x) / totalFrames)
                         .build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.STAND_TO_RUN, 1 / totalFrames, 38 / totalFrames)
+                new Phase.Builder(AnimationAction.STAND_TO_RUN, 1 / totalFrames, 38 / totalFrames)
                         .defaultTransition(AnimationAction.RUN, 38 / totalFrames, 38 / totalFrames)
                         .build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.RUN, 38 / totalFrames, (170 + x) / totalFrames)
+                new Phase.Builder(AnimationAction.RUN, 38 / totalFrames, (170 + x) / totalFrames)
                         .defaultTransition(AnimationAction.RUN, (170 + x) / totalFrames, 38 / totalFrames)
                         .transition(AnimationAction.STAND, (170 + x) / totalFrames, 0)
                         .build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.LEGS_RETRACT, (211 + x) / totalFrames, (251 + x) / totalFrames)
+                new Phase.Builder(AnimationAction.LEGS_RETRACT, (211 + x) / totalFrames, (251 + x) / totalFrames)
                         .defaultTransition(AnimationAction.LEGS_UNRETRACT, (251 + x) / totalFrames, (251 + x) / totalFrames)
                         .build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.LEGS_UNRETRACT, (251 + x) / totalFrames, (291 + x) / totalFrames)
+                new Phase.Builder(AnimationAction.LEGS_UNRETRACT, (251 + x) / totalFrames, (291 + x) / totalFrames)
                         .defaultTransition(AnimationAction.STAND, (291 + x) / totalFrames, 0)
                         .transition(AnimationAction.LEGS_RETRACT, (291 + x) / totalFrames, (211 + x) / totalFrames)
                         .transition(AnimationAction.LEGS_CLAW_ATTACK_P1, (291 + x) / totalFrames, (291 + x) / totalFrames)
                         .build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.LEGS_CLAW_ATTACK_P1, (291 + x) / totalFrames, (331 + x) / totalFrames)
+                new Phase.Builder(AnimationAction.LEGS_CLAW_ATTACK_P1, (291 + x) / totalFrames, (331 + x) / totalFrames)
                         .defaultTransition(AnimationAction.LEGS_CLAW_ATTACK_P2, (331 + x) / totalFrames, (171 + x) / totalFrames)
                         .build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.LEGS_CLAW_ATTACK_P2, (171 + x) / totalFrames, (211 + x) / totalFrames)
+                new Phase.Builder(AnimationAction.LEGS_CLAW_ATTACK_P2, (171 + x) / totalFrames, (211 + x) / totalFrames)
                         .defaultTransition(AnimationAction.STAND, (211 + x) / totalFrames, 0)
                         .transition(AnimationAction.LEGS_RETRACT, (211 + x) / totalFrames, (211 + x) / totalFrames)
                         .transition(AnimationAction.LEGS_CLAW_ATTACK_P1, (211 + x) / totalFrames, (291 + x) / totalFrames)
@@ -223,7 +223,7 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
                 ));
     }
 
-    static Animation<BonesWings> createWingFlap2Piece() {
+    static Animation<WingBone> createWingFlap2Piece() {
         float frameUnit = 0.004524887F;
         List<KeyFrame> rightInnerWingFrames = List.of(
                 new KeyFrame(0, 2, -48, 0, 7, -8, 6, InterpType.LINEAR),
@@ -269,44 +269,44 @@ public class AnimationLoader implements SimpleSynchronousResourceReloadListener 
                 new KeyFrame(209 * frameUnit, -5, -1.3F, -10, InterpType.LINEAR),
                 new KeyFrame(221 * frameUnit, -5, -2.5F, -10, InterpType.LINEAR));
 
-        return new Animation<>(BonesWings.class, 1, 0.01666667F, new EnumMap<>(Map.of(
-                BonesWings.LEFT_SHOULDER, rightInnerWingFrames,
-                BonesWings.RIGHT_SHOULDER, KeyFrame.mirrorFramesX(rightInnerWingFrames),
-                BonesWings.LEFT_ELBOW, rightOuterWingFrames,
-                BonesWings.RIGHT_ELBOW, KeyFrame.mirrorFramesX(rightOuterWingFrames))), List.of(
-                        new AnimationPhaseInfo.Builder(AnimationAction.WINGFLAP, 0, 0.2714932F)
+        return new Animation<>(1, 0.01666667F, new EnumMap<>(Map.of(
+                WingBone.LEFT_SHOULDER, rightInnerWingFrames,
+                WingBone.RIGHT_SHOULDER, KeyFrame.mirrorFramesX(rightInnerWingFrames),
+                WingBone.LEFT_ELBOW, rightOuterWingFrames,
+                WingBone.RIGHT_ELBOW, KeyFrame.mirrorFramesX(rightOuterWingFrames))), List.of(
+                        new Phase.Builder(AnimationAction.WINGFLAP, 0, 0.2714932F)
                             .defaultTransition(AnimationAction.WINGFLAP, 0.2714932F, 0)
                             .transition(AnimationAction.WINGTUCK, 0.06787331F, 0.2760181F)
                             .transition(AnimationAction.WINGGLIDE, 0.06787331F, 0.8190045F)
                             .build(),
-                        new AnimationPhaseInfo.Builder(AnimationAction.WINGTUCK, 0.2760181F, 0.5429865F)
+                        new Phase.Builder(AnimationAction.WINGTUCK, 0.2760181F, 0.5429865F)
                             .defaultTransition(AnimationAction.WINGSPREAD, 0.5429865F, 0.5475113F)
                             .build(),
-                        new AnimationPhaseInfo.Builder(AnimationAction.WINGSPREAD, 0.5475113F, 0.8190045F)
+                        new Phase.Builder(AnimationAction.WINGSPREAD, 0.5475113F, 0.8190045F)
                             .defaultTransition(AnimationAction.WINGTUCK, 0.8190045F, 0.2760181F)
                             .transition(AnimationAction.WINGFLAP, 0.8190045F, 0.06787331F)
                             .transition(AnimationAction.WINGGLIDE, 0.8190045F, 0.8190045F)
                             .build(),
-                        new AnimationPhaseInfo.Builder(AnimationAction.WINGGLIDE, 0.8190045F, 1)
+                        new Phase.Builder(AnimationAction.WINGGLIDE, 0.8190045F, 1)
                             .defaultTransition(AnimationAction.WINGGLIDE, 1, 0.8190045F)
                             .transition(AnimationAction.WINGFLAP, 1, 0.06787331F)
                             .transition(AnimationAction.WINGTUCK, 1, 0.2760181F)
                             .build()));
     }
 
-    static Animation<BonesMouth> createBirdBeak() {
+    static Animation<MouthBones> createBirdBeak() {
         float _frameUnit = 0.008333334F;
-        return new Animation<>(BonesMouth.class, 1, 0.1F, new EnumMap<>(Map.of(
-                BonesMouth.UPPER_MOUTH, List.of(
+        return new Animation<>(1, 0.1F, new EnumMap<>(Map.of(
+                MouthBones.UPPER_MOUTH, List.of(
                         new KeyFrame(0 * _frameUnit, 0, 0, 0, InterpType.LINEAR),
                         new KeyFrame(60 * _frameUnit, -8, 0, 0, InterpType.LINEAR),
                         new KeyFrame(120 * _frameUnit, 0, 0, 0, InterpType.LINEAR)),
-                BonesMouth.LOWER_MOUTH, List.of(
+                MouthBones.LOWER_MOUTH, List.of(
                         new KeyFrame(0 * _frameUnit, 0, 0, 0, InterpType.LINEAR),
                         new KeyFrame(60 * _frameUnit, 20, 0, 0, InterpType.LINEAR),
                         new KeyFrame(120 * _frameUnit, 0, 0, 0, InterpType.LINEAR)))), List.of(
-                new AnimationPhaseInfo.Builder(AnimationAction.MOUTH_OPEN, 0, 0.5F).defaultTransition(AnimationAction.MOUTH_CLOSE, 0.5F, 0.5083333F).build(),
-                new AnimationPhaseInfo.Builder(AnimationAction.MOUTH_CLOSE, 0.5F, 1).defaultTransition(AnimationAction.MOUTH_OPEN, 1, 0).build())
+                new Phase.Builder(AnimationAction.MOUTH_OPEN, 0, 0.5F).defaultTransition(AnimationAction.MOUTH_CLOSE, 0.5F, 0.5083333F).build(),
+                new Phase.Builder(AnimationAction.MOUTH_CLOSE, 0.5F, 1).defaultTransition(AnimationAction.MOUTH_OPEN, 1, 0).build())
         );
     }
 }

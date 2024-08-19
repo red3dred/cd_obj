@@ -3,6 +3,7 @@ package com.invasion.entity;
 import org.joml.Vector3f;
 
 import com.invasion.InvSounds;
+import com.invasion.InvasionMod;
 import com.invasion.entity.ai.goal.EntityAIBirdFight;
 import com.invasion.entity.ai.goal.BirdOfPreyGoal;
 import com.invasion.entity.ai.goal.FlyingCircleTargetGoal;
@@ -26,7 +27,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class EntityIMGiantBird extends EntityIMBird {
+public class EntityIMGiantBird extends VultureEntity {
     private static final Vector3f PICKUP_OFFSET = new Vector3f(0, 0.2F, -0.92F);
     private static final float MODEL_ROTATION_OFFSET_Y = 1.9F;
     private static final byte TRIGGER_SQUAWK = 10;
@@ -69,7 +70,7 @@ public class EntityIMGiantBird extends EntityIMBird {
     @Override
     public void tick() {
         super.tick();
-        if (getDebugMode() && !getWorld().isClient) {
+        if (InvasionMod.getConfig().debugMode && !getWorld().isClient) {
             setCustomName(Text.literal(getAIGoal() + "\n" + getNavigatorNew()));
         }
     }

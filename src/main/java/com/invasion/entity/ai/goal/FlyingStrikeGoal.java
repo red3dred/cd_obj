@@ -1,20 +1,20 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.IHasAiGoals;
+import com.invasion.entity.VultureEntity;
+import com.invasion.entity.HasAiGoals;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 
 public class FlyingStrikeGoal extends Goal {
-    private final EntityIMBird theEntity;
+    private final VultureEntity theEntity;
 
-    public FlyingStrikeGoal(EntityIMBird entity) {
+    public FlyingStrikeGoal(VultureEntity entity) {
         theEntity = entity;
     }
 
     @Override
     public boolean canStart() {
-        return theEntity.hasAnyGoal(IHasAiGoals.Goal.FLYING_STRIKE, IHasAiGoals.Goal.SWOOP);
+        return theEntity.hasAnyGoal(HasAiGoals.Goal.FLYING_STRIKE, HasAiGoals.Goal.SWOOP);
     }
 
     @Override
@@ -24,7 +24,7 @@ public class FlyingStrikeGoal extends Goal {
 
     @Override
     public void tick() {
-        if (theEntity.hasGoal(IHasAiGoals.Goal.FLYING_STRIKE)) {
+        if (theEntity.hasGoal(HasAiGoals.Goal.FLYING_STRIKE)) {
             doStrike();
         }
     }
@@ -32,7 +32,7 @@ public class FlyingStrikeGoal extends Goal {
     private void doStrike() {
         LivingEntity target = theEntity.getTarget();
         if (target == null) {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
             return;
         }
 
@@ -49,13 +49,13 @@ public class FlyingStrikeGoal extends Goal {
         float r = theEntity.getRandom().nextFloat();
         if (r <= flyByChance / pE) {
             doFlyByAttack(target);
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.STABILISE);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.STABILISE);
             theEntity.setClawsForward(false);
         } else if (r <= (flyByChance + tackleChance) / pE) {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.TACKLE_TARGET);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.TACKLE_TARGET);
             theEntity.setClawsForward(false);
         } else {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.PICK_UP_TARGET);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.PICK_UP_TARGET);
         }
     }
 

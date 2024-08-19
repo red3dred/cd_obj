@@ -1,9 +1,9 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.IHasAiGoals;
+import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.pathfinding.FlightNavigator;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -17,32 +17,32 @@ public class FlyingTackleGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.hasGoal(IHasAiGoals.Goal.TACKLE_TARGET);
+        return theEntity.hasGoal(HasAiGoals.Goal.TACKLE_TARGET);
     }
 
     @Override
     public boolean shouldContinue() {
         LivingEntity target = theEntity.getTarget();
         if (target == null || !target.isAlive()) {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
             return false;
         }
 
-        return theEntity.hasGoal(IHasAiGoals.Goal.TACKLE_TARGET);
+        return theEntity.hasGoal(HasAiGoals.Goal.TACKLE_TARGET);
     }
 
     @Override
     public void start() {
         LivingEntity target = theEntity.getTarget();
         if (target != null) {
-            ((INavigationFlying)theEntity.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
+            ((FlightNavigator)theEntity.getNavigatorNew()).setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
         }
     }
 
     @Override
     public void tick() {
         if (theEntity.getMoveState() != MoveState.FLYING) {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.MELEE_TARGET);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.MELEE_TARGET);
         }
     }
 }

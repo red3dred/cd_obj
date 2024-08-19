@@ -2,7 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMZombie;
-import com.invasion.entity.IHasAiGoals;
+import com.invasion.entity.HasAiGoals;
 
 import net.minecraft.entity.ai.goal.Goal;
 
@@ -22,7 +22,7 @@ public class AttackNexusGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (cooldown == 0 && mob.hasGoal(IHasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() > 4) {
+        if (cooldown == 0 && mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() > 4) {
             cooldown = 5;
             return false;
         }

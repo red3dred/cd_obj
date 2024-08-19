@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMMob;
-import com.invasion.entity.IHasAiGoals;
-import com.invasion.entity.pathfinding.INavigation;
+import com.invasion.entity.IMMobEntity;
+import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.pathfinding.Navigator;
 import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.ai.goal.Goal;
@@ -15,13 +15,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class GoToNexusGoal extends Goal {
-    private EntityIMMob mob;
+    private IMMobEntity mob;
     private Optional<BlockPos> lastPathRequestPos = Optional.empty();
-    private final INavigation navigation;
+    private final Navigator navigation;
     private int pathRequestTimer;
     private int pathFailedCount;
 
-    public GoToNexusGoal(EntityIMMob entity) {
+    public GoToNexusGoal(IMMobEntity entity) {
         this.mob = entity;
         this.navigation = mob.getNavigatorNew();
         setControls(EnumSet.of(Control.MOVE, Control.LOOK));
@@ -34,7 +34,7 @@ public class GoToNexusGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return mob.hasGoal(IHasAiGoals.Goal.BREAK_NEXUS);
+        return mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class GoToNexusGoal extends Goal {
                 Vec3d target = nexus.getOrigin().toBottomCenterPos();
                 pathSet = navigation.tryMoveTowardsXZ(target.x, target.z, 1, 6, 4, 1);
             } else if (distance > 1.5) {
-                pathSet = navigation.tryMoveToXYZ(nexus.getOrigin().toBottomCenterPos(), 1, 1);
+                pathSet = navigation.startMovingTo(nexus.getOrigin().toBottomCenterPos(), 1, 1);
             }
 
             if (!pathSet || (navigation.getLastPathDistanceToTarget() > 3 && lastPathRequestPos.isPresent() && mob.getBlockPos().isWithinDistance(lastPathRequestPos.get(), 3.5))) {

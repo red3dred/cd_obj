@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.block.InvBlocks;
-import com.invasion.block.TileEntityNexus;
+import com.invasion.block.NexusBlockEntity;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.nbt.NbtCompound;
@@ -40,7 +40,7 @@ public interface IHasNexus {
     static INexusAccess findNexus(World world, BlockPos center) {
         for (BlockPos pos : BlockPos.iterateOutwards(center, 8, 5, 8)) {
             if (world.getBlockState(pos).isOf(InvBlocks.NEXUS_CORE)) {
-                if (world.getBlockEntity(pos) instanceof TileEntityNexus nexus) {
+                if (world.getBlockEntity(pos) instanceof NexusBlockEntity nexus) {
                     return nexus.getNexus();
                 }
             }

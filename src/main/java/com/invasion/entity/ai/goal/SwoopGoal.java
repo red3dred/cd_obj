@@ -4,10 +4,10 @@ import java.util.EnumSet;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.IHasAiGoals;
+import com.invasion.entity.VultureEntity;
+import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.pathfinding.FlightNavigator;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -20,7 +20,7 @@ import net.minecraft.world.RaycastContext;
 public class SwoopGoal extends Goal {
     private static final int INITIAL_LINEUP_TIME = 25;
 
-    private final EntityIMBird theEntity;
+    private final VultureEntity theEntity;
 
     private float minDiveClearanceY;
 
@@ -38,7 +38,7 @@ public class SwoopGoal extends Goal {
     private boolean isCommittedToFinalRun;
     private boolean endSwoop;
 
-    public SwoopGoal(EntityIMBird entity) {
+    public SwoopGoal(VultureEntity entity) {
         theEntity = entity;
         strikeDistance = entity.getWidth() + 1.5F;
         setControls(EnumSet.of(Control.LOOK, Control.MOVE));
@@ -46,7 +46,7 @@ public class SwoopGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (theEntity.hasGoal(IHasAiGoals.Goal.FIND_ATTACK_OPPORTUNITY) && theEntity.getTarget() != null) {
+        if (theEntity.hasGoal(HasAiGoals.Goal.FIND_ATTACK_OPPORTUNITY) && theEntity.getTarget() != null) {
             swoopTarget = theEntity.getTarget();
             Vec3d delta = swoopTarget.getPos().subtract(theEntity.getPos());
             double dXZ = delta.horizontalLength();
@@ -75,9 +75,9 @@ public class SwoopGoal extends Goal {
     @Override
     public void start() {
         time = 0;
-        theEntity.transitionAIGoal(IHasAiGoals.Goal.SWOOP);
-        ((INavigationFlying)theEntity.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
-        theEntity.getNavigatorNew().tryMoveToEntity(swoopTarget, 0, theEntity.getMaxPoweredFlightSpeed());
+        theEntity.transitionAIGoal(HasAiGoals.Goal.SWOOP);
+        ((FlightNavigator)theEntity.getNavigatorNew()).setMovementType(FlightNavigator.MoveType.PREFER_FLYING);
+        theEntity.getNavigatorNew().startMovingTo(swoopTarget, 0, theEntity.getMaxPoweredFlightSpeed());
         theEntity.doScreech();
     }
 
@@ -85,9 +85,9 @@ public class SwoopGoal extends Goal {
     public void stop() {
         endSwoop = false;
         isCommittedToFinalRun = false;
-        ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
-        if (theEntity.hasGoal(IHasAiGoals.Goal.SWOOP)) {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
+        ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(false);
+        if (theEntity.hasGoal(HasAiGoals.Goal.SWOOP)) {
+            theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
             theEntity.setClawsForward(false);
         }
     }
@@ -97,13 +97,13 @@ public class SwoopGoal extends Goal {
         time++;
         if (!isCommittedToFinalRun) {
             if (theEntity.distanceTo(swoopTarget) < finalRunLength) {
-                ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 1);
+                ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 1);
                 if (isFinalRunLinedUp()) {
                     theEntity.setClawsForward(true);
-                    ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(true);
+                    ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(true);
                     isCommittedToFinalRun = true;
                 } else {
-                    theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
+                    theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
                     endSwoop = true;
                 }
             } else if (time > INITIAL_LINEUP_TIME) {
@@ -111,12 +111,12 @@ public class SwoopGoal extends Goal {
                 if (dYp < 2.9) {
                     dYp = 0;
                 }
-                ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(diveAngle * (float) (dYp / diveHeight), (float) (0.6D * (dYp / diveHeight)));
+                ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(diveAngle * (float) (dYp / diveHeight), (float) (0.6D * (dYp / diveHeight)));
             }
 
         } else if (theEntity.distanceTo(swoopTarget) < strikeDistance) {
-            theEntity.transitionAIGoal(IHasAiGoals.Goal.FLYING_STRIKE);
-            ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
+            theEntity.transitionAIGoal(HasAiGoals.Goal.FLYING_STRIKE);
+            ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(false);
             endSwoop = true;
         } else {
             double yawToTarget = Math.atan2(
@@ -124,8 +124,8 @@ public class SwoopGoal extends Goal {
                     swoopTarget.getX() - theEntity.getX()
             ) * MathHelper.DEGREES_PER_RADIAN - 90;
             if (Math.abs(MathHelper.subtractAngles((float) yawToTarget, theEntity.getYaw())) > 90) {
-                theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
-                ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
+                theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
+                ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(false);
                 theEntity.setClawsForward(false);
                 endSwoop = true;
             }

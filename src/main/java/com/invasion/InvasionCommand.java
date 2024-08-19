@@ -3,7 +3,7 @@ package com.invasion;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.invasion.entity.EntityIMBolt;
+import com.invasion.entity.ElectricityBoltEntity;
 import com.invasion.nexus.ControllableNexusAccess;
 import com.invasion.nexus.WorldNexusStorage;
 import com.invasion.nexus.test.Tester;
@@ -133,7 +133,7 @@ public class InvasionCommand {
 	private static int bolt(ServerCommandSource source, Vec3i offset) {
 	    handleWithNexus(source, nexus -> {
 	        BlockPos nexusPos = nexus.getOrigin();
-	        source.getWorld().spawnEntity(new EntityIMBolt(source.getWorld(), nexusPos.toCenterPos(), nexusPos.add(offset).toCenterPos(), 40, true));
+	        source.getWorld().spawnEntity(new ElectricityBoltEntity(source.getWorld(), nexusPos.toCenterPos(), nexusPos.add(offset).toCenterPos(), 40, true));
 	    });
         return 0;
     }

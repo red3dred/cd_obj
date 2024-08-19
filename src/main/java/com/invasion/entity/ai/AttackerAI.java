@@ -11,14 +11,14 @@ import com.invasion.IBlockAccessExtended;
 import com.invasion.TerrainDataLayer;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.builder.Scaffold;
-import com.invasion.entity.pathfinding.IPathSource;
+import com.invasion.entity.pathfinding.PathSource;
 import com.invasion.entity.pathfinding.IPathfindable;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.Nexus;
-import com.invasion.util.math.CoordsInt;
+import com.invasion.util.math.PosUtils;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -35,7 +35,7 @@ import net.minecraft.world.chunk.ChunkCache;
 
 public class AttackerAI {
     private final Nexus nexus;
-    private final IPathSource pathSource = new PathCreator();
+    private final PathSource pathSource = new PathCreator();
 
     private final Long2ObjectMap<Integer> entityDensityData = new Long2ObjectOpenHashMap<>();
 
@@ -231,9 +231,9 @@ public class AttackerAI {
 
     private void orientScaffold(Scaffold scaffold, BlockView terrainMap) {
         int mostBlocks = 0;
-        Direction highestDirection = CoordsInt.CARDINAL_DIRECTIONS[0];
+        Direction highestDirection = PosUtils.CARDINAL_DIRECTIONS[0];
         BlockPos.Mutable mutable = scaffold.getPos().mutableCopy();
-        for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+        for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
             int blockCount = 0;
             for (int height = 0; height < scaffold.getPos().getY(); height++) {
                 if (terrainMap.getBlockState(mutable.set(scaffold.getPos()).move(Direction.UP, height).move(offset)).isFullCube(terrainMap, mutable)) {

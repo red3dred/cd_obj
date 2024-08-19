@@ -50,7 +50,7 @@ public class PounceGoal extends Goal {
             isPouncing = false;
             pounceTimer = cooldown;
             theEntity.setAirborneTime(0);
-            theEntity.getNavigatorNew().clearPath();
+            theEntity.getNavigatorNew().stop();
         } else {
             theEntity.setAirborneTime(airborneTime + 1);
         }

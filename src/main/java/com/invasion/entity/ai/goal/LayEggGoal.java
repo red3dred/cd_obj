@@ -1,8 +1,8 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMEgg;
-import com.invasion.entity.IHasAiGoals;
-import com.invasion.entity.ISpawnsOffspring;
+import com.invasion.entity.SpiderEggEntity;
+import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.Reproducer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -30,7 +30,7 @@ public class LayEggGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return (!(theEntity instanceof IHasAiGoals g) || g.getAIGoal() == IHasAiGoals.Goal.TARGET_ENTITY)
+        return (!(theEntity instanceof HasAiGoals g) || g.getAIGoal() == HasAiGoals.Goal.TARGET_ENTITY)
             && eggCount > 0
             && theEntity.getVisibilityCache().canSee(theEntity.getTarget());
     }
@@ -56,9 +56,9 @@ public class LayEggGoal extends Goal {
     }
 
     private void layEgg() {
-        theEntity.getWorld().spawnEntity(new EntityIMEgg(
+        theEntity.getWorld().spawnEntity(new SpiderEggEntity(
                 theEntity,
-                theEntity instanceof ISpawnsOffspring i ? i.getOffspring(null) : new Entity[0],
+                theEntity instanceof Reproducer i ? i.getOffspring(null) : new Entity[0],
                 EGG_HATCH_TIME
         ));
     }

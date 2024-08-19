@@ -4,7 +4,7 @@ import java.util.EnumSet;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMCreeper;
+import com.invasion.entity.IMCreeperEntity;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -14,11 +14,11 @@ import net.minecraft.entity.ai.goal.Goal;
  */
 @Deprecated
 public class IMCreeperIgniteGoal extends Goal {
-    private final EntityIMCreeper creeper;
+    private final IMCreeperEntity creeper;
     @Nullable
     private LivingEntity target;
 
-    public IMCreeperIgniteGoal(EntityIMCreeper creeper) {
+    public IMCreeperIgniteGoal(IMCreeperEntity creeper) {
         this.creeper = creeper;
         this.setControls(EnumSet.of(Goal.Control.MOVE));
     }

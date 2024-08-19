@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class FiniteSelectionPool<T> implements ISelect<T> {
+public class FiniteSelectionPool<T> implements Select<T> {
     private final Random rand = new Random();
 	private final List<Entry<T>> currentPool = new ArrayList<>();
 	private int totalAmount;
@@ -14,7 +14,7 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
 		return addEntry(new SingleSelection<>(entry), amount);
 	}
 
-	public FiniteSelectionPool<T> addEntry(ISelect<T> entry, int amount) {
+	public FiniteSelectionPool<T> addEntry(Select<T> entry, int amount) {
 		currentPool.add(new Entry<>(entry, amount));
 		originalAmount = (totalAmount += amount);
 		return this;
@@ -66,15 +66,15 @@ public class FiniteSelectionPool<T> implements ISelect<T> {
 
 	private void regeneratePool() {
 		totalAmount = originalAmount;
-		currentPool.forEach(ISelect::reset);
+		currentPool.forEach(Select::reset);
 	}
 
-	private static class Entry<T> implements ISelect<T> {
-	    ISelect<T> value;
+	private static class Entry<T> implements Select<T> {
+	    Select<T> value;
 	    int amount;
 	    final int initialAmount;
 
-	    Entry(ISelect<T> value, int amount) {
+	    Entry(Select<T> value, int amount) {
 	        this.value = value;
 	        this.initialAmount = amount;
 	        this.amount = amount;

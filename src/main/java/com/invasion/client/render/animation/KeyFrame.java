@@ -17,6 +17,7 @@ public record KeyFrame(
         InterpType interpType,
         boolean hasPos) {
     static final Vector3fc ZERO_VECTOR = new Vector3f(0, 0, 0);
+
 	public KeyFrame(float time, float rotX, float rotY, float rotZ, InterpType interpType) {
 		this(time, new Vector3f(rotX, rotY, rotZ).mul(MathHelper.RADIANS_PER_DEGREE), ZERO_VECTOR, interpType, false);
 	}
@@ -116,7 +117,6 @@ public record KeyFrame(
 				//UnstoppableN testcode, this seemed to fix some issues, not sure why
 				//iter.previous();
 			}
-
 		}
 
 		Iterator<KeyFrame> iter2 = buffer.iterator();

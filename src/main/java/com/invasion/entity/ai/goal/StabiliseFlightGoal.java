@@ -1,8 +1,8 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.IHasAiGoals;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.pathfinding.FlightNavigator;
 
 import net.minecraft.entity.ai.goal.Goal;
 
@@ -21,7 +21,7 @@ public class StabiliseFlightGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.hasGoal(IHasAiGoals.Goal.STABILISE);
+        return theEntity.hasGoal(HasAiGoals.Goal.STABILISE);
     }
 
     @Override
@@ -30,24 +30,24 @@ public class StabiliseFlightGoal extends Goal {
             return true;
         }
 
-        theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
-        ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+        theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
+        ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         return false;
     }
 
     @Override
     public void start() {
         time = 0;
-        INavigationFlying nav = (INavigationFlying)theEntity.getNavigatorNew();
-        nav.clearPath();
-        nav.setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
+        FlightNavigator nav = (FlightNavigator)theEntity.getNavigatorNew();
+        nav.stop();
+        nav.setMovementType(FlightNavigator.MoveType.PREFER_FLYING);
         nav.setPitchBias(20.0F, 0.5F);
     }
 
     @Override
     public void tick() {
         if (++time == INITIAL_STABILISE_TIME) {
-            ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+            ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         }
     }
 }

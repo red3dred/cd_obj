@@ -1,16 +1,16 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMThrower;
+import com.invasion.entity.ThrowerEntity;
 import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.ai.goal.Goal;
 
 public class ThrowBoulderGoal extends Goal {
-    private final EntityIMThrower theEntity;
+    private final ThrowerEntity theEntity;
     private int randomAmmo;
     private int timer = 180;
 
-    public ThrowBoulderGoal(EntityIMThrower entity, int ammo) {
+    public ThrowBoulderGoal(ThrowerEntity entity, int ammo) {
         theEntity = entity;
         randomAmmo = ammo;
     }

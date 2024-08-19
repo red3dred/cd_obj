@@ -85,13 +85,13 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(6, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        goalSelector.add(9, new LookAtEntityGoal(this, EntityIMCreeper.class, 12.0F));
+        goalSelector.add(9, new LookAtEntityGoal(this, IMCreeperEntity.class, 12.0F));
         goalSelector.add(9, new LookAroundGoal(this));
 
         targetSelector.add(0, new RetaliateGoal(this));
         targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, false), () -> getTier() != 3));
         targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true));
-        targetSelector.add(3, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, EntityIMPigEngy.class, 3.5F), () -> getTier() != 3 && NoNexusPathGoal.isLostPathToNexus(this)));
+        targetSelector.add(3, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PigmanEngineerEntity.class, 3.5F), () -> getTier() != 3 && NoNexusPathGoal.isLostPathToNexus(this)));
         targetSelector.add(5, new RevengeGoal(this));
     }
 

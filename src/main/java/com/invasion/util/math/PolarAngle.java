@@ -1,8 +1,17 @@
 package com.invasion.util.math;
 
-public record PolarAngle(int angle) implements IPolarAngle {
-    @Override
-    public int getAngle() {
-        return this.angle;
+public interface PolarAngle {
+    int getAngle();
+
+    static PolarAngle of(int angle) {
+        return new Fixed(angle);
     }
+
+    public record Fixed(int angle) implements PolarAngle {
+        @Override
+        public int getAngle() {
+            return this.angle;
+        }
+    }
+
 }

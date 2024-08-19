@@ -5,7 +5,7 @@ import java.util.Optional;
 import com.invasion.IBlockAccessExtended;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
-import com.invasion.util.math.CoordsInt;
+import com.invasion.util.math.PosUtils;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -144,7 +144,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         }
 
         int maxFall = 8;
-        for (Direction facing : CoordsInt.CARDINAL_DIRECTIONS) {
+        for (Direction facing : PosUtils.CARDINAL_DIRECTIONS) {
             if (currentNode.action != PathAction.NONE) {
                 if (facing == Direction.EAST && currentNode.action == PathAction.LADDER_UP_NX) {
                     height = 0;
@@ -187,7 +187,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         }
 
         if (canSwimHorizontal()) {
-            for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+            for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
                 if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                 }
@@ -257,9 +257,9 @@ public class Actor<T extends Entity> implements IPathfindable {
     protected final boolean isAdjacentSolidBlock(BlockView terrainMap, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (Vec3i offset
-                : entity.getWidth() == 1 ? CoordsInt.OFFSET_ADJACENT
-                : entity.getWidth() == 2 ? CoordsInt.OFFSET_ADJACENT_2
-                : CoordsInt.ZERO) {
+                : entity.getWidth() == 1 ? PosUtils.OFFSET_ADJACENT
+                : entity.getWidth() == 2 ? PosUtils.OFFSET_ADJACENT_2
+                : PosUtils.ZERO) {
             BlockState state = terrainMap.getBlockState(mutable.set(pos).add(offset));
             if (!state.isAir() && !state.canPathfindThrough(NavigationType.LAND)) {
                 return true;
@@ -300,7 +300,7 @@ public class Actor<T extends Entity> implements IPathfindable {
 
     protected boolean blockHasLadder(BlockView world, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
-        for (Direction offset : CoordsInt.CARDINAL_DIRECTIONS) {
+        for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
             if (world.getBlockState(mutable.set(pos).move(offset)).isIn(BlockTags.CLIMBABLE)) {
                 return true;
             }

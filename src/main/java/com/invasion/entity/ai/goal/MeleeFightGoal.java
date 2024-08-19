@@ -1,8 +1,8 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.IHasAiGoals;
+import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.NexusEntity;
-import com.invasion.entity.pathfinding.INavigation;
+import com.invasion.entity.pathfinding.Navigator;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -21,12 +21,12 @@ public class MeleeFightGoal<T extends LivingEntity, E extends PathAwareEntity & 
 
 	@Override
     public boolean canStart() {
-		return mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) && hasValidTarget();
+		return mob.hasGoal(HasAiGoals.Goal.MELEE_TARGET) && hasValidTarget();
 	}
 
 	@Override
     public boolean shouldContinue() {
-		return (mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) || isWaitingForTransition()) && hasValidTarget();
+		return (mob.hasGoal(HasAiGoals.Goal.MELEE_TARGET) || isWaitingForTransition()) && hasValidTarget();
 	}
 
 	private boolean hasValidTarget() {
@@ -54,21 +54,21 @@ public class MeleeFightGoal<T extends LivingEntity, E extends PathAwareEntity & 
 	}
 
 	public void updatePath() {
-		INavigation nav = mob.getNavigatorNew();
+		Navigator nav = mob.getNavigatorNew();
 		if (mob.getTarget() != nav.getTargetEntity()) {
-			nav.clearPath();
+			nav.stop();
 			nav.autoPathToEntity(mob.getTarget());
 		}
 	}
 
 	protected void updateDisengage() {
-		if (mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) && shouldLeaveMelee()) {
-			mob.transitionAIGoal(IHasAiGoals.Goal.LEAVE_MELEE);
+		if (mob.hasGoal(HasAiGoals.Goal.MELEE_TARGET) && shouldLeaveMelee()) {
+			mob.transitionAIGoal(HasAiGoals.Goal.LEAVE_MELEE);
 		}
 	}
 
 	protected boolean isWaitingForTransition() {
-		return mob.hasGoal(IHasAiGoals.Goal.LEAVE_MELEE) && mob.getPrevAIGoal() == IHasAiGoals.Goal.MELEE_TARGET;
+		return mob.hasGoal(HasAiGoals.Goal.LEAVE_MELEE) && mob.getPrevAIGoal() == HasAiGoals.Goal.MELEE_TARGET;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package com.invasion.client.render.animation;
 
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class AnimationState<T extends Enum<T>> {
     private Animation<T> animation;
@@ -9,8 +9,11 @@ public class AnimationState<T extends Enum<T>> {
     private boolean pauseAtTransition;
     private boolean pauseAfterSetAction;
     private boolean isPaused;
-    private AnimationPhaseInfo currentPhase;
+
+    @Nullable
+    private Phase currentPhase;
     private Transition nextTransition;
+
     private AnimationAction setAction;
 
     public AnimationState(Animation<T> animation) {
@@ -19,22 +22,19 @@ public class AnimationState<T extends Enum<T>> {
 
     public AnimationState(Animation<T> animation, float startTime) {
         this.animation = animation;
-        this.pauseAtTransition = false;
-        this.pauseAfterSetAction = false;
-        this.isPaused = false;
         this.currentTime = startTime;
-        this.animationSpeed = animation.getBaseSpeed();
-        updatePhase(this.currentTime);
-        this.nextTransition = this.currentPhase.defaultTransition();
-        this.setAction = this.nextTransition.newAction();
+        this.animationSpeed = animation.speed();
+        updatePhase(currentTime);
+        nextTransition = currentPhase.defaultTransition();
+        setAction = nextTransition.newAction();
     }
 
     public AnimationState<T> setNewAction(AnimationAction action) {
-        this.setAction = action;
+        setAction = action;
         updateTransition(action);
-        this.pauseAtTransition = false;
-        this.pauseAfterSetAction = false;
-        this.isPaused = false;
+        setPauseAfterCurrentAction(false);
+        setPauseAfterSetAction(false);
+        setPaused(false);
         return this;
     }
 
@@ -45,11 +45,11 @@ public class AnimationState<T extends Enum<T>> {
     }
 
     public void setPauseAfterCurrentAction(boolean shouldPause) {
-        this.pauseAtTransition = shouldPause;
+        pauseAtTransition = shouldPause;
     }
 
     public void setPauseAfterSetAction(boolean shouldPause) {
-        this.pauseAfterSetAction = shouldPause;
+        pauseAfterSetAction = shouldPause;
     }
 
     public void setPaused(boolean isPaused) {
@@ -57,117 +57,104 @@ public class AnimationState<T extends Enum<T>> {
     }
 
     public void update() {
-        if (this.isPaused) {
+        if (isPaused) {
             return;
         }
-        this.currentTime += this.animationSpeed;
-        if (this.currentTime >= this.nextTransition.sourceTime()) {
-            if ((this.setAction == this.currentPhase.action()) && (this.pauseAfterSetAction)) {
-                this.pauseAfterSetAction = false;
-                this.pauseAtTransition = true;
+        currentTime += animationSpeed;
+        if (currentTime >= nextTransition.sourceTime()) {
+            if (setAction == currentPhase.action() && pauseAfterSetAction) {
+                pauseAfterSetAction = false;
+                pauseAtTransition = true;
             }
 
-            if (!this.pauseAtTransition) {
-                float overflow = this.currentTime - this.nextTransition.sourceTime();
-                this.currentTime = this.nextTransition.destTime();
-                updatePhase(this.currentTime);
-                float phaseLength = this.currentPhase.timeEnd() - this.currentPhase.timeBegin();
-                if (overflow > phaseLength) {
-                    overflow = phaseLength;
-                }
-                updateTransition(this.setAction);
-                this.currentTime += overflow;
-                this.isPaused = false;
+            if (!pauseAtTransition) {
+                float overflow = currentTime - nextTransition.sourceTime();
+                currentTime = nextTransition.destTime();
+                updatePhase(currentTime);
+                float phaseLength = currentPhase.timeEnd() - currentPhase.timeBegin();
+                overflow = Math.min(overflow, phaseLength);
+                updateTransition(setAction);
+                currentTime += overflow;
+                isPaused = false;
             } else {
-                this.currentTime = this.nextTransition.sourceTime();
-                this.isPaused = true;
+                currentTime = nextTransition.sourceTime();
+                isPaused = true;
             }
         }
     }
 
     public AnimationAction getNextSetAction() {
-        return this.setAction;
+        return setAction;
     }
 
     public AnimationAction getCurrentAction() {
-        return this.currentPhase.action();
+        return currentPhase.action();
     }
 
     public float getCurrentAnimationTime() {
-        return this.currentTime;
+        return currentTime;
     }
 
-    public float getCurrentAnimationTimeInterp(float parTick) {
-        if (this.isPaused) {
-            parTick = 0.0F;
+    public float getCurrentAnimationTimeInterp(float tickDelta) {
+        if (isPaused) {
+            tickDelta = 0;
         }
-        float frameTime = this.currentTime + parTick * this.animationSpeed;
-        if (frameTime < this.nextTransition.sourceTime()) {
+        float frameTime = currentTime + tickDelta * animationSpeed;
+        if (frameTime < nextTransition.sourceTime()) {
             return frameTime;
         }
 
-        float overFlow = frameTime - this.nextTransition.sourceTime();
-        float phaseLength = this.currentPhase.timeEnd() - this.currentPhase.timeBegin();
+        float overFlow = frameTime - nextTransition.sourceTime();
+        float phaseLength = currentPhase.timeEnd() - currentPhase.timeBegin();
         if (overFlow > phaseLength) {
             overFlow = phaseLength;
         }
-        return this.nextTransition.destTime() + overFlow;
+        return nextTransition.destTime() + overFlow;
     }
 
     public float getCurrentAnimationPercent() {
-        return (this.currentTime - this.currentPhase.timeBegin())
-                / (this.currentPhase.timeEnd() - this.currentPhase.timeBegin());
+        return (currentTime - currentPhase.timeBegin()) / (currentPhase.timeEnd() - currentPhase.timeBegin());
     }
 
     public float getAnimationSpeed() {
-        return this.animationSpeed;
+        return animationSpeed;
     }
 
     public Transition getNextTransition() {
-        return this.nextTransition;
-    }
-
-    public float getAnimationPeriod() {
-        return this.animation.getAnimationPeriod();
-    }
-
-    public float getBaseAnimationTime() {
-        return this.animation.getBaseSpeed();
-    }
-
-    public List<AnimationPhaseInfo> getAnimationPhases() {
-        return this.animation.getAnimationPhases();
+        return nextTransition;
     }
 
     public void setAnimationSpeed(float speedFactor) {
-        this.animationSpeed = (this.animation.getBaseSpeed() * speedFactor);
+        animationSpeed = animation.speed() * speedFactor;
     }
 
     private boolean updateTransition(AnimationAction action) {
-        if (this.currentPhase.hasTransition(action)) {
-            this.nextTransition = this.currentPhase.getTransition(action);
-            if (this.currentTime > this.nextTransition.sourceTime()) {
-                this.nextTransition = this.currentPhase.defaultTransition();
+        if (currentPhase.hasTransition(action)) {
+            nextTransition = currentPhase.getTransition(action);
+            if (currentTime > nextTransition.sourceTime()) {
+                nextTransition = currentPhase.defaultTransition();
                 return false;
             }
         } else {
-            this.nextTransition = this.currentPhase.defaultTransition();
+            nextTransition = currentPhase.defaultTransition();
         }
         return true;
     }
 
     private void updatePhase(float time) {
-        this.currentPhase = findPhase(time);
-        if (this.currentPhase == null) {
-            this.currentTime = 0.0F;
-            this.currentPhase = (this.animation.getAnimationPhases().get(0));
+        currentPhase = findPhase(time);
+        if (currentPhase == null) {
+            currentTime = 0;
+            currentPhase = animation.phases().get(0);
         }
     }
 
-    private AnimationPhaseInfo findPhase(float time) {
-        for (AnimationPhaseInfo phase : this.animation.getAnimationPhases()) {
-            if ((phase.timeBegin() <= time) && (phase.timeEnd() > time))
+    @Nullable
+    private Phase findPhase(float time) {
+        for (Phase phase : animation.phases()) {
+            if ((phase.timeBegin() <= time) && (phase.timeEnd() > time)) {
                 return phase;
+            }
         }
         return null;
     }

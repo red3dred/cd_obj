@@ -2,9 +2,9 @@ package com.invasion.entity.ai.goal;
 
 import org.joml.Vector3f;
 
-import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.IHasAiGoals;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.VultureEntity;
+import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.pathfinding.FlightNavigator;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -12,7 +12,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
-    private final EntityIMBird theEntity;
+    private final VultureEntity theEntity;
 
     private final Vector3f pickupPoint;
 
@@ -27,7 +27,7 @@ public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
     private int abortTime;
     private boolean isHoldingEntity;
 
-    public PickUpEntityGoal(EntityIMBird entity, Vector3f pickupPoint, float pickupRangeY, float pickupRangeXZ, int abortTime, float abortAngleYaw, float abortAnglePitch) {
+    public PickUpEntityGoal(VultureEntity entity, Vector3f pickupPoint, float pickupRangeY, float pickupRangeXZ, int abortTime, float abortAngleYaw, float abortAnglePitch) {
         this.theEntity = entity;
         this.pickupPoint = pickupPoint;
         this.pickupRangeY = pickupRangeY;
@@ -39,7 +39,7 @@ public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.hasGoal(IHasAiGoals.Goal.PICK_UP_TARGET) || theEntity.hasPassengers();
+        return theEntity.hasGoal(HasAiGoals.Goal.PICK_UP_TARGET) || theEntity.hasPassengers();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
                 return true;
             }
         }
-        theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
+        theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
         theEntity.setClawsForward(false);
         return false;
     }
@@ -86,12 +86,12 @@ public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
                     target.startRiding(theEntity);
                     isHoldingEntity = true;
                     time = 0;
-                    theEntity.getNavigatorNew().clearPath();
-                    ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
+                    theEntity.getNavigatorNew().stop();
+                    ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
                 }
             }
         } else if (time == 45) {
-            ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+            ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         } else if (time > holdTime) {
             theEntity.getTarget().stopRiding();
         }

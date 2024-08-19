@@ -10,13 +10,13 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 
-public abstract class TieredIMMobEntity extends EntityIMMob {
+public abstract class TieredIMMobEntity extends IMMobEntity {
     private static final TrackedData<Integer> TIER = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> FLAVOUR = DataTracker.registerData(TieredIMMobEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
     private boolean updatingAttributes;
 
-    public TieredIMMobEntity(EntityType<? extends EntityIMMob> type, World world) {
+    public TieredIMMobEntity(EntityType<? extends IMMobEntity> type, World world) {
         super(type, world);
         initTieredAttributes();
     }

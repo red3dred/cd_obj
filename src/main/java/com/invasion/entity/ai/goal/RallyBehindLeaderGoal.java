@@ -1,7 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMLiving;
-import com.invasion.entity.ILeader;
+import com.invasion.entity.Leader;
 
 import net.minecraft.entity.LivingEntity;
 
@@ -37,7 +37,7 @@ public class RallyBehindLeaderGoal<T extends LivingEntity> extends FollowEntityG
         if (rallyCooldown > 0) {
             rallyCooldown--;
         }
-        if (rallyCooldown <= 0 && getTarget() instanceof ILeader leader && leader.isMartyr()) {
+        if (rallyCooldown <= 0 && getTarget() instanceof Leader leader && leader.isMartyr()) {
             rallyCooldown = 30;
         }
     }

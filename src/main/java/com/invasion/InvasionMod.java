@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier;
 public class InvasionMod implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(Tester.class);
 
-    private static final ConfigInvasion CONFIG = new ConfigInvasion();
+    private static final InvasionConfig CONFIG = new InvasionConfig();
 
     public static void log(@Nullable String s) {
         if (InvasionMod.getConfig().enableLog && s != null) {
@@ -27,7 +27,7 @@ public class InvasionMod implements ModInitializer {
         }
     }
 
-    public static ConfigInvasion getConfig() {
+    public static InvasionConfig getConfig() {
         return CONFIG;
     }
 

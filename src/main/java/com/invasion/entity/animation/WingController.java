@@ -3,12 +3,12 @@ package com.invasion.entity.animation;
 import com.invasion.client.render.animation.AnimationAction;
 import com.invasion.client.render.animation.AnimationController;
 import com.invasion.client.render.animation.AnimationState;
-import com.invasion.entity.EntityIMBird;
+import com.invasion.entity.VultureEntity;
 import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.MoveState;
 
 public class WingController implements AnimationController {
-    private final EntityIMBird entity;
+    private final VultureEntity entity;
     private final AnimationState<?> state;
 
     private int timeAttacking;
@@ -16,7 +16,7 @@ public class WingController implements AnimationController {
     private final float[] flapEffortSamples = { 1, 1, 1, 1, 1, 1 };
     private int sampleIndex;
 
-    public WingController(EntityIMBird entity, AnimationState<?> state) {
+    public WingController(VultureEntity entity, AnimationState<?> state) {
         this.entity = entity;
         this.state = state;
     }

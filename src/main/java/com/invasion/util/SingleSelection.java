@@ -1,6 +1,6 @@
 package com.invasion.util;
 
-public record SingleSelection<T>(T object) implements ISelect<T> {
+public record SingleSelection<T>(T object) implements Select<T> {
     @Override
     public T selectNext() {
         return object;
@@ -18,6 +18,6 @@ public record SingleSelection<T>(T object) implements ISelect<T> {
     @SuppressWarnings("unchecked")
     @Override
     public SingleSelection<T> clone() {
-        return object instanceof ISelect<?> i ? new SingleSelection<>((T)i.clone()) : this;
+        return object instanceof Select<?> i ? new SingleSelection<>((T)i.clone()) : this;
     }
 }

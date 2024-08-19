@@ -1,20 +1,20 @@
 package com.invasion.entity;
 
 import com.invasion.IBlockAccessExtended;
-import com.invasion.INotifyTask;
+import com.invasion.Notifiable;
 import com.invasion.InvSounds;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.INavigation;
-import com.invasion.entity.pathfinding.NavigatorIM;
+import com.invasion.entity.pathfinding.Navigator;
+import com.invasion.entity.pathfinding.IMNavigator;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.util.math.CoordsInt;
+import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -28,7 +28,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implements ICanDig {
+public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implements Miner {
     private static final TrackedData<Boolean> SWINGING = DataTracker.registerData(AbstractIMZombieEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     protected final TerrainModifier terrainModifier;
@@ -46,8 +46,8 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
     }
 
     @Override
-    protected INavigation createIMNavigation() {
-        return new NavigatorIM(this, new PathCreator(700, 50)) {
+    protected Navigator createIMNavigation() {
+        return new IMNavigator(this, new PathCreator(700, 50)) {
             @Override
             protected <T extends Entity> Actor<T> createActor(T entity) {
                 return new Actor<>(entity) {
@@ -70,7 +70,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
                     public boolean isBlockDestructible(BlockView terrainMap, BlockPos pos, BlockState block) {
                         return super.isBlockDestructible(terrainMap, pos, block)
                                 && getCurrentTargetPos().isPresent()
-                                && CoordsInt.getInclination(getCurrentTargetPos().get(), pos) <= 2.144D;
+                                && PosUtils.getInclination(getCurrentTargetPos().get(), pos) <= 2.144D;
                     }
                 };
             }
@@ -178,11 +178,11 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        getNavigatorNew().getActor().setCanDestroyBlocks(entity instanceof EntityIMPigEngy || entity instanceof EntityIMCreeper);
+        getNavigatorNew().getActor().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
     }
 
     @Override
-    public boolean onPathBlocked(Path path, INotifyTask notifee) {
+    public boolean onPathBlocked(Path path, Notifiable notifee) {
         if (!path.isFinished() && (hasNexus() || getAttacking() != null)) {
             if (path.getFinalPathPoint().distanceTo(path.getIntendedTarget()) > 2.2D && path.getCurrentPathIndex() + 2 >= path.getCurrentPathLength() / 2) {
                 return false;

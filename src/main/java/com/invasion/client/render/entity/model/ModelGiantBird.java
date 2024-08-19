@@ -4,10 +4,10 @@ import java.util.Map;
 
 import com.invasion.client.render.animation.AnimationAction;
 import com.invasion.client.render.animation.AnimationRegistry;
-import com.invasion.client.render.animation.BonesBirdLegs;
-import com.invasion.client.render.animation.BonesWings;
-import com.invasion.client.render.animation.ModelAnimator;
-import com.invasion.entity.EntityIMBird;
+import com.invasion.client.render.animation.BirdLegBone;
+import com.invasion.client.render.animation.WingBone;
+import com.invasion.client.render.animation.Animator;
+import com.invasion.entity.VultureEntity;
 
 import net.minecraft.client.model.ModelData;
 import net.minecraft.client.model.ModelPart;
@@ -18,9 +18,9 @@ import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.util.math.MathHelper;
 
-public class ModelGiantBird<T extends EntityIMBird> extends SinglePartEntityModel<T> {
-    protected final ModelAnimator<BonesWings> animationFlap;
-    protected final ModelAnimator<BonesBirdLegs> animationRun;
+public class ModelGiantBird<T extends VultureEntity> extends SinglePartEntityModel<T> {
+    protected final Animator<WingBone> animationFlap;
+    protected final Animator<BirdLegBone> animationRun;
 
     protected final ModelPart body;
     protected final ModelPart tail;
@@ -44,21 +44,21 @@ public class ModelGiantBird<T extends EntityIMBird> extends SinglePartEntityMode
         head = neck3.getChild("head");
 
 
-        animationRun = AnimationRegistry.instance().<BonesBirdLegs>getAnimation("bird_run").createAnimator(Map.of(
-            BonesBirdLegs.LEFT_KNEE, leftThigh,
-            BonesBirdLegs.RIGHT_KNEE, rightThigh,
-            BonesBirdLegs.LEFT_ANKLE, leftThigh.getChild("leg"),
-            BonesBirdLegs.RIGHT_ANKLE, rightThigh.getChild("leg"),
-            BonesBirdLegs.LEFT_METATARSOPHALANGEAL_ARTICULATIONS, leftThigh.getChild("leg").getChild("ankle"),
-            BonesBirdLegs.RIGHT_METATARSOPHALANGEAL_ARTICULATIONS, rightThigh.getChild("leg").getChild("ankle"),
-            BonesBirdLegs.LEFT_BACK_CLAW, leftThigh.getChild("leg").getChild("ankle").getChild("back_toe"),
-            BonesBirdLegs.RIGHT_BACK_CLAW, rightThigh.getChild("leg").getChild("ankle").getChild("back_toe")
+        animationRun = AnimationRegistry.instance().<BirdLegBone>get("bird_run").createAnimator(Map.of(
+            BirdLegBone.LEFT_KNEE, leftThigh,
+            BirdLegBone.RIGHT_KNEE, rightThigh,
+            BirdLegBone.LEFT_ANKLE, leftThigh.getChild("leg"),
+            BirdLegBone.RIGHT_ANKLE, rightThigh.getChild("leg"),
+            BirdLegBone.LEFT_METATARSOPHALANGEAL_ARTICULATIONS, leftThigh.getChild("leg").getChild("ankle"),
+            BirdLegBone.RIGHT_METATARSOPHALANGEAL_ARTICULATIONS, rightThigh.getChild("leg").getChild("ankle"),
+            BirdLegBone.LEFT_BACK_CLAW, leftThigh.getChild("leg").getChild("ankle").getChild("back_toe"),
+            BirdLegBone.RIGHT_BACK_CLAW, rightThigh.getChild("leg").getChild("ankle").getChild("back_toe")
         ));
-        animationFlap = AnimationRegistry.instance().<BonesWings>getAnimation("wing_flap_2_piece").createAnimator(Map.of(
-                BonesWings.LEFT_SHOULDER, body.getChild("left_wing"),
-                BonesWings.RIGHT_SHOULDER, body.getChild("right_wing"),
-                BonesWings.LEFT_ELBOW, body.getChild("left_wing").getChild("elbow"),
-                BonesWings.RIGHT_ELBOW, body.getChild("right_wing").getChild("elbow")
+        animationFlap = AnimationRegistry.instance().<WingBone>get("wing_flap_2_piece").createAnimator(Map.of(
+                WingBone.LEFT_SHOULDER, body.getChild("left_wing"),
+                WingBone.RIGHT_SHOULDER, body.getChild("right_wing"),
+                WingBone.LEFT_ELBOW, body.getChild("left_wing").getChild("elbow"),
+                WingBone.RIGHT_ELBOW, body.getChild("right_wing").getChild("elbow")
         ));
     }
 

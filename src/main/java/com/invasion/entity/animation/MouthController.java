@@ -3,13 +3,13 @@ package com.invasion.entity.animation;
 import com.invasion.client.render.animation.AnimationAction;
 import com.invasion.client.render.animation.AnimationController;
 import com.invasion.client.render.animation.AnimationState;
-import com.invasion.entity.EntityIMBird;
+import com.invasion.entity.VultureEntity;
 
 public class MouthController implements AnimationController {
     private final AnimationState<?> mouthState;
     private int mouthOpenTime;
 
-    public MouthController(EntityIMBird entity, AnimationState<?> stateObject) {
+    public MouthController(VultureEntity entity, AnimationState<?> stateObject) {
         mouthState = stateObject;
     }
 

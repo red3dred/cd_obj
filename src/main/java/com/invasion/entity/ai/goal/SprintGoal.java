@@ -6,7 +6,7 @@ import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.Stunnable;
-import com.invasion.entity.ai.IMMoveHelper;
+import com.invasion.entity.ai.ClimbableMoveControl;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -73,7 +73,7 @@ public class SprintGoal<T extends PathAwareEntity & NexusEntity> extends net.min
             double dZ = target.getZ() - theEntity.getZ();
             double dAngle = MathHelper.wrapDegrees(Math.atan2(dZ, dX) * MathHelper.DEGREES_PER_RADIAN - 90 - theEntity.getYaw());
             if (dAngle > 60) {
-                ((IMMoveHelper)theEntity.getMoveControl()).setTurnRate(2);
+                ((ClimbableMoveControl)theEntity.getMoveControl()).setTurnRate(2);
                 missingTarget = 1;
             }
 
@@ -124,14 +124,14 @@ public class SprintGoal<T extends PathAwareEntity & NexusEntity> extends net.min
             attribute.addTemporaryModifier(SPRINTING_SPEED_BOOST);
         }
         theEntity.setSprinting(true);
-        ((IMMoveHelper)theEntity.getMoveControl()).setTurnRate(4.9F);
+        ((ClimbableMoveControl)theEntity.getMoveControl()).setTurnRate(4.9F);
         theEntity.setAttacking(false);
     }
 
     protected void endSprint() {
         timer = 180;
         theEntity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).removeModifier(SPRINTING_SPEED_BOOST.id());
-        ((IMMoveHelper)theEntity.getMoveControl()).setTurnRate(30);
+        ((ClimbableMoveControl)theEntity.getMoveControl()).setTurnRate(30);
         theEntity.setSprinting(false);
     }
 

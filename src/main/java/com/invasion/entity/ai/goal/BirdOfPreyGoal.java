@@ -1,9 +1,9 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.IHasAiGoals;
+import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.pathfinding.FlightNavigator;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -15,7 +15,7 @@ public class BirdOfPreyGoal extends Goal {
     private final EntityIMFlying mob;
 
     private int timeWithGoal;
-    private IHasAiGoals.Goal lastGoal;
+    private HasAiGoals.Goal lastGoal;
 
     public BirdOfPreyGoal(EntityIMFlying entity) {
         mob = entity;
@@ -45,21 +45,21 @@ public class BirdOfPreyGoal extends Goal {
 
         if (lastTarget == null) {
             if (!mob.hasNexus()) {
-                if (!mob.hasGoal(IHasAiGoals.Goal.BREAK_NEXUS)) {
-                    mob.transitionAIGoal(IHasAiGoals.Goal.BREAK_NEXUS);
+                if (!mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS)) {
+                    mob.transitionAIGoal(HasAiGoals.Goal.BREAK_NEXUS);
                 }
-            } else if (!mob.hasGoal(IHasAiGoals.Goal.CHILL)) {
-                mob.transitionAIGoal(IHasAiGoals.Goal.CHILL);
-                mob.getNavigatorNew().clearPath();
-                ((INavigationFlying)mob.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
-                ((INavigationFlying)mob.getNavigatorNew()).setLandingPath();
+            } else if (!mob.hasGoal(HasAiGoals.Goal.CHILL)) {
+                mob.transitionAIGoal(HasAiGoals.Goal.CHILL);
+                mob.getNavigatorNew().stop();
+                ((FlightNavigator)mob.getNavigatorNew()).setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
+                ((FlightNavigator)mob.getNavigatorNew()).setLandingPath();
             }
-        } else if (mob.hasAnyGoal(IHasAiGoals.Goal.CHILL, IHasAiGoals.Goal.NONE)) {
-            mob.transitionAIGoal(shouldAttackTarget(lastTarget) ? IHasAiGoals.Goal.MELEE_TARGET : IHasAiGoals.Goal.STAY_AT_RANGE);
+        } else if (mob.hasAnyGoal(HasAiGoals.Goal.CHILL, HasAiGoals.Goal.NONE)) {
+            mob.transitionAIGoal(shouldAttackTarget(lastTarget) ? HasAiGoals.Goal.MELEE_TARGET : HasAiGoals.Goal.STAY_AT_RANGE);
         }
 
-        if (!mob.hasGoal(IHasAiGoals.Goal.STAY_AT_RANGE) && mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) && timeWithGoal > PATIENCE) {
-            mob.transitionAIGoal(IHasAiGoals.Goal.STAY_AT_RANGE);
+        if (!mob.hasGoal(HasAiGoals.Goal.STAY_AT_RANGE) && mob.hasGoal(HasAiGoals.Goal.MELEE_TARGET) && timeWithGoal > PATIENCE) {
+            mob.transitionAIGoal(HasAiGoals.Goal.STAY_AT_RANGE);
         }
     }
 

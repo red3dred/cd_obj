@@ -6,7 +6,7 @@ import java.util.Random;
 
 import com.invasion.InvasionMod;
 
-public class RandomSelectionPool<T> implements ISelect<T> {
+public class RandomSelectionPool<T> implements Select<T> {
     private final Random rand = new Random();
     private final List<Entry<T>> pool = new ArrayList<>();
     private float totalWeight;
@@ -15,7 +15,7 @@ public class RandomSelectionPool<T> implements ISelect<T> {
         return addEntry(new SingleSelection<>(entry), weight);
     }
 
-    public RandomSelectionPool<T> addEntry(ISelect<T> entry, float weight) {
+    public RandomSelectionPool<T> addEntry(Select<T> entry, float weight) {
         pool.add(new Entry<>(entry, weight));
         totalWeight += weight;
         return this;
@@ -62,5 +62,5 @@ public class RandomSelectionPool<T> implements ISelect<T> {
         return s;
     }
 
-    record Entry<T>(ISelect<T> value, float weight) {}
+    record Entry<T>(Select<T> value, float weight) {}
 }

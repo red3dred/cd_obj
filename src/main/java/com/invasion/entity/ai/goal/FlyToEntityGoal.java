@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.IHasAiGoals;
-import com.invasion.entity.pathfinding.INavigationFlying;
+import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.pathfinding.FlightNavigator;
 import com.invasion.entity.pathfinding.Path;
 
 import net.minecraft.entity.Entity;
@@ -22,20 +22,20 @@ public class FlyToEntityGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.hasGoal(IHasAiGoals.Goal.GOTO_ENTITY) && theEntity.getTarget() != null;
+        return theEntity.hasGoal(HasAiGoals.Goal.GOTO_ENTITY) && theEntity.getTarget() != null;
     }
 
     @Override
     public void start() {
-        INavigationFlying nav = (INavigationFlying)theEntity.getNavigatorNew();
+        FlightNavigator nav = (FlightNavigator)theEntity.getNavigatorNew();
         Entity target = theEntity.getTarget();
         if (target != nav.getTargetEntity()) {
-            nav.clearPath();
-            nav.setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
+            nav.stop();
+            nav.setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
             @Nullable
             Path path = nav.getPathToEntity(target, 0);
             if (path != null && path.getCurrentPathLength() > 2 * theEntity.distanceTo(target)) {
-                nav.setMovementType(INavigationFlying.MoveType.MIXED);
+                nav.setMovementType(FlightNavigator.MoveType.MIXED);
             }
             nav.autoPathToEntity(target);
         }

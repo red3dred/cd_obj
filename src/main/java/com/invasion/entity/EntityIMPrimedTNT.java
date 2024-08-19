@@ -8,7 +8,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.world.World;
 
-public class EntityIMPrimedTNT extends EntityIMBoulder {
+public class EntityIMPrimedTNT extends BoulderEntity {
     public EntityIMPrimedTNT(EntityType<EntityIMPrimedTNT> type, World world) {
         super(type, world);
     }
