@@ -9,7 +9,6 @@ import com.invasion.InvasionMod;
 import com.invasion.block.NexusBlock;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.ElectricityBoltEntity;
-import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.AttackerAI;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.spawns.IMWaveSpawner;
@@ -84,7 +83,7 @@ public class Nexus implements ControllableNexusAccess {
     private final NexusInventory nexusItemStacks = new NexusInventory();
 
     private final Participants boundPlayers = new Participants(this);
-    private final Combatants<?> mobList;
+    private final Combatants mobList;
     private final AttackerAI attackerAI = new AttackerAI(this);
 
     private final InvasionConfig config = InvasionMod.getConfig();
@@ -149,7 +148,7 @@ public class Nexus implements ControllableNexusAccess {
         this.world = world;
         this.storage = storage;
         this.pos = pos;
-        mobList = new Combatants<>(this);
+        mobList = new Combatants(this);
         boundingBoxToRadius = computeSpawnArea();
         nexusItemStacks.addListener(i -> storage.markDirty());
     }
@@ -224,7 +223,7 @@ public class Nexus implements ControllableNexusAccess {
         return pos;
     }
 
-    public Combatants<?> getCombatants() {
+    public Combatants getCombatants() {
         return mobList;
     }
 
@@ -608,7 +607,7 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     private int acquireEntities() {
-        List<PathAwareEntity> entities = getWorld().getEntitiesByClass(PathAwareEntity.class, boundingBoxToRadius.expand(10, 128, 10), NexusEntity.PREDICATE);
+        List<PathAwareEntity> entities = getWorld().getEntitiesByClass(PathAwareEntity.class, boundingBoxToRadius.expand(10, 128, 10), Combatant.PREDICATE);
         InvasionMod.log("Acquired " + entities.size() + " entities after state restore");
         return entities.size();
     }
@@ -644,12 +643,12 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     private boolean zapEnemy(boolean sfx) {
-        PathAwareEntity mob = mobList.removeNearestCombatant();
+        Combatant<?> mob = mobList.removeNearestCombatant();
         if (mob == null) {
             return false;
         }
-        mob.damage(mob.getDamageSources().magic(), 500);
-        getWorld().spawnEntity(new ElectricityBoltEntity(getWorld(), pos.toCenterPos(), mob.getEyePos(), 15, sfx));
+        mob.asEntity().damage(mob.asEntity().getDamageSources().magic(), 500);
+        getWorld().spawnEntity(new ElectricityBoltEntity(getWorld(), pos.toCenterPos(), mob.asEntity().getEyePos(), 15, sfx));
         return true;
     }
 

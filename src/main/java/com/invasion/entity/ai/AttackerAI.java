@@ -17,9 +17,8 @@ import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
+import com.invasion.nexus.Combatant;
 import com.invasion.nexus.Nexus;
-import com.invasion.util.math.PosUtils;
-
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -231,9 +230,9 @@ public class AttackerAI {
 
     private void orientScaffold(Scaffold scaffold, BlockView terrainMap) {
         int mostBlocks = 0;
-        Direction highestDirection = PosUtils.CARDINAL_DIRECTIONS[0];
+        Direction highestDirection = Direction.EAST;
         BlockPos.Mutable mutable = scaffold.getPos().mutableCopy();
-        for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+        for (Direction offset : Direction.Type.HORIZONTAL) {
             int blockCount = 0;
             for (int height = 0; height < scaffold.getPos().getY(); height++) {
                 if (terrainMap.getBlockState(mutable.set(scaffold.getPos()).move(Direction.UP, height).move(offset)).isFullCube(terrainMap, mutable)) {
@@ -283,8 +282,8 @@ public class AttackerAI {
 
     private void updateDensityData() {
         entityDensityData.clear();
-        for (NexusEntity mob : nexus.getCombatants()) {
-            entityDensityData.compute(mob.getBlockPos().asLong(), (key, old) -> old == null ? 1 : old + 1);
+        for (Combatant<?> mob : nexus.getCombatants()) {
+            entityDensityData.compute(mob.asEntity().getBlockPos().asLong(), (key, old) -> old == null ? 1 : old + 1);
         }
     }
 }
