@@ -2,14 +2,17 @@ package com.invasion.entity.ai.goal;
 
 import java.util.EnumSet;
 
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
+import com.invasion.entity.pathfinding.Navigation;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.Vec3d;
 
 public class MoveToEntityGoal<T extends LivingEntity> extends Goal {
-	protected final EntityIMLiving mob;
+	protected final PathAwareEntity mob;
+	protected final Navigation navigation;
 	private final Class<? extends T> targetClass;
 
 	private T target;
@@ -19,13 +22,14 @@ public class MoveToEntityGoal<T extends LivingEntity> extends Goal {
 	private int pathFailedCount;
 
 	@SuppressWarnings("unchecked")
-    public MoveToEntityGoal(EntityIMLiving entity) {
+    public <E extends PathAwareEntity & NexusEntity> MoveToEntityGoal(E entity) {
 		this(entity, (Class<T>)LivingEntity.class);
 	}
 
-	public MoveToEntityGoal(EntityIMLiving entity, Class<? extends T> target) {
+	public <E extends PathAwareEntity & NexusEntity> MoveToEntityGoal(E entity, Class<? extends T> target) {
 		this.targetClass = target;
 		this.mob = entity;
+		navigation = entity.getNavigatorNew();
 		setControls(EnumSet.of(Control.MOVE, Control.LOOK));
 	}
 
@@ -66,7 +70,7 @@ public class MoveToEntityGoal<T extends LivingEntity> extends Goal {
 
 	@Override
     public void tick() {
-		if (--cooldown <= 0 && (!mob.getNavigatorNew().isWaitingForTask()) && running && target.squaredDistanceTo(lastTargetPos) > 1.8) {
+		if (--cooldown <= 0 && !navigation.isWaitingForTask() && running && target.squaredDistanceTo(lastTargetPos) > 1.8) {
 			setPath();
 		}
 		if (pathFailedCount > 3) {
@@ -84,10 +88,10 @@ public class MoveToEntityGoal<T extends LivingEntity> extends Goal {
 	}
 
 	protected void setPath() {
-		if (mob.getNavigatorNew().startMovingTo(target, 0, 1)) {
-			if (mob.getNavigatorNew().getLastPathDistanceToTarget() > 3) {
+		if (navigation.startMovingTo(target, 0, 1)) {
+			if (navigation.getLastPathDistanceToTarget() > 3) {
 				cooldown = 30 + mob.getWorld().getRandom().nextInt(10);
-				if (mob.getNavigatorNew().getPath().getCurrentPathLength() > 2) {
+				if (navigation.getPath().getCurrentPathLength() > 2) {
 					pathFailedCount = 0;
 				} else {
 					pathFailedCount++;

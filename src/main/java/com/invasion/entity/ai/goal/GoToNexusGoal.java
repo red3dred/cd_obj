@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.IMMobEntity;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.Navigator;
+import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.entity.ai.goal.Goal;
@@ -17,7 +17,7 @@ import net.minecraft.util.math.Vec3d;
 public class GoToNexusGoal extends Goal {
     private IMMobEntity mob;
     private Optional<BlockPos> lastPathRequestPos = Optional.empty();
-    private final Navigator navigation;
+    private final Navigation navigation;
     private int pathRequestTimer;
     private int pathFailedCount;
 

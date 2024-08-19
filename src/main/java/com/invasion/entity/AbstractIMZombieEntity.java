@@ -8,8 +8,8 @@ import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.Navigator;
-import com.invasion.entity.pathfinding.IMNavigator;
+import com.invasion.entity.pathfinding.Navigation;
+import com.invasion.entity.pathfinding.IMNavigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
@@ -46,13 +46,13 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
     }
 
     @Override
-    protected Navigator createIMNavigation() {
-        return new IMNavigator(this, new PathCreator(700, 50)) {
+    protected Navigation createIMNavigation() {
+        return new IMNavigation(this, new PathCreator(700, 50)) {
             @Override
             protected <T extends Entity> Actor<T> createActor(T entity) {
                 return new Actor<>(entity) {
                     @Override
-                    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+                    public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
                         if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
                             float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
@@ -63,7 +63,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
                             return prevNode.distanceTo(node) * 1.2F * multiplier;
                         }
 
-                        return super.getBlockPathCost(prevNode, node, terrainMap);
+                        return super.getPathNodePenalty(prevNode, node, terrainMap);
                     }
 
                     @Override
@@ -178,7 +178,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        getNavigatorNew().getActor().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
+        getNavigatorNew().getNodeMaker().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
     }
 
     @Override

@@ -8,9 +8,9 @@ import com.invasion.entity.HasAiGoals;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
-public interface Navigator extends Notifiable, HasAiGoals {
+public interface Navigation extends Notifiable, HasAiGoals {
 
-    Actor<?> getActor();
+    Actor<?> getNodeMaker();
 
     PathAction getCurrentWorkingAction();
 

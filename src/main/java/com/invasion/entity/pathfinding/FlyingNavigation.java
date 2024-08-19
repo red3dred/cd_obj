@@ -8,13 +8,13 @@ import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.util.math.PosUtils;
 import com.invasion.util.math.MathUtil;
 
 import it.unimi.dsi.fastutil.floats.FloatFloatPair;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.BlockPos;
@@ -25,12 +25,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.RaycastContext;
 
-public class FlyingNavigator extends IMNavigator implements FlightNavigator {
+public class FlyingNavigation extends IMNavigation implements FlightNavigation {
 	private static final int VISION_RESOLUTION_H = 30;
 	private static final int VISION_RESOLUTION_V = 20;
 
 	private final EntityIMFlying theEntity;
-	private FlightNavigator.MoveType moveType = FlightNavigator.MoveType.MIXED;
+	private FlightNavigation.MoveType moveType = FlightNavigation.MoveType.MIXED;
 	private boolean wantsToBeFlying;
 	private float targetYaw;
 	private float targetPitch;
@@ -52,7 +52,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 	private float closestDistToTarget;
 	private int timeSinceGotCloser;
 
-	public FlyingNavigator(EntityIMFlying entityFlying, PathSource pathSource) {
+	public FlyingNavigation(EntityIMFlying entityFlying, PathSource pathSource) {
 		super(entityFlying, pathSource);
 		theEntity = entityFlying;
 		targetYaw = entityFlying.getYaw();
@@ -64,9 +64,9 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
         return new Actor<>(entity) {
 
             @Override
-            public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+            public void getSuccessors(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
                 if (!theEntity.getPathFindFlying()) {
-                    super.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
+                    super.getSuccessors(terrainMap, currentNode, pathFinder);
                     return;
                 }
 
@@ -84,14 +84,14 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
                 }
 
-                for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+                for (Direction offset : Direction.Type.HORIZONTAL) {
                     if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
                         pathFinder.addNode(mutable.toImmutable(), PathAction.NONE);
                     }
                 }
 
                 if (canSwimHorizontal()) {
-                    for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+                    for (Direction offset : Direction.Type.HORIZONTAL) {
                         if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
                             pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                         }
@@ -100,7 +100,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
             }
 
             @Override
-            public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+            public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
                 float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
                 BlockPos.Mutable mutable = node.pos.mutableCopy();
@@ -120,7 +120,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
                     }
                 }
 
-                for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+                for (Direction offset : Direction.Type.HORIZONTAL) {
                     for (int j = 1; j <= 2; j++) {
                         int blockType = BlockMetadata.getBlockType(terrainMap.getBlockState(mutable.set(node.pos).move(offset, j)));
                         if (blockType != 1) {
@@ -142,13 +142,13 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
                 }
 
                 BlockState state = terrainMap.getBlockState(node.pos);
-                return prevNode.distanceTo(node) * BlockMetadata.getCost(state).orElse(state.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
+                return prevNode.distanceTo(node) * BlockMetadata.getCost(state).orElse(state.canPathfindThrough(NavigationType.AIR) ? 3.2F : 1) * multiplier;
             }
         };
     }
 
 	@Override
-    public void setMovementType(FlightNavigator.MoveType moveType) {
+    public void setMovementType(FlightNavigation.MoveType moveType) {
 		this.moveType = moveType;
 	}
 
@@ -160,7 +160,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 	@Override
     public void setLandingPath() {
 		stop();
-		setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
+		setMovementType(FlightNavigation.MoveType.PREFER_WALKING);
 		setWantsToBeFlying(false);
 	}
 
@@ -203,7 +203,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 		boolean needsPathfinder = false;
 		if (path != null) {
 			double dSq = MathHelper.square(dist);
-			if ((moveType == FlightNavigator.MoveType.PREFER_FLYING || (moveType == FlightNavigator.MoveType.MIXED && dSq > 100)) && theEntity.canSee(pathEndEntity)) {
+			if ((moveType == FlightNavigation.MoveType.PREFER_FLYING || (moveType == FlightNavigation.MoveType.MIXED && dSq > 100)) && theEntity.canSee(pathEndEntity)) {
 				this.timeLookingForEntity = 0;
 				pathUpdate = true;
 			} else {
@@ -214,12 +214,12 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 				}
 			}
 
-		} else if (moveType == FlightNavigator.MoveType.PREFER_WALKING || timeSinceGotCloser > 160 || timeLookingForEntity > 600) {
+		} else if (moveType == FlightNavigation.MoveType.PREFER_WALKING || timeSinceGotCloser > 160 || timeLookingForEntity > 600) {
 			pathUpdate = true;
 			needsPathfinder = true;
 			timeSinceGotCloser = 0;
 			timeLookingForEntity = 500;
-		} else if (moveType == FlightNavigator.MoveType.MIXED) {
+		} else if (moveType == FlightNavigation.MoveType.MIXED) {
 			double dSq = theEntity.squaredDistanceTo(pathEndEntity.getPos());
 			if (dSq < 100) {
 				pathUpdate = true;
@@ -228,7 +228,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 		}
 
 		if (pathUpdate) {
-			if (moveType == FlightNavigator.MoveType.PREFER_FLYING) {
+			if (moveType == FlightNavigation.MoveType.PREFER_FLYING) {
 				if (needsPathfinder) {
 					theEntity.setPathfindFlying(true);
 					path = createPath(theEntity, pathEndEntity, 0);
@@ -241,7 +241,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 					setWantsToBeFlying(true);
 					resetStatus();
 				}
-			} else if (moveType == FlightNavigator.MoveType.MIXED) {
+			} else if (moveType == FlightNavigation.MoveType.MIXED) {
 				theEntity.setPathfindFlying(false);
 				Path path = createPath(theEntity, pathEndEntity, 0);
 				if ((path != null) && (path.getCurrentPathLength() < dist * 1.8D)) {
@@ -280,7 +280,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 
 	@Override
     public boolean startMovingTo(Entity targetEntity, float targetRadius, float speed) {
-		if (moveType != FlightNavigator.MoveType.PREFER_WALKING) {
+		if (moveType != FlightNavigation.MoveType.PREFER_WALKING) {
 			stop();
 			pathEndEntity = targetEntity;
 			finalTarget = pathEndEntity.getPos();
@@ -294,7 +294,7 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 
 	@Override
     public boolean startMovingTo(Vec3d pos, float targetRadius, float speed) {
-		if (moveType != FlightNavigator.MoveType.PREFER_WALKING) {
+		if (moveType != FlightNavigation.MoveType.PREFER_WALKING) {
 			stop();
 			finalTarget = pos;
 			isCircling = false;
@@ -343,9 +343,9 @@ public class FlyingNavigator extends IMNavigator implements FlightNavigator {
 			return;
 		}
 
-		if (moveType == FlightNavigator.MoveType.PREFER_FLYING)
+		if (moveType == FlightNavigation.MoveType.PREFER_FLYING)
 			setWantsToBeFlying(true);
-		else if (moveType == FlightNavigator.MoveType.PREFER_WALKING) {
+		else if (moveType == FlightNavigation.MoveType.PREFER_WALKING) {
 			setWantsToBeFlying(false);
 		}
 		if (++timeSinceVision >= visionUpdateRate) {

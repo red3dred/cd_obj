@@ -10,16 +10,16 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class PathNavigateAdapter extends EntityNavigation {
-    private final Navigator navigator;
+    private final Navigation navigator;
     private MobNavigation mobNavigation;
     private boolean useOldNavigation;
 
-    public PathNavigateAdapter(MobEntity entity, World world, Navigator navigator) {
+    public PathNavigateAdapter(MobEntity entity, World world, Navigation navigator) {
         super(entity, world);
         this.navigator = navigator;
     }
 
-    public Navigator getNewNavigator() {
+    public Navigation getNewNavigator() {
         return navigator;
     }
 
@@ -72,7 +72,7 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public void setCanSwim(boolean canSwim) {
-        navigator.getActor().setCanSwim(canSwim);
+        navigator.getNodeMaker().setCanSwim(canSwim);
         getMobNavigation().setCanSwim(canSwim);
     }
 

@@ -15,10 +15,11 @@ public interface PathSource {
 
     void setQuickFailDepth(int depth);
 
-    Path createPath(IPathfindable findable, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView world);
+    Path createPath(IMPathNodeMaker pather, BlockPos from, BlockPos to, float targetRadius, float maxSearchRange, BlockView world);
 
     default Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius, float maxSearchRange, BlockView terrainMap) {
-        return createPath(entity.getNavigatorNew().getActor(),
+        return createPath(
+                entity.getNavigatorNew().getNodeMaker(),
                 getPathBegin(entity),
                 pos.add(MathHelper.floor(0.5F - entity.getWidth() * 0.5F), 0, MathHelper.floor(0.5F - entity.getWidth() * 0.5F)),
                 targetRadius, maxSearchRange, terrainMap);

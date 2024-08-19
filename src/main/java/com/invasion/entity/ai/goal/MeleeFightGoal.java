@@ -2,7 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.NexusEntity;
-import com.invasion.entity.pathfinding.Navigator;
+import com.invasion.entity.pathfinding.Navigation;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -54,7 +54,7 @@ public class MeleeFightGoal<T extends LivingEntity, E extends PathAwareEntity & 
 	}
 
 	public void updatePath() {
-		Navigator nav = mob.getNavigatorNew();
+		Navigation nav = mob.getNavigatorNew();
 		if (mob.getTarget() != nav.getTargetEntity()) {
 			nav.stop();
 			nav.autoPathToEntity(mob.getTarget());

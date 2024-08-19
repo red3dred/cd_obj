@@ -1,10 +1,11 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.RangedAttackMob;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvents;
@@ -14,11 +15,10 @@ import net.minecraft.sound.SoundEvents;
  * Is this even being used?
  */
 @Deprecated
-public class EntityAIKillWithArrow<T extends LivingEntity> extends KillEntityGoal<T>
-{
+public class EntityAIKillWithArrow<T extends LivingEntity> extends KillEntityGoal<T> {
 	private float attackRangeSq;
 
-	public EntityAIKillWithArrow(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay, float attackRange) {
+	public <E extends PathAwareEntity & NexusEntity> EntityAIKillWithArrow(E entity, Class<? extends T> targetClass, int attackDelay, float attackRange) {
 		super(entity, targetClass, attackDelay);
 		this.attackRangeSq = (attackRange * attackRange);
 	}
@@ -28,7 +28,7 @@ public class EntityAIKillWithArrow<T extends LivingEntity> extends KillEntityGoa
 		super.tick();
 		LivingEntity target = getTarget();
 		if (mob.squaredDistanceTo(target) < 36 && mob.canSee(target)) {
-		    mob.getNavigatorNew().haltForTick();
+		    navigation.haltForTick();
 		}
 	}
 

@@ -1,17 +1,18 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.HasAiGoals;
+import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.mob.PathAwareEntity;
 
-public class AttackNexusGoal extends Goal {
-    private EntityIMLiving mob;
+public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Goal {
+    private E mob;
 
     private int cooldown;
 
-    public AttackNexusGoal(EntityIMLiving mob) {
+    public AttackNexusGoal(E mob) {
         this.mob = mob;
     }
 

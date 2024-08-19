@@ -2,7 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.VultureEntity;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 import com.invasion.entity.pathfinding.Path;
 
 import net.minecraft.entity.Entity;
@@ -35,14 +35,14 @@ public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T,
 
     @Override
     public void updatePath() {
-        FlightNavigator nav = (FlightNavigator)theEntity.getNavigatorNew();
+        FlightNavigation nav = (FlightNavigation)theEntity.getNavigatorNew();
         Entity target = mob.getTarget();
         if (target != nav.getTargetEntity()) {
             nav.stop();
-            nav.setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
+            nav.setMovementType(FlightNavigation.MoveType.PREFER_WALKING);
             Path path = nav.getPathToEntity(target, 0);
             if (path != null && path.getCurrentPathLength() > 1.6D * mob.distanceTo(target)) {
-                nav.setMovementType(FlightNavigator.MoveType.MIXED);
+                nav.setMovementType(FlightNavigation.MoveType.MIXED);
             }
             nav.autoPathToEntity(target);
         }

@@ -2,7 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -40,8 +40,8 @@ public class FlyingCircleTargetGoal extends Goal {
 
     @Override
     public void start() {
-        FlightNavigator nav = (FlightNavigator)mob.getNavigatorNew();
-        nav.setMovementType(FlightNavigator.MoveType.PREFER_FLYING);
+        FlightNavigation nav = (FlightNavigation)mob.getNavigatorNew();
+        nav.setMovementType(FlightNavigation.MoveType.PREFER_FLYING);
         nav.setCirclingPath(mob.getTarget(), this.preferredHeight, this.preferredRadius);
 
         int extraTime = Math.max(0, (int) (4 * nav.getDistanceToCirclingRadius()));

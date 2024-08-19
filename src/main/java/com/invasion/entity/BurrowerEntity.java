@@ -7,8 +7,8 @@ import org.joml.Vector3f;
 import com.invasion.Notifiable;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
-import com.invasion.entity.pathfinding.Navigator;
-import com.invasion.entity.pathfinding.BurrowerNavigator;
+import com.invasion.entity.pathfinding.Navigation;
+import com.invasion.entity.pathfinding.BurrowerNavigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.util.math.PosRotate3D;
@@ -43,8 +43,8 @@ public class BurrowerEntity extends IMMobEntity implements Miner {
     }
 
     @Override
-    protected Navigator createIMNavigation() {
-        return new BurrowerNavigator(this, new PathCreator(800, 400), 16, -4);
+    protected Navigation createIMNavigation() {
+        return new BurrowerNavigation(this, new PathCreator(800, 400), 16, -4);
     }
 
     @Override

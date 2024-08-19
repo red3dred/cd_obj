@@ -31,12 +31,12 @@ public interface Miner extends NexusEntity {
     }
 
     default float getBlockRemovalCost(BlockPos pos) {
-        return getNavigatorNew().getActor().getBlockStrength(pos) * 20;
+        return getNavigatorNew().getNodeMaker().getBlockStrength(pos) * 20;
     }
 
     default boolean canClearBlock(BlockPos pos) {
         BlockState block = asEntity().getWorld().getBlockState(pos);
-        return block.isAir() || getNavigatorNew().getActor().isBlockDestructible(asEntity().getWorld(), pos, block);
+        return block.isAir() || getNavigatorNew().getNodeMaker().isBlockDestructible(asEntity().getWorld(), pos, block);
     }
 
     default void onBlockRemoved(BlockPos pos, BlockState state) {

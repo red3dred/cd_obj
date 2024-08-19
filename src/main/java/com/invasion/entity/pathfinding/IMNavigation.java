@@ -16,7 +16,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.chunk.ChunkCache;
 
-public class IMNavigator implements Notifiable, Navigator {
+public class IMNavigation implements Notifiable, Navigation {
 	protected static final int XZPATH_HORIZONTAL_SEARCH = 1;
 	protected static final double ENTITY_TRACKING_TOLERANCE = 0.1D;
 	protected static final double MINIMUM_PROGRESS = 0.01D;
@@ -58,14 +58,14 @@ public class IMNavigator implements Notifiable, Navigator {
 
 	protected final Actor<?> actor;
 
-	public IMNavigator(EntityIMLiving entity, PathSource pathSource) {
+	public IMNavigation(EntityIMLiving entity, PathSource pathSource) {
 		this.theEntity = entity;
 		this.pathSource = pathSource;
 		actor = createActor(entity);
 	}
 
 	@Override
-    public Actor<?> getActor() {
+    public Actor<?> getNodeMaker() {
 	    return actor;
 	}
 

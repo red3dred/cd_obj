@@ -7,18 +7,17 @@ import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.PigmanEngineerEntity;
 import com.invasion.entity.pathfinding.PathAction.Type;
 import com.invasion.nexus.INexusAccess;
-import com.invasion.util.math.PosUtils;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 
-public class PigmanEngineerNavigator extends IMNavigator {
+public class PigmanEngineerNavigator extends IMNavigation {
     private static final int MAX_LADDER_TOWER_HEIGHT = 4;
 
     private final PigmanEngineerEntity pigEntity;
@@ -45,7 +44,7 @@ public class PigmanEngineerNavigator extends IMNavigator {
             }
 
             @Override
-            public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+            public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
                 // TODO: why?
                 if ((node.pos.getX() == -21) && (node.pos.getZ() == 180)) {
                     planks = 10;
@@ -81,18 +80,18 @@ public class PigmanEngineerNavigator extends IMNavigator {
                     return prevNode.distanceTo(node) * 3.2F;
                 }
 
-                return super.getBlockPathCost(prevNode, node, terrainMap);
+                return super.getPathNodePenalty(prevNode, node, terrainMap);
             }
 
             @Override
-            public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
-                super.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
+            public void getSuccessors(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
+                super.getSuccessors(terrainMap, currentNode, pathFinder);
                 if (planks <= 0) {
                     return;
                 }
 
                 BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
-                for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+                for (Direction offset : Direction.Type.HORIZONTAL) {
                     if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
                         for (int yOffset = 0; yOffset > -MAX_LADDER_TOWER_HEIGHT; yOffset--) {
                             BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(offset).move(Direction.UP, yOffset - 1));
@@ -105,9 +104,8 @@ public class PigmanEngineerNavigator extends IMNavigator {
                 }
             }
 
-            @SuppressWarnings("deprecation")
             @Override
-            protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+            protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
                 // TODO: why?
                 if (currentNode.pos.getX() == -11 && currentNode.pos.getZ() == 177) {
                     planks = 10;
@@ -134,14 +132,14 @@ public class PigmanEngineerNavigator extends IMNavigator {
                         int collideHeight = MathHelper.ceil(entity.getHeight());
                         for (int i = collideHeight; i < 4; i++) {
                             BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP, i));
-                            if (!block.isAir() && !block.blocksMovement()) {
+                            if (!block.isAir() && !block.canPathfindThrough(NavigationType.LAND)) {
                                 maxHeight = i - collideHeight;
                                 break;
                             }
 
                         }
 
-                        for (Direction facing : PosUtils.CARDINAL_DIRECTIONS) {
+                        for (Direction facing : Direction.Type.HORIZONTAL) {
                             BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(facing));
                             if (block.isFullCube(terrainMap, mutable)) {
                                 for (int height = 0; height < maxHeight; height++) {
@@ -165,16 +163,16 @@ public class PigmanEngineerNavigator extends IMNavigator {
                 }
             }
 
-            private void addAnyLadderPoint(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+            private void addAnyLadderPoint(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
                 BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
-                for (Direction facing : PosUtils.CARDINAL_DIRECTIONS) {
+                for (Direction facing : Direction.Type.HORIZONTAL) {
                     if (terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP).move(facing)).isFullCube(terrainMap, mutable)) {
                         pathFinder.addNode(currentNode.pos.up(), PathAction.getLadderActionForDirection(facing));
                     }
                 }
             }
 
-            private boolean continueLadder(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+            private boolean continueLadder(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
                 if (currentNode.action.getType() != Type.LADDER || currentNode.action.getBuildDirection() == Direction.UP) {
                     return false;
                 }

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.entity.VultureEntity;
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -76,7 +76,7 @@ public class SwoopGoal extends Goal {
     public void start() {
         time = 0;
         theEntity.transitionAIGoal(HasAiGoals.Goal.SWOOP);
-        ((FlightNavigator)theEntity.getNavigatorNew()).setMovementType(FlightNavigator.MoveType.PREFER_FLYING);
+        ((FlightNavigation)theEntity.getNavigatorNew()).setMovementType(FlightNavigation.MoveType.PREFER_FLYING);
         theEntity.getNavigatorNew().startMovingTo(swoopTarget, 0, theEntity.getMaxPoweredFlightSpeed());
         theEntity.doScreech();
     }
@@ -85,7 +85,7 @@ public class SwoopGoal extends Goal {
     public void stop() {
         endSwoop = false;
         isCommittedToFinalRun = false;
-        ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(false);
+        ((FlightNavigation)theEntity.getNavigatorNew()).enableDirectTarget(false);
         if (theEntity.hasGoal(HasAiGoals.Goal.SWOOP)) {
             theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
             theEntity.setClawsForward(false);
@@ -97,10 +97,10 @@ public class SwoopGoal extends Goal {
         time++;
         if (!isCommittedToFinalRun) {
             if (theEntity.distanceTo(swoopTarget) < finalRunLength) {
-                ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 1);
+                ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(0, 1);
                 if (isFinalRunLinedUp()) {
                     theEntity.setClawsForward(true);
-                    ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(true);
+                    ((FlightNavigation)theEntity.getNavigatorNew()).enableDirectTarget(true);
                     isCommittedToFinalRun = true;
                 } else {
                     theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
@@ -111,12 +111,12 @@ public class SwoopGoal extends Goal {
                 if (dYp < 2.9) {
                     dYp = 0;
                 }
-                ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(diveAngle * (float) (dYp / diveHeight), (float) (0.6D * (dYp / diveHeight)));
+                ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(diveAngle * (float) (dYp / diveHeight), (float) (0.6D * (dYp / diveHeight)));
             }
 
         } else if (theEntity.distanceTo(swoopTarget) < strikeDistance) {
             theEntity.transitionAIGoal(HasAiGoals.Goal.FLYING_STRIKE);
-            ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(false);
+            ((FlightNavigation)theEntity.getNavigatorNew()).enableDirectTarget(false);
             endSwoop = true;
         } else {
             double yawToTarget = Math.atan2(
@@ -125,7 +125,7 @@ public class SwoopGoal extends Goal {
             ) * MathHelper.DEGREES_PER_RADIAN - 90;
             if (Math.abs(MathHelper.subtractAngles((float) yawToTarget, theEntity.getYaw())) > 90) {
                 theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
-                ((FlightNavigator)theEntity.getNavigatorNew()).enableDirectTarget(false);
+                ((FlightNavigation)theEntity.getNavigatorNew()).enableDirectTarget(false);
                 theEntity.setClawsForward(false);
                 endSwoop = true;
             }

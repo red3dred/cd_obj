@@ -1,9 +1,10 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 
 public class KillEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T> {
     private static final float ATTACK_RANGE = 1;
@@ -11,7 +12,7 @@ public class KillEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T> 
     private int attackDelay;
     private int nextAttack;
 
-    public KillEntityGoal(EntityIMLiving entity, Class<? extends T> targetClass, int attackDelay) {
+    public <E extends PathAwareEntity & NexusEntity> KillEntityGoal(E entity, Class<? extends T> targetClass, int attackDelay) {
         super(entity, targetClass);
         this.attackDelay = attackDelay;
     }

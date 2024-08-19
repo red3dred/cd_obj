@@ -43,7 +43,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
 		super(type, world);
 		moveControl = new IMSpiderMoveControl(this);
-		getNavigatorNew().getActor().setCanClimb(true);
+		getNavigatorNew().getNodeMaker().setCanClimb(true);
 	}
 
     public static DefaultAttributeContainer.Builder createT1V0Attributes() {

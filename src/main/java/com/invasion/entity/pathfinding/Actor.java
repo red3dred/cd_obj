@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 
-public class Actor<T extends Entity> implements IPathfindable {
+public class Actor<T extends Entity> implements IMPathNodeMaker {
     protected final T entity;
 
     private boolean canClimb;
@@ -103,7 +103,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+    public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
         float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
 
         if (node.pos.getY() > prevNode.pos.getY() && getNodeDestructability(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
@@ -124,7 +124,7 @@ public class Actor<T extends Entity> implements IPathfindable {
     }
 
     @Override
-    public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    public void getSuccessors(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
         if (entity.getWorld().isOutOfHeightLimit(currentNode.pos)) {
             return;
         }
@@ -144,7 +144,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         }
 
         int maxFall = 8;
-        for (Direction facing : PosUtils.CARDINAL_DIRECTIONS) {
+        for (Direction facing : Direction.Type.HORIZONTAL) {
             if (currentNode.action != PathAction.NONE) {
                 if (facing == Direction.EAST && currentNode.action == PathAction.LADDER_UP_NX) {
                     height = 0;
@@ -187,7 +187,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         }
 
         if (canSwimHorizontal()) {
-            for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+            for (Direction offset : Direction.Type.HORIZONTAL) {
                 if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                 }
@@ -195,7 +195,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         }
     }
 
-    protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
         int collideUp = getNodeDestructability(terrainMap, currentNode.pos.up());
         if (collideUp > DestructableType.UNBREAKABLE) {
             BlockState state = terrainMap.getBlockState(currentNode.pos.up());
@@ -241,7 +241,7 @@ public class Actor<T extends Entity> implements IPathfindable {
         }
     }
 
-    protected final void addAdjacent(BlockView terrainMap, BlockPos pos, PathNode currentNode, PathfinderIM pathFinder) {
+    protected final void addAdjacent(BlockView terrainMap, BlockPos pos, PathNode currentNode, PathBuilder pathFinder) {
         if (getNodeDestructability(terrainMap, pos) <= DestructableType.UNBREAKABLE) {
             return;
         }
@@ -300,7 +300,7 @@ public class Actor<T extends Entity> implements IPathfindable {
 
     protected boolean blockHasLadder(BlockView world, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
-        for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
+        for (Direction offset : Direction.Type.HORIZONTAL) {
             if (world.getBlockState(mutable.set(pos).move(offset)).isIn(BlockTags.CLIMBABLE)) {
                 return true;
             }

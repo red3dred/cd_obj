@@ -6,12 +6,12 @@ import org.joml.Vector3f;
 
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.BurrowerEntity;
-import com.invasion.util.math.PosUtils;
 import com.invasion.util.math.PosRotate3D;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -19,7 +19,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 
-public class BurrowerNavigator extends AbstractParametricNavigator {
+public class BurrowerNavigation extends AbstractParametricNavigator {
     protected PathNode nextNode;
     protected PathNode prevNode;
 
@@ -34,7 +34,7 @@ public class BurrowerNavigator extends AbstractParametricNavigator {
     protected Path lastPath;
     protected boolean nodeChanged;
 
-    public BurrowerNavigator(BurrowerEntity entity, PathSource pathSource, int segments, int offset) {
+    public BurrowerNavigation(BurrowerEntity entity, PathSource pathSource, int segments, int offset) {
         super(entity, pathSource);
         prevSegmentNodes = new PathNode[segments];
         activeSegmentNodes = new PathNode[segments];
@@ -55,22 +55,22 @@ public class BurrowerNavigator extends AbstractParametricNavigator {
     protected <T extends Entity> Actor<T> createActor(T entity) {
         return new Actor<>(entity) {
             @Override
-            public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView worldMap) {
+            public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView worldMap) {
                 BlockState block = worldMap.getBlockState(node.pos);
 
                 float penalty = 0.0F;
                 int enclosedLevelSide = 0;
 
                 BlockPos.Mutable mutable = node.pos.mutableCopy();
-                if (!entity.getWorld().getBlockState(mutable.move(Direction.DOWN)).isFullCube(entity.getWorld(), mutable)) {
+                if (!entity.getWorld().getBlockState(mutable.move(Direction.DOWN)).canPathfindThrough(NavigationType.LAND)) {
                     penalty += 0.3F;
                 }
-                if (!entity.getWorld().getBlockState(mutable.set(node.pos).move(Direction.UP)).isFullCube(entity.getWorld(), mutable)) {
+                if (!entity.getWorld().getBlockState(mutable.set(node.pos).move(Direction.UP)).canPathfindThrough(NavigationType.LAND)) {
                     penalty += 2;
                 }
 
-                for (Direction offset : PosUtils.CARDINAL_DIRECTIONS) {
-                    if (!entity.getWorld().getBlockState(mutable.set(node.pos).move(offset)).isFullCube(entity.getWorld(), mutable)) {
+                for (Direction offset : Direction.Type.HORIZONTAL) {
+                    if (!entity.getWorld().getBlockState(mutable.set(node.pos).move(offset)).canPathfindThrough(NavigationType.LAND)) {
                         enclosedLevelSide++;
                     }
                 }
@@ -80,7 +80,7 @@ public class BurrowerNavigator extends AbstractParametricNavigator {
                 }
                 penalty += enclosedLevelSide * 0.5F;
 
-                float factor = !block.isAir() && (block.isSolidBlock(worldMap, node.pos) || BlockMetadata.getCost(block).isPresent()) ? 1.3F : 1;
+                float factor = !block.isAir() && (!block.canPathfindThrough(NavigationType.LAND) || BlockMetadata.getCost(block).isPresent()) ? 1.3F : 1;
 
                 return prevNode.distanceTo(node) * factor * penalty;
             }

@@ -5,32 +5,41 @@ import java.util.Comparator;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
-public class PathNode {
+/**
+ * Source: net.minecraft.entity.ai.pathing.PathNode
+ */
+public class PathNode extends net.minecraft.entity.ai.pathing.PathNode {
     public static final Comparator<PathNode> POSITION_COMPARATOR = Comparator.comparing(a -> a.pos);
     public final BlockPos pos;
     public final PathAction action;
 
-    private final int hash;
-
-    int index;
-    float totalPathDistance;
-    float distanceToNext;
-    float distanceToTarget;
-
-    private PathNode previous;
-
-    public boolean isFirst;
+    private final int hashCode;
 
     public PathNode(BlockPos pos) {
         this(pos, PathAction.NONE);
     }
 
     public PathNode(BlockPos pos, PathAction pathAction) {
-        this.index = -1;
-        this.isFirst = false;
+        super(pos.getX(), pos.getY(), pos.getZ());
+        this.heapIndex = -1;
         this.pos = pos;
         this.action = pathAction;
-        this.hash = makeHash(pos, action);
+        this.hashCode = makeHash(pos, action);
+    }
+
+    @Override
+    public PathNode copyWithNewPosition(int x, int y, int z) {
+        PathNode pathNode = new PathNode(new BlockPos(x, y, z), action);
+        pathNode.heapIndex = heapIndex;
+        pathNode.penalizedPathLength = penalizedPathLength;
+        pathNode.distanceToNearestTarget = distanceToNearestTarget;
+        pathNode.heapWeight = heapWeight;
+        pathNode.previous = previous;
+        pathNode.visited = visited;
+        pathNode.pathLength = pathLength;
+        pathNode.penalty = penalty;
+        pathNode.type = type;
+        return pathNode;
     }
 
     public float distanceTo(PathNode pathpoint) {
@@ -45,11 +54,6 @@ public class PathNode {
         return MathHelper.sqrt((float)this.pos.getSquaredDistance(pos));
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof PathNode node && hash == node.hash && isAt(node.pos) && node.action == action;
-    }
-
     public boolean isAt(BlockPos position) {
         return pos.equals(position);
     }
@@ -58,16 +62,13 @@ public class PathNode {
         return pos.getX() == x && pos.getY() == y && pos.getZ() == z;
     }
 
-    public boolean isAssigned() {
-        return index >= 0;
+    @Override
+    public boolean isInHeap() {
+        return heapIndex >= 0;
     }
 
     public PathNode getPrevious() {
-        return previous;
-    }
-
-    public void setPrevious(PathNode previous) {
-        this.previous = previous;
+        return (PathNode)previous;
     }
 
     public PathNode[] getPath() {
@@ -88,7 +89,12 @@ public class PathNode {
 
     @Override
     public int hashCode() {
-        return hash;
+        return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof PathNode node && hashCode == node.hashCode && isAt(node.pos) && node.action == action;
     }
 
     @Override

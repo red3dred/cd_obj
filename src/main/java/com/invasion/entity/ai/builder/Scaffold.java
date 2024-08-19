@@ -2,10 +2,9 @@ package com.invasion.entity.ai.builder;
 
 import java.util.List;
 
-import com.invasion.entity.pathfinding.IPathfindable;
+import com.invasion.entity.pathfinding.IMPathNodeMaker;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathNode;
-import com.invasion.entity.pathfinding.PathfinderIM;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
@@ -18,13 +17,13 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-public class Scaffold implements IPathfindable {
+public class Scaffold implements IMPathNodeMaker {
     private static final int MIN_SCAFFOLD_HEIGHT = 4;
     private BlockPos pos = BlockPos.ORIGIN;
     private int targetHeight;
     private Direction orientation = Direction.EAST;
     private int[] platforms;
-    private IPathfindable pathfindBase;
+    private IMPathNodeMaker pathfindBase;
     private INexusAccess nexus;
     private float latestPercentCompleted;
     private float latestPercentIntact;
@@ -85,7 +84,7 @@ public class Scaffold implements IPathfindable {
         return this.nexus;
     }
 
-    public void setPathfindBase(IPathfindable base) {
+    public void setPathfindBase(IMPathNodeMaker base) {
         this.pathfindBase = base;
     }
 
@@ -187,9 +186,9 @@ public class Scaffold implements IPathfindable {
     }
 
     @Override
-    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+    public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
         BlockState state = terrainMap.getBlockState(node.pos);
-        float materialMultiplier = state.isSolidBlock(terrainMap,node.pos) ? 2.2F : 1.0F;
+        float materialMultiplier = state.isSolidBlock(terrainMap, node.pos) ? 2.2F : 1.0F;
         if (node.action == PathAction.SCAFFOLD_UP) {
             if (prevNode.action != PathAction.SCAFFOLD_UP) {
                 materialMultiplier *= 3.4F;
@@ -207,15 +206,15 @@ public class Scaffold implements IPathfindable {
         }
 
         if (pathfindBase != null) {
-            return pathfindBase.getBlockPathCost(prevNode, node, terrainMap);
+            return pathfindBase.getPathNodePenalty(prevNode, node, terrainMap);
         }
         return prevNode.distanceTo(node);
     }
 
     @Override
-    public void getPathOptionsFromNode(BlockView terrainMap, PathNode currentNode, PathfinderIM pathFinder) {
+    public void getSuccessors(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
         if (pathfindBase != null) {
-            pathfindBase.getPathOptionsFromNode(terrainMap, currentNode, pathFinder);
+            pathfindBase.getSuccessors(terrainMap, currentNode, pathFinder);
         }
         BlockPos positionAbove = currentNode.pos.up();
         BlockState stateAbove = terrainMap.getBlockState(positionAbove);

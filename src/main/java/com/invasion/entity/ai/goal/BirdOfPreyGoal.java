@@ -3,7 +3,7 @@ package com.invasion.entity.ai.goal;
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -51,8 +51,8 @@ public class BirdOfPreyGoal extends Goal {
             } else if (!mob.hasGoal(HasAiGoals.Goal.CHILL)) {
                 mob.transitionAIGoal(HasAiGoals.Goal.CHILL);
                 mob.getNavigatorNew().stop();
-                ((FlightNavigator)mob.getNavigatorNew()).setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
-                ((FlightNavigator)mob.getNavigatorNew()).setLandingPath();
+                ((FlightNavigation)mob.getNavigatorNew()).setMovementType(FlightNavigation.MoveType.PREFER_WALKING);
+                ((FlightNavigation)mob.getNavigatorNew()).setLandingPath();
             }
         } else if (mob.hasAnyGoal(HasAiGoals.Goal.CHILL, HasAiGoals.Goal.NONE)) {
             mob.transitionAIGoal(shouldAttackTarget(lastTarget) ? HasAiGoals.Goal.MELEE_TARGET : HasAiGoals.Goal.STAY_AT_RANGE);

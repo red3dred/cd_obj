@@ -1,8 +1,8 @@
 package com.invasion.entity;
 
 import com.invasion.entity.ai.ClimbableMoveControl;
-import com.invasion.entity.pathfinding.Navigator;
-import com.invasion.entity.pathfinding.IMNavigator;
+import com.invasion.entity.pathfinding.Navigation;
+import com.invasion.entity.pathfinding.IMNavigation;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.nexus.IHasNexus;
@@ -41,8 +41,8 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         return new PathNavigateAdapter(this, world, createIMNavigation());
     }
 
-    protected Navigator createIMNavigation() {
-        return new IMNavigator(this, new PathCreator(700, 50));
+    protected Navigation createIMNavigation() {
+        return new IMNavigation(this, new PathCreator(700, 50));
     }
 
     @Override

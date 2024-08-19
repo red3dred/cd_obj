@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 import com.invasion.entity.pathfinding.Path;
 
 import net.minecraft.entity.Entity;
@@ -27,15 +27,15 @@ public class FlyToEntityGoal extends Goal {
 
     @Override
     public void start() {
-        FlightNavigator nav = (FlightNavigator)theEntity.getNavigatorNew();
+        FlightNavigation nav = (FlightNavigation)theEntity.getNavigatorNew();
         Entity target = theEntity.getTarget();
         if (target != nav.getTargetEntity()) {
             nav.stop();
-            nav.setMovementType(FlightNavigator.MoveType.PREFER_WALKING);
+            nav.setMovementType(FlightNavigation.MoveType.PREFER_WALKING);
             @Nullable
             Path path = nav.getPathToEntity(target, 0);
             if (path != null && path.getCurrentPathLength() > 2 * theEntity.distanceTo(target)) {
-                nav.setMovementType(FlightNavigator.MoveType.MIXED);
+                nav.setMovementType(FlightNavigation.MoveType.MIXED);
             }
             nav.autoPathToEntity(target);
         }

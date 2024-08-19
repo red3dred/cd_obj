@@ -25,7 +25,7 @@ public class Path {
     public float getTotalPathCost() {
         @Nullable
         PathNode finalNode = getFinalPathPoint();
-        return finalNode == null ? 0 : finalNode.totalPathDistance;
+        return finalNode == null ? 0 : finalNode.penalizedPathLength;
     }
 
     public void incrementPathIndex() {

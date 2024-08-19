@@ -6,9 +6,9 @@ import com.invasion.entity.ai.FlyState;
 import com.invasion.entity.ai.FlyingEntityLookControl;
 import com.invasion.entity.ai.FlyingMoveControl;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.Navigator;
-import com.invasion.entity.pathfinding.FlightNavigator;
-import com.invasion.entity.pathfinding.FlyingNavigator;
+import com.invasion.entity.pathfinding.Navigation;
+import com.invasion.entity.pathfinding.FlightNavigation;
+import com.invasion.entity.pathfinding.FlyingNavigation;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.util.math.MathUtil;
 
@@ -78,8 +78,8 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
     }
 
 	@Override
-    protected Navigator createIMNavigation() {
-	    return new FlyingNavigator(this, new PathCreator(800, 200));
+    protected Navigation createIMNavigation() {
+	    return new FlyingNavigation(this, new PathCreator(800, 200));
 	}
 
     @Override
@@ -199,7 +199,7 @@ public abstract class EntityIMFlying extends EntityIMLiving implements Animatabl
 
     protected void setMaxPoweredFlightSpeed(float speed) {
         this.maxPoweredFlightSpeed = speed;
-        ((FlightNavigator)getNavigatorNew()).setFlySpeed(speed);
+        ((FlightNavigation)getNavigatorNew()).setFlySpeed(speed);
     }
 
     protected void setThrustComponentRatioMin(float ratio) {

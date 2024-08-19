@@ -3,7 +3,7 @@ package com.invasion.entity.pathfinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 
-public interface FlightNavigator extends Navigator {
+public interface FlightNavigation extends Navigation {
     void setMovementType(MoveType paramMoveType);
 
     void setLandingPath();

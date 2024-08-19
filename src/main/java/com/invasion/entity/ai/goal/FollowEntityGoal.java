@@ -1,6 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -21,13 +22,17 @@ public class FollowEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T
 
     @Override
     public void start() {
-        mob.onFollowingEntity(getTarget());
+        if (mob instanceof NexusEntity n) {
+            n.onFollowingEntity(getTarget());
+        }
         super.start();
     }
 
     @Override
     public void stop() {
-        mob.onFollowingEntity(null);
+        if (mob instanceof NexusEntity n) {
+            n.onFollowingEntity(null);
+        }
         super.stop();
     }
 
@@ -36,7 +41,7 @@ public class FollowEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T
         super.tick();
         Entity target = getTarget();
         if (target != null && mob.squaredDistanceTo(target) < followDistanceSq) {
-            mob.getNavigatorNew().haltForTick();
+            navigation.haltForTick();
         }
     }
 }

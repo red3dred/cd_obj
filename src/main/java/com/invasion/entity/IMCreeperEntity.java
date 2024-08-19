@@ -12,8 +12,8 @@ import com.invasion.entity.ai.goal.WaitForSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.Navigator;
-import com.invasion.entity.pathfinding.IMNavigator;
+import com.invasion.entity.pathfinding.Navigation;
+import com.invasion.entity.pathfinding.IMNavigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.PathNode;
@@ -84,7 +84,7 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
         goalSelector.add(1, new IMCreeperIgniteGoal(this));
         goalSelector.add(2, new FleeEntityGoal<>(this, CatEntity.class, 6.0F, 0.25D, 0.300000011920929D));
         goalSelector.add(3, new KillEntityGoal<>(this, PlayerEntity.class, 40));
-        goalSelector.add(4, new AttackNexusGoal(this));
+        goalSelector.add(4, new AttackNexusGoal<>(this));
         goalSelector.add(5, new WaitForSupportGoal(this, 4.0F, true));
         goalSelector.add(6, new KillEntityGoal<>(this, MobEntity.class, 40));
         goalSelector.add(7, new GoToNexusGoal(this));
@@ -98,20 +98,20 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
     }
 
     @Override
-    protected Navigator createIMNavigation() {
-        return new IMNavigator(this, new PathCreator(700, 50)) {
+    protected Navigation createIMNavigation() {
+        return new IMNavigation(this, new PathCreator(700, 50)) {
             @Override
             protected <T extends Entity> Actor<T> createActor(T entity) {
                 return new Actor<>(entity) {
                     @SuppressWarnings("deprecation")
                     @Override
-                    public float getBlockPathCost(PathNode prevNode, PathNode node, BlockView terrainMap) {
+                    public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
                         BlockState state = terrainMap.getBlockState(node.pos);
                         if (!state.isAir() && !state.blocksMovement() && !state.isOf(InvBlocks.NEXUS_CORE)) {
                             return prevNode.distanceTo(node) * 12.0F;
                         }
 
-                        return super.getBlockPathCost(prevNode, node, terrainMap);
+                        return super.getPathNodePenalty(prevNode, node, terrainMap);
                     }
                 };
             }

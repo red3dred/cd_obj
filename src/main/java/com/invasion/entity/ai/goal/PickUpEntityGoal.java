@@ -4,7 +4,7 @@ import org.joml.Vector3f;
 
 import com.invasion.entity.VultureEntity;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -87,11 +87,11 @@ public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
                     isHoldingEntity = true;
                     time = 0;
                     theEntity.getNavigatorNew().stop();
-                    ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
+                    ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
                 }
             }
         } else if (time == 45) {
-            ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+            ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         } else if (time > holdTime) {
             theEntity.getTarget().stopRiding();
         }

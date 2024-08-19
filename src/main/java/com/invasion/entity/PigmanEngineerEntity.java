@@ -12,7 +12,7 @@ import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
-import com.invasion.entity.pathfinding.Navigator;
+import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.PigmanEngineerNavigator;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
@@ -29,6 +29,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -64,7 +65,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     }
 
     @Override
-    protected Navigator createIMNavigation() {
+    protected Navigation createIMNavigation() {
         return new PigmanEngineerNavigator(this, new PathCreator(1200, 1500));
     }
 
@@ -183,7 +184,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
         return SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_DEATH;
     }
 
-    public void supportForTick(EntityIMLiving entity, float amount) {
+    public void supportForTick(MobEntity entity, float amount) {
         supportThisTick += amount;
     }
 

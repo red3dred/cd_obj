@@ -4,7 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.Notifiable;
 import com.invasion.InvasionMod;
-import com.invasion.entity.pathfinding.Navigator;
+import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.nexus.Combatant;
@@ -34,7 +34,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     float DEFAULT_GROUND_FRICTION = 0.546F;
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
 
-    default Navigator getNavigatorNew() {
+    default Navigation getNavigatorNew() {
         return ((PathNavigateAdapter)asEntity().getNavigation()).getNewNavigator();
     }
 
@@ -95,7 +95,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     }
 
     default void setCanDestroyBlocks(boolean flag) {
-        getNavigatorNew().getActor().setCanDestroyBlocks(flag);
+        getNavigatorNew().getNodeMaker().setCanDestroyBlocks(flag);
     }
 
     default boolean getLightLevelBelow8() {

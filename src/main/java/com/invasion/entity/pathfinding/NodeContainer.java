@@ -1,95 +1,100 @@
 package com.invasion.entity.pathfinding;
 
+/**
+ * Source: net.minecraft.entity.ai.pathing.PathMinHeap
+ *
+ * Changed to use our PathNode class and to extend the path length to 1024
+ */
 public class NodeContainer {
-	private PathNode[] pathPoints = new PathNode[1024];
+	private PathNode[] pathNodes = new PathNode[1024];
 	private int count;
 
-	public PathNode addPoint(PathNode pathpoint) {
-		if (pathpoint.index >= 0) {
+	public PathNode push(PathNode pathpoint) {
+		if (pathpoint.heapIndex >= 0) {
 			throw new IllegalStateException("OW KNOWS!");
 		}
-		if (this.count == this.pathPoints.length) {
+		if (this.count == this.pathNodes.length) {
 			PathNode[] apathpoint = new PathNode[this.count << 1];
-			System.arraycopy(this.pathPoints, 0, apathpoint, 0, this.count);
-			this.pathPoints = apathpoint;
+			System.arraycopy(this.pathNodes, 0, apathpoint, 0, this.count);
+			this.pathNodes = apathpoint;
 		}
-		this.pathPoints[this.count] = pathpoint;
-		pathpoint.index = this.count;
-		sortBack(this.count++);
+		this.pathNodes[this.count] = pathpoint;
+		pathpoint.heapIndex = this.count;
+		shiftUp(this.count++);
 		return pathpoint;
 	}
 
-	public void clearPath() {
+	public void clear() {
 		this.count = 0;
 	}
 
-	public PathNode dequeue() {
-		PathNode pathpoint = this.pathPoints[0];
-		this.pathPoints[0] = this.pathPoints[(--this.count)];
-		this.pathPoints[this.count] = null;
+	public PathNode pop() {
+		PathNode pathpoint = this.pathNodes[0];
+		this.pathNodes[0] = this.pathNodes[(--this.count)];
+		this.pathNodes[this.count] = null;
 		if (this.count > 0) {
-			sortForward(0);
+			shiftDown(0);
 		}
-		pathpoint.index = -1;
+		pathpoint.heapIndex = -1;
 		return pathpoint;
 	}
 
-	public void changeDistance(PathNode pathpoint, float f) {
-		float f1 = pathpoint.distanceToTarget;
-		pathpoint.distanceToTarget = f;
+	public void setNodeWeight(PathNode pathpoint, float f) {
+		float f1 = pathpoint.heapWeight;
+		pathpoint.heapWeight = f;
 		if (f < f1) {
-			sortBack(pathpoint.index);
+		    shiftUp(pathpoint.heapIndex);
 		} else {
-			sortForward(pathpoint.index);
+		    shiftDown(pathpoint.heapIndex);
 		}
 	}
 
-	private void sortBack(int i) {
-		PathNode pathpoint = this.pathPoints[i];
-		float f = pathpoint.distanceToTarget;
+	private void shiftUp(int i) {
+		PathNode pathpoint = this.pathNodes[i];
+		float f = pathpoint.heapWeight;
 
 		while (i > 0) {
 			int j = i - 1 >> 1;
-			PathNode pathpoint1 = this.pathPoints[j];
-			if (f >= pathpoint1.distanceToTarget) {
+			PathNode pathpoint1 = this.pathNodes[j];
+			if (f >= pathpoint1.heapWeight) {
 				break;
 			}
-			this.pathPoints[i] = pathpoint1;
-			pathpoint1.index = i;
+			this.pathNodes[i] = pathpoint1;
+			pathpoint1.heapIndex = i;
 			i = j;
 		}
 
-		this.pathPoints[i] = pathpoint;
-		pathpoint.index = i;
+		this.pathNodes[i] = pathpoint;
+		pathpoint.heapIndex = i;
 	}
 
-	private void sortForward(int i) {
-		PathNode pathpoint = pathPoints[i];
-		float f = pathpoint.distanceToTarget;
+	private void shiftDown(int i) {
+		PathNode pathpoint = pathNodes[i];
+		float f = pathpoint.heapWeight;
 		while (true) {
 			int j = 1 + (i << 1);
 			int k = j + 1;
 			if (j >= count) {
 				break;
 			}
-			PathNode pathpoint1 = pathPoints[j];
-			float f1 = pathpoint1.distanceToTarget;
+			PathNode pathpoint1 = pathNodes[j];
+			float f1 = pathpoint1.heapWeight;
 			float f2;
 			PathNode pathpoint2;
 			if (k >= count) {
 				pathpoint2 = null;
 				f2 = 1;
 			} else {
-				pathpoint2 = pathPoints[k];
-				f2 = pathpoint2.distanceToTarget;
+				pathpoint2 = pathNodes[k];
+				f2 = pathpoint2.heapWeight;
 			}
 			if (f1 < f2) {
 				if (f1 >= f) {
 					break;
 				}
-				pathPoints[i] = pathpoint1;
+				pathNodes[i] = pathpoint1;
 
-				pathpoint1.index = i;
+				pathpoint1.heapIndex = i;
 				i = j;
 			} else {
 				if (f2 >= f) {
@@ -101,16 +106,16 @@ public class NodeContainer {
 					break;
 				}
 				//end Unstoppable Custom Testcode
-				pathPoints[i] = pathpoint2;
-				pathpoint2.index = i;
+				pathNodes[i] = pathpoint2;
+				pathpoint2.heapIndex = i;
 				i = k;
 			}
 		}
-		pathPoints[i] = pathpoint;
-		pathpoint.index = i;
+		pathNodes[i] = pathpoint;
+		pathpoint.heapIndex = i;
 	}
 
-	public boolean isPathEmpty() {
+	public boolean isEmpty() {
 		return count == 0;
 	}
 }

@@ -2,7 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigator;
+import com.invasion.entity.pathfinding.FlightNavigation;
 
 import net.minecraft.entity.ai.goal.Goal;
 
@@ -31,23 +31,23 @@ public class StabiliseFlightGoal extends Goal {
         }
 
         theEntity.transitionAIGoal(HasAiGoals.Goal.NONE);
-        ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+        ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         return false;
     }
 
     @Override
     public void start() {
         time = 0;
-        FlightNavigator nav = (FlightNavigator)theEntity.getNavigatorNew();
+        FlightNavigation nav = (FlightNavigation)theEntity.getNavigatorNew();
         nav.stop();
-        nav.setMovementType(FlightNavigator.MoveType.PREFER_FLYING);
+        nav.setMovementType(FlightNavigation.MoveType.PREFER_FLYING);
         nav.setPitchBias(20.0F, 0.5F);
     }
 
     @Override
     public void tick() {
         if (++time == INITIAL_STABILISE_TIME) {
-            ((FlightNavigator)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+            ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         }
     }
 }

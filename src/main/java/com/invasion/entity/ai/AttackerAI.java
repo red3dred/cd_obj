@@ -12,7 +12,7 @@ import com.invasion.TerrainDataLayer;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.builder.Scaffold;
 import com.invasion.entity.pathfinding.PathSource;
-import com.invasion.entity.pathfinding.IPathfindable;
+import com.invasion.entity.pathfinding.IMPathNodeMaker;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
@@ -90,7 +90,7 @@ public class AttackerAI {
             return false;
         }
         nextScaffoldCalcTimer = 200;
-        List<Scaffold> newScaffolds = findMinScaffolds(entity.getNavigatorNew().getActor(), entity.getBlockPos());
+        List<Scaffold> newScaffolds = findMinScaffolds(entity.getNavigatorNew().getNodeMaker(), entity.getBlockPos());
         if (!newScaffolds.isEmpty()) {
             addNewScaffolds(newScaffolds);
             return true;
@@ -99,7 +99,7 @@ public class AttackerAI {
         return false;
     }
 
-    public List<Scaffold> findMinScaffolds(IPathfindable pather, BlockPos pos) {
+    public List<Scaffold> findMinScaffolds(IMPathNodeMaker pather, BlockPos pos) {
         BlockPos nexusPos = nexus.getOrigin();
         Scaffold scaffold = new Scaffold(nexus);
         scaffold.setPathfindBase(pather);
@@ -187,11 +187,11 @@ public class AttackerAI {
         return compound;
     }
 
-    private Path createPath(IPathfindable pather, BlockPos p1, BlockPos p2, BlockView terrainMap) {
+    private Path createPath(IMPathNodeMaker pather, BlockPos p1, BlockPos p2, BlockView terrainMap) {
         return pathSource.createPath(pather, p1, p2, 1.1F, 12 + MathHelper.sqrt((float) p1.getSquaredDistance(p2)), terrainMap);
     }
 
-    private Path createPath(IPathfindable pather, BlockPos p1, BlockPos p2, float axisExpand) {
+    private Path createPath(IMPathNodeMaker pather, BlockPos p1, BlockPos p2, float axisExpand) {
         IBlockAccessExtended terrainMap = getChunkCache(p1, p2, axisExpand);
         addScaffoldDataTo(terrainMap);
         return createPath(pather, p1, p2, terrainMap);
