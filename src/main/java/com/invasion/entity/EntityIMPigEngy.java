@@ -2,7 +2,6 @@ package com.invasion.entity;
 
 import com.invasion.INotifyTask;
 import com.invasion.block.BlockMetadata;
-import com.invasion.entity.ai.Goal;
 import com.invasion.entity.ai.builder.ITerrainBuild;
 import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainBuilder;

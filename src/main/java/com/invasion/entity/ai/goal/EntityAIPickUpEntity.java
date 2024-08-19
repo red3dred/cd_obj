@@ -3,7 +3,7 @@ package com.invasion.entity.ai.goal;
 import org.joml.Vector3f;
 
 import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.Entity;
@@ -39,7 +39,7 @@ public class EntityAIPickUpEntity extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.getAIGoal() == Goal.PICK_UP_TARGET || theEntity.hasPassengers();
+        return theEntity.hasGoal(IHasAiGoals.Goal.PICK_UP_TARGET) || theEntity.hasPassengers();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class EntityAIPickUpEntity extends net.minecraft.entity.ai.goal.Goal {
                 return true;
             }
         }
-        theEntity.transitionAIGoal(Goal.NONE);
+        theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
         theEntity.setClawsForward(false);
         return false;
     }

@@ -1,20 +1,21 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIBoP extends net.minecraft.entity.ai.goal.Goal {
+public class EntityAIBoP extends Goal {
     private static final int PATIENCE = 600;
     private static final int MIN_ATTACK_DISTANCE = 10;
 
     private final EntityIMFlying mob;
 
     private int timeWithGoal;
-    private Goal lastGoal;
+    private IHasAiGoals.Goal lastGoal;
 
     public EntityAIBoP(EntityIMFlying entity) {
         mob = entity;
@@ -43,22 +44,22 @@ public class EntityAIBoP extends net.minecraft.entity.ai.goal.Goal {
         LivingEntity lastTarget = mob.getTarget();
 
         if (lastTarget == null) {
-            if (mob.getNexus() != null) {
-                if (mob.getAIGoal() != Goal.BREAK_NEXUS) {
-                    mob.transitionAIGoal(Goal.BREAK_NEXUS);
+            if (!mob.hasNexus()) {
+                if (!mob.hasGoal(IHasAiGoals.Goal.BREAK_NEXUS)) {
+                    mob.transitionAIGoal(IHasAiGoals.Goal.BREAK_NEXUS);
                 }
-            } else if (mob.getAIGoal() != Goal.CHILL) {
-                mob.transitionAIGoal(Goal.CHILL);
+            } else if (!mob.hasGoal(IHasAiGoals.Goal.CHILL)) {
+                mob.transitionAIGoal(IHasAiGoals.Goal.CHILL);
                 mob.getNavigatorNew().clearPath();
                 ((INavigationFlying)mob.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_WALKING);
                 ((INavigationFlying)mob.getNavigatorNew()).setLandingPath();
             }
-        } else if (mob.getAIGoal() == Goal.CHILL || mob.getAIGoal() == Goal.NONE) {
-            mob.transitionAIGoal(shouldAttackTarget(lastTarget) ? Goal.MELEE_TARGET : Goal.STAY_AT_RANGE);
+        } else if (mob.hasAnyGoal(IHasAiGoals.Goal.CHILL, IHasAiGoals.Goal.NONE)) {
+            mob.transitionAIGoal(shouldAttackTarget(lastTarget) ? IHasAiGoals.Goal.MELEE_TARGET : IHasAiGoals.Goal.STAY_AT_RANGE);
         }
 
-        if (mob.getAIGoal() != Goal.STAY_AT_RANGE && mob.getAIGoal() == Goal.MELEE_TARGET && timeWithGoal > PATIENCE) {
-            mob.transitionAIGoal(Goal.STAY_AT_RANGE);
+        if (!mob.hasGoal(IHasAiGoals.Goal.STAY_AT_RANGE) && mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) && timeWithGoal > PATIENCE) {
+            mob.transitionAIGoal(IHasAiGoals.Goal.STAY_AT_RANGE);
         }
     }
 

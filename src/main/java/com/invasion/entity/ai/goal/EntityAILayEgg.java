@@ -1,25 +1,25 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMEgg;
-import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.ISpawnsOffspring;
-import com.invasion.entity.ai.Goal;
-
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.mob.PathAwareEntity;
 
-public class EntityAILayEgg extends net.minecraft.entity.ai.goal.Goal {
+public class EntityAILayEgg extends Goal {
     private static final int EGG_LAY_TIME = 45;
     private static final int INITIAL_EGG_DELAY = 25;
     private static final int NEXT_EGG_DELAY = 230;
     private static final int EGG_HATCH_TIME = 125;
 
-    private final EntityIMLiving theEntity;
+    private final PathAwareEntity theEntity;
 
     private int time;
     private boolean isLaying;
     private int eggCount;
 
-    public EntityAILayEgg(EntityIMLiving entity, int eggs) {
+    public EntityAILayEgg(PathAwareEntity entity, int eggs) {
         theEntity = entity;
         eggCount = eggs;
     }
@@ -30,7 +30,7 @@ public class EntityAILayEgg extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.getAIGoal() == Goal.TARGET_ENTITY
+        return (!(theEntity instanceof IHasAiGoals g) || g.getAIGoal() == IHasAiGoals.Goal.TARGET_ENTITY)
             && eggCount > 0
             && theEntity.getVisibilityCache().canSee(theEntity.getTarget());
     }

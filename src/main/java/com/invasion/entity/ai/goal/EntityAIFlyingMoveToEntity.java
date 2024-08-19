@@ -5,13 +5,14 @@ import java.util.EnumSet;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigationFlying;
 import com.invasion.entity.pathfinding.Path;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.goal.Goal;
 
-public class EntityAIFlyingMoveToEntity extends net.minecraft.entity.ai.goal.Goal {
+public class EntityAIFlyingMoveToEntity extends Goal {
     private final EntityIMFlying theEntity;
 
     public EntityAIFlyingMoveToEntity(EntityIMFlying entity) {
@@ -21,7 +22,7 @@ public class EntityAIFlyingMoveToEntity extends net.minecraft.entity.ai.goal.Goa
 
     @Override
     public boolean canStart() {
-        return theEntity.getAIGoal() == Goal.GOTO_ENTITY && theEntity.getTarget() != null;
+        return theEntity.hasGoal(IHasAiGoals.Goal.GOTO_ENTITY) && theEntity.getTarget() != null;
     }
 
     @Override

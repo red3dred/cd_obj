@@ -2,9 +2,11 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMZombie;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 
-public class EntityAIAttackNexus extends net.minecraft.entity.ai.goal.Goal {
+import net.minecraft.entity.ai.goal.Goal;
+
+public class EntityAIAttackNexus extends Goal {
     private EntityIMLiving mob;
 
     private int cooldown;
@@ -20,7 +22,7 @@ public class EntityAIAttackNexus extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        if (cooldown == 0 && mob.getAIGoal() == Goal.BREAK_NEXUS && mob.findDistanceToNexus() > 4) {
+        if (cooldown == 0 && mob.hasGoal(IHasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() > 4) {
             cooldown = 5;
             return false;
         }

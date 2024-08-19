@@ -1,7 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
 import net.minecraft.entity.Entity;
@@ -24,12 +24,12 @@ public class EntityAICircleTarget extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return mob.hasGoal(Goal.STAY_AT_RANGE) && hasValidTarget();
+        return mob.hasGoal(IHasAiGoals.Goal.STAY_AT_RANGE) && hasValidTarget();
     }
 
     @Override
     public boolean shouldContinue() {
-        return mob.hasOrIsBetweenGoals(Goal.STAY_AT_RANGE, Goal.FIND_ATTACK_OPPORTUNITY) && hasValidTarget();
+        return mob.hasOrIsBetweenGoals(IHasAiGoals.Goal.STAY_AT_RANGE, IHasAiGoals.Goal.FIND_ATTACK_OPPORTUNITY) && hasValidTarget();
     }
 
     private boolean hasValidTarget() {
@@ -49,12 +49,12 @@ public class EntityAICircleTarget extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public void tick() {
-        if (mob.hasGoal(Goal.STAY_AT_RANGE)) {
+        if (mob.hasGoal(IHasAiGoals.Goal.STAY_AT_RANGE)) {
             if (--patienceTime <= 0) {
-                mob.transitionAIGoal(Goal.FIND_ATTACK_OPPORTUNITY);
+                mob.transitionAIGoal(IHasAiGoals.Goal.FIND_ATTACK_OPPORTUNITY);
                 patienceTime = ATTACK_SEARCH_TIME;
             }
-        } else if (mob.isBetweenGoals(Goal.STAY_AT_RANGE, Goal.FIND_ATTACK_OPPORTUNITY)) {
+        } else if (mob.isBetweenGoals(IHasAiGoals.Goal.STAY_AT_RANGE, IHasAiGoals.Goal.FIND_ATTACK_OPPORTUNITY)) {
             patienceTime--;
         }
     }

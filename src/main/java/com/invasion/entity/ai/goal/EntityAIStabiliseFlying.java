@@ -1,10 +1,12 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
-public class EntityAIStabiliseFlying extends net.minecraft.entity.ai.goal.Goal {
+import net.minecraft.entity.ai.goal.Goal;
+
+public class EntityAIStabiliseFlying extends Goal {
     private static final int INITIAL_STABILISE_TIME = 50;
 
     private final EntityIMFlying theEntity;
@@ -19,7 +21,7 @@ public class EntityAIStabiliseFlying extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.getAIGoal() == Goal.STABILISE;
+        return theEntity.hasGoal(IHasAiGoals.Goal.STABILISE);
     }
 
     @Override
@@ -28,7 +30,7 @@ public class EntityAIStabiliseFlying extends net.minecraft.entity.ai.goal.Goal {
             return true;
         }
 
-        theEntity.transitionAIGoal(Goal.NONE);
+        theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
         ((INavigationFlying)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         return false;
     }

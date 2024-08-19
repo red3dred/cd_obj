@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
@@ -45,7 +45,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        if (theEntity.getAIGoal() == Goal.FIND_ATTACK_OPPORTUNITY && theEntity.getTarget() != null) {
+        if (theEntity.hasGoal(IHasAiGoals.Goal.FIND_ATTACK_OPPORTUNITY) && theEntity.getTarget() != null) {
             swoopTarget = theEntity.getTarget();
             Vec3d delta = swoopTarget.getPos().subtract(theEntity.getPos());
             double dXZ = delta.horizontalLength();
@@ -74,7 +74,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
     @Override
     public void start() {
         time = 0;
-        theEntity.transitionAIGoal(Goal.SWOOP);
+        theEntity.transitionAIGoal(IHasAiGoals.Goal.SWOOP);
         ((INavigationFlying)theEntity.getNavigatorNew()).setMovementType(INavigationFlying.MoveType.PREFER_FLYING);
         theEntity.getNavigatorNew().tryMoveToEntity(swoopTarget, 0, theEntity.getMaxPoweredFlightSpeed());
         theEntity.doScreech();
@@ -85,8 +85,8 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
         endSwoop = false;
         isCommittedToFinalRun = false;
         ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
-        if (theEntity.getAIGoal() == Goal.SWOOP) {
-            theEntity.transitionAIGoal(Goal.NONE);
+        if (theEntity.hasGoal(IHasAiGoals.Goal.SWOOP)) {
+            theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
             theEntity.setClawsForward(false);
         }
     }
@@ -102,7 +102,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
                     ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(true);
                     isCommittedToFinalRun = true;
                 } else {
-                    theEntity.transitionAIGoal(Goal.NONE);
+                    theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
                     endSwoop = true;
                 }
             } else if (time > INITIAL_LINEUP_TIME) {
@@ -114,7 +114,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
             }
 
         } else if (theEntity.distanceTo(swoopTarget) < strikeDistance) {
-            theEntity.transitionAIGoal(Goal.FLYING_STRIKE);
+            theEntity.transitionAIGoal(IHasAiGoals.Goal.FLYING_STRIKE);
             ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
             endSwoop = true;
         } else {
@@ -123,7 +123,7 @@ public class EntityAISwoop extends net.minecraft.entity.ai.goal.Goal {
                     swoopTarget.getX() - theEntity.getX()
             ) * MathHelper.DEGREES_PER_RADIAN - 90;
             if (Math.abs(MathHelper.subtractAngles((float) yawToTarget, theEntity.getYaw())) > 90) {
-                theEntity.transitionAIGoal(Goal.NONE);
+                theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
                 ((INavigationFlying)theEntity.getNavigatorNew()).enableDirectTarget(false);
                 theEntity.setClawsForward(false);
                 endSwoop = true;

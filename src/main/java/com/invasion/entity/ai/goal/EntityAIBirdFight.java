@@ -1,7 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMBird;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigationFlying;
 import com.invasion.entity.pathfinding.Path;
 
@@ -54,8 +54,8 @@ public class EntityAIBirdFight<T extends LivingEntity> extends EntityAIMeleeFigh
             if (shouldLeaveMelee()) {
                 wantsToRetreat = true;
             }
-        } else if (buffetedTarget && mob.getAIGoal() == Goal.MELEE_TARGET) {
-            mob.transitionAIGoal(Goal.LEAVE_MELEE);
+        } else if (buffetedTarget && mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET)) {
+            mob.transitionAIGoal(IHasAiGoals.Goal.LEAVE_MELEE);
         }
     }
 

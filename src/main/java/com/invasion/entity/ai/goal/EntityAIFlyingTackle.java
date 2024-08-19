@@ -1,7 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.INavigationFlying;
 
@@ -16,21 +16,18 @@ public class EntityAIFlyingTackle extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return theEntity.getAIGoal() == Goal.TACKLE_TARGET;
+        return theEntity.hasGoal(IHasAiGoals.Goal.TACKLE_TARGET);
     }
 
     @Override
     public boolean shouldContinue() {
         LivingEntity target = theEntity.getTarget();
         if (target == null || !target.isAlive()) {
-            theEntity.transitionAIGoal(Goal.NONE);
+            theEntity.transitionAIGoal(IHasAiGoals.Goal.NONE);
             return false;
         }
 
-        if (theEntity.getAIGoal() != Goal.TACKLE_TARGET) {
-            return false;
-        }
-        return true;
+        return theEntity.hasGoal(IHasAiGoals.Goal.TACKLE_TARGET);
     }
 
     @Override
@@ -44,7 +41,7 @@ public class EntityAIFlyingTackle extends net.minecraft.entity.ai.goal.Goal {
     @Override
     public void tick() {
         if (theEntity.getMoveState() != MoveState.FLYING) {
-            theEntity.transitionAIGoal(Goal.MELEE_TARGET);
+            theEntity.transitionAIGoal(IHasAiGoals.Goal.MELEE_TARGET);
         }
     }
 }

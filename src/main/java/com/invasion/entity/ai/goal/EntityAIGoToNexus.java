@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.EntityIMMob;
-import com.invasion.entity.ai.Goal;
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.nexus.INexusAccess;
 import net.minecraft.util.math.BlockPos;
@@ -32,7 +32,7 @@ public class EntityAIGoToNexus extends net.minecraft.entity.ai.goal.Goal {
 
     @Override
     public boolean canStart() {
-        return mob.getAIGoal() == Goal.BREAK_NEXUS;
+        return mob.hasGoal(IHasAiGoals.Goal.BREAK_NEXUS);
     }
 
     @Override

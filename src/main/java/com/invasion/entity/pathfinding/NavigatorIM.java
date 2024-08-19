@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.INotifyTask;
 import com.invasion.entity.EntityIMLiving;
-import com.invasion.entity.ai.Goal;
 import com.invasion.nexus.INexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;

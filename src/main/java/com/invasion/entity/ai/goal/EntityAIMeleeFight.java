@@ -1,7 +1,7 @@
 package com.invasion.entity.ai.goal;
 
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.NexusEntity;
-import com.invasion.entity.ai.Goal;
 import com.invasion.entity.pathfinding.INavigation;
 
 import net.minecraft.entity.LivingEntity;
@@ -21,12 +21,12 @@ public class EntityAIMeleeFight<T extends LivingEntity, E extends PathAwareEntit
 
 	@Override
     public boolean canStart() {
-		return mob.getAIGoal() == Goal.MELEE_TARGET && hasValidTarget();
+		return mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) && hasValidTarget();
 	}
 
 	@Override
     public boolean shouldContinue() {
-		return (mob.getAIGoal() == Goal.MELEE_TARGET || isWaitingForTransition()) && hasValidTarget();
+		return (mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) || isWaitingForTransition()) && hasValidTarget();
 	}
 
 	private boolean hasValidTarget() {
@@ -62,13 +62,13 @@ public class EntityAIMeleeFight<T extends LivingEntity, E extends PathAwareEntit
 	}
 
 	protected void updateDisengage() {
-		if (mob.getAIGoal() == Goal.MELEE_TARGET && shouldLeaveMelee()) {
-			mob.transitionAIGoal(Goal.LEAVE_MELEE);
+		if (mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET) && shouldLeaveMelee()) {
+			mob.transitionAIGoal(IHasAiGoals.Goal.LEAVE_MELEE);
 		}
 	}
 
 	protected boolean isWaitingForTransition() {
-		return mob.getAIGoal() == Goal.LEAVE_MELEE && mob.getPrevAIGoal() == Goal.MELEE_TARGET;
+		return mob.hasGoal(IHasAiGoals.Goal.LEAVE_MELEE) && mob.getPrevAIGoal() == IHasAiGoals.Goal.MELEE_TARGET;
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import com.invasion.IBlockAccessExtended;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.EntityIMFlying;
-import com.invasion.entity.ai.Goal;
 import com.invasion.entity.ai.MoveState;
 import com.invasion.util.math.CoordsInt;
 import com.invasion.util.math.MathUtil;

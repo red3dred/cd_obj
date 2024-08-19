@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.INotifyTask;
 import com.invasion.InvasionMod;
-import com.invasion.entity.ai.Goal;
 import com.invasion.entity.pathfinding.INavigation;
 import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;

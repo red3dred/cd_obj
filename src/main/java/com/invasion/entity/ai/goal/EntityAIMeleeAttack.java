@@ -2,9 +2,8 @@ package com.invasion.entity.ai.goal;
 
 import java.util.EnumSet;
 
+import com.invasion.entity.IHasAiGoals;
 import com.invasion.entity.NexusEntity;
-import com.invasion.entity.ai.Goal;
-
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.MathHelper;
@@ -26,7 +25,7 @@ public class EntityAIMeleeAttack<T extends LivingEntity, E extends PathAwareEnti
 	@Override
     public boolean canStart() {
 		LivingEntity target = mob.getTarget();
-		return target != null && target.isAlive() && mob.getAIGoal() == Goal.MELEE_TARGET
+		return target != null && target.isAlive() && mob.hasGoal(IHasAiGoals.Goal.MELEE_TARGET)
 		        && mob.squaredDistanceTo(target) < (attackRange + mob.getWidth() + target.getWidth()) * 4
 		        && target.getClass().isAssignableFrom(targetClass);
 	}
