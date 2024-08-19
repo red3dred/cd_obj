@@ -1,7 +1,7 @@
 package com.invasion.client.render.entity;
 
 import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.client.render.entity.feature.SpiderEyesFeatureRenderer;
 import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.render.entity.model.SpiderEntityModel;
@@ -17,7 +17,7 @@ import com.invasion.entity.EntityIMSpider;
  *
  * @see net.minecraft.client.render.entity.SpiderEntityRenderer
  */
-public class IMSpiderEntityRenderer extends LivingEntityRenderer<EntityIMSpider, SpiderEntityModel<EntityIMSpider>> {
+public class IMSpiderEntityRenderer extends MobEntityRenderer<EntityIMSpider, SpiderEntityModel<EntityIMSpider>> {
     private static final Identifier NORMAL = Identifier.ofVanilla("textures/entity/spider/spider.png");
 
 	private static final Identifier JUMPER = InvasionMod.id("textures/entity/spider/jumping_spider.png");
