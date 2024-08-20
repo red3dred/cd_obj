@@ -50,7 +50,7 @@ public class SpawnProxyEntity extends MobEntity {
         InvasionConfig config = InvasionMod.getConfig();
         int numberOfMobs = world.getRandom().nextInt(config.nightMobMaxGroupSize) + 1;
         for (int i = 0; i < numberOfMobs; i++) {
-            spawner.accept(config.getSpawnPool().selectNext().generateEntityConstruct().createMob(world, null));
+            spawner.accept(config.getSpawnPool().selectNext(world.getRandom()).generateEntityConstruct(world.getRandom()).createMob(world, null));
         }
     }
 }

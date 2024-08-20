@@ -12,11 +12,7 @@ public class Wave {
 
     private int elapsed;
 
-    public Wave(int waveTotalTime, int waveBreakTime) {
-        this(waveTotalTime, waveBreakTime, new ArrayList<>());
-    }
-
-    public Wave(int waveTotalTime, int waveBreakTime, List<WaveEntry> entries) {
+    private Wave(int waveTotalTime, int waveBreakTime, List<WaveEntry> entries) {
         this.entries = entries;
         this.waveTotalTime = waveTotalTime;
         this.waveBreakTime = waveBreakTime;
@@ -26,7 +22,7 @@ public class Wave {
         int numberOfSpawns = 0;
         elapsed += elapsedMillis;
         for (WaveEntry entry : entries) {
-            if (elapsed >= entry.getTimeBegin() && elapsed < entry.getTimeEnd()) {
+            if (entry.getTime().test(elapsed)) {
                 numberOfSpawns += entry.doNextSpawns(elapsedMillis, spawner);
             }
         }
@@ -66,5 +62,30 @@ public class Wave {
             total += entry.getAmount();
         }
         return total;
+    }
+
+    public static Builder builder(int duration, int restTime) {
+        return new Builder(duration, restTime, new ArrayList<>());
+    }
+
+    public static final class Builder {
+        private final int duration;
+        private final int restTime;
+        private final List<WaveEntry.Builder<?>> entries;
+
+        public Builder(int duration, int restTime, List<WaveEntry.Builder<?>> entries) {
+            this.duration = duration;
+            this.restTime = restTime;
+            this.entries = entries;
+        }
+
+        public Builder entry(WaveEntry.Builder<?> entry) {
+            entries.add(entry);
+            return this;
+        }
+
+        public Wave build() {
+            return new Wave(duration, restTime, entries.stream().map(WaveEntry.Builder::build).toList());
+        }
     }
 }

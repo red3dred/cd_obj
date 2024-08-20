@@ -1,5 +1,6 @@
 package com.invasion.nexus.test;
 
+import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Random;
@@ -119,7 +120,7 @@ public class Tester {
                 i2 -= 360;
             logger.accept(i + " to " + i2);
             for (int j = 0; j < 4; j++) {
-                SpawnPoint point = spawnPoints.getRandomSpawnPoint(SpawnType.HUMANOID, i, i2);
+                SpawnPoint point = spawnPoints.getRandomSpawnPoint(SpawnType.HUMANOID, IntRange.between(i, i2));
                 if (point != null) {
                     logger.accept(point.toString());
                 }
@@ -134,7 +135,7 @@ public class Tester {
             int r2 = this.rand.nextInt(361) - 180;
             for (int j = 0; j < 17; j++) {
                 count++;
-                SpawnPoint point = spawnPoints.getRandomSpawnPoint(SpawnType.HUMANOID, r, r2);
+                SpawnPoint point = spawnPoints.getRandomSpawnPoint(SpawnType.HUMANOID, IntRange.between(r, r2));
                 if (point != null) {
                     if (r < r2) {
                         if ((point.getAngle() < r) || (point.getAngle() >= r2)) {

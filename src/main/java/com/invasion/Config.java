@@ -40,10 +40,18 @@ public class Config {
     }
 
     public void writeProperty(BufferedWriter writer, String key, String comment) throws IOException {
+        writeValue(writer, key, comment, properties.getProperty(key));
+    }
+
+    public void writeValue(BufferedWriter writer, String key, Object value) throws IOException {
+        writeValue(writer, key, null, value);
+    }
+
+    public void writeValue(BufferedWriter writer, String key, String comment, Object value) throws IOException {
         if (comment != null) {
             writeLine(writer, "# " + comment);
         }
-        writeLine(writer, key + "=" + properties.getProperty(key));
+        writeLine(writer, key + "=" + value);
     }
 
     protected void writeLine(BufferedWriter writer, String line) throws IOException {

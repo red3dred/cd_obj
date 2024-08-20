@@ -11,10 +11,9 @@ import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.nexus.Combatant;
-import com.invasion.nexus.IEntityIMPattern;
-import com.invasion.nexus.wave.WaveBuilder;
-import com.invasion.util.Select;
-import com.invasion.util.RandomSelectionPool;
+import com.invasion.nexus.wave.EntityPattern;
+import com.invasion.nexus.wave.EntityPatterns;
+import com.invasion.nexus.wave.pool.Select;
 
 import net.minecraft.block.Block;
 import net.minecraft.registry.Registries;
@@ -41,19 +40,6 @@ public class InvasionConfig extends Config {
         m.put("IMZombiePigman-T2", 30);
         m.put("IMZombiePigman-T3", 65);
     });
-    private static final String[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS = {
-            "zombie_t1_any", "zombie_t2_any_basic",
-            "zombie_t2_plain", "zombie_t2_tar", "zombie_t2_pigman", "zombie_t3_any",
-            "zombiePigman_t1_any", "zombiePigman_t2_any", "zombiePigman_t3_any",
-            "spider_t1_any", "spider_t2_any", "pigengy_t1_any",
-            "skeleton_t1_any",
-            "thrower_t1", "thrower_t2",
-            "creeper_t1_basic",
-            "imp_t1"
-    };
-    private static final float[] DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS = {
-            1, 1, 0, 0, 0, 0, 0, 0, 0, 0.5F, 0, 0, 0, 0, 0, 0, 0
-    };
     private static final boolean DEFAULT_NIGHT_SPAWNS_ENABLED = false;
     private static final int DEFAULT_MIN_CONT_MODE_DAYS = 2;
     private static final int DEFAULT_MAX_CONT_MODE_DAYS = 3;
@@ -87,7 +73,7 @@ public class InvasionConfig extends Config {
     private final Map<String, Integer> mobHealthInvasion = new HashMap<>();
 
     @Nullable
-    private Select<IEntityIMPattern> spawnPool;
+    private Select<EntityPattern> spawnPool;
 
     public Optional<Float> getBlockStrength(Block block) {
         return Optional.ofNullable(strengthOverrides.get(Registries.BLOCK.getId(block)));
@@ -106,7 +92,7 @@ public class InvasionConfig extends Config {
         return getHealth(mob.getLegacyName(), !mob.hasNexus());
     }
 
-    public synchronized Select<IEntityIMPattern> getSpawnPool() {
+    public synchronized Select<EntityPattern> getSpawnPool() {
         if (spawnPool == null) {
             spawnPool = loadSpawnPool();
         }
@@ -163,25 +149,15 @@ public class InvasionConfig extends Config {
         saveConfig(file);
     }
 
-    private Select<IEntityIMPattern> loadSpawnPool() {
-        RandomSelectionPool<IEntityIMPattern> pool = new RandomSelectionPool<>();
-        if (DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length == DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS.length) {
-            for (int i = 0; i < DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length; i++) {
-                String pattern = getPropertyValueString("nm-spawnpool1-slot" + (1 + i), DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS[i]);
-                float weight = getPropertyValueFloat("nm-spawnpool1-slot" + (1 + i) + "-weight", DEFAULT_NIGHT_MOB_PATTERN_1_SLOT_WEIGHTS[i]);
-
-                if (WaveBuilder.isPatternNameValid(pattern)) {
-                    InvasionMod.log("Added entry for pattern 1 slot " + (i + 1));
-                    pool.addEntry(WaveBuilder.getPattern(pattern), weight);
-                } else {
-                    InvasionMod.LOGGER.warn("Pattern 1 slot " + (i + 1) + " in config not recognized. Proceeding as blank.");
-                    setProperty("nm-spawnpool1-slot" + (1 + i), "none");
+    private Select<EntityPattern> loadSpawnPool() {
+        return Select.<EntityPattern>random().apply(builder -> {
+            EntityPatterns.REGISTRY.forEach((id, pattern) -> {
+                float weight = pattern.getNightMobSpawnWeight();
+                if (weight > 0) {
+                    builder.entry(pattern.pattern(), weight);
                 }
-            }
-        } else {
-            InvasionMod.LOGGER.warn("Mob pattern table element mismatch. Ensure each slot has a probability weight");
-        }
-        return pool;
+            });
+        }).build();
     }
 
     private void saveConfig(File saveFile) {
@@ -241,11 +217,14 @@ public class InvasionConfig extends Config {
 
             writeLine(writer, "# Nightime mob spawning tables (also does not affect the nexus)");
             writeLine(writer, "# A spawnpool contains mobs that can possibly spawn, and the probability weight of them spawning.");
-            writeLine(writer, "# Expenation: zombie_t2_any_basic has all T2, zombie_t2_plain excludes tar zombies");
-            for (int i = 0; i < DEFAULT_NIGHT_MOB_PATTERN_1_SLOTS.length; i++) {
-                writeProperty(writer, "nm-spawnpool1-slot" + (1 + i));
-                writeProperty(writer, "nm-spawnpool1-slot" + (1 + i) + "-weight");
-            }
+            writeLine(writer, "# Explanation: zombie_t2_any_basic has all T2, zombie_t2_plain excludes tar zombies");
+            EntityPatterns.REGISTRY.forEach((id, pattern) -> {
+                try {
+                    writeValue(writer, "nm-spawnpool1-slot" + pattern.id() + "-weight", pattern.getNightMobSpawnWeight());
+                } catch (IOException e) {
+                    InvasionMod.LOGGER.error("Could not save config", e);
+                }
+            });
             writer.flush();
         } catch (IOException e) {
             InvasionMod.LOGGER.error("Could not save config", e);

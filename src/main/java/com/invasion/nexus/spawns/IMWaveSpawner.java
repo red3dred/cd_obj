@@ -2,10 +2,12 @@ package com.invasion.nexus.spawns;
 
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.nexus.wave.WaveBuilder;
+import com.invasion.nexus.wave.EntityPattern;
 import com.invasion.nexus.wave.Wave;
 import com.invasion.nexus.wave.WaveSpawnerException;
 
@@ -50,6 +53,11 @@ public class IMWaveSpawner implements Spawner {
 		this.nexus = nexus;
 		this.spawnRadius = radius;
 	}
+
+    @Override
+    public Random getRandom() {
+        return nexus.getWorld().getRandom();
+    }
 
 	public long getElapsedTime() {
 		return elapsed;
@@ -191,8 +199,8 @@ public class IMWaveSpawner implements Spawner {
 	}
 
 	@Override
-    public int getNumberOfPointsInRange(int minAngle, int maxAngle, SpawnType type) {
-		return spawnPointContainer.getNumberOfSpawnPoints(type, minAngle, maxAngle);
+    public int getNumberOfPointsInRange(IntRange angle, SpawnType type) {
+		return spawnPointContainer.getNumberOfSpawnPoints(type, angle);
 	}
 
 	public void setPermitSpawns(boolean flag) {
@@ -204,19 +212,19 @@ public class IMWaveSpawner implements Spawner {
 	}
 
 	@Override
-	public boolean attemptSpawn(EntityConstruct mobConstruct, int minAngle, int maxAngle) {
+	public boolean attemptSpawn(EntityConstruct mobConstruct, IntRange angle) {
 		if (!permitSpawns) {
 			return false;
 		}
 
 		MobEntity mob = mobConstruct.createMob(nexus);
-		int spawnTries = Math.min(spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID, minAngle, maxAngle), MAX_SPAWN_TRIES);
+		int spawnTries = Math.min(spawnPointContainer.getNumberOfSpawnPoints(SpawnType.HUMANOID, angle), MAX_SPAWN_TRIES);
 
 		for (int j = 0; j < spawnTries; j++) {
 		    @Nullable
-			final SpawnPoint spawnPoint = maxAngle - minAngle >= 360
+			final SpawnPoint spawnPoint = angle.max().orElse(EntityPattern.MAX_VALID_ANGLE) - angle.min().orElse(EntityPattern.MAX_ANGLE) >= 360
 				        ? spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID)
-		                : spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID, minAngle, maxAngle);
+		                : spawnPointContainer.getRandomSpawnPoint(SpawnType.HUMANOID, angle);
 
 			if (spawnPoint == null) {
 				return false;
@@ -224,7 +232,7 @@ public class IMWaveSpawner implements Spawner {
 			if (!permitSpawns) {
 				successfulSpawns++;
 				if (debugMode) {
-				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + spawnPoint + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + spawnPoint + "  Specified: " + angle);
 				}
 
 				return true;
@@ -233,7 +241,7 @@ public class IMWaveSpawner implements Spawner {
 			if (spawnPoint.trySpawnEntity(nexus.getWorld(), mob)) {
 				successfulSpawns++;
 				if (debugMode) {
-				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + minAngle + "," + maxAngle);
+				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + angle);
 				}
 
 				return true;

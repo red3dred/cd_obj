@@ -9,9 +9,11 @@ import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.nexus.wave.EntityPattern;
 import com.invasion.util.math.PolarAngle;
 
 import net.minecraft.block.Block;
+import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.world.World;
 
 public class SpawnPointContainer {
@@ -46,7 +48,9 @@ public class SpawnPointContainer {
         return spawnList.isEmpty() ? null : spawnList.get(random.nextInt(spawnList.size()));
     }
 
-    public SpawnPoint getRandomSpawnPoint(SpawnType spawnType, int minAngle, int maxAngle) {
+    public SpawnPoint getRandomSpawnPoint(SpawnType spawnType, IntRange angle) {
+        int minAngle = angle.min().orElse(-EntityPattern.MAX_ANGLE);
+        int maxAngle = angle.max().orElse(EntityPattern.MAX_ANGLE);
         List<SpawnPoint> spawnList = spawnPoints.get(spawnType);
         if (spawnList.isEmpty()) {
             return null;
@@ -82,7 +86,9 @@ public class SpawnPointContainer {
         return spawnPoints.getOrDefault(SpawnType.HUMANOID, List.of()).size();
     }
 
-    public int getNumberOfSpawnPoints(SpawnType spawnType, int minAngle, int maxAngle) {
+    public int getNumberOfSpawnPoints(SpawnType spawnType, IntRange angle) {
+        int minAngle = angle.min().orElse(-EntityPattern.MAX_ANGLE);
+        int maxAngle = angle.max().orElse(EntityPattern.MAX_ANGLE);
         List<SpawnPoint> spawnList = spawnPoints.get(spawnType);
         if (spawnList.isEmpty() || (maxAngle - minAngle) >= 360) {
             return spawnList.size();
