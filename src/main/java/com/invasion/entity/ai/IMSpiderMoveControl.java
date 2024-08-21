@@ -4,11 +4,11 @@ import java.util.Optional;
 
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMSpider;
-import com.invasion.entity.pathfinding.Path;
-import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.util.math.PosUtils;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -39,22 +39,22 @@ public class IMSpiderMoveControl extends ClimbableMoveControl {
     }
 
     private int getMoveDirection() {
-        Path path = ((EntityIMLiving)entity).getNavigatorNew().getPath();
+        Path path = ((EntityIMLiving)entity).getNavigation().getCurrentPath();
         if (path != null && !path.isFinished()) {
-            PathNode currentPoint = path.getPathPointFromIndex(path.getCurrentPathIndex());
-            int pathLength = path.getCurrentPathLength();
-            for (int i = path.getCurrentPathIndex(); i < pathLength; i++) {
-                PathNode point = path.getPathPointFromIndex(i);
-                if (point.pos.getX() > currentPoint.pos.getX()) {
+            PathNode currentPoint = path.getCurrentNode();
+            int pathLength = path.getLength();
+            for (int i = path.getCurrentNodeIndex(); i < pathLength; i++) {
+                PathNode point = path.getNode(i);
+                if (point.x > currentPoint.x) {
                     return 0;
                 }
-                if (point.pos.getX() < currentPoint.pos.getX()) {
+                if (point.x < currentPoint.x) {
                     return 2;
                 }
-                if (point.pos.getZ() > currentPoint.pos.getZ()) {
+                if (point.z > currentPoint.z) {
                     return 4;
                 }
-                if (point.pos.getZ() < currentPoint.pos.getZ()) {
+                if (point.z < currentPoint.z) {
                     return 6;
                 }
             }

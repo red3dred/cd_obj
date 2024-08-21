@@ -12,11 +12,9 @@ import com.invasion.entity.ai.goal.WaitForSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.IMNavigation;
-import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.entity.pathfinding.PathNode;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -28,6 +26,8 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -98,7 +98,7 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
     }
 
     @Override
-    protected Navigation createIMNavigation() {
+    protected IMNavigation createIMNavigation() {
         return new IMNavigation(this, new PathCreator(700, 50)) {
             @Override
             protected <T extends Entity> Actor<T> createActor(T entity) {
@@ -106,9 +106,9 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
                     @SuppressWarnings("deprecation")
                     @Override
                     public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-                        BlockState state = terrainMap.getBlockState(node.pos);
+                        BlockState state = terrainMap.getBlockState(node.getBlockPos());
                         if (!state.isAir() && !state.blocksMovement() && !state.isOf(InvBlocks.NEXUS_CORE)) {
-                            return prevNode.distanceTo(node) * 12.0F;
+                            return prevNode.getDistance(node) * 12.0F;
                         }
 
                         return super.getPathNodePenalty(prevNode, node, terrainMap);
@@ -121,8 +121,7 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
     @Override
     public boolean onPathBlocked(Path path, Notifiable notifee) {
         if (!path.isFinished()) {
-            PathNode node = path.getPathPointFromIndex(path.getCurrentPathIndex());
-            Vec3d delta = node.pos.toBottomCenterPos().subtract(getPos());
+            Vec3d delta = path.getNodePosition(this, path.getCurrentNodeIndex()).subtract(getPos());
             float facing = (float) (Math.atan2(delta.getX(), delta.getZ()) * MathHelper.DEGREES_PER_RADIAN) - 90;
             explodeDirection = Direction.fromRotation(facing);
             commitToExplode = true;

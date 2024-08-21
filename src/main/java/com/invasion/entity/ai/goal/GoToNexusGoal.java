@@ -46,11 +46,9 @@ public class GoToNexusGoal extends Goal {
             boolean pathSet = false;
             double distance = mob.findDistanceToNexus();
 
-            if (distance > 2000) {
+            if (distance > 1.5) {
                 Vec3d target = nexus.getOrigin().toBottomCenterPos();
-                pathSet = navigation.tryMoveTowardsXZ(target.x, target.z, 1, 6, 4, 1);
-            } else if (distance > 1.5) {
-                pathSet = navigation.startMovingTo(nexus.getOrigin().toBottomCenterPos(), 1, 1);
+                pathSet = mob.getNavigation().startMovingTo(target.x, target.y, target.z, distance > 2000 ? 2 : 1);
             }
 
             if (!pathSet || (navigation.getLastPathDistanceToTarget() > 3 && lastPathRequestPos.isPresent() && mob.getBlockPos().isWithinDistance(lastPathRequestPos.get(), 3.5))) {

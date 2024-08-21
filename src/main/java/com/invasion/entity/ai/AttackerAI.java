@@ -7,18 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.IBlockAccessExtended;
 import com.invasion.TerrainDataLayer;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.ai.builder.Scaffold;
 import com.invasion.entity.pathfinding.PathSource;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.entity.pathfinding.IMPathNodeMaker;
-import com.invasion.entity.pathfinding.Path;
-import com.invasion.entity.pathfinding.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.entity.pathfinding.PathNode;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.Nexus;
+
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -89,7 +93,7 @@ public class AttackerAI {
             return false;
         }
         nextScaffoldCalcTimer = 200;
-        List<Scaffold> newScaffolds = findMinScaffolds(entity.getNavigatorNew().getNodeMaker(), entity.getBlockPos());
+        List<Scaffold> newScaffolds = findMinScaffolds(entity.getNavigatorNew().getActor(), entity.getBlockPos());
         if (!newScaffolds.isEmpty()) {
             addNewScaffolds(newScaffolds);
             return true;
@@ -114,8 +118,9 @@ public class AttackerAI {
                 IBlockAccessExtended terrainMap = getChunkCache(pos, nexusPos, 12);
                 Scaffold s = scaffoldPositions.get(i);
                 terrainMap.setData(s.getPos(), 200000);
+                @Nullable
                 Path path = createPath(pather, pos, nexusPos, terrainMap);
-                if (path.getTotalPathCost() < lowestCost && path.getFinalPathPoint().pos.equals(nexusPos)) {
+                if (path != null && path.getLastNode() != null && path.getLastNode().penalizedPathLength < lowestCost && path.getTarget().equals(nexusPos)) {
                     lowestCostIndex = i;
                 }
             }
@@ -134,7 +139,7 @@ public class AttackerAI {
                     }
                 }
 
-                if (!createPath(pather, pos, nexusPos, terrainMap).getFinalPathPoint().pos.equals(nexus.getOrigin())) {
+                if (!createPath(pather, pos, nexusPos, terrainMap).getTarget().equals(nexus.getOrigin())) {
                     costDif.add(s);
                 }
 
@@ -208,16 +213,16 @@ public class AttackerAI {
         List<Scaffold> scaffoldPositions = new ArrayList<>();
         boolean flag = false;
         int startHeight = 0;
-        for (int i = 0; i < path.getCurrentPathLength(); i++) {
-            PathNode node = path.getPathPointFromIndex(i);
+        for (int i = 0; i < path.getLength(); i++) {
+            PathNode node = path.getNode(i);
             if (!flag) {
-                if (node.action == PathAction.SCAFFOLD_UP) {
+                if (ActionablePathNode.getAction(node) == PathAction.SCAFFOLD_UP) {
                     flag = true;
-                    startHeight = node.pos.getY() - 1;
+                    startHeight = node.y - 1;
                 }
 
-            } else if (node.action != PathAction.SCAFFOLD_UP) {
-                Scaffold scaffold = new Scaffold(node.getPrevious().pos.getX(), startHeight, node.getPrevious().pos.getZ(), node.pos.getY() - startHeight, this.nexus);
+            } else if (ActionablePathNode.getAction(node) != PathAction.SCAFFOLD_UP) {
+                Scaffold scaffold = new Scaffold(node.previous.x, startHeight, node.previous.z, node.y - startHeight, this.nexus);
                 orientScaffold(scaffold, nexus.getWorld());
                 scaffold.setInitialIntegrity();
                 scaffoldPositions.add(scaffold);

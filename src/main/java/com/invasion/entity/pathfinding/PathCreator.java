@@ -1,8 +1,10 @@
 package com.invasion.entity.pathfinding;
 
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
+@Deprecated
 public class PathCreator implements PathSource {
     private final IMPathNodeNavigator pathFinder = new IMPathNodeNavigator();
     private final int[] nanosUsed = new int[6];

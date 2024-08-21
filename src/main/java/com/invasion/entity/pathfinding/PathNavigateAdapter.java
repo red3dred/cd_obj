@@ -2,17 +2,15 @@ package com.invasion.entity.pathfinding;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeNavigator;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+@Deprecated
 public class PathNavigateAdapter extends EntityNavigation {
     private final Navigation navigator;
-    private MobNavigation mobNavigation;
-    private boolean useOldNavigation;
 
     public PathNavigateAdapter(MobEntity entity, World world, Navigation navigator) {
         super(entity, world);
@@ -23,16 +21,9 @@ public class PathNavigateAdapter extends EntityNavigation {
         return navigator;
     }
 
-    protected MobNavigation getMobNavigation() {
-        if (mobNavigation == null) {
-            mobNavigation = new MobNavigation(entity, world);
-        }
-        return mobNavigation;
-    }
-
     @Override
     public void tick() {
-        navigator.tick();
+        ((IMNavigation)navigator).tick();
     }
 
     @Override
@@ -47,38 +38,37 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     public void stop() {
-        navigator.stop();
+        ((IMNavigation)navigator).stop();
     }
 
     @Override
     public void setSpeed(double speed) {
-        navigator.setSpeed((float) speed);
+        ((IMNavigation)navigator).setSpeed(speed);
     }
 
     @Override
     public boolean startMovingTo(double x, double y, double z, double movespeed) {
-        return navigator.startMovingTo(new Vec3d(x, y, z), 0, (float) movespeed);
+        return ((IMNavigation)navigator).startMovingTo(x, y, z, (float) movespeed);
     }
 
     @Override
     public boolean startMovingTo(Entity entity, double movespeed) {
-        return navigator.startMovingTo(entity, 0.0F, (float) movespeed);
+        return ((IMNavigation)navigator).startMovingTo(entity, (float) movespeed);
     }
 
     @Override
     public PathNodeMaker getNodeMaker() {
-        return getMobNavigation().getNodeMaker();
+        return null;
     }
 
     @Override
     public void setCanSwim(boolean canSwim) {
-        navigator.getNodeMaker().setCanSwim(canSwim);
-        getMobNavigation().setCanSwim(canSwim);
+        navigator.getActor().setCanSwim(canSwim);
     }
 
     @Override
     public boolean canSwim() {
-        return getMobNavigation().canSwim();
+        return true;
     }
 
     @Override
@@ -88,7 +78,7 @@ public class PathNavigateAdapter extends EntityNavigation {
 
     @Override
     protected Vec3d getPos() {
-        return navigator.getPos();
+        return ((IMNavigation)navigator).getPos();
     }
 
     @Override

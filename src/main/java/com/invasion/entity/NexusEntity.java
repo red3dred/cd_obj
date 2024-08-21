@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.Notifiable;
 import com.invasion.InvasionMod;
 import com.invasion.entity.pathfinding.Navigation;
-import com.invasion.entity.pathfinding.Path;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
@@ -15,6 +14,7 @@ import com.invasion.nexus.INexusAccess;
 
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -35,7 +35,9 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
 
     default Navigation getNavigatorNew() {
-        return ((PathNavigateAdapter)asEntity().getNavigation()).getNewNavigator();
+        return asEntity().getNavigation() instanceof Navigation a ? a
+                : asEntity().getNavigation() instanceof PathNavigateAdapter b ? b.getNewNavigator()
+                : null;
     }
 
     default int getAggroRange() {
@@ -95,7 +97,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     }
 
     default void setCanDestroyBlocks(boolean flag) {
-        getNavigatorNew().getNodeMaker().setCanDestroyBlocks(flag);
+        getNavigatorNew().getActor().setCanDestroyBlocks(flag);
     }
 
     default boolean getLightLevelBelow8() {

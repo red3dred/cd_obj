@@ -2,11 +2,14 @@ package com.invasion.entity.pathfinding;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.Notifiable;
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.INexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
@@ -16,7 +19,8 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.chunk.ChunkCache;
 
-public class IMNavigation implements Notifiable, Navigation {
+@Deprecated
+public class IMNavigation implements Navigation {
 	protected static final int XZPATH_HORIZONTAL_SEARCH = 1;
 	protected static final double ENTITY_TRACKING_TOLERANCE = 0.1D;
 	protected static final double MINIMUM_PROGRESS = 0.01D;
@@ -34,7 +38,7 @@ public class IMNavigation implements Notifiable, Navigation {
 	protected Entity pathEndEntity;
 	protected Vec3d pathEndEntityLastPos = Vec3d.ZERO;
 
-	protected float moveSpeed;
+	protected double moveSpeed;
 	protected float pathSearchLimit;
 
 	protected boolean noSunPathfind;
@@ -64,8 +68,8 @@ public class IMNavigation implements Notifiable, Navigation {
 		actor = createActor(entity);
 	}
 
-	@Override
-    public Actor<?> getNodeMaker() {
+    @Override
+    public Actor<?> getActor() {
 	    return actor;
 	}
 
@@ -90,9 +94,9 @@ public class IMNavigation implements Notifiable, Navigation {
         return newGoal;
     }
 
-	@Override
+    @Override
     public PathAction getCurrentWorkingAction() {
-	    return !nodeActionFinished && !isIdle() ? activeNode.action : PathAction.NONE;
+	    return !nodeActionFinished && !isIdle() ? ActionablePathNode.getAction(activeNode) : PathAction.NONE;
 	}
 
 	protected boolean isMaintainingPos() {
@@ -108,59 +112,37 @@ public class IMNavigation implements Notifiable, Navigation {
 		maintainPosOnWait = true;
 	}
 
-	@Override
-    public void setSpeed(float speed) {
+    public void setSpeed(double speed) {
 		moveSpeed = speed;
 	}
 
-	public boolean isAutoPathingToEntity() {
-		return autoPathToEntity;
-	}
-
-	@Override
+    @Override
     public Entity getTargetEntity() {
 		return pathEndEntity;
 	}
 
-	@Override
     public Path getPathToXYZ(Vec3d pos, float targetRadius) {
 		return createPath(theEntity, BlockPos.ofFloored(pos), targetRadius);
 	}
 
-	@Override
-    public boolean startMovingTo(Vec3d pos, float targetRadius, float speed) {
+    public boolean startMovingTo(double x, double y, double z, double speed) {
 		ticksStuck = 0;
-		Path newPath = getPathToXYZ(pos, targetRadius);
-		return newPath != null && setPath(newPath, speed);
+		Path newPath = getPathToXYZ(new Vec3d(x, y, z), theEntity.getNavigation().getNodeReachProximity());
+		return newPath != null && startMovingAlong(newPath, speed);
 	}
 
-	@Override
-    public Path getPathTowardsXZ(double x, double z, int min, int max, int verticalRange) {
-		Vec3d target = findValidPointNear(x, z, min, max, verticalRange);
-		return target == null ? null : getPathToXYZ(target, 0);
+    @Nullable
+    public Path findPathTo(Entity targetEntity, int distance) {
+		return createPath(theEntity, targetEntity.getBlockPos(), theEntity.getNavigation().getNodeReachProximity());
 	}
 
-	@Override
-    public boolean tryMoveTowardsXZ(double x, double z, int min, int max, int verticalRange, float speed) {
-		ticksStuck = 0;
-		Path newPath = getPathTowardsXZ(MathHelper.floor(x), MathHelper.floor(z), min, max, verticalRange);
-		return newPath != null && setPath(newPath, speed);
-	}
-
-	@Nullable
-	@Override
-    public Path getPathToEntity(Entity targetEntity, float targetRadius) {
-		return createPath(theEntity, targetEntity.getBlockPos(), targetRadius);
-	}
-
-	@Override
-    public boolean startMovingTo(Entity targetEntity, float targetRadius, float speed) {
-		Path newPath = getPathToEntity(targetEntity, targetRadius);
+    public boolean startMovingTo(Entity targetEntity, double speed) {
+		Path newPath = findPathTo(targetEntity, (int)(2 * theEntity.distanceTo(targetEntity)));
 		if (newPath == null) {
 		    return false;
 		}
 
-		if (setPath(newPath, speed)) {
+		if (startMovingAlong(newPath, speed)) {
 			pathEndEntity = targetEntity;
 			return true;
 		}
@@ -169,14 +151,13 @@ public class IMNavigation implements Notifiable, Navigation {
 		return false;
 	}
 
-	@Override
+    @Override
     public void autoPathToEntity(Entity target) {
 		autoPathToEntity = true;
 		pathEndEntity = target;
 	}
 
-	@Override
-    public boolean setPath(Path newPath, float speed) {
+    public boolean startMovingAlong(net.minecraft.entity.ai.pathing.Path newPath, double speed) {
 		if (newPath == null) {
 			path = null;
 			theEntity.onPathSet();
@@ -191,30 +172,30 @@ public class IMNavigation implements Notifiable, Navigation {
 		entityCentre = theEntity.getBlockPos().toBottomCenterPos();
 
 		path = newPath;
-		activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
+		activeNode = path.getNode(path.getCurrentNodeIndex());
 
-		if (activeNode.action != PathAction.NONE) {
+		if (getCurrentWorkingAction() != PathAction.NONE) {
 			nodeActionFinished = false;
 		} else if (theEntity.getWidth() <= 1) {
-			path.incrementPathIndex();
+			path.next();
 			if (!path.isFinished()) {
-				activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
-				if (activeNode.action != PathAction.NONE) {
+				activeNode = path.getNode(path.getCurrentNodeIndex());
+				if (getCurrentWorkingAction() != PathAction.NONE) {
 					nodeActionFinished = false;
 				}
 			}
 		} else {
 			//UnstoppableN Custom Code
 			//changed < to > this seems to have fixed some stuffs, not sure why
-			while (theEntity.getPos().distanceTo(entityCentre.add(activeNode.pos.toCenterPos())) > theEntity.getWidth()) {
-				path.incrementPathIndex();
+			while (theEntity.getPos().distanceTo(entityCentre.add(activeNode.getBlockPos().toCenterPos())) > theEntity.getWidth()) {
+				path.next();
 				if (path.isFinished()) {
 				    //System.out.println("Finished! : "+ path.getCurrentPathIndex()+" / "+ path.points.length);
 				    break;
 				}
 
-				activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
-				if (activeNode.action != PathAction.NONE) {
+				activeNode = path.getNode(path.getCurrentNodeIndex());
+				if (getCurrentWorkingAction() != PathAction.NONE) {
 					nodeActionFinished = false;
 				}
 			}
@@ -228,17 +209,15 @@ public class IMNavigation implements Notifiable, Navigation {
 		return true;
 	}
 
-	@Override
-    public Path getPath() {
+    public Path getCurrentPath() {
 		return path;
 	}
 
-	@Override
+    @Override
     public boolean isWaitingForTask() {
 		return waitingForNotify;
 	}
 
-	@Override
     public void tick() {
 	    if (theEntity.getTarget() != null) {
             transitionAIGoal(Goal.TARGET_ENTITY);
@@ -278,23 +257,23 @@ public class IMNavigation implements Notifiable, Navigation {
 				ticksStuck++;
 			}
 
-			int pathIndex = path.getCurrentPathIndex();
+			int pathIndex = path.getCurrentNodeIndex();
 			pathFollow();
 			if (isIdle()) {
 				return;
 			}
-			if (path.getCurrentPathIndex() != pathIndex) {
+			if (path.getCurrentNodeIndex() != pathIndex) {
 				lastDistance = getDistanceToActiveNode();
 				ticksStuck = 0;
-				activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
-				if (activeNode.action != PathAction.NONE) {
+				activeNode = path.getNode(path.getCurrentNodeIndex());
+				if (getCurrentWorkingAction() != PathAction.NONE) {
 					nodeActionFinished = false;
 				}
 			}
 		}
 
 		if (nodeActionFinished) {
-			if (!isPositionClearFrom(theEntity.getBlockPos(), activeNode.pos, theEntity)) {
+			if (!isPositionClearFrom(theEntity.getBlockPos(), activeNode.getBlockPos(), theEntity)) {
 				if (theEntity.onPathBlocked(path, this)) {
 					setDoingTaskAndHoldOnPoint();
 				}
@@ -309,15 +288,15 @@ public class IMNavigation implements Notifiable, Navigation {
 					        pathEndEntity.getZ(), moveSpeed);
 				} else {
 					theEntity.getMoveControl().moveTo(
-					        activeNode.pos.getX() + entityCentre.x,
-					        activeNode.pos.getY() + entityCentre.y,
-					        activeNode.pos.getZ() + entityCentre.z, moveSpeed);
+					        activeNode.x + entityCentre.x,
+					        activeNode.y + entityCentre.y,
+					        activeNode.z + entityCentre.z, moveSpeed);
 				}
 			} else {
 				haltMovement = false;
 			}
 
-		} else if (!handlePathAction()) {
+		} else if (!handlePathAction(getCurrentWorkingAction())) {
 			stop();
 		}
 	}
@@ -328,42 +307,40 @@ public class IMNavigation implements Notifiable, Navigation {
 		lastActionResult = result;
 	}
 
-	@Override
+    @Override
     public Status getLastActionResult() {
 		return lastActionResult;
 	}
 
-	@Override
+    @Override
     public boolean isIdle() {
 		return path == null || path.isFinished();
 	}
 
-	@Override
+    @Override
     public int getStuckTime() {
 		return ticksStuck;
 	}
 
-	@Override
+    @Override
     public float getLastPathDistanceToTarget() {
 		if (isIdle()) {
-			if (path != null && path.getIntendedTarget() != null) {
-				PathNode node = path.getIntendedTarget();
-				return MathHelper.sqrt((float) theEntity.getBlockPos().getSquaredDistance(node.pos));
+			if (path != null && path.getTarget() != null) {
+				return MathHelper.sqrt((float) theEntity.getBlockPos().getSquaredDistance(path.getTarget()));
 			}
 			return 0;
 		}
 
-		return path.getFinalPathPoint().distanceTo(path.getIntendedTarget());
+		return path.getLastNode().getDistance(path.getTarget());
 	}
 
-	@Override
     public void stop() {
 		path = null;
 		autoPathToEntity = false;
 		resetStatus();
 	}
 
-	@Override
+    @Override
     public void haltForTick() {
 		haltMovement = true;
 	}
@@ -385,21 +362,21 @@ public class IMNavigation implements Notifiable, Navigation {
 
 	protected void pathFollow() {
 		Vec3d pos = getPos();
-		int maxNextLegIndex = path.getCurrentPathIndex() - 1;
+		int maxNextLegIndex = path.getCurrentNodeIndex() - 1;
 
-		PathNode nextPoint = path.getPathPointFromIndex(path.getCurrentPathIndex());
-		if (nextPoint.pos.getY() == (int) pos.y && maxNextLegIndex < path.getCurrentPathLength() - 1) {
+		PathNode nextPoint = path.getNode(path.getCurrentNodeIndex());
+		if (nextPoint.y == (int) pos.y && maxNextLegIndex < path.getLength() - 1) {
 			maxNextLegIndex++;
 
 			boolean canConsolidate = true;
 			int prevIndex = maxNextLegIndex - 2;
-			if (prevIndex >= 0 && path.getPathPointFromIndex(prevIndex).action != PathAction.NONE) {
+			if (prevIndex >= 0 && ActionablePathNode.getAction(path.getNode(prevIndex)) != PathAction.NONE) {
 				canConsolidate = false;
 			}
 			if (canConsolidate && actor.canStandAt(theEntity.getWorld(), theEntity.getBlockPos())) {
-				while (maxNextLegIndex < path.getCurrentPathLength() - 1
-				        && path.getPathPointFromIndex(maxNextLegIndex).pos.getY() == (int) pos.y
-				        && path.getPathPointFromIndex(maxNextLegIndex).action == PathAction.NONE) {
+				while (maxNextLegIndex < path.getLength() - 1
+				        && path.getNode(maxNextLegIndex).y == (int) pos.y
+				        && ActionablePathNode.getAction(path.getNode(maxNextLegIndex)) == PathAction.NONE) {
 					maxNextLegIndex++;
 				}
 			}
@@ -407,9 +384,9 @@ public class IMNavigation implements Notifiable, Navigation {
 		}
 
 		float reach = MathHelper.square(theEntity.getWidth() * 0.5F);
-		for (int j = path.getCurrentPathIndex(); j <= maxNextLegIndex; j++) {
-			if (pos.squaredDistanceTo(path.getPositionAtIndex(theEntity, j)) < reach) {
-				path.setCurrentPathIndex(j + 1);
+		for (int j = path.getCurrentNodeIndex(); j <= maxNextLegIndex; j++) {
+			if (pos.squaredDistanceTo(path.getNodePosition(theEntity, j)) < reach) {
+				path.setCurrentNodeIndex(j + 1);
 			}
 		}
 
@@ -419,19 +396,19 @@ public class IMNavigation implements Notifiable, Navigation {
 		        (int) Math.ceil(this.theEntity.getWidth())
         );
 
-		while (maxNextLegIndex > path.getCurrentPathIndex() && !isDirectPathBetweenPoints(pos, path.getPositionAtIndex(theEntity, maxNextLegIndex), size)) {
+		while (maxNextLegIndex > path.getCurrentNodeIndex() && !isDirectPathBetweenPoints(pos, path.getNodePosition(theEntity, maxNextLegIndex), size)) {
 		    maxNextLegIndex--;
 		}
 
-		for (int i = path.getCurrentPathIndex() + 1; i < maxNextLegIndex; i++) {
-			if (path.getPathPointFromIndex(i).action != PathAction.NONE) {
+		for (int i = path.getCurrentNodeIndex() + 1; i < maxNextLegIndex; i++) {
+			if (ActionablePathNode.getAction(path.getNode(i)) != PathAction.NONE) {
 			    maxNextLegIndex = i;
 				break;
 			}
 		}
 
-		if (path.getCurrentPathIndex() < maxNextLegIndex) {
-			path.setCurrentPathIndex(maxNextLegIndex);
+		if (path.getCurrentNodeIndex() < maxNextLegIndex) {
+			path.setCurrentNodeIndex(maxNextLegIndex);
 		}
 	}
 
@@ -440,25 +417,19 @@ public class IMNavigation implements Notifiable, Navigation {
 
 	protected void updateAutoPathToEntity() {
 		if (pathEndEntity != null && (isIdle() || (pathEndEntity.getPos().distanceTo(pathEndEntityLastPos) / (6 + theEntity.getPos().distanceTo(pathEndEntityLastPos)) > 0.1D))) {
-			Path newPath = getPathToEntity(pathEndEntity, 0);
-			if (newPath != null && setPath(newPath, moveSpeed)) {
+			Path newPath = this.findPathTo(pathEndEntity, theEntity.getSenseRange());
+			if (newPath != null && startMovingAlong(newPath, moveSpeed)) {
 				pathEndEntityLastPos = pathEndEntity.getPos();
 			}
 		}
 	}
 
 	protected double getDistanceToActiveNode() {
-		return activeNode == null ? 0 : activeNode.pos.toBottomCenterPos().subtract(theEntity.getPos()).length();
+		return activeNode == null ? 0 : activeNode.getPos().subtract(theEntity.getPos()).length();
 	}
 
-	protected boolean handlePathAction() {
+	protected boolean handlePathAction(PathAction action) {
 		this.nodeActionFinished = true;
-		return true;
-	}
-
-	protected boolean setDoingTask() {
-		waitingForNotify = true;
-		actionCleared = false;
 		return true;
 	}
 
@@ -473,7 +444,7 @@ public class IMNavigation implements Notifiable, Navigation {
 	protected boolean setDoingTaskAndHoldOnPoint() {
 		waitingForNotify = true;
 		actionCleared = false;
-		setMaintainPosOnWait(activeNode.pos.toBottomCenterPos());
+		setMaintainPosOnWait(activeNode.getPos());
 		theEntity.setIsHoldingIntoLadder(true);
 		return true;
 	}
@@ -486,7 +457,6 @@ public class IMNavigation implements Notifiable, Navigation {
 		waitingForNotify = false;
 	}
 
-	@Override
     public Vec3d getPos() {
 		return new Vec3d(theEntity.getX(), getPathableYPos(), theEntity.getZ());
 	}
@@ -495,7 +465,6 @@ public class IMNavigation implements Notifiable, Navigation {
 		return this.theEntity;
 	}
 
-	@SuppressWarnings("deprecation")
     private int getPathableYPos() {
 		if (!theEntity.isTouchingWater() || !canSwim) {
 			return theEntity.getBlockPos().getY();
@@ -551,11 +520,11 @@ public class IMNavigation implements Notifiable, Navigation {
 			return;
 		}
 
-		for (int i = 0; i < path.getCurrentPathLength(); i++) {
-			PathNode pathpoint = path.getPathPointFromIndex(i);
+		for (int i = 0; i < path.getLength(); i++) {
+			PathNode pathpoint = path.getNode(i);
 
-			if (theEntity.getWorld().isSkyVisible(pathpoint.pos)) {
-				path.setCurrentPathLength(i - 1);
+			if (theEntity.getWorld().isSkyVisible(pathpoint.getBlockPos())) {
+				path.setLength(i - 1);
 				return;
 			}
 		}
@@ -613,7 +582,6 @@ public class IMNavigation implements Notifiable, Navigation {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation")
     protected boolean isSafeToStandAt(BlockPos.Mutable pos, Vec3i size, Vec3d entityPosition, Vec3d delta) {
 	    pos.move(-size.getX() / 2, 0, -size.getZ() / 2);
 
@@ -637,7 +605,6 @@ public class IMNavigation implements Notifiable, Navigation {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation")
     protected boolean isPositionClear(BlockPos pos, Vec3i size, Vec3d entityPostion, double vecX, double vecZ) {
 	    for (BlockPos p : BlockPos.iterate(pos, pos.add(size))) {
 	        double d = p.getX() + 0.5D - entityPostion.x;
@@ -654,7 +621,6 @@ public class IMNavigation implements Notifiable, Navigation {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation")
 	protected boolean isPositionClearFrom(BlockPos from, BlockPos to, EntityIMLiving entity) {
 		if (to.getY() > from.getY()) {
 			BlockState block = theEntity.getWorld().getBlockState(from.add(0, MathHelper.ceil(entity.getHeight()), 0));
@@ -666,7 +632,6 @@ public class IMNavigation implements Notifiable, Navigation {
 		return isPositionClear(to, entity);
 	}
 
-	@SuppressWarnings("deprecation")
 	protected boolean isPositionClear(BlockPos pos, EntityIMLiving entity) {
 	    return BlockPos.stream(entity.getDimensions(entity.getPose()).getBoxAt(pos.toBottomCenterPos())).allMatch(p -> {
 	        BlockState block = theEntity.getWorld().getBlockState(p);

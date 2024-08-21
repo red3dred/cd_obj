@@ -3,12 +3,13 @@ package com.invasion.entity.ai.builder;
 import java.util.List;
 
 import com.invasion.entity.pathfinding.IMPathNodeMaker;
-import com.invasion.entity.pathfinding.PathAction;
-import com.invasion.entity.pathfinding.PathNode;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.INexusAccess;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -187,28 +188,30 @@ public class Scaffold implements IMPathNodeMaker {
 
     @Override
     public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        BlockState state = terrainMap.getBlockState(node.pos);
-        float materialMultiplier = state.isSolidBlock(terrainMap, node.pos) ? 2.2F : 1.0F;
-        if (node.action == PathAction.SCAFFOLD_UP) {
-            if (prevNode.action != PathAction.SCAFFOLD_UP) {
+        PathAction action = ActionablePathNode.getAction(node);
+        PathAction prevAction = ActionablePathNode.getAction(prevNode);
+        BlockState state = terrainMap.getBlockState(node.getBlockPos());
+        float materialMultiplier = state.isSolidBlock(terrainMap, node.getBlockPos()) ? 2.2F : 1.0F;
+        if (action == PathAction.SCAFFOLD_UP) {
+            if (prevAction != PathAction.SCAFFOLD_UP) {
                 materialMultiplier *= 3.4F;
             }
-            return prevNode.distanceTo(node) * 0.85F * materialMultiplier;
+            return prevNode.getDistance(node) * 0.85F * materialMultiplier;
         }
-        if (node.action == PathAction.BRIDGE) {
-            if (prevNode.action == PathAction.SCAFFOLD_UP) {
+        if (action == PathAction.BRIDGE) {
+            if (prevAction == PathAction.SCAFFOLD_UP) {
                 materialMultiplier = 0;
             }
-            return prevNode.distanceTo(node) * 1.1F * materialMultiplier;
+            return prevNode.getDistance(node) * 1.1F * materialMultiplier;
         }
-        if (node.action.getType() == PathAction.Type.LADDER && node.action.isHorizontal()) {
-            return prevNode.distanceTo(node) * 1.5F * materialMultiplier;
+        if (action.getType() == PathAction.Type.LADDER && action.isHorizontal()) {
+            return prevNode.getDistance(node) * 1.5F * materialMultiplier;
         }
 
         if (pathfindBase != null) {
             return pathfindBase.getPathNodePenalty(prevNode, node, terrainMap);
         }
-        return prevNode.distanceTo(node);
+        return prevNode.getDistance(node);
     }
 
     @Override
@@ -216,9 +219,9 @@ public class Scaffold implements IMPathNodeMaker {
         if (pathfindBase != null) {
             pathfindBase.getSuccessors(terrainMap, currentNode, pathFinder);
         }
-        BlockPos positionAbove = currentNode.pos.up();
+        BlockPos positionAbove = currentNode.getBlockPos().up();
         BlockState stateAbove = terrainMap.getBlockState(positionAbove);
-        if (currentNode.getPrevious() != null && currentNode.getPrevious().action == PathAction.SCAFFOLD_UP && !avoidsBlock(stateAbove)) {
+        if (ActionablePathNode.getAction(currentNode.previous) == PathAction.SCAFFOLD_UP && !avoidsBlock(stateAbove)) {
             pathFinder.addNode(positionAbove, PathAction.SCAFFOLD_UP);
             return;
         }
@@ -227,17 +230,17 @@ public class Scaffold implements IMPathNodeMaker {
             List<Scaffold> scaffolds = nexus.getAttackerAI().getScaffolds();
             minDistance = nexus.getAttackerAI().getMinDistanceBetweenScaffolds();
             for (int sl = scaffolds.size() - 1; sl >= 0; sl--) {
-                if (scaffolds.get(sl).pos.isWithinDistance(currentNode.pos, minDistance)) {
+                if (scaffolds.get(sl).pos.isWithinDistance(currentNode.getBlockPos(), minDistance)) {
                     return;
                 }
             }
         }
 
         if (stateAbove.isAir()) {
-            BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
+            BlockPos.Mutable mutable = currentNode.getBlockPos().mutableCopy();
             if (terrainMap.getBlockState(mutable.move(Direction.DOWN, 2)).isSolidBlock(terrainMap, mutable)) {
                 for (int i = 1; i < MIN_SCAFFOLD_HEIGHT; i++) {
-                    if (terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP, i)).isAir()) {
+                    if (terrainMap.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(Direction.UP, i)).isAir()) {
                         return;
                     }
                 }

@@ -79,7 +79,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(1, new PredicatedGoal(new ChargeMobGoal<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
         goalSelector.add(2, new KillEntityGoal<>(this, PlayerEntity.class, 40));
-        goalSelector.add(3, new AttackNexusGoal(this));
+        goalSelector.add(3, new AttackNexusGoal<>(this));
         goalSelector.add(4, new WaitForSupportGoal(this, 4.0F, true));
         goalSelector.add(5, new KillEntityGoal<>(this, LivingEntity.class, 40));
         goalSelector.add(6, new GoToNexusGoal(this));
@@ -128,7 +128,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
                     boolean mobgriefing = getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
 
                     if (!block.isAir()) {
-                        if (getNavigatorNew().getNodeMaker().isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
+                        if (getNavigatorNew().getActor().isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
                             playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.2F, 0.5F);
                             if (mobgriefing) {
                                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);

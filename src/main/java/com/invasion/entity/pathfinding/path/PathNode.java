@@ -1,4 +1,4 @@
-package com.invasion.entity.pathfinding;
+package com.invasion.entity.pathfinding.path;
 
 import java.util.Comparator;
 
@@ -8,7 +8,7 @@ import net.minecraft.util.math.MathHelper;
 /**
  * Source: net.minecraft.entity.ai.pathing.PathNode
  */
-public class PathNode extends net.minecraft.entity.ai.pathing.PathNode {
+class PathNode extends net.minecraft.entity.ai.pathing.PathNode implements ActionablePathNode {
     public static final Comparator<PathNode> POSITION_COMPARATOR = Comparator.comparing(a -> a.pos);
     public final BlockPos pos;
     public final PathAction action;
@@ -20,11 +20,20 @@ public class PathNode extends net.minecraft.entity.ai.pathing.PathNode {
     }
 
     public PathNode(BlockPos pos, PathAction pathAction) {
-        super(pos.getX(), pos.getY(), pos.getZ());
+        this(pos.getX(), pos.getY(), pos.getZ(), pathAction);
+    }
+
+    public PathNode(int x, int y, int z, PathAction pathAction) {
+        super(x, y, z);
         this.heapIndex = -1;
-        this.pos = pos;
+        this.pos = new BlockPos(x, y, z);
         this.action = pathAction;
-        this.hashCode = makeHash(pos, action);
+        this.hashCode = ActionablePathNode.makeHash(x, y, z, action);
+    }
+
+    @Override
+    public PathAction getAction() {
+        return action;
     }
 
     @Override
@@ -67,26 +76,6 @@ public class PathNode extends net.minecraft.entity.ai.pathing.PathNode {
         return heapIndex >= 0;
     }
 
-    public PathNode getPrevious() {
-        return (PathNode)previous;
-    }
-
-    public PathNode[] getPath() {
-        int i = 1;
-        for (PathNode node = this;
-                node.getPrevious() != null;
-                node = node.getPrevious()) {
-            i++;
-        }
-        PathNode[] nodes = new PathNode[i];
-        PathNode node = this;
-        for (nodes[(--i)] = node; node.getPrevious() != null; nodes[(--i)] = node) {
-            node = node.getPrevious();
-        }
-
-        return nodes;
-    }
-
     @Override
     public int hashCode() {
         return hashCode;
@@ -100,14 +89,5 @@ public class PathNode extends net.minecraft.entity.ai.pathing.PathNode {
     @Override
     public String toString() {
         return pos.toShortString() + ", " + action;
-    }
-
-    public static int makeHash(BlockPos pos, PathAction action) {
-        return makeHash(pos.getX(), pos.getY(), pos.getZ(), action);
-    }
-
-    @Deprecated
-    public static int makeHash(int x, int y, int z, PathAction action) {
-        return y & 0xFF | (x & 0xFF) << 8 | (z & 0xFF) << 16 | (action.ordinal() & 0xFF) << 24;
     }
 }

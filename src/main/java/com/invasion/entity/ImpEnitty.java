@@ -23,7 +23,7 @@ import net.minecraft.world.World;
 public class ImpEnitty extends IMMobEntity {
     public ImpEnitty(EntityType<ImpEnitty> type, World world) {
         super(type, world);
-        getNavigatorNew().getNodeMaker().setCanClimb(true);
+        getNavigatorNew().getActor().setCanClimb(true);
     }
 
     public static DefaultAttributeContainer.Builder createAttributes() {

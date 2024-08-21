@@ -5,6 +5,8 @@ import java.util.Optional;
 import com.invasion.IBlockAccessExtended;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.util.math.PosUtils;
 
 import net.minecraft.block.BlockState;
@@ -12,6 +14,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -21,6 +24,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.GameRules;
 
+@Deprecated
 public class Actor<T extends Entity> implements IMPathNodeMaker {
     protected final T entity;
 
@@ -104,67 +108,69 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
 
     @Override
     public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
+        float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
 
-        if (node.pos.getY() > prevNode.pos.getY() && getNodeDestructability(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
+        if (node.y > prevNode.y && getNodeDestructability(terrainMap, node.getBlockPos()) == DestructableType.DESTRUCTABLE) {
             multiplier += 2;
         }
 
-        if (blockHasLadder(terrainMap, node.pos)) {
+        if (blockHasLadder(terrainMap, node.getBlockPos())) {
             multiplier += 5;
         }
 
-        if (node.action == PathAction.SWIM) {
-            multiplier *= node.pos.getY() <= prevNode.pos.getY() && !terrainMap.getBlockState(node.pos).isAir() ? 3 : 1;
-            return prevNode.distanceTo(node) * 1.3F * multiplier;
+        if (ActionablePathNode.getAction(node) == PathAction.SWIM) {
+            multiplier *= node.y <= prevNode.y && !terrainMap.getBlockState(node.getBlockPos()).isAir() ? 3 : 1;
+            return prevNode.getDistance(node) * 1.3F * multiplier;
         }
 
-        BlockState state = terrainMap.getBlockState(node.pos);
-        return prevNode.distanceTo(node) * BlockMetadata.getCost(state).orElse(state.isSolidBlock(terrainMap, node.pos) ? 3.2F : 1) * multiplier;
+        BlockState state = terrainMap.getBlockState(node.getBlockPos());
+        return prevNode.getDistance(node) * BlockMetadata.getCost(state).orElse(state.isSolidBlock(terrainMap, node.getBlockPos()) ? 3.2F : 1) * multiplier;
     }
 
     @Override
     public void getSuccessors(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
-        if (entity.getWorld().isOutOfHeightLimit(currentNode.pos)) {
+        if (entity.getWorld().isOutOfHeightLimit(currentNode.getBlockPos())) {
             return;
         }
 
         calcPathOptionsVertical(terrainMap, currentNode, pathFinder);
 
-        if (currentNode.action == PathAction.DIG && !canStandAt(terrainMap, currentNode.pos)) {
+        PathAction action = ActionablePathNode.getAction(currentNode);
+
+        if (action == PathAction.DIG && !canStandAt(terrainMap, currentNode.getBlockPos())) {
             return;
         }
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         int height = MathHelper.ceil(entity.getStepHeight());
         for (int i = 1; i <= height; i++) {
-            if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(Direction.UP, i)) == DestructableType.UNBREAKABLE) {
+            if (getNodeDestructability(terrainMap, mutable.set(currentNode.x, currentNode.y, currentNode.z).move(Direction.UP, i)) == DestructableType.UNBREAKABLE) {
                 height = i - 1;
             }
         }
 
         int maxFall = 8;
         for (Direction facing : Direction.Type.HORIZONTAL) {
-            if (currentNode.action != PathAction.NONE) {
-                if (facing == Direction.EAST && currentNode.action == PathAction.LADDER_UP_NX) {
+            if (action != PathAction.NONE) {
+                if (facing == Direction.EAST && action == PathAction.LADDER_UP_NX) {
                     height = 0;
                 }
-                if (facing == Direction.WEST && currentNode.action == PathAction.LADDER_UP_PX) {
+                if (facing == Direction.WEST && action == PathAction.LADDER_UP_PX) {
                     height = 0;
                 }
-                if (facing == Direction.SOUTH && currentNode.action == PathAction.LADDER_UP_NZ) {
+                if (facing == Direction.SOUTH && action == PathAction.LADDER_UP_NZ) {
                     height = 0;
                 }
-                if (facing == Direction.NORTH && currentNode.action == PathAction.LADDER_UP_PZ) {
+                if (facing == Direction.NORTH && action == PathAction.LADDER_UP_PZ) {
                     height = 0;
                 }
             }
-            int currentY = currentNode.pos.getY() + height;
+            int currentY = currentNode.y + height;
             boolean passedLevel = false;
             do {
                 int yOffset = getNextLowestSafeYOffset(terrainMap,
-                        mutable.set(currentNode.pos).setY(currentY).move(facing),
-                        maxFall + currentY - currentNode.pos.getY()
+                        mutable.set(currentNode.x, currentY, currentNode.z).move(facing),
+                        maxFall + currentY - currentNode.y
                 );
                 if (yOffset > 0) {
                     break;
@@ -175,20 +181,20 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
 
                 currentY += yOffset - 1;
 
-                if ((!passedLevel) && (currentY <= currentNode.pos.getY())) {
+                if ((!passedLevel) && (currentY <= currentNode.y)) {
                     passedLevel = true;
-                    if (currentY != currentNode.pos.getY()) {
-                        addAdjacent(terrainMap, currentNode.pos.offset(facing), currentNode, pathFinder);
+                    if (currentY != currentNode.y) {
+                        addAdjacent(terrainMap, currentNode.getBlockPos().offset(facing), currentNode, pathFinder);
                     }
 
                 }
 
-            } while (currentY >= currentNode.pos.getY());
+            } while (currentY >= currentNode.y);
         }
 
         if (canSwimHorizontal()) {
             for (Direction offset : Direction.Type.HORIZONTAL) {
-                if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) == DestructableType.FLUID) {
+                if (getNodeDestructability(terrainMap, mutable.set(currentNode.x, currentNode.y, currentNode.z).move(offset)) == DestructableType.FLUID) {
                     pathFinder.addNode(mutable.toImmutable(), PathAction.SWIM);
                 }
             }
@@ -196,47 +202,48 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
     }
 
     protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
-        int collideUp = getNodeDestructability(terrainMap, currentNode.pos.up());
+        int collideUp = getNodeDestructability(terrainMap, currentNode.getBlockPos().up());
+        PathAction pathAction = ActionablePathNode.getAction(currentNode);
         if (collideUp > DestructableType.UNBREAKABLE) {
-            BlockState state = terrainMap.getBlockState(currentNode.pos.up());
+            BlockState state = terrainMap.getBlockState(currentNode.getBlockPos().up());
             if (state.isIn(BlockTags.CLIMBABLE)) {
                 Direction facing = state.getOrEmpty(HorizontalFacingBlock.FACING).orElse(null);
                 PathAction action = PathAction.getLadderActionForDirection(facing);
 
-                if (currentNode.action == PathAction.NONE) {
-                    pathFinder.addNode(currentNode.pos.up(), action);
-                } else if (currentNode.action.getType() == PathAction.Type.LADDER && currentNode.action.getBuildDirection() != Direction.UP) {
-                    if (action == currentNode.action) {
-                        pathFinder.addNode(currentNode.pos.up(), action);
+                if (pathAction == PathAction.NONE) {
+                    pathFinder.addNode(currentNode.getBlockPos().up(), action);
+                } else if (pathAction.getType() == PathAction.Type.LADDER && pathAction.getBuildDirection() != Direction.UP) {
+                    if (action == pathAction) {
+                        pathFinder.addNode(currentNode.getBlockPos().up(), action);
                     }
                 } else {
-                    pathFinder.addNode(currentNode.pos.up(), action);
+                    pathFinder.addNode(currentNode.getBlockPos().up(), action);
                 }
             } else if (getCanClimb()) {
-                if (isAdjacentSolidBlock(terrainMap, currentNode.pos.up())) {
-                    pathFinder.addNode(currentNode.pos.up(), PathAction.NONE);
+                if (isAdjacentSolidBlock(terrainMap, currentNode.getBlockPos().up())) {
+                    pathFinder.addNode(currentNode.getBlockPos().up(), PathAction.NONE);
                 }
             }
         }
-        int below = getNodeDestructability(terrainMap, currentNode.pos.down());
-        int above = getNodeDestructability(terrainMap, currentNode.pos.up());
+        int below = getNodeDestructability(terrainMap, currentNode.getBlockPos().down());
+        int above = getNodeDestructability(terrainMap, currentNode.getBlockPos().up());
         if (getCanDigDown()) {
             if (below == DestructableType.DESTRUCTABLE) {
-                pathFinder.addNode(currentNode.pos.down(), PathAction.DIG);
+                pathFinder.addNode(currentNode.getBlockPos().down(), PathAction.DIG);
             } else if (below == DestructableType.TERRAIN) {
-                int yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.pos.down(), 5);
+                int yOffset = getNextLowestSafeYOffset(terrainMap, currentNode.getBlockPos().down(), 5);
                 if (yOffset <= 0) {
-                    pathFinder.addNode(currentNode.pos.up(yOffset - 1), PathAction.NONE);
+                    pathFinder.addNode(currentNode.getBlockPos().up(yOffset - 1), PathAction.NONE);
                 }
             }
         }
 
         if (canSwimVertical()) {
             if (below == -1) {
-                pathFinder.addNode(currentNode.pos.down(), PathAction.SWIM);
+                pathFinder.addNode(currentNode.getBlockPos().down(), PathAction.SWIM);
             }
             if (above == -1) {
-                pathFinder.addNode(currentNode.pos.up(), PathAction.SWIM);
+                pathFinder.addNode(currentNode.getBlockPos().up(), PathAction.SWIM);
             }
         }
     }
@@ -298,7 +305,7 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
         return state.hasSolidTopSurface(world, pos, entity) && !avoidsBlock(state);
     }
 
-    protected boolean blockHasLadder(BlockView world, BlockPos pos) {
+    protected static boolean blockHasLadder(BlockView world, BlockPos pos) {
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (Direction offset : Direction.Type.HORIZONTAL) {
             if (world.getBlockState(mutable.set(pos).move(offset)).isIn(BlockTags.CLIMBABLE)) {
@@ -337,5 +344,4 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
         }
         return destructibleFlag ? DestructableType.DESTRUCTABLE : liquidFlag ? DestructableType.FLUID : DestructableType.TERRAIN;
     }
-
 }

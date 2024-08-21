@@ -3,9 +3,8 @@ package com.invasion.entity.ai.goal;
 import org.joml.Vector3f;
 
 import com.invasion.entity.VultureEntity;
+import com.invasion.entity.pathfinding.FlyingNavigation;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigation;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
@@ -86,12 +85,12 @@ public class PickUpEntityGoal extends net.minecraft.entity.ai.goal.Goal {
                     target.startRiding(theEntity);
                     isHoldingEntity = true;
                     time = 0;
-                    theEntity.getNavigatorNew().stop();
-                    ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
+                    theEntity.getNavigation().stop();
+                    ((FlyingNavigation)theEntity.getNavigatorNew()).setPitchBias(20, 1.5F);
                 }
             }
         } else if (time == 45) {
-            ((FlightNavigation)theEntity.getNavigatorNew()).setPitchBias(0, 0);
+            ((FlyingNavigation)theEntity.getNavigatorNew()).setPitchBias(0, 0);
         } else if (time > holdTime) {
             theEntity.getTarget().stopRiding();
         }

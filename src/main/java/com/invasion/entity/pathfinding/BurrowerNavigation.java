@@ -6,12 +6,16 @@ import org.joml.Vector3f;
 
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.BurrowerEntity;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.util.math.PosRotate3D;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -56,21 +60,21 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
         return new Actor<>(entity) {
             @Override
             public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView worldMap) {
-                BlockState block = worldMap.getBlockState(node.pos);
+                BlockState block = worldMap.getBlockState(node.getBlockPos());
 
                 float penalty = 0.0F;
                 int enclosedLevelSide = 0;
 
-                BlockPos.Mutable mutable = node.pos.mutableCopy();
-                if (!entity.getWorld().getBlockState(mutable.move(Direction.DOWN)).canPathfindThrough(NavigationType.LAND)) {
+                BlockPos.Mutable mutable = new BlockPos.Mutable();
+                if (!entity.getWorld().getBlockState(mutable.set(node.x, node.y, node.z).move(Direction.DOWN)).canPathfindThrough(NavigationType.LAND)) {
                     penalty += 0.3F;
                 }
-                if (!entity.getWorld().getBlockState(mutable.set(node.pos).move(Direction.UP)).canPathfindThrough(NavigationType.LAND)) {
+                if (!entity.getWorld().getBlockState(mutable.set(node.x, node.y, node.z).move(Direction.UP)).canPathfindThrough(NavigationType.LAND)) {
                     penalty += 2;
                 }
 
                 for (Direction offset : Direction.Type.HORIZONTAL) {
-                    if (!entity.getWorld().getBlockState(mutable.set(node.pos).move(offset)).canPathfindThrough(NavigationType.LAND)) {
+                    if (!entity.getWorld().getBlockState(mutable.set(node.x, node.y, node.z).move(offset)).canPathfindThrough(NavigationType.LAND)) {
                         enclosedLevelSide++;
                     }
                 }
@@ -82,7 +86,7 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
 
                 float factor = !block.isAir() && (!block.canPathfindThrough(NavigationType.LAND) || BlockMetadata.getCost(block).isPresent()) ? 1.3F : 1;
 
-                return prevNode.distanceTo(node) * factor * penalty;
+                return prevNode.getDistance(node) * factor * penalty;
             }
         };
     }
@@ -99,14 +103,14 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
 
     @Override
     protected void pathFollow(int time) {
-        int nextFrontIndex = path.getCurrentPathIndex() + 2;
+        int nextFrontIndex = path.getCurrentNodeIndex() + 2;
         if (isReadyForNextNode(time)) {
-            if (nextFrontIndex < path.getCurrentPathLength()) {
+            if (nextFrontIndex < path.getLength()) {
                 timeParam = 0;
-                path.setCurrentPathIndex(nextFrontIndex - 1);
+                path.setCurrentNodeIndex(nextFrontIndex - 1);
                 prevNode = activeNode;
                 activeNode = nextNode;
-                nextNode = path.getPathPointFromIndex(nextFrontIndex);
+                nextNode = path.getNode(nextFrontIndex);
                 nodeChanged = true;
             }
         } else {
@@ -123,11 +127,11 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
 
         int nextFrontIndex = segmentPathIndices[segmentIndex] + 2;
         if (isReadyForNextNode(ticks)) {
-            if (nextFrontIndex < path.getCurrentPathLength()) {
+            if (nextFrontIndex < path.getLength()) {
                 segmentPathIndices[segmentIndex] = (nextFrontIndex - 1);
                 prevSegmentNodes[segmentIndex] = activeSegmentNodes[segmentIndex];
                 activeSegmentNodes[segmentIndex] = nextSegmentNodes[segmentIndex];
-                nextSegmentNodes[segmentIndex] = path.getPathPointFromIndex(segmentPathIndices[segmentIndex] >= 0 ? nextFrontIndex : 0);
+                nextSegmentNodes[segmentIndex] = path.getNode(segmentPathIndices[segmentIndex] >= 0 ? nextFrontIndex : 0);
                 segmentTime[segmentIndex] = 0;
             }
         } else {
@@ -167,22 +171,22 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
 
     @Override
     public boolean isIdle() {
-        return path == null || path.getCurrentPathIndex() >= path.getCurrentPathLength() - 2;
+        return path == null || path.getCurrentNodeIndex() >= path.getLength() - 2;
     }
 
     @Override
-    public boolean setPath(Path newPath, float speed) {
-        if (newPath == null || newPath.getCurrentPathLength() < 2) {
+    public boolean startMovingAlong(net.minecraft.entity.ai.pathing.Path newPath, double speed) {
+        if (newPath == null || newPath.getLength() < 2) {
             path = null;
             return false;
         }
 
         if (path == null) {
             path = newPath;
-            activeNode = path.getPathPointFromIndex(0);
+            activeNode = path.getNode(0);
             prevNode = activeNode;
-            nextNode = path.getPathPointFromIndex(1);
-            if (activeNode.action != PathAction.NONE) {
+            nextNode = path.getNode(1);
+            if (ActionablePathNode.getAction(activeNode) != PathAction.NONE) {
                 nodeActionFinished = false;
             }
             for (int i = 0; i < segmentPathIndices.length; i++) {
@@ -200,14 +204,14 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
             }
         }
 
-        int mainIndex = path.getCurrentPathIndex();
-        if (newPath.getPathPointFromIndex(0).equals(activeNode)) {
+        int mainIndex = path.getCurrentNodeIndex();
+        if (newPath.getNode(0).equals(activeNode)) {
             if (segmentPathIndices.length > 0) {
                 int lowestIndex = Math.max(0, segmentPathIndices[segmentPathIndices.length - 1]);
                 path = extendPath(path, newPath, lowestIndex, mainIndex);
                 mainIndex -= lowestIndex;
-                path.setCurrentPathIndex(mainIndex);
-                nextNode = path.getPathPointFromIndex(mainIndex + 1);
+                path.setCurrentNodeIndex(mainIndex);
+                nextNode = path.getNode(mainIndex + 1);
                 for (int i = 0; i < segmentPathIndices.length; i++) {
                     segmentPathIndices[i] -= lowestIndex;
                     if (segmentPathIndices[i] == mainIndex) {
@@ -216,15 +220,15 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
                 }
             } else {
                 path = newPath;
-                path.setCurrentPathIndex(0);
-                nextNode = path.getPathPointFromIndex(1);
+                path.setCurrentNodeIndex(0);
+                nextNode = path.getNode(1);
             }
         } else {
             path = newPath;
-            activeNode = path.getPathPointFromIndex(0);
+            activeNode = path.getNode(0);
             prevNode = activeNode;
-            nextNode = path.getPathPointFromIndex(1);
-            if (activeNode.action != PathAction.NONE) {
+            nextNode = path.getNode(1);
+            if (ActionablePathNode.getAction(activeNode) != PathAction.NONE) {
                 nodeActionFinished = false;
             }
             for (int i = 0; i < segmentPathIndices.length; i++) {
@@ -257,21 +261,21 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
 
     private PosRotate3D calcAbsolutePositionAndRotation(float time, PathNode start, PathNode middle, PathNode end) {
         PosRotate3D pos = calcPositionAndRotation(time, start, middle, end);
-        return new PosRotate3D(pos.position().add(Vec3d.of(middle.pos)), pos.rotation());
+        return new PosRotate3D(pos.position().add(Vec3d.of(middle.getBlockPos())), pos.rotation());
     }
 
     private PosRotate3D calcPositionAndRotation(float time, PathNode start, PathNode middle, PathNode end) {
-        Vec3i v = end.pos.subtract(start.pos);
+        Vec3i v = end.getBlockPos().subtract(start.getBlockPos());
         Vector3dc vd = new Vector3d(v.getX(), v.getY(), v.getZ());
         Vector3dc h = new Vector3d(
-                middle.pos.getX() != start.pos.getZ() ? 1 : -1,
-                middle.pos.getY() != start.pos.getY() ? 1 : -1,
-                middle.pos.getZ() != start.pos.getZ() ? 1 : -1
+                middle.x != start.x ? 1 : -1,
+                middle.y != start.y ? 1 : -1,
+                middle.z != start.z ? 1 : -1
         );
         Vector3dc g = new Vector3d(
-                middle.pos.getX() != end.pos.getX() ? 1 : -1,
-                middle.pos.getY() != end.pos.getY() ? 1 : -1,
-                middle.pos.getZ() != end.pos.getZ() ? 1 : -1
+                middle.x != end.x ? 1 : -1,
+                middle.y != end.y ? 1 : -1,
+                middle.z != end.z ? 1 : -1
         );
         Vector3dc offset = vd.mul(-0.5D, new Vector3d()).mul(h);
 
@@ -321,6 +325,6 @@ public class BurrowerNavigation extends AbstractParametricNavigator {
     }
 
     private Path extendPath(Path path1, Path path2, int lowerBoundP1, int upperBoundP1) {
-        return path1.combine(path2, lowerBoundP1, upperBoundP1);
+        return ActionablePathNode.combine(path1, path2, lowerBoundP1, upperBoundP1);
     }
 }

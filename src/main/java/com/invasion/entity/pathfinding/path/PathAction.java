@@ -1,4 +1,4 @@
-package com.invasion.entity.pathfinding;
+package com.invasion.entity.pathfinding.path;
 
 import org.jetbrains.annotations.Nullable;
 

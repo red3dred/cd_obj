@@ -5,12 +5,16 @@ import com.invasion.block.DestructableType;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.PigmanEngineerEntity;
-import com.invasion.entity.pathfinding.PathAction.Type;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
+import com.invasion.entity.pathfinding.path.PathAction.Type;
 import com.invasion.nexus.INexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -46,38 +50,39 @@ public class PigmanEngineerNavigator extends IMNavigation {
             @Override
             public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
                 // TODO: why?
-                if ((node.pos.getX() == -21) && (node.pos.getZ() == 180)) {
+                if ((node.x == -21) && (node.z == 180)) {
                     planks = 10;
                 }
-                BlockState block = terrainMap.getBlockState(node.pos);
-                float materialMultiplier = !block.isAir() && isBlockDestructible(terrainMap, node.pos, block) ? 3.2F : 1;
+                BlockState block = terrainMap.getBlockState(node.getBlockPos());
+                PathAction action = ActionablePathNode.getAction(node);
+                float materialMultiplier = !block.isAir() && isBlockDestructible(terrainMap, node.getBlockPos(), block) ? 3.2F : 1;
 
-                if (node.action.getType() == PathAction.Type.BRIDGE) {
-                    return prevNode.distanceTo(node) * 1.7F * materialMultiplier;
+                if (action.getType() == PathAction.Type.BRIDGE) {
+                    return prevNode.getDistance(node) * 1.7F * materialMultiplier;
                 }
 
-                if (node.action.getType() == PathAction.Type.SCAFFOLD) {
-                    return prevNode.distanceTo(node) * 0.5F;
+                if (action.getType() == PathAction.Type.SCAFFOLD) {
+                    return prevNode.getDistance(node) * 0.5F;
                 }
 
-                if (node.action.getType() == PathAction.Type.LADDER && node.action.getBuildDirection() != Direction.UP) {
-                    return prevNode.distanceTo(node) * 1.3F * materialMultiplier;
+                if (action.getType() == PathAction.Type.LADDER && action.getBuildDirection() != Direction.UP) {
+                    return prevNode.getDistance(node) * 1.3F * materialMultiplier;
                 }
 
-                if (node.action.getType() == PathAction.Type.TOWER) {
-                    return prevNode.distanceTo(node) * 1.4F;
+                if (action.getType() == PathAction.Type.TOWER) {
+                    return prevNode.getDistance(node) * 1.4F;
                 }
 
-                float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG);
+                float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG);
 
                 if (block.isAir() || block.isReplaceable()) {
-                    return prevNode.distanceTo(node) * multiplier;
+                    return prevNode.getDistance(node) * multiplier;
                 }
                 if (block.isOf(Blocks.LADDER)) {
-                    return prevNode.distanceTo(node) * 0.7F * multiplier;
+                    return prevNode.getDistance(node) * 0.7F * multiplier;
                 }
-                if (!block.isOf(InvBlocks.NEXUS_CORE) && !block.isSolidBlock(terrainMap, node.pos)) {
-                    return prevNode.distanceTo(node) * 3.2F;
+                if (!block.isOf(InvBlocks.NEXUS_CORE) && !block.isSolidBlock(terrainMap, node.getBlockPos())) {
+                    return prevNode.getDistance(node) * 3.2F;
                 }
 
                 return super.getPathNodePenalty(prevNode, node, terrainMap);
@@ -90,15 +95,15 @@ public class PigmanEngineerNavigator extends IMNavigation {
                     return;
                 }
 
-                BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
+                BlockPos.Mutable mutable = new BlockPos.Mutable();
                 for (Direction offset : Direction.Type.HORIZONTAL) {
-                    if (getNodeDestructability(terrainMap, mutable.set(currentNode.pos).move(offset)) > DestructableType.UNBREAKABLE) {
+                    if (getNodeDestructability(terrainMap, mutable.set(currentNode.x, currentNode.y, currentNode.z).move(offset)) > DestructableType.UNBREAKABLE) {
                         for (int yOffset = 0; yOffset > -MAX_LADDER_TOWER_HEIGHT; yOffset--) {
-                            BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(offset).move(Direction.UP, yOffset - 1));
+                            BlockState block = terrainMap.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(offset).move(Direction.UP, yOffset - 1));
                             if (!block.isAir()) {
                                 break;
                             }
-                            pathFinder.addNode(mutable.set(currentNode.pos).move(offset).move(Direction.UP, yOffset).toImmutable(), PathAction.BRIDGE);
+                            pathFinder.addNode(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(offset).move(Direction.UP, yOffset).toImmutable(), PathAction.BRIDGE);
                         }
                     }
                 }
@@ -107,19 +112,19 @@ public class PigmanEngineerNavigator extends IMNavigation {
             @Override
             protected void calcPathOptionsVertical(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
                 // TODO: why?
-                if (currentNode.pos.getX() == -11 && currentNode.pos.getZ() == 177) {
+                if (currentNode.x == -11 && currentNode.z == 177) {
                     planks = 10;
                 }
                 super.calcPathOptionsVertical(terrainMap, currentNode, pathFinder);
                 if (planks <= 0) {
                     return;
                 }
-
-                BlockPos.Mutable mutable = currentNode.pos.mutableCopy().move(Direction.UP);
+                PathAction action = ActionablePathNode.getAction(currentNode);
+                BlockPos.Mutable mutable = currentNode.getBlockPos().mutableCopy().move(Direction.UP);
 
                 if (getNodeDestructability(terrainMap, mutable) > DestructableType.UNBREAKABLE) {
                     if (terrainMap.getBlockState(mutable).isAir()) {
-                        if (currentNode.action == PathAction.NONE) {
+                        if (action == PathAction.NONE) {
                             addAnyLadderPoint(terrainMap, currentNode, pathFinder);
                         } else if (!continueLadder(terrainMap, currentNode, pathFinder)) {
                             addAnyLadderPoint(terrainMap, currentNode, pathFinder);
@@ -127,11 +132,11 @@ public class PigmanEngineerNavigator extends IMNavigation {
 
                     }
 
-                    if ((currentNode.action == PathAction.NONE) || (currentNode.action == PathAction.BRIDGE)) {
+                    if ((action == PathAction.NONE) || (action == PathAction.BRIDGE)) {
                         int maxHeight = 4;
                         int collideHeight = MathHelper.ceil(entity.getHeight());
                         for (int i = collideHeight; i < 4; i++) {
-                            BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP, i));
+                            BlockState block = terrainMap.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(Direction.UP, i));
                             if (!block.isAir() && !block.canPathfindThrough(NavigationType.LAND)) {
                                 maxHeight = i - collideHeight;
                                 break;
@@ -140,15 +145,15 @@ public class PigmanEngineerNavigator extends IMNavigation {
                         }
 
                         for (Direction facing : Direction.Type.HORIZONTAL) {
-                            BlockState block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(facing));
+                            BlockState block = terrainMap.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(facing));
                             if (block.isFullCube(terrainMap, mutable)) {
                                 for (int height = 0; height < maxHeight; height++) {
-                                    block = terrainMap.getBlockState(mutable.set(currentNode.pos).move(facing).move(Direction.UP, height));
+                                    block = terrainMap.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(facing).move(Direction.UP, height));
                                     if (!block.isAir()) {
                                         if (!block.isFullCube(terrainMap, mutable)) {
                                             break;
                                         }
-                                        pathFinder.addNode(currentNode.pos.up(), PathAction.getLadderActionForDirection(facing));
+                                        pathFinder.addNode(currentNode.getBlockPos().up(), PathAction.getLadderActionForDirection(facing));
                                         break;
                                     }
                                 }
@@ -158,28 +163,29 @@ public class PigmanEngineerNavigator extends IMNavigation {
 
                 }
 
-                if (IBlockAccessExtended.getData(terrainMap, currentNode.pos.up()) == IBlockAccessExtended.EXT_DATA_SCAFFOLD_METAPOSITION) {
-                    pathFinder.addNode(currentNode.pos.up(), PathAction.SCAFFOLD_UP);
+                if (IBlockAccessExtended.getData(terrainMap, currentNode.getBlockPos().up()) == IBlockAccessExtended.EXT_DATA_SCAFFOLD_METAPOSITION) {
+                    pathFinder.addNode(currentNode.getBlockPos().up(), PathAction.SCAFFOLD_UP);
                 }
             }
 
             private void addAnyLadderPoint(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
-                BlockPos.Mutable mutable = currentNode.pos.mutableCopy();
+                BlockPos.Mutable mutable = currentNode.getBlockPos().mutableCopy();
                 for (Direction facing : Direction.Type.HORIZONTAL) {
-                    if (terrainMap.getBlockState(mutable.set(currentNode.pos).move(Direction.UP).move(facing)).isFullCube(terrainMap, mutable)) {
-                        pathFinder.addNode(currentNode.pos.up(), PathAction.getLadderActionForDirection(facing));
+                    if (terrainMap.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(Direction.UP).move(facing)).isFullCube(terrainMap, mutable)) {
+                        pathFinder.addNode(currentNode.getBlockPos().up(), PathAction.getLadderActionForDirection(facing));
                     }
                 }
             }
 
             private boolean continueLadder(BlockView terrainMap, PathNode currentNode, PathBuilder pathFinder) {
-                if (currentNode.action.getType() != Type.LADDER || currentNode.action.getBuildDirection() == Direction.UP) {
+                PathAction action = ActionablePathNode.getAction(currentNode);
+                if (action.getType() != Type.LADDER || action.getBuildDirection() == Direction.UP) {
                     return false;
                 }
 
-                BlockPos pos = currentNode.pos.offset(currentNode.action.getBuildDirection(), 1).up();
+                BlockPos pos = currentNode.getBlockPos().offset(action.getBuildDirection(), 1).up();
                 if (terrainMap.getBlockState(pos).isFullCube(terrainMap, pos)) {
-                    pathFinder.addNode(currentNode.pos.up(), currentNode.action);
+                    pathFinder.addNode(currentNode.getBlockPos().up(), action);
                 }
                 return true;
             }
@@ -202,27 +208,27 @@ public class PigmanEngineerNavigator extends IMNavigation {
     }
 
     @Override
-    protected boolean handlePathAction() {
+    protected boolean handlePathAction(PathAction action) {
         if (!actionCleared) {
             resetStatus();
             return getLastActionResult() == Status.SUCCESS;
         }
 
-        if (activeNode.action.getType() == PathAction.Type.LADDER && activeNode.action.getBuildDirection() != Direction.UP) {
-            if (pigEntity.getTerrainBuildEngy().askBuildLadder(activeNode.pos, this)) {
+        if (action.getType() == PathAction.Type.LADDER && action.getBuildDirection() != Direction.UP) {
+            if (pigEntity.getTerrainBuildEngy().askBuildLadder(activeNode.getBlockPos(), this)) {
                 return setDoingTaskAndHold();
             }
-        } else if (activeNode.action.getType() == PathAction.Type.BRIDGE) {
-            if (pigEntity.getTerrainBuildEngy().askBuildBridge(activeNode.pos, this)) {
+        } else if (action.getType() == PathAction.Type.BRIDGE) {
+            if (pigEntity.getTerrainBuildEngy().askBuildBridge(activeNode.getBlockPos(), this)) {
                 return setDoingTaskAndHold();
             }
-        } else if (activeNode.action.getType() == PathAction.Type.SCAFFOLD) {
-            if (pigEntity.getTerrainBuildEngy().askBuildScaffoldLayer(activeNode.pos, this)) {
+        } else if (action.getType() == PathAction.Type.SCAFFOLD) {
+            if (pigEntity.getTerrainBuildEngy().askBuildScaffoldLayer(activeNode.getBlockPos(), this)) {
                 return setDoingTaskAndHoldOnPoint();
             }
-        } else if (activeNode.action.getType() == PathAction.Type.LADDER) {
-            Direction direction = activeNode.action.getBuildDirection();
-            if (pigEntity.getTerrainBuildEngy().askBuildLadderTower(activeNode.pos, direction, direction.getVector().getZ(), this)) {
+        } else if (action.getType() == PathAction.Type.LADDER) {
+            Direction direction = action.getBuildDirection();
+            if (pigEntity.getTerrainBuildEngy().askBuildLadderTower(activeNode.getBlockPos(), direction, direction.getVector().getZ(), this)) {
                 return setDoingTaskAndHold();
             }
         }

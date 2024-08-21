@@ -1,6 +1,8 @@
 package com.invasion.entity.pathfinding;
 
 import com.invasion.entity.EntityIMLiving;
+
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
@@ -19,7 +21,7 @@ public interface PathSource {
 
     default Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius, float maxSearchRange, BlockView terrainMap) {
         return createPath(
-                entity.getNavigatorNew().getNodeMaker(),
+                entity.getNavigatorNew().getActor(),
                 getPathBegin(entity),
                 pos.add(MathHelper.floor(0.5F - entity.getWidth() * 0.5F), 0, MathHelper.floor(0.5F - entity.getWidth() * 0.5F)),
                 targetRadius, maxSearchRange, terrainMap);

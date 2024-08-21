@@ -14,7 +14,7 @@ import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.WorldView;
+import net.minecraft.world.CollisionView;
 
 public class BlockMetadata {
     public static final float DEFAULT_SOFT_STRENGTH = 2.5F;
@@ -132,7 +132,7 @@ public class BlockMetadata {
                 .or(() -> Optional.ofNullable(BLOCK_COSTS.get(state.getBlock())));
     }
 
-    public static float getStrength(BlockPos pos, BlockState state, WorldView world) {
+    public static float getStrength(BlockPos pos, BlockState state, CollisionView world) {
         BlockSpecial special = BlockSpecial.of(state);
         int bonus = 0;
         BlockPos.Mutable mutable = pos.mutableCopy();

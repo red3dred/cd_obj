@@ -56,7 +56,7 @@ public class MeleeFightGoal<T extends LivingEntity, E extends PathAwareEntity & 
 	public void updatePath() {
 		Navigation nav = mob.getNavigatorNew();
 		if (mob.getTarget() != nav.getTargetEntity()) {
-			nav.stop();
+			mob.getNavigation().stop();
 			nav.autoPathToEntity(mob.getTarget());
 		}
 	}

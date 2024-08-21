@@ -1,6 +1,7 @@
 package com.invasion.entity.pathfinding;
 
 import com.invasion.entity.EntityIMLiving;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.util.math.PosRotate3D;
 
 public abstract class AbstractParametricNavigator extends IMNavigation {
@@ -18,19 +19,19 @@ public abstract class AbstractParametricNavigator extends IMNavigation {
             return;
         }
         if (nodeActionFinished) {
-            int pathIndex = path.getCurrentPathIndex();
+            int pathIndex = path.getCurrentNodeIndex();
             pathFollow(timeParam + 1);
             doMovementTo(timeParam);
 
-            if (path.getCurrentPathIndex() != pathIndex) {
+            if (path.getCurrentNodeIndex() != pathIndex) {
                 ticksStuck = 0;
-                if (activeNode.action != PathAction.NONE) {
+                if (getCurrentWorkingAction() != PathAction.NONE) {
                     nodeActionFinished = false;
                 }
             }
         }
         if (nodeActionFinished) {
-            if (!isPositionClear(activeNode.pos, theEntity)) {
+            if (!isPositionClear(activeNode.getBlockPos(), theEntity)) {
                 if (theEntity.onPathBlocked(path, this)) {
                     setDoingTaskAndHold();
                 } else {
@@ -38,7 +39,7 @@ public abstract class AbstractParametricNavigator extends IMNavigation {
                 }
             }
         } else {
-            handlePathAction();
+            handlePathAction(getCurrentWorkingAction());
         }
     }
 
@@ -59,12 +60,12 @@ public abstract class AbstractParametricNavigator extends IMNavigation {
     protected abstract boolean isReadyForNextNode(int time);
 
     protected void pathFollow(int time) {
-        int nextIndex = path.getCurrentPathIndex() + 1;
+        int nextIndex = path.getCurrentNodeIndex() + 1;
         if (isReadyForNextNode(time)) {
-            if (nextIndex < path.getCurrentPathLength()) {
+            if (nextIndex < path.getLength()) {
                 timeParam = 0;
-                path.setCurrentPathIndex(nextIndex);
-                activeNode = path.getPathPointFromIndex(path.getCurrentPathIndex());
+                path.setCurrentNodeIndex(nextIndex);
+                activeNode = path.getNode(path.getCurrentNodeIndex());
             }
         } else {
             timeParam = time;

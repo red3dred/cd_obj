@@ -14,8 +14,7 @@ import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.PigmanEngineerNavigator;
-import com.invasion.entity.pathfinding.Path;
-import com.invasion.entity.pathfinding.PathAction;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.item.InvItems;
 import net.minecraft.entity.EntityType;
@@ -25,6 +24,7 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -73,7 +73,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 60));
-        goalSelector.add(2, new AttackNexusGoal(this));
+        goalSelector.add(2, new AttackNexusGoal<>(this));
         goalSelector.add(3, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 7));
@@ -123,7 +123,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
             int weight = yDifference > 1 ? Math.max(6000 / yDifference, 1) : 1;
             if (getAIGoal() == Goal.BREAK_NEXUS && ((getNavigatorNew().getLastPathDistanceToTarget() > 2 && askForScaffoldTimer <= 0) || getRandom().nextInt(weight) == 0)) {
                 if (getNexus().getAttackerAI().askGenerateScaffolds(this)) {
-                    getNavigatorNew().stop();
+                    getNavigation().stop();
                     askForScaffoldTimer = 60;
                 } else {
                     askForScaffoldTimer = 140;
@@ -157,8 +157,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
 
     @Override
     public boolean onPathBlocked(Path path, Notifiable notifee) {
-        return !path.isFinished() && terrainDigger
-                .askClearPosition(path.getPathPointFromIndex(path.getCurrentPathIndex()).pos, notifee, 1);
+        return !path.isFinished() && terrainDigger.askClearPosition(path.getCurrentNodePos(), notifee, 1);
     }
 
     public ITerrainBuild getTerrainBuildEngy() {

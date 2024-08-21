@@ -2,12 +2,13 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.VultureEntity;
 import com.invasion.entity.HasAiGoals;
-import com.invasion.entity.pathfinding.FlightNavigation;
-import com.invasion.entity.pathfinding.Path;
+import com.invasion.entity.pathfinding.FlyingNavigation;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.MathHelper;
 
 public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T, VultureEntity> {
     private final VultureEntity theEntity;
@@ -35,14 +36,14 @@ public class EntityAIBirdFight<T extends LivingEntity> extends MeleeFightGoal<T,
 
     @Override
     public void updatePath() {
-        FlightNavigation nav = (FlightNavigation)theEntity.getNavigatorNew();
+        FlyingNavigation nav = (FlyingNavigation)theEntity.getNavigatorNew();
         Entity target = mob.getTarget();
         if (target != nav.getTargetEntity()) {
             nav.stop();
-            nav.setMovementType(FlightNavigation.MoveType.PREFER_WALKING);
-            Path path = nav.getPathToEntity(target, 0);
-            if (path != null && path.getCurrentPathLength() > 1.6D * mob.distanceTo(target)) {
-                nav.setMovementType(FlightNavigation.MoveType.MIXED);
+            nav.setMovementType(FlyingNavigation.MoveType.PREFER_WALKING);
+            Path path = theEntity.getNavigation().findPathTo(target, MathHelper.ceil(1.6D * mob.distanceTo(target)));
+            if (path != null && path.getLength() > 1.6D * mob.distanceTo(target)) {
+                nav.setMovementType(FlyingNavigation.MoveType.MIXED);
             }
             nav.autoPathToEntity(target);
         }

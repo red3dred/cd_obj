@@ -8,17 +8,18 @@ import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.IMNavigation;
-import com.invasion.entity.pathfinding.Path;
-import com.invasion.entity.pathfinding.PathAction;
+import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.entity.pathfinding.PathNode;
+import com.invasion.entity.pathfinding.path.ActionablePathNode;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -45,6 +46,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
         terrainDigger = new TerrainDigger(this, terrainModifier, 1);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Navigation createIMNavigation() {
         return new IMNavigation(this, new PathCreator(700, 50)) {
@@ -53,14 +55,14 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
                 return new Actor<>(entity) {
                     @Override
                     public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-                        if (getTier() == 2 && getFlavour() == 2 && node.action == PathAction.SWIM) {
-                            float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.pos) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
+                        if (getTier() == 2 && getFlavour() == 2 && ActionablePathNode.getAction(node) == PathAction.SWIM) {
+                            float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
 
-                            if (node.pos.getY() > prevNode.pos.getY() && getNodeDestructability(terrainMap, node.pos) == DestructableType.DESTRUCTABLE) {
+                            if (node.y > prevNode.y && getNodeDestructability(terrainMap, node.getBlockPos()) == DestructableType.DESTRUCTABLE) {
                                 multiplier += 2;
                             }
 
-                            return prevNode.distanceTo(node) * 1.2F * multiplier;
+                            return prevNode.getDistance(node) * 1.2F * multiplier;
                         }
 
                         return super.getPathNodePenalty(prevNode, node, terrainMap);
@@ -178,18 +180,18 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        getNavigatorNew().getNodeMaker().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
+        getNavigatorNew().getActor().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
     }
 
     @Override
     public boolean onPathBlocked(Path path, Notifiable notifee) {
         if (!path.isFinished() && (hasNexus() || getAttacking() != null)) {
-            if (path.getFinalPathPoint().distanceTo(path.getIntendedTarget()) > 2.2D && path.getCurrentPathIndex() + 2 >= path.getCurrentPathLength() / 2) {
+            if (path.getLastNode().getDistance(path.getTarget()) > 2.2D && path.getCurrentNodeIndex() + 2 >= path.getLength() / 2) {
                 return false;
             }
-            PathNode node = path.getPathPointFromIndex(path.getCurrentPathIndex());
+            PathNode node = path.getNode(path.getCurrentNodeIndex());
 
-            if (terrainDigger.askClearPosition(node.pos, notifee, 1)) {
+            if (terrainDigger.askClearPosition(node.getBlockPos(), notifee, 1)) {
                 return true;
             }
         }

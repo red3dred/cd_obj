@@ -3,7 +3,7 @@ package com.invasion.entity.ai.goal;
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.ai.MoveState;
-import com.invasion.entity.pathfinding.FlightNavigation;
+import com.invasion.entity.pathfinding.FlyingNavigation;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -35,7 +35,7 @@ public class FlyingTackleGoal extends Goal {
     public void start() {
         LivingEntity target = theEntity.getTarget();
         if (target != null) {
-            ((FlightNavigation)theEntity.getNavigatorNew()).setMovementType(FlightNavigation.MoveType.PREFER_WALKING);
+            ((FlyingNavigation)theEntity.getNavigatorNew()).setMovementType(FlyingNavigation.MoveType.PREFER_WALKING);
         }
     }
 

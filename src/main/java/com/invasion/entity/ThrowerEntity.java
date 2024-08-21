@@ -14,8 +14,7 @@ import com.invasion.entity.ai.goal.ThrowBoulderGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.ThrowerKillEntityGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
-import com.invasion.entity.pathfinding.Path;
-import com.invasion.entity.pathfinding.PathNode;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,6 +23,7 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -74,7 +74,7 @@ public class ThrowerEntity extends TieredIMMobEntity {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(1, new PredicatedGoal(new ThrowerKillEntityGoal<>(this, PlayerEntity.class, 55, 60.0F, 1.0F), () -> getTier() == 1));
         goalSelector.add(1, new PredicatedGoal(new ThrowerKillEntityGoal<>(this, PlayerEntity.class, 60, 90.0F, 1.5F), () -> getTier() == 1));
-        goalSelector.add(2, new AttackNexusGoal(this));
+        goalSelector.add(2, new AttackNexusGoal<>(this));
         goalSelector.add(3, new ThrowBoulderGoal(this, 3));
         goalSelector.add(4, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
@@ -128,10 +128,9 @@ public class ThrowerEntity extends TieredIMMobEntity {
     @Override
     public boolean onPathBlocked(Path path, Notifiable notifee) {
         if (!path.isFinished()) {
-            PathNode node = path.getPathPointFromIndex(path.getCurrentPathIndex());
             clearingPoint = true;
             clearPointNotifee = notifee;
-            pointToClear = node.pos;
+            pointToClear = path.getCurrentNodePos();
             return true;
         }
         return false;
