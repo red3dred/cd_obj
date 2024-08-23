@@ -46,7 +46,7 @@ public class IMSkeletonEntity extends IMMobEntity implements RangedAttackMob {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new BowAttackGoal<>(this, 1, 15, 16F));
+        goalSelector.add(1, new BowAttackGoal<>(this, 1 /*160*/, 15, 16F)); //TODO: Faster variant of skeletons
         // goalSelector.add(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
         goalSelector.add(3, new AttackNexusGoal<>(this));
         goalSelector.add(4, new GoToNexusGoal(this));
