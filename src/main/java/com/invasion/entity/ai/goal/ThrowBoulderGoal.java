@@ -1,7 +1,7 @@
 package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.ThrowerEntity;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 
 import net.minecraft.entity.ai.goal.Goal;
 
@@ -29,7 +29,7 @@ public class ThrowBoulderGoal extends Goal {
     public void start() {
         randomAmmo--;
         timer = 240;
-        INexusAccess nexus = theEntity.getNexus();
+        NexusAccess nexus = theEntity.getNexus();
         int d = Math.max(1, (int) (theEntity.findDistanceToNexus() * 0.37D));
         theEntity.throwProjectile(nexus.getOrigin().toBottomCenterPos().add(
                 theEntity.getRandom().nextTriangular(0, d),

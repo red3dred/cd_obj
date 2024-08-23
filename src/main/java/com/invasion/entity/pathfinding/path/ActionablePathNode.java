@@ -14,6 +14,8 @@ import net.minecraft.util.math.Vec3d;
 public interface ActionablePathNode {
     PathAction getAction();
 
+    net.minecraft.entity.ai.pathing.PathNode getWithAction(PathAction action);
+
     static net.minecraft.entity.ai.pathing.PathNode create(int x, int y, int z, PathAction action) {
         return new PathNode(x, y, z, action);
     }
@@ -32,6 +34,16 @@ public interface ActionablePathNode {
 
     static PathAction getAction(net.minecraft.entity.ai.pathing.PathNode node) {
         return node instanceof ActionablePathNode a ? a.getAction() : PathAction.NONE;
+    }
+
+    static net.minecraft.entity.ai.pathing.PathNode setAction(net.minecraft.entity.ai.pathing.PathNode node, PathAction action) {
+        if (node instanceof ActionablePathNode a) {
+            return a.getWithAction(action);
+        }
+        if (node instanceof net.minecraft.entity.ai.pathing.TargetPathNode target) {
+            return new TargetPathNode(target, action);
+        }
+        return new PathNode(node, action);
     }
 
     static int makeHash(BlockPos pos, PathAction action) {

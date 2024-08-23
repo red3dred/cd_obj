@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
@@ -352,7 +352,7 @@ public class IMNavigation implements Navigation {
 	protected Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius) {
 		actor.setCurrentTargetPos(pos);
 		BlockView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
-		INexusAccess nexus = entity.getNexus();
+		NexusAccess nexus = entity.getNexus();
 		if (nexus != null) {
 			terrainCache = nexus.getAttackerAI().wrapEntityData(terrainCache);
 		}
@@ -364,7 +364,7 @@ public class IMNavigation implements Navigation {
 		Vec3d pos = getPos();
 		int maxNextLegIndex = path.getCurrentNodeIndex() - 1;
 
-		PathNode nextPoint = path.getNode(path.getCurrentNodeIndex());
+		PathNode nextPoint = path.getCurrentNode();
 		if (nextPoint.y == (int) pos.y && maxNextLegIndex < path.getLength() - 1) {
 			maxNextLegIndex++;
 

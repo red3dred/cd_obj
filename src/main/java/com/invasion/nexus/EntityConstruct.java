@@ -16,11 +16,11 @@ public record EntityConstruct (
         int maxAngle
     ) {
 
-    public MobEntity createMob(INexusAccess nexus) {
+    public MobEntity createMob(NexusAccess nexus) {
         return createMob(nexus.getWorld(), nexus);
     }
 
-    public MobEntity createMob(World world, @Nullable INexusAccess nexus) {
+    public MobEntity createMob(World world, @Nullable NexusAccess nexus) {
         MobEntity entity = entityType().create(world);
         if (entity instanceof BuildableMob b) {
             b.onSpawned(nexus, this);
@@ -29,6 +29,6 @@ public record EntityConstruct (
     }
 
     public interface BuildableMob {
-        void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions);
+        void onSpawned(NexusAccess nexus, EntityConstruct spawnConditions);
     }
 }

@@ -9,6 +9,8 @@ import com.invasion.InvasionMod;
 import com.invasion.block.NexusBlock;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.ElectricityBoltEntity;
+import com.invasion.entity.InvEntities;
+import com.invasion.entity.SpawnProxyEntity;
 import com.invasion.entity.ai.AttackerAI;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.spawns.IMWaveSpawner;
@@ -16,6 +18,7 @@ import com.invasion.nexus.wave.WaveBuilder;
 import com.invasion.nexus.wave.Wave;
 import com.invasion.nexus.wave.WaveSpawnerException;
 
+import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -317,12 +320,16 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     @Override
-    public void damage(int damage) {
-        hp -= damage;
+    public void damage(DamageSource source, int amount) {
+        hp -= amount;
         if (hp <= 0) {
             hp = 0;
             if (mode == Mode.STARTED) {
                 theEnd();
+                SpawnProxyEntity mob = InvEntities.SPAWN_PROXY.create(getWorld());
+                mob.setCustomName(InvBlocks.NEXUS_CORE.getName());
+                boundPlayers.sendMessage(source.getDeathMessage(mob));
+                boundPlayers.playSoundForBoundPlayers(SoundEvents.ENTITY_BLAZE_HURT);
             }
         }
         while (hp + 5 <= lastHp) {
@@ -333,31 +340,33 @@ public class Nexus implements ControllableNexusAccess {
     }
 
     @Override
-    public void registerMobDied() {
-        nexusKills++;
-        mobsLeftInWave--;
-        if (mobsLeftInWave <= 0) {
-            if (lastMobsLeftInWave > 0) {
-                boundPlayers.sendMessage(Formatting.GREEN, "invmod.message.nexus.stableagain");
-                boundPlayers.sendMessage(Formatting.GREEN, "invmod.message.nexus.unleashingenergy");
-                lastMobsLeftInWave = mobsLeftInWave;
+    public void notifyCombatantRemoved(Combatant<?> combatant, RemovalReason reason) {
+        if (reason == RemovalReason.KILLED) {
+            nexusKills++;
+            mobsLeftInWave--;
+            if (mobsLeftInWave <= 0) {
+                if (lastMobsLeftInWave > 0) {
+                    boundPlayers.sendMessage(Formatting.GREEN, "invmod.message.nexus.stableagain");
+                    boundPlayers.sendMessage(Formatting.GREEN, "invmod.message.nexus.unleashingenergy");
+                    lastMobsLeftInWave = mobsLeftInWave;
+                }
+                return;
             }
-            return;
-        }
-        while (mobsLeftInWave + mobsToKillInWave * 0.1F <= lastMobsLeftInWave) {
-            boundPlayers.sendMessage(Formatting.GREEN, "invmod.message.nexus.stabilizedto", "" + Formatting.DARK_GREEN + (100 - 100 * mobsLeftInWave / mobsToKillInWave) + "%");
-            lastMobsLeftInWave = ((int) (lastMobsLeftInWave - mobsToKillInWave * 0.1F));
+            while (mobsLeftInWave + mobsToKillInWave * 0.1F <= lastMobsLeftInWave) {
+                boundPlayers.sendMessage(Formatting.GREEN, "invmod.message.nexus.stabilizedto", "" + Formatting.DARK_GREEN + (100 - 100 * mobsLeftInWave / mobsToKillInWave) + "%");
+                lastMobsLeftInWave = ((int) (lastMobsLeftInWave - mobsToKillInWave * 0.1F));
+            }
+        } else if (reason == RemovalReason.DISCARDED) {
+            if (combatant.asEntity().getType().create(getWorld()) instanceof Combatant<?> copy) {
+                copy.asEntity().copyFrom(combatant.asEntity());
+                copy.setNexus(this);
+                waveSpawner.askForRespawn(copy);
+            }
         }
     }
 
     // TODO: Generate warning when a mob is nearby
     public void registerMobClose() {
-    }
-
-    // TODO: Nothing calls this?
-    public void askForRespawn(Combatant<?> entity) {
-        InvasionMod.LOGGER.warn("Stuck entity asking for respawn: " + entity);
-        this.waveSpawner.askForRespawn(entity);
     }
 
     @Override

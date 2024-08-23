@@ -31,14 +31,33 @@ class PathNode extends net.minecraft.entity.ai.pathing.PathNode implements Actio
         this.hashCode = ActionablePathNode.makeHash(x, y, z, action);
     }
 
+    public PathNode(net.minecraft.entity.ai.pathing.PathNode node, PathAction action) {
+        this(node.x, node.y, node.z, action);
+        heapIndex = node.heapIndex;
+        penalizedPathLength = node.penalizedPathLength;
+        distanceToNearestTarget = node.distanceToNearestTarget;
+        heapWeight = node.heapWeight;
+        previous = node.previous;
+        visited = node.visited;
+        pathLength = node.pathLength;
+        penalty = node.penalty;
+        type = node.type;
+    }
+
     @Override
     public PathAction getAction() {
         return action;
     }
 
+
+    @Override
+    public net.minecraft.entity.ai.pathing.PathNode getWithAction(PathAction action) {
+        return new PathNode(this, action);
+    }
+
     @Override
     public PathNode copyWithNewPosition(int x, int y, int z) {
-        PathNode pathNode = new PathNode(new BlockPos(x, y, z), action);
+        PathNode pathNode = new PathNode(x, y, z, action);
         pathNode.heapIndex = heapIndex;
         pathNode.penalizedPathLength = penalizedPathLength;
         pathNode.distanceToNearestTarget = distanceToNearestTarget;

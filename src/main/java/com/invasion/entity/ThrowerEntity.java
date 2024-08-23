@@ -236,7 +236,7 @@ public class ThrowerEntity extends TieredIMMobEntity {
         if (this.j != null) {
             if (block.isOf(InvBlocks.NEXUS_CORE)) {
                 if (hasNexus() && canAttack() && pos.equals(getNexus().getOrigin())) {
-                    getNexus().damage(5);
+                    getNexus().damage(getDamageSources().mobAttack(this), 5);
                 }
             } else {
                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);

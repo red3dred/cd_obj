@@ -10,6 +10,8 @@ public enum PathAction {
     BRIDGE(Type.BRIDGE, null),
     SWIM(Type.SWIM, null),
     DIG(Type.DIG, null),
+    CLIMB_UP(Type.CLIMB, Direction.UP),
+    CLIMB_DOWN(Type.CLIMB, Direction.UP),
     LADDER_UP_PX(Type.LADDER, Direction.EAST),
     LADDER_UP_NX(Type.LADDER, Direction.WEST),
     LADDER_UP_PZ(Type.LADDER, Direction.SOUTH),
@@ -35,6 +37,10 @@ public enum PathAction {
             case NORTH -> LADDER_UP_NZ;
             default -> NONE;
         };
+    }
+
+    public static PathAction getClimbing(Direction direction) {
+        return direction == Direction.UP ? CLIMB_UP : CLIMB_DOWN;
     }
 
     private final Type type;
@@ -63,6 +69,7 @@ public enum PathAction {
         LADDER,
         BRIDGE,
         DIG,
+        CLIMB,
         SWIM,
         TOWER,
         SCAFFOLD

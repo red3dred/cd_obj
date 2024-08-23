@@ -1,7 +1,7 @@
 package com.invasion.entity;
 
 import com.invasion.nexus.EntityConstruct;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
@@ -29,7 +29,7 @@ public abstract class TieredIMMobEntity extends IMMobEntity {
     }
 
     @Override
-    public void onSpawned(INexusAccess nexus, EntityConstruct spawnConditions) {
+    public void onSpawned(NexusAccess nexus, EntityConstruct spawnConditions) {
         super.onSpawned(nexus, spawnConditions);
         setAppearance(spawnConditions.tier(), spawnConditions.flavour());
     }

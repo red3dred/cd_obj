@@ -6,6 +6,7 @@ import com.invasion.InvSounds;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
+import com.invasion.entity.ai.goal.MineBlockGoal;
 import com.invasion.entity.ai.goal.SprintGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
@@ -102,6 +103,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     protected void initGoals() {
         // added EntityAISwimming and increased all other tasks order numbers with 1
         goalSelector.add(0, new PredicatedGoal(new SwimGoal(this), () -> getTier() != 2 || getFlavour() != 2));
+        goalSelector.add(0, new MineBlockGoal(this));
         goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 40));
         goalSelector.add(1, new KillEntityGoal<>(this, IronGolemEntity.class, 30));
         goalSelector.add(2, new AttackNexusGoal<>(this));
@@ -240,19 +242,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
     @Override
     public void updateAnimation(boolean override) {
-        if (!getWorld().isClient && (terrainModifier.isBusy() || override)) {
-            setSwinging(true);
-        }
-        int swingSpeed = getSwingSpeed();
-        if (isSwinging()) {
-            if (++swingTimer >= swingSpeed) {
-                swingTimer = 0;
-                setSwinging(false);
-            }
-        } else {
-            swingTimer = 0;
-        }
-        handSwingProgress = (float) swingTimer / (float) swingSpeed;
     }
 
     @Override

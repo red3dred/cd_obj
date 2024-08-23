@@ -5,7 +5,7 @@ import java.util.List;
 import com.invasion.entity.pathfinding.IMPathNodeMaker;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -25,16 +25,16 @@ public class Scaffold implements IMPathNodeMaker {
     private Direction orientation = Direction.EAST;
     private int[] platforms;
     private IMPathNodeMaker pathfindBase;
-    private INexusAccess nexus;
+    private NexusAccess nexus;
     private float latestPercentCompleted;
     private float latestPercentIntact;
     private float initialCompletion = 0.01F;
 
-    public Scaffold(INexusAccess nexus) {
+    public Scaffold(NexusAccess nexus) {
         this(0, 0, 0, 0, nexus);
     }
 
-    public Scaffold(int x, int y, int z, int height, INexusAccess nexus) {
+    public Scaffold(int x, int y, int z, int height, NexusAccess nexus) {
         this.targetHeight = height;
         this.nexus = nexus;
         setPosition(x, y, z);
@@ -81,7 +81,7 @@ public class Scaffold implements IMPathNodeMaker {
         return this.latestPercentCompleted;
     }
 
-    public INexusAccess getNexus() {
+    public NexusAccess getNexus() {
         return this.nexus;
     }
 

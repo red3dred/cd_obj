@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.block.container.NexusScreenHandler;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 import com.invasion.nexus.Nexus;
 import com.invasion.nexus.WorldNexusStorage;
 
@@ -37,7 +37,7 @@ public class NexusBlockEntity extends BlockEntity implements SidedInventory, Nam
         super(InvBlockEntities.NEXUS, pos, state);
     }
 
-    public INexusAccess getNexus() {
+    public NexusAccess getNexus() {
         if (nexus == null && getWorld() instanceof ServerWorld sw) {
             nexus = WorldNexusStorage.of(sw).getOrCreate(nexusId, getPos());
         }

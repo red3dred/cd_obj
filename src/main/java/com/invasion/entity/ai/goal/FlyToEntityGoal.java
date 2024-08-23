@@ -30,7 +30,7 @@ public class FlyToEntityGoal extends Goal {
     public void start() {
         FlyingNavigation nav = (FlyingNavigation)theEntity.getNavigatorNew();
         Entity target = theEntity.getTarget();
-        if (target != nav.getTargetEntity()) {
+        if (target != theEntity.getNavigatorNew().getTargetEntity()) {
             nav.stop();
             nav.setMovementType(FlyingNavigation.MoveType.PREFER_WALKING);
             @Nullable
@@ -38,7 +38,7 @@ public class FlyToEntityGoal extends Goal {
             if (path != null && path.getLength() > 2 * theEntity.distanceTo(target)) {
                 nav.setMovementType(FlyingNavigation.MoveType.MIXED);
             }
-            nav.autoPathToEntity(target);
+            theEntity.getNavigatorNew().autoPathToEntity(target);
         }
     }
 }

@@ -23,8 +23,6 @@ public class BlockMetadata {
     public static final float DEFAULT_HARD_COST = 3.2F;
     public static final float AIR_BASE_COST = 1;
 
-
-
     private static final Map<Block, Float> BLOCK_COSTS = Util.make(new HashMap<>(), costs -> {
         costs.put(Blocks.AIR, AIR_BASE_COST);
         costs.put(Blocks.LADDER, AIR_BASE_COST);
@@ -114,7 +112,8 @@ public class BlockMetadata {
     private static final List<Block> UNDESTRUCTABLE_BLOCKS = List.of(
             Blocks.BEDROCK,
             Blocks.COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK,
-            Blocks.END_PORTAL_FRAME, Blocks.LADDER, Blocks.CHEST
+            Blocks.END_PORTAL_FRAME, Blocks.LADDER, Blocks.CHEST,
+            Blocks.NETHER_PORTAL, Blocks.END_GATEWAY, Blocks.END_PORTAL
     );
 
     public static int getBlockType(BlockState state) {
@@ -136,7 +135,8 @@ public class BlockMetadata {
         BlockSpecial special = BlockSpecial.of(state);
         int bonus = 0;
         BlockPos.Mutable mutable = pos.mutableCopy();
-        float strength = InvasionMod.getConfig().getBlockStrength(state.getBlock()).orElseGet(() -> BLOCK_STRENGTHS.getOrDefault(state.getBlock(), DEFAULT_SOFT_STRENGTH));
+        float strength = InvasionMod.getConfig().getBlockStrength(state.getBlock())
+                .orElseGet(() -> BLOCK_STRENGTHS.getOrDefault(state.getBlock(), state.getHardness(world, pos)));
         switch (special) {
             case CONSTRUCTION_1:
                 for (Direction direction : Direction.values()) {

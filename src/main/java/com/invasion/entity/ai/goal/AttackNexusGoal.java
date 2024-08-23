@@ -1,11 +1,11 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.util.Hand;
 
 public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Goal {
     private E mob;
@@ -40,10 +40,8 @@ public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Go
     public void tick() {
         if (cooldown == 0) {
             if (mob.findDistanceToNexus() <= mob.getWidth()) {
-                if (mob instanceof EntityIMZombie) {
-                    ((EntityIMZombie) mob).updateAnimation(true);
-                }
-                mob.getNexus().damage(2);
+                mob.swingHand(Hand.MAIN_HAND);
+                mob.getNexus().damage(mob.getDamageSources().mobAttack(mob), 2);
             }
             cooldown = 20;
             mob.setAttacking(true);

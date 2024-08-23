@@ -51,7 +51,8 @@ public class BoulderEntity extends PersistentProjectileEntity {
         if (!exploded) {
             exploded = true;
             if (state.isOf(InvBlocks.NEXUS_CORE) && getWorld().getBlockEntity(hit.getBlockPos()) instanceof NexusBlockEntity nexus) {
-                nexus.getNexus().damage(2);
+                // TODO: Boulder damage source type
+                nexus.getNexus().damage(getDamageSources().arrow(this, getOwner()), 2);
             } else if (state.getHardness(getWorld(), hit.getBlockPos()) >= 0) {
 
                 if (!state.isIn(BlockTags.WITHER_IMMUNE) && !state.isIn(BlockTags.DRAGON_IMMUNE)) {

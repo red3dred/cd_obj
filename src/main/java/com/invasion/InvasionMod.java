@@ -8,8 +8,6 @@ import com.invasion.block.InvBlocks;
 import com.invasion.entity.InvEntities;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.WorldNexusStorage;
-import com.invasion.nexus.test.Tester;
-
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -17,7 +15,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 
 public class InvasionMod implements ModInitializer {
-    public static final Logger LOGGER = LoggerFactory.getLogger(Tester.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(InvasionMod.class);
 
     private static final InvasionConfig CONFIG = new InvasionConfig();
 

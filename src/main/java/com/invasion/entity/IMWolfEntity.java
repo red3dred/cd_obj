@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.InvasionMod;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.IHasNexus;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 import com.invasion.nexus.Mode;
 
 import net.minecraft.entity.Entity;
@@ -37,7 +37,7 @@ public class IMWolfEntity extends WolfEntity implements IHasNexus {
         this(type, world, null);
     }
 
-    public IMWolfEntity(EntityType<IMWolfEntity> type, World world, @Nullable INexusAccess nexus) {
+    public IMWolfEntity(EntityType<IMWolfEntity> type, World world, @Nullable NexusAccess nexus) {
         super(type, world);
         setNexus(nexus);
     }
@@ -140,7 +140,7 @@ public class IMWolfEntity extends WolfEntity implements IHasNexus {
         ItemStack stack = player.getStackInHand(hand);
         if (stack.isOf(InvItems.STRANGE_BONE) && isOwner(player)) {
             if (!getWorld().isClient) {
-                INexusAccess newNexus = IHasNexus.findNexus(getWorld(), getBlockPos());
+                NexusAccess newNexus = IHasNexus.findNexus(getWorld(), getBlockPos());
                 if (newNexus != null && newNexus != getNexus()) {
                     setNexus(newNexus);
                     stack.decrementUnlessCreative(1, player);

@@ -4,16 +4,17 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
-import com.invasion.block.InvBlocks;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.ChargeMobGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
+import com.invasion.entity.ai.goal.MineBlockGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
 import com.invasion.entity.ai.goal.WaitForSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
+import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
@@ -77,6 +78,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(0, new MineBlockGoal(this));
         goalSelector.add(1, new PredicatedGoal(new ChargeMobGoal<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
         goalSelector.add(2, new KillEntityGoal<>(this, PlayerEntity.class, 40));
         goalSelector.add(3, new AttackNexusGoal<>(this));
@@ -105,30 +107,14 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
 
     @Override
     public void updateAnimation(boolean override) {
-        if (!getWorld().isClient && (terrainModifier.isBusy() || override)) {
-            setSwinging(true);
-        }
-        int swingSpeed = getSwingSpeed();
-        if (isSwinging()) {
-            swingTimer++;
-            if (swingTimer >= swingSpeed) {
-                swingTimer = 0;
-                setSwinging(false);
-            }
-        } else {
-            swingTimer = 0;
-        }
-        handSwingProgress = (float) swingTimer / (float) swingSpeed;
-
         if (isCharging()) {
-            limbAnimator.updateLimbs(0.5F, 1);
             if (!getWorld().isClient) {
                 for (BlockPos pos : BlockPos.iterateOutwards(getBlockPos(), 2, 2, 2)) {
                     BlockState block = getWorld().getBlockState(pos);
                     boolean mobgriefing = getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
 
                     if (!block.isAir()) {
-                        if (getNavigatorNew().getActor().isBlockDestructible(getWorld(), pos, block) && !block.isOf(InvBlocks.NEXUS_CORE)) {
+                        if (IMLandPathNodeMaker.canMineBlock(this, pos)) {
                             playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.2F, 0.5F);
                             if (mobgriefing) {
                                 getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);

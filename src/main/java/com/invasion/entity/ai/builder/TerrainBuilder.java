@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.Notifiable;
 import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.PigmanEngineerEntity;
+import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -146,8 +147,8 @@ public class TerrainBuilder implements ITerrainBuild {
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         if (mob.getWorld().isAir(mutable.move(Direction.DOWN))) {
-            boolean needsSupport = mob.getNavigatorNew().getActor().avoidsBlock(mob.getWorld().getBlockState(mutable.set(pos).move(Direction.DOWN, 2)))
-                                || mob.getNavigatorNew().getActor().avoidsBlock(mob.getWorld().getBlockState(mutable.set(pos).move(Direction.DOWN, 3)));
+            boolean needsSupport = IMLandPathNodeMaker.avoidsBlock(mob, mutable.set(pos).move(Direction.DOWN, 2))
+                                || IMLandPathNodeMaker.avoidsBlock(mob, mutable.set(pos).move(Direction.DOWN, 3));
             modList.add(new ModifyBlockEntry(pos.down(),
                     (needsSupport ? Blocks.COBBLESTONE : Blocks.OAK_PLANKS).getDefaultState(),
                     (int) ((needsSupport ? COBBLE_COST : PLANKS_COST) / buildRate))

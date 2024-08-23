@@ -41,7 +41,7 @@ public class Participants {
         final long now = System.currentTimeMillis();
         for (PlayerEntity player : nexus.getWorld().getEntitiesByClass(PlayerEntity.class, arena, EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR)) {
             entries.compute(player.getUuid(), (id, oldEntry) -> {
-                if (oldEntry == null || now - oldEntry.time > INexusAccess.BIND_EXPIRE_TIME) {
+                if (oldEntry == null || now - oldEntry.time > NexusAccess.BIND_EXPIRE_TIME) {
                     Text message = Text.translatable("invmod.message.nexus.lifenowbound", pluralize(player.getDisplayName())).formatted(Formatting.DARK_GREEN);
                     sendMessage(message);
                     if (oldEntry == null) {
@@ -100,7 +100,7 @@ public class Participants {
     public void release() {
         long time = System.currentTimeMillis();
         for (Entry entry : entries.values()) {
-            if (time - entry.time < INexusAccess.BIND_EXPIRE_TIME) {
+            if (time - entry.time < NexusAccess.BIND_EXPIRE_TIME) {
                 PlayerEntity player = entry.getEntity();
                 if (player != null) {
                     player.getWorld().playSound(null, player.getBlockPos(), SoundEvents.ENTITY_ENDER_DRAGON_DEATH, SoundCategory.AMBIENT, 4, 1);

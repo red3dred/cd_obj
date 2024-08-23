@@ -104,7 +104,7 @@ public class WorldNexusStorage extends PersistentState {
         }
     }
 
-    public synchronized INexusAccess getNexus(UUID nexusId) {
+    public synchronized NexusAccess getNexus(UUID nexusId) {
         return instances.get(nexusId);
     }
 

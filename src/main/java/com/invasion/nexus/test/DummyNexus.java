@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.UUID;
 
 import com.invasion.entity.ai.AttackerAI;
+import com.invasion.nexus.Combatant;
 import com.invasion.nexus.ControllableNexusAccess;
 import com.invasion.nexus.Mode;
 import com.invasion.nexus.Participants;
 
+import net.minecraft.entity.Entity.RemovalReason;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -27,11 +30,11 @@ public class DummyNexus implements ControllableNexusAccess {
     }
 
     @Override
-    public void damage(int damage) {
+    public void notifyCombatantRemoved(Combatant<?> combatant, RemovalReason reason) {
     }
 
     @Override
-    public void registerMobDied() {
+    public void damage(DamageSource source, int amount) {
     }
 
     @Override

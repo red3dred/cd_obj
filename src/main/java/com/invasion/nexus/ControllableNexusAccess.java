@@ -1,6 +1,6 @@
 package com.invasion.nexus;
 
-public interface ControllableNexusAccess extends INexusAccess {
+public interface ControllableNexusAccess extends NexusAccess {
 
     boolean start(int wave);
 

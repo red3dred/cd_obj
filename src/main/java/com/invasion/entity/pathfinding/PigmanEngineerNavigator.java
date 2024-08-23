@@ -8,7 +8,7 @@ import com.invasion.entity.PigmanEngineerEntity;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.entity.pathfinding.path.PathAction.Type;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -196,7 +196,7 @@ public class PigmanEngineerNavigator extends IMNavigation {
     @Override
     protected Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius) {
         BlockView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
-        INexusAccess nexus = pigEntity.getNexus();
+        NexusAccess nexus = pigEntity.getNexus();
         if (nexus != null) {
             IBlockAccessExtended terrainCacheExt = nexus.getAttackerAI().wrapEntityData(terrainCache);
 

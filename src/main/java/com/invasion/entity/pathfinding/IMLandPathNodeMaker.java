@@ -1,23 +1,21 @@
 package com.invasion.entity.pathfinding;
 
 import com.invasion.block.BlockMetadata;
-import com.invasion.block.DestructableType;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
-import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.ai.pathing.PathContext;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.ai.pathing.TargetPathNode;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.CollisionView;
 import net.minecraft.world.GameRules;
 
 public class IMLandPathNodeMaker extends LandPathNodeMaker {
@@ -26,7 +24,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
     private boolean canDigDown;
 
     public boolean canDestroyBlocks() {
-        return canMineBlocks && entity.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
+        return canMineBlocks && (entity == null || entity.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING));
     }
 
     public void setCanDestroyBlocks(boolean flag) {
@@ -66,19 +64,66 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
 
     @Override
     public int getSuccessors(PathNode[] successors, PathNode node) {
-        // TODO: Port existing logic to account for block density
-        return super.getSuccessors(successors, node);
+        int index = super.getSuccessors(successors, node);
+
+        boolean canClimb = getCanClimb();
+        boolean canDigDown = getCanDigDown();
+
+        if (canClimb || canDigDown) {
+            PathNodeType currentNodeType = getNodeType(node.x, node.y, node.z);
+            BlockPos pos = new BlockPos(node.x, node.y, node.z);
+            double prevY = getFeetY(pos);
+            if (PathingUtil.isLadder(entity.getWorld().getBlockState(pos))) {
+                for (Direction direction : Direction.Type.VERTICAL) {
+                    BlockPos p = pos.offset(direction);
+                    BlockState state = entity.getWorld().getBlockState(p);
+                    boolean isClimbable = canClimb && PathingUtil.isLadder(state);
+                    boolean isDiggable = canDigDown && direction == Direction.DOWN && canMineBlock(entity.getWorld(), p, state);
+
+                    if (isClimbable || isDiggable) {
+                        PathNode n = getPathNode(node.x, node.y + direction.getOffsetY(), node.z, 1, prevY, direction, currentNodeType);
+                        n.penalty = isClimbable ? 0 : getBlockStrength(pos, state);
+                        successors[index++] = ActionablePathNode.setAction(n, isClimbable ? PathAction.getClimbing(direction) : PathAction.DIG);
+                    }
+                }
+            }
+        }
+
+        return index;
     }
 
     @Override
     public PathNodeType getDefaultNodeType(PathContext context, int x, int y, int z) {
-        return getLandNodeType(context, new BlockPos.Mutable(x, y, z));
+        BlockPos.Mutable pos = new BlockPos.Mutable(x, y, z);
+        PathNodeType type = getLandNodeType(context, pos);
+        if (getCanClimb() && PathingUtil.isLadder(context.getBlockState(pos))) {
+            return PathNodeType.WALKABLE;
+        }
+        if (canDestroyBlocks() && type == PathNodeType.BLOCKED) {
+            return PathNodeType.WALKABLE;
+        }
+        return type;
+    }
+
+    @Override
+    protected PathNode getPathNode(int x, int y, int z, int maxYStep, double prevFeetY, Direction direction, PathNodeType nodeType) {
+        PathNode node = super.getPathNode(x, y, z, maxYStep, prevFeetY, direction, nodeType);
+        if (canDestroyBlocks() && node != null && getLandNodeType(entity, node.getBlockPos()) == PathNodeType.BLOCKED) {
+            BlockPos pos = new BlockPos(node.x, node.y, node.z);
+            BlockState state = context.getBlockState(pos);
+            if (canMineBlock(context.getWorld(), pos, state)) {
+                node.type = PathNodeType.WALKABLE;
+                node.penalty = getBlockStrength(pos, state);
+                return ActionablePathNode.setAction(node, PathAction.DIG);
+            }
+
+        }
+        return node;
     }
 
     @Override
     protected boolean canPathThrough(BlockPos pos) {
-        // TODO: Pathfinding through obstacles
-        return super.canPathThrough(pos);
+        return super.canPathThrough(pos) || (canDestroyBlocks() && canMineBlock(entity.getWorld(), pos, entity.getWorld().getBlockState(pos)));
     }
 
 
@@ -90,62 +135,28 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
         return BlockMetadata.getStrength(pos, state, entity.getWorld());
     }
 
-    public boolean isBlockDestructible(BlockView world, BlockPos pos, BlockState state) {
-        if (state.getHardness(world, pos) < 0 || state.isOf(Blocks.COMMAND_BLOCK) || state.isOf(Blocks.CHAIN_COMMAND_BLOCK) || state.isOf(Blocks.REPEATING_COMMAND_BLOCK)) {
-            return false;
-        }
-        if (state.isAir() || !canDestroyBlocks() || BlockMetadata.isIndestructible(state) || isLadderAdjacent(world, pos)) {
+    public boolean canMineBlock(CollisionView world, BlockPos pos, BlockState state) {
+        if (state.isAir() || !canDestroyBlocks() || BlockMetadata.isIndestructible(state) || PathingUtil.hasAdjacentLadder(world, pos)) {
             return false;
         }
         return state.isIn(BlockTags.DOORS) || state.isIn(BlockTags.TRAPDOORS) || state.isSolidBlock(world, pos);
     }
 
-    protected static boolean isLadderAdjacent(BlockView world, BlockPos pos) {
-        BlockPos.Mutable mutable = pos.mutableCopy();
-        for (Direction offset : Direction.Type.HORIZONTAL) {
-            if (world.getBlockState(mutable.set(pos).move(offset)).isIn(BlockTags.CLIMBABLE)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean avoidsBlock(CollisionView world, BlockPos pos, BlockState state) {
+        return PathingUtil.shouldAvoidBlock(entity, pos);
     }
 
     protected boolean canWalkOn(PathNodeType type) {
         return type != PathNodeType.DAMAGE_FIRE && type != PathNodeType.DANGER_FIRE && type != PathNodeType.LAVA && type != PathNodeType.STICKY_HONEY;
     }
 
-    @SuppressWarnings("deprecation")
-    protected final int getNodeDestructability(PathContext context, BlockPos pos) {
-        boolean destructibleFlag = false;
-        boolean liquidFlag = false;
+    public static boolean canMineBlock(PathAwareEntity entity, BlockPos pos) {
+        return entity.getNavigation().getNodeMaker() instanceof IMLandPathNodeMaker maker
+                && maker.canMineBlock(entity.getWorld(), pos, entity.getWorld().getBlockState(pos));
+    }
 
-        BlockPos.Mutable p = new BlockPos.Mutable();
-        for(int i = 0; i < entityBlockXSize; ++i) {
-            for(int j = 0; j < entityBlockYSize; ++j) {
-                for(int k = 0; k < entityBlockZSize; ++k) {
-                    BlockState state = context.getBlockState(p.set(pos).move(i, j, k));
-                    if (!state.isAir()) {
-                        if (state.isLiquid()) {
-                            liquidFlag = true;
-                        } else if (!state.canPathfindThrough(NavigationType.LAND)) {
-                            if (!isBlockDestructible(context.getWorld(), p, state)) {
-                                return DestructableType.UNBREAKABLE;
-                            }
-                            destructibleFlag = true;
-                        } else {
-                            state = context.getBlockState(p.down());
-                            if (state.isIn(BlockTags.WOODEN_FENCES)) {
-                                return isBlockDestructible(context.getWorld(), pos, state) ? DestructableType.BREAKABLE_BARRIER : DestructableType.UNBREAKABLE;
-                            }
-                        }
-
-                        if (!canWalkOn(context.getNodeType(p.getX(), p.getY(), p.getZ()))) {
-                            return DestructableType.REPELLANT;
-                        }
-                    }
-                }
-            }
-        }
-        return destructibleFlag ? DestructableType.DESTRUCTABLE : liquidFlag ? DestructableType.FLUID : DestructableType.TERRAIN;
+    public static boolean avoidsBlock(PathAwareEntity entity, BlockPos pos) {
+        return entity.getNavigation().getNodeMaker() instanceof IMLandPathNodeMaker maker
+                && maker.avoidsBlock(entity.getWorld(), pos, entity.getWorld().getBlockState(pos));
     }
 }

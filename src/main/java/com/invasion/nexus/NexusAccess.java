@@ -4,11 +4,14 @@ import java.util.List;
 import java.util.UUID;
 
 import com.invasion.entity.ai.AttackerAI;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public interface INexusAccess {
+public interface NexusAccess {
     long BIND_EXPIRE_TIME = 300000L;
     long TICKS_PER_DAY = World.field_30969;//24000
     long SUNSET_TIME = 12000L;
@@ -22,8 +25,6 @@ public interface INexusAccess {
     boolean isDiscarded();
 
     BlockPos getOrigin();
-
-    void registerMobDied();
 
     boolean isActivating();
 
@@ -43,7 +44,9 @@ public interface INexusAccess {
 
     boolean isActive();
 
-    void damage(int amount);
-
     List<Text> getStatus();
+
+    void notifyCombatantRemoved(Combatant<?> combatant, Entity.RemovalReason reason);
+
+    void damage(DamageSource source, int amount);
 }

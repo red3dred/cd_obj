@@ -89,8 +89,7 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
 
     public boolean avoidsBlock(BlockState state) {
         return !entity.isInvulnerable()
-                && (
-                        (!entity.isFireImmune() && PathNodeMaker.isFireDamaging(state))
+                && ((!entity.isFireImmune() && PathNodeMaker.isFireDamaging(state))
                     || state.isOf(Blocks.BEDROCK)
                     || state.isOf(Blocks.CACTUS)
             );
@@ -100,7 +99,7 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
         if (state.getHardness(world, pos) < 0 || state.isOf(Blocks.COMMAND_BLOCK) || state.isOf(Blocks.CHAIN_COMMAND_BLOCK) || state.isOf(Blocks.REPEATING_COMMAND_BLOCK)) {
             return false;
         }
-        if (state.isAir() || !canDestroyBlocks() || BlockMetadata.isIndestructible(state) || blockHasLadder(world, pos)) {
+        if (state.isAir() || !canDestroyBlocks() || BlockMetadata.isIndestructible(state) || PathingUtil.hasAdjacentLadder(world, pos)) {
             return false;
         }
         return state.isIn(BlockTags.DOORS) || state.isIn(BlockTags.TRAPDOORS) || state.isSolidBlock(world, pos);
@@ -114,7 +113,7 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
             multiplier += 2;
         }
 
-        if (blockHasLadder(terrainMap, node.getBlockPos())) {
+        if (PathingUtil.hasAdjacentLadder(terrainMap, node.getBlockPos())) {
             multiplier += 5;
         }
 
@@ -305,17 +304,6 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
         return state.hasSolidTopSurface(world, pos, entity) && !avoidsBlock(state);
     }
 
-    protected static boolean blockHasLadder(BlockView world, BlockPos pos) {
-        BlockPos.Mutable mutable = pos.mutableCopy();
-        for (Direction offset : Direction.Type.HORIZONTAL) {
-            if (world.getBlockState(mutable.set(pos).move(offset)).isIn(BlockTags.CLIMBABLE)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @SuppressWarnings("deprecation")
     protected final int getNodeDestructability(BlockView terrainMap, BlockPos pos) {
         boolean destructibleFlag = false;
         boolean liquidFlag = false;

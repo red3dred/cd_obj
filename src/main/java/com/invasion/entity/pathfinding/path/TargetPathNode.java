@@ -26,13 +26,39 @@ class TargetPathNode extends net.minecraft.entity.ai.pathing.TargetPathNode impl
         this.hashCode = ActionablePathNode.makeHash(pos, action);
     }
 
+    public TargetPathNode(net.minecraft.entity.ai.pathing.TargetPathNode node, PathAction action) {
+        this(node.x, node.y, node.z, action);
+        heapIndex = node.heapIndex;
+        penalizedPathLength = node.penalizedPathLength;
+        distanceToNearestTarget = node.distanceToNearestTarget;
+        heapWeight = node.heapWeight;
+        previous = node.previous;
+        visited = node.visited;
+        pathLength = node.pathLength;
+        penalty = node.penalty;
+        type = node.type;
+        if (node.isReached()) {
+            markReached();
+        }
+    }
+
     @Override
     public PathAction getAction() {
         return action;
     }
 
+
+    @Override
+    public TargetPathNode getWithAction(PathAction action) {
+        return new TargetPathNode(this, action);
+    }
+
     @Override
     public TargetPathNode copyWithNewPosition(int x, int y, int z) {
+        return createCopy(x, y, z, action);
+    }
+
+    private TargetPathNode createCopy(int x, int y, int z, PathAction action) {
         TargetPathNode pathNode = new TargetPathNode(x, y, z, action);
         pathNode.heapIndex = heapIndex;
         pathNode.penalizedPathLength = penalizedPathLength;

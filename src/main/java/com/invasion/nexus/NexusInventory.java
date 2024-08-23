@@ -35,7 +35,7 @@ public class NexusInventory extends SimpleInventory {
         cookTime = time;
     }
 
-    public void tick(INexusAccess nexus) {
+    public void tick(NexusAccess nexus) {
         tickCookTime(nexus, getStack(0), getStack(1));
     }
 
@@ -53,7 +53,7 @@ public class NexusInventory extends SimpleInventory {
         }
     }
 
-    private void tickCookTime(INexusAccess nexus, ItemStack firstStack, ItemStack secondStack) {
+    private void tickCookTime(NexusAccess nexus, ItemStack firstStack, ItemStack secondStack) {
         if (!firstStack.isEmpty()) {
             if (firstStack.isOf(InvItems.EMPTY_TRAP)) {
                 if (cookTime < MAX_TRAP_COOK_TIME) {

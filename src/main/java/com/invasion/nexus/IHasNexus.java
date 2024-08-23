@@ -22,11 +22,11 @@ public interface IHasNexus {
     Handle getNexusHandle();
 
     @Nullable
-    default INexusAccess getNexus() {
+    default NexusAccess getNexus() {
         return getNexusHandle().get();
     }
 
-    default void setNexus(@Nullable INexusAccess nexus) {
+    default void setNexus(@Nullable NexusAccess nexus) {
         getNexusHandle().set(nexus);
     }
 
@@ -37,7 +37,7 @@ public interface IHasNexus {
     double findDistanceToNexus();
 
     @Nullable
-    static INexusAccess findNexus(World world, BlockPos center) {
+    static NexusAccess findNexus(World world, BlockPos center) {
         for (BlockPos pos : BlockPos.iterateOutwards(center, 8, 5, 8)) {
             if (world.getBlockState(pos).isOf(InvBlocks.NEXUS_CORE)) {
                 if (world.getBlockEntity(pos) instanceof NexusBlockEntity nexus) {
@@ -54,7 +54,7 @@ public interface IHasNexus {
         @Nullable
         private GlobalPos globalPos;
         @Nullable
-        private INexusAccess nexus;
+        private NexusAccess nexus;
 
         private final Supplier<World> worldGetter;
 
@@ -62,7 +62,7 @@ public interface IHasNexus {
             this.worldGetter = worldGetter;
         }
 
-        public @Nullable INexusAccess get() {
+        public @Nullable NexusAccess get() {
             if (nexusId != null
                     && globalPos != null
                     && nexus == null
@@ -76,7 +76,7 @@ public interface IHasNexus {
             return nexus;
         }
 
-        public void set(@Nullable INexusAccess nexus) {
+        public void set(@Nullable NexusAccess nexus) {
             nexusId = nexus == null ? null : nexus.getUuid();
             globalPos = nexus == null ? null : GlobalPos.create(nexus.getWorld().getRegistryKey(), nexus.getOrigin());
             this.nexus = nexus;

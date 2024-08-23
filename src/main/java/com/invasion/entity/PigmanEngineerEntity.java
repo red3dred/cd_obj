@@ -1,15 +1,13 @@
 package com.invasion.entity;
 
-import com.invasion.Notifiable;
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.ai.builder.ITerrainBuild;
-import com.invasion.entity.ai.builder.ITerrainDig;
 import com.invasion.entity.ai.builder.TerrainBuilder;
-import com.invasion.entity.ai.builder.TerrainDigger;
 import com.invasion.entity.ai.builder.TerrainModifier;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
+import com.invasion.entity.ai.goal.MineBlockGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.Navigation;
@@ -24,7 +22,6 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
-import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -44,7 +41,6 @@ import net.minecraft.world.World;
 
 public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     private final TerrainModifier terrainModifier = new TerrainModifier(this, 2.8F);
-    private final TerrainDigger terrainDigger = new TerrainDigger(this, terrainModifier, 1);
     private final TerrainBuilder terrainBuilder = new TerrainBuilder(this, terrainModifier, 1);
 
     private int askForScaffoldTimer;
@@ -72,6 +68,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     @Override
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(0, new MineBlockGoal(this));
         goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 60));
         goalSelector.add(2, new AttackNexusGoal<>(this));
         goalSelector.add(3, new GoToNexusGoal(this));
@@ -155,18 +152,10 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
         terrainModifier.cancelTask();
     }
 
-    @Override
-    public boolean onPathBlocked(Path path, Notifiable notifee) {
-        return !path.isFinished() && terrainDigger.askClearPosition(path.getCurrentNodePos(), notifee, 1);
-    }
-
     public ITerrainBuild getTerrainBuildEngy() {
         return terrainBuilder;
     }
 
-    public ITerrainDig getTerrainDig() {
-        return terrainDigger;
-    }
 
     @Override
     protected SoundEvent getAmbientSound() {

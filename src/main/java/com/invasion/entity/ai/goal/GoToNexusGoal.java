@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.entity.IMMobEntity;
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.pathfinding.Navigation;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
@@ -40,7 +40,7 @@ public class GoToNexusGoal extends Goal {
     @Override
     public void start() {
         @Nullable
-        INexusAccess nexus = mob.getNexus();
+        NexusAccess nexus = mob.getNexus();
 
         if (nexus != null && pathRequestTimer-- <= 0) {
             boolean pathSet = false;
@@ -67,7 +67,7 @@ public class GoToNexusGoal extends Goal {
     public void tick() {
         if (pathFailedCount > 1) {
             @Nullable
-            INexusAccess nexus = mob.getNexus();
+            NexusAccess nexus = mob.getNexus();
             if (nexus != null) {
                 Vec3d target = nexus.getOrigin().toCenterPos();
                 mob.getMoveControl().moveTo(target.x, target.y, target.z, 1);

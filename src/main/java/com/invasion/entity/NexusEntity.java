@@ -10,7 +10,7 @@ import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.EntityConstruct.BuildableMob;
 import com.invasion.nexus.IHasNexus;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
@@ -65,7 +65,7 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     }
 
     @Override
-    default void onSpawned(@Nullable INexusAccess nexus, EntityConstruct spawnConditions) {
+    default void onSpawned(@Nullable NexusAccess nexus, EntityConstruct spawnConditions) {
         setNexus(nexus);
     }
 

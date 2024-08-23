@@ -12,7 +12,7 @@ import com.invasion.entity.EntityIMSpider;
 import com.invasion.entity.ThrowerEntity;
 import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.InvEntities;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -31,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
 
 class DebugWandItem extends Item {
     @Nullable
-    private INexusAccess nexus;
+    private NexusAccess nexus;
 
     public DebugWandItem(Settings settings) {
         super(settings);

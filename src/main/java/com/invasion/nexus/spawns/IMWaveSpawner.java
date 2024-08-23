@@ -18,7 +18,7 @@ import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.InvEntities;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
-import com.invasion.nexus.INexusAccess;
+import com.invasion.nexus.NexusAccess;
 import com.invasion.nexus.wave.WaveBuilder;
 import com.invasion.nexus.wave.EntityPattern;
 import com.invasion.nexus.wave.Wave;
@@ -35,7 +35,7 @@ public class IMWaveSpawner implements Spawner {
 
 	private SpawnPointContainer spawnPointContainer = new SpawnPointContainer();
 
-	private final INexusAccess nexus;
+	private final NexusAccess nexus;
 
 	@Nullable
 	private Wave currentWave;
@@ -49,7 +49,7 @@ public class IMWaveSpawner implements Spawner {
 	private int successfulSpawns;
 	private long elapsed;
 
-	public IMWaveSpawner(INexusAccess nexus, int radius) {
+	public IMWaveSpawner(NexusAccess nexus, int radius) {
 		this.nexus = nexus;
 		this.spawnRadius = radius;
 	}
