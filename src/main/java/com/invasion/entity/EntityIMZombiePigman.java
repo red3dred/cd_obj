@@ -16,7 +16,6 @@ import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
 import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -34,6 +33,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -106,24 +106,43 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    public void updateAnimation(boolean override) {
+    public void tickMovement() {
+        super.tickMovement();
         if (isCharging()) {
-            if (!getWorld().isClient) {
-                for (BlockPos pos : BlockPos.iterateOutwards(getBlockPos(), 2, 2, 2)) {
-                    BlockState block = getWorld().getBlockState(pos);
-                    boolean mobgriefing = getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
+            boolean mobgriefing = !getWorld().isClient || getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING);
+            boolean sound = false;
 
-                    if (!block.isAir()) {
-                        if (IMLandPathNodeMaker.canMineBlock(this, pos)) {
-                            playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.2F, 0.5F);
-                            if (mobgriefing) {
-                                getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
-                            }
-                        }
+            BlockPos center = BlockPos.ofFloored(getCameraPosVec(1).add(getRotationVec(1).normalize()));
+
+            for (BlockPos pos : BlockPos.iterate(center.add(-1, -1, -1), center.add(1, 1, 1))) {
+                if (IMLandPathNodeMaker.canMineBlock(this, pos)) {
+                    sound = true;
+                    if (mobgriefing) {
+                        getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
+                    }
+
+                    for (int i = 0; i < 10; i++) {
+                        double x = getRandom().nextTriangular(pos.getX() + 0.5, 0.5);
+                        double y = getRandom().nextTriangular(pos.getY() + 0.5, 0.5);
+                        double z = getRandom().nextTriangular(pos.getZ() + 0.5, 0.5);
+                        getWorld().addParticle(ParticleTypes.CLOUD,
+                                x, y, z,
+                                pos.getX() + 0.5 - x,
+                                pos.getY() + 0.5 - y,
+                                pos.getZ() + 0.5 - z
+                        );
                     }
                 }
             }
+            if (sound) {
+                playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 0.2F, 0.5F);
+            }
         }
+    }
+
+    @Override
+    public void updateAnimation(boolean override) {
+
     }
 
     @Override
