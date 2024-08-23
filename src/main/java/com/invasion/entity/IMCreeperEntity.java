@@ -8,7 +8,7 @@ import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.IMCreeperIgniteGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
-import com.invasion.entity.ai.goal.WaitForSupportGoal;
+import com.invasion.entity.ai.goal.ProvideSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.pathfinding.Actor;
@@ -85,7 +85,7 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
         goalSelector.add(2, new FleeEntityGoal<>(this, CatEntity.class, 6.0F, 0.25D, 0.300000011920929D));
         goalSelector.add(3, new KillEntityGoal<>(this, PlayerEntity.class, 40));
         goalSelector.add(4, new AttackNexusGoal<>(this));
-        goalSelector.add(5, new WaitForSupportGoal(this, 4.0F, true));
+        goalSelector.add(5, new ProvideSupportGoal(this, 4.0F, true));
         goalSelector.add(6, new KillEntityGoal<>(this, MobEntity.class, 40));
         goalSelector.add(7, new GoToNexusGoal(this));
         goalSelector.add(8, new WanderAroundFarGoal(this, 1));

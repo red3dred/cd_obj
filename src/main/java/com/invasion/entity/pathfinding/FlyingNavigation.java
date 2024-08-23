@@ -29,6 +29,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.RaycastContext;
 
+@Deprecated
 public class FlyingNavigation extends IMNavigation {
 	private static final int VISION_RESOLUTION_H = 30;
 	private static final int VISION_RESOLUTION_V = 20;

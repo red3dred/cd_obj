@@ -18,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
+@Deprecated
 public abstract class EntityIMLiving extends HostileEntity implements NexusEntity, Stunnable {
     private final IHasNexus.Handle nexus = new IHasNexus.Handle(this::getWorld);
 
@@ -56,18 +57,6 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
         if (getBurnsInDay() && isAffectedByDaylight()) {
             sunlightDamageTick();
         }
-    }
-
-    @Override
-    public void tick() {
-        if (!getWorld().isClient) {
-            if (stunTimer > 0) {
-                stunTimer--;
-                return;
-            }
-        }
-
-        super.tick();
     }
 
     @Override

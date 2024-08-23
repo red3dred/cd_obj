@@ -64,6 +64,8 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
 
     @Override
     public int getSuccessors(PathNode[] successors, PathNode node) {
+        this.setCanDestroyBlocks(true);
+        this.setCanDigDown(true);
         int index = super.getSuccessors(successors, node);
 
         boolean canClimb = getCanClimb();

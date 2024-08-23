@@ -1,20 +1,21 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.Leader;
+import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 
 public class RallyBehindLeaderGoal<T extends LivingEntity> extends FollowEntityGoal<T> {
     private static final float DEFAULT_FOLLOW_DISTANCE = 5;
 
     private int rallyCooldown;
 
-    public RallyBehindLeaderGoal(EntityIMLiving entity, Class<T> leader) {
+    public <E extends PathAwareEntity & NexusEntity> RallyBehindLeaderGoal(E entity, Class<T> leader) {
         this(entity, leader, DEFAULT_FOLLOW_DISTANCE);
     }
 
-    public RallyBehindLeaderGoal(EntityIMLiving entity, Class<T> leader, float followDistance) {
+    public <E extends PathAwareEntity & NexusEntity> RallyBehindLeaderGoal(E entity, Class<T> leader, float followDistance) {
         super(entity, leader, followDistance);
     }
 

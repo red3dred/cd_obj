@@ -2,7 +2,6 @@ package com.invasion.entity.ai;
 
 import java.util.Optional;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMSpider;
 import com.invasion.util.math.PosUtils;
 
@@ -39,7 +38,7 @@ public class IMSpiderMoveControl extends ClimbableMoveControl {
     }
 
     private int getMoveDirection() {
-        Path path = ((EntityIMLiving)entity).getNavigation().getCurrentPath();
+        Path path = entity.getNavigation().getCurrentPath();
         if (path != null && !path.isFinished()) {
             PathNode currentPoint = path.getCurrentNode();
             int pathLength = path.getLength();

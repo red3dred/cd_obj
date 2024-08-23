@@ -2,12 +2,11 @@ package com.invasion.entity.ai;
 
 import java.util.Optional;
 
-import com.invasion.entity.EntityIMLiving;
-
+import com.invasion.entity.EntityIMFlying;
 import net.minecraft.entity.ai.control.LookControl;
 
 public class FlyingEntityLookControl extends LookControl {
-    public FlyingEntityLookControl(EntityIMLiving entity) {
+    public FlyingEntityLookControl(EntityIMFlying entity) {
         super(entity);
     }
 

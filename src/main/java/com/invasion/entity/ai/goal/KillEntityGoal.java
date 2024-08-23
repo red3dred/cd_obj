@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 
+@Deprecated
 public class KillEntityGoal<T extends LivingEntity> extends MoveToEntityGoal<T> {
     private static final float ATTACK_RANGE = 1;
 

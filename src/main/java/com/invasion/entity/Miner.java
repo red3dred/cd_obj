@@ -1,5 +1,8 @@
 package com.invasion.entity;
 
+import com.invasion.block.BlockMetadata;
+import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -31,12 +34,11 @@ public interface Miner extends NexusEntity {
     }
 
     default float getBlockRemovalCost(BlockPos pos) {
-        return getNavigatorNew().getActor().getBlockStrength(pos) * 20;
+        return BlockMetadata.getStrength(pos, asEntity().getWorld().getBlockState(pos), asEntity().getWorld()) * 20;
     }
 
     default boolean canClearBlock(BlockPos pos) {
-        BlockState block = asEntity().getWorld().getBlockState(pos);
-        return block.isAir() || getNavigatorNew().getActor().isBlockDestructible(asEntity().getWorld(), pos, block);
+        return IMLandPathNodeMaker.canMineBlock(asEntity(), pos);
     }
 
     default void onBlockRemoved(BlockPos pos, BlockState state) {

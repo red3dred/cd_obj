@@ -2,11 +2,12 @@ package com.invasion.entity.ai.goal;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.EntityIMZombiePigman;
+import com.invasion.entity.NexusEntity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -23,7 +24,7 @@ public class ChargeMobGoal<T extends LivingEntity> extends MoveToEntityGoal<T> {
     protected int chargeDelay = 100;
     protected int runTime = 15;
 
-    public ChargeMobGoal(EntityIMLiving entity, Class<? extends T> targetClass, float f) {
+    public <E extends PathAwareEntity & NexusEntity> ChargeMobGoal(E entity, Class<? extends T> targetClass, float f) {
         super(entity, targetClass);
         this.speed = f;
     }

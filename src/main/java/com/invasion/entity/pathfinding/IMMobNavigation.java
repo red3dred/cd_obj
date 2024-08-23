@@ -7,8 +7,8 @@ import org.apache.commons.lang3.stream.IntStreams;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.InvasionMod;
-import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.NexusEntity;
+import com.invasion.entity.Stunnable;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.IHasNexus;
@@ -23,6 +23,7 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeNavigator;
 import net.minecraft.entity.ai.pathing.TargetPathNode;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
@@ -46,7 +47,7 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
     @Deprecated
     private final Actor<?> actor;
 
-	public IMMobNavigation(EntityIMLiving entity, Actor<?> actor) {
+	public IMMobNavigation(MobEntity entity, @SuppressWarnings("deprecation") Actor<?> actor) {
 	    super(entity, entity.getWorld());
 	    this.actor = actor;
 	}
@@ -139,6 +140,10 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
         tickFollowing();
 
         stuckTime++;
+
+        if (entity instanceof Stunnable l && l.isStunned()) {
+            return;
+        }
 
         if (haltingTicks > 0 || waitingForNotify > 0) {
             InvasionMod.LOGGER.info("{} waiting for task to complete. halting={}, waiting={}", entity, haltingTicks, waitingForNotify);

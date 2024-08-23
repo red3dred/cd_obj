@@ -2,24 +2,25 @@ package com.invasion.entity;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.entity.ai.goal.AttackNexusGoal;
+import com.invasion.entity.ai.goal.GoToNexusGoal;
+import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
+
+import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.RangedAttackMob;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.AvoidSunlightGoal;
-import net.minecraft.entity.ai.goal.EscapeSunlightGoal;
-import net.minecraft.entity.ai.goal.FleeEntityGoal;
+import net.minecraft.entity.ai.goal.BowAttackGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.TurtleEntity;
-import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -27,6 +28,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 
 public class IMSkeletonEntity extends IMMobEntity implements RangedAttackMob {
@@ -41,10 +45,10 @@ public class IMSkeletonEntity extends IMMobEntity implements RangedAttackMob {
 
     @Override
     protected void initGoals() {
-       /* goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new BowAttackGoal<>(this, 65D, 20, 16F));
+        goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(1, new BowAttackGoal<>(this, 1, 15, 16F));
         // goalSelector.add(1, new EntityAIRallyBehindEntity(this, EntityIMCreeper.class, 4.0F));
-        goalSelector.add(3, new AttackNexusGoal(this));
+        goalSelector.add(3, new AttackNexusGoal<>(this));
         goalSelector.add(4, new GoToNexusGoal(this));
         goalSelector.add(5, new WanderAroundFarGoal(this, 1));
         goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8));
@@ -52,18 +56,7 @@ public class IMSkeletonEntity extends IMMobEntity implements RangedAttackMob {
         goalSelector.add(6, new LookAtEntityGoal(this, IMCreeperEntity.class, 12));
 
         targetSelector.add(0, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false));
-        targetSelector.add(1, new RevengeGoal(this));*/
-
-        this.goalSelector.add(2, new AvoidSunlightGoal(this));
-        this.goalSelector.add(3, new EscapeSunlightGoal(this, 1.0));
-        this.goalSelector.add(3, new FleeEntityGoal(this, WolfEntity.class, 6.0F, 1.0, 1.2));
-        this.goalSelector.add(5, new WanderAroundFarGoal(this, 1.0));
-        this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(6, new LookAroundGoal(this));
-        this.targetSelector.add(1, new RevengeGoal(this));
-        this.targetSelector.add(2, new ActiveTargetGoal(this, PlayerEntity.class, true));
-        this.targetSelector.add(3, new ActiveTargetGoal(this, IronGolemEntity.class, true));
-        this.targetSelector.add(3, new ActiveTargetGoal(this, TurtleEntity.class, 10, true, false, TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
+        targetSelector.add(1, new RevengeGoal(this));
     }
 
     @Override
@@ -79,6 +72,13 @@ public class IMSkeletonEntity extends IMMobEntity implements RangedAttackMob {
     @Override
     protected SoundEvent getDeathSound() {
         return SoundEvents.ENTITY_SKELETON_DEATH;
+    }
+
+    @Override
+    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData data) {
+        data = super.initialize(world, difficulty, spawnReason, data);
+        setStackInHand(Hand.MAIN_HAND, Items.BOW.getDefaultStack());
+        return data;
     }
 
     @Override

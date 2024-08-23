@@ -4,6 +4,7 @@ import com.invasion.entity.EntityIMLiving;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.util.math.PosRotate3D;
 
+@Deprecated
 public abstract class AbstractParametricNavigator extends IMNavigation {
     protected double minMoveToleranceSq = 21;
     protected int timeParam;

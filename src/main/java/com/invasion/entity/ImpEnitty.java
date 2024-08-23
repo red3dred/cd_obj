@@ -6,7 +6,7 @@ import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
-import com.invasion.entity.ai.goal.WaitForSupportGoal;
+import com.invasion.entity.ai.goal.ProvideSupportGoal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -37,8 +37,8 @@ public class ImpEnitty extends IMMobEntity {
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 40));
-        goalSelector.add(2, new AttackNexusGoal(this));
-        goalSelector.add(3, new WaitForSupportGoal(this, 4, true));
+        goalSelector.add(2, new AttackNexusGoal<>(this));
+        goalSelector.add(3, new ProvideSupportGoal(this, 4, true));
         goalSelector.add(4, new KillEntityGoal<>(this, MobEntity.class, 40));
         goalSelector.add(5, new GoToNexusGoal(this));
         goalSelector.add(6, new WanderAroundFarGoal(this, 1));

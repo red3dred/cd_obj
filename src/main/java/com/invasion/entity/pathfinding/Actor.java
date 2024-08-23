@@ -79,14 +79,6 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
         canSwim = flag;
     }
 
-    public float getBlockStrength(BlockPos pos) {
-        return getBlockStrength(pos, entity.getWorld().getBlockState(pos));
-    }
-
-    public float getBlockStrength(BlockPos pos, BlockState state) {
-        return BlockMetadata.getStrength(pos, state, entity.getWorld());
-    }
-
     public boolean avoidsBlock(BlockState state) {
         return !entity.isInvulnerable()
                 && ((!entity.isFireImmune() && PathNodeMaker.isFireDamaging(state))

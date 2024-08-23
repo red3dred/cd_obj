@@ -8,7 +8,7 @@ import com.invasion.entity.ai.goal.LayEggGoal;
 import com.invasion.entity.ai.goal.PounceGoal;
 import com.invasion.entity.ai.goal.RallyBehindLeaderGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
-import com.invasion.entity.ai.goal.WaitForSupportGoal;
+import com.invasion.entity.ai.goal.ProvideSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
@@ -64,7 +64,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 		goalSelector.add(1, new RallyBehindLeaderGoal<>(this, IMCreeperEntity.class, 4));
 		goalSelector.add(1, new PredicatedGoal(new LayEggGoal(this, 1), this::isMother));
 		goalSelector.add(2, new AttackNexusGoal<>(this));
-		goalSelector.add(3, new WaitForSupportGoal(this, 5, false));
+		goalSelector.add(3, new ProvideSupportGoal(this, 5, false));
 		goalSelector.add(3, new PredicatedGoal(new PounceGoal(this, 0.2F, 1.55F, 18), this::isJumper));
 		goalSelector.add(4, new KillEntityGoal<>(this, MobEntity.class, 40));
 		goalSelector.add(5, new GoToNexusGoal(this));

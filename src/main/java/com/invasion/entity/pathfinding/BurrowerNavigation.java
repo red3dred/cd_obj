@@ -23,6 +23,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.BlockView;
 
+@Deprecated
 public class BurrowerNavigation extends AbstractParametricNavigator {
     protected PathNode nextNode;
     protected PathNode prevNode;

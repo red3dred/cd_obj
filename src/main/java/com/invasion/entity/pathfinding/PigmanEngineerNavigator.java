@@ -21,6 +21,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
 
+@Deprecated
 public class PigmanEngineerNavigator extends IMNavigation {
     private static final int MAX_LADDER_TOWER_HEIGHT = 4;
 

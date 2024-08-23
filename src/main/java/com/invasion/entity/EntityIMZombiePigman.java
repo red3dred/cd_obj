@@ -10,7 +10,7 @@ import com.invasion.entity.ai.goal.GoToNexusGoal;
 import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.MineBlockGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
-import com.invasion.entity.ai.goal.WaitForSupportGoal;
+import com.invasion.entity.ai.goal.ProvideSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
@@ -82,7 +82,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(1, new PredicatedGoal(new ChargeMobGoal<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
         goalSelector.add(2, new KillEntityGoal<>(this, PlayerEntity.class, 40));
         goalSelector.add(3, new AttackNexusGoal<>(this));
-        goalSelector.add(4, new WaitForSupportGoal(this, 4.0F, true));
+        goalSelector.add(4, new ProvideSupportGoal(this, 4.0F, true));
         goalSelector.add(5, new KillEntityGoal<>(this, LivingEntity.class, 40));
         goalSelector.add(6, new GoToNexusGoal(this));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
@@ -103,6 +103,11 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
 
     public void setCharging(boolean charging) {
         dataTracker.set(CHARGING, charging);
+    }
+
+    @Override
+    public float getSoundPitch() {
+        return super.getSoundPitch() * (getTier() == 3 ? 0.75F : 1);
     }
 
     @Override

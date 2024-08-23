@@ -1,19 +1,22 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMLiving;
-
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.mob.MobEntity;
 
+/**
+ * The class name is a misnomer.
+ * This causes zombies to crouch when they have a block over their head.
+ */
 public class StoopGoal extends Goal {
-    private final EntityIMLiving theEntity;
+    private final MobEntity theEntity;
     private int updateTimer;
     private boolean stopStoop = true;
 
-    public StoopGoal(EntityIMLiving entity) {
+    public StoopGoal(MobEntity entity) {
         theEntity = entity;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public boolean canStart() {
         if (--updateTimer > 0) {
@@ -21,9 +24,9 @@ public class StoopGoal extends Goal {
         }
 
         updateTimer = 10;
-        return theEntity.getWorld()
+        return !theEntity.getWorld()
                 .getBlockState(theEntity.getBlockPos().up(2))
-                .blocksMovement();
+                .canPathfindThrough(NavigationType.LAND);
     }
 
     @Override
