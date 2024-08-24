@@ -106,7 +106,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     protected void initGoals() {
         goalSelector.add(0, new PredicatedGoal(new SwimGoal(this), () -> getTier() != 2 || getFlavour() != 2));
         goalSelector.add(0, new MineBlockGoal(this));
-        goalSelector.add(1, new MobMeleeAttackGoal(this, 40, false));
+        goalSelector.add(1, new MobMeleeAttackGoal(this, 1.3F, false));
         goalSelector.add(2, new AttackNexusGoal<>(this));
         goalSelector.add(3, new ProvideSupportGoal(this, 4.0F, true));
         goalSelector.add(3, new PredicatedGoal(new SprintGoal<>(this), () -> getTier() == 3));
