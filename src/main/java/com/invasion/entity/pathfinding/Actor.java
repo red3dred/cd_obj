@@ -203,7 +203,7 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
 
                 if (pathAction == PathAction.NONE) {
                     pathFinder.addNode(currentNode.getBlockPos().up(), action);
-                } else if (pathAction.getType() == PathAction.Type.LADDER && pathAction.getBuildDirection() != Direction.UP) {
+                } else if (pathAction.getType() == PathAction.Type.LADDER && pathAction.getOrientation() != Direction.UP) {
                     if (action == pathAction) {
                         pathFinder.addNode(currentNode.getBlockPos().up(), action);
                     }

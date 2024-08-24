@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
@@ -67,6 +68,11 @@ public class IMNavigation implements Navigation {
 		this.pathSource = pathSource;
 		actor = createActor(entity);
 	}
+
+    @Override
+    public PathNodeMaker createNodeMaker() {
+        return new IMLandPathNodeMaker();
+    }
 
     @Override
     public Actor<?> getActor() {
@@ -296,7 +302,7 @@ public class IMNavigation implements Navigation {
 				haltMovement = false;
 			}
 
-		} else if (!handlePathAction(getCurrentWorkingAction())) {
+		} else if (handlePathAction(getCurrentWorkingAction())) {
 			stop();
 		}
 	}
@@ -646,4 +652,20 @@ public class IMNavigation implements Navigation {
                 new BlockPos(box.getMaxX(), box.getMaxY(), box.getMaxZ())
         );
 	}
+
+    @Override
+    public void setCanDestroyBlocks(boolean flag) {
+        getActor().setCanDestroyBlocks(flag);
+    }
+
+    @Override
+    public void setCanDigDown(boolean flag) {
+        getActor().setCanDestroyBlocks(flag);
+    }
+
+    @Override
+    public void setCanClimbLadders(boolean flag) {
+        getActor().setCanClimb(flag);
+
+    }
 }

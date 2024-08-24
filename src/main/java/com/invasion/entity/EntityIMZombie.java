@@ -138,7 +138,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     }
 
     public boolean isTar() {
-        return getTier() == 2 && getFlavour() == 2;
+        return isTar(this);
     }
 
     public boolean isPigman() {
@@ -175,12 +175,12 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             flammability = 3;
 
             if (getFlavour() == 0) {
-                setCanDestroyBlocks(true);
+                getNavigatorNew().setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
                 setAttackStrength(6);
                 setStackInHand(Hand.MAIN_HAND, Items.WOODEN_SWORD.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
-                setCanDestroyBlocks(false);
+                getNavigatorNew().setCanDestroyBlocks(false);
             }
         } else if (getTier() == 2) {
             setBaseMovementSpeed(0.19F);
@@ -191,14 +191,14 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
                 flammability = 4;
                 equipStack(EquipmentSlot.CHEST, Items.IRON_CHESTPLATE.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.CHEST, 0.25F);
-                setCanDestroyBlocks(true);
+                getNavigatorNew().setCanDestroyBlocks(true);
             } else if (getFlavour() == 1) {
                 setAttackStrength(10);
                 selfDamage = 3;
                 maxSelfDamage = 9;
                 setStackInHand(Hand.MAIN_HAND, Items.IRON_SWORD.getDefaultStack());
                 setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.25F);
-                setCanDestroyBlocks(false);
+                getNavigatorNew().setCanDestroyBlocks(false);
             }
         }
 
@@ -207,7 +207,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             selfDamage = 3;
             maxSelfDamage = 9;
             flammability = 30;
-            setCanDestroyBlocks(true);
+            getNavigatorNew().setCanDestroyBlocks(true);
         }
 
         if (isPigman()) {
@@ -216,7 +216,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             setFireImmune(true);
             setStackInHand(Hand.MAIN_HAND, Items.GOLDEN_SWORD.getDefaultStack());
             setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
-            setCanDestroyBlocks(true);
+            getNavigatorNew().setCanDestroyBlocks(true);
         }
 
         if (isBrute()) {
@@ -227,7 +227,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             flammability = 4;
             equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             setEquipmentDropChance(EquipmentSlot.MAINHAND, 0);
-            setCanDestroyBlocks(true);
+            getNavigatorNew().setCanDestroyBlocks(true);
         }
     }
 
@@ -255,13 +255,7 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
 
     @Override
     public void updateAnimation(boolean override) {
-    }
 
-    @Override
-    protected void updateSound() {
-        if (terrainModifier.isBusy()) {
-            super.updateSound();
-        }
     }
 
     @Override

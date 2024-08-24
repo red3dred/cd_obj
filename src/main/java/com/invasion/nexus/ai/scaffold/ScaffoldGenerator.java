@@ -28,7 +28,7 @@ public class ScaffoldGenerator {
     }
 
     public List<ScaffoldNode> generateScaffolds(NexusEntity entity) {
-        return DynamicPathNodeNavigator.createHeadlessNavigator(entity.asEntity(), 8500, pathSource -> {
+        return DynamicPathNodeNavigator.createHeadlessNavigator(entity, 12, pathSource -> {
             return findCheapestScaffolds(entity, pathSource, entity.getBlockPos());
         });
     }

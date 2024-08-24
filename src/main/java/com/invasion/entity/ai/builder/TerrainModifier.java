@@ -3,6 +3,9 @@ package com.invasion.entity.ai.builder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.Notifiable;
@@ -12,6 +15,7 @@ import com.invasion.block.InvBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
 /**
@@ -48,6 +52,14 @@ public final class TerrainModifier implements ITerrainModify {
 
     public boolean isBusy() {
         return timer > 0;
+    }
+
+    public boolean submitJob(BlockPos pos, Notifiable asker, Function<BlockPos, Stream<ModifyBlockEntry>> job) {
+        if (!isReadyForTask(asker)) {
+            return false;
+        }
+
+        return requestTask(job.apply(pos).toList(), asker, null);
     }
 
     @Override

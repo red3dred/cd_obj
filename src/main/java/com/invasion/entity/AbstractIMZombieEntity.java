@@ -1,74 +1,40 @@
 package com.invasion.entity;
 
-import com.invasion.InvSounds;
-import com.invasion.block.DestructableType;
-import com.invasion.entity.ai.builder.TerrainDigger;
-import com.invasion.entity.ai.builder.TerrainModifier;
-import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.IMNavigation;
-import com.invasion.entity.pathfinding.Navigation;
-import com.invasion.entity.pathfinding.PathCreator;
-import com.invasion.entity.pathfinding.path.ActionablePathNode;
-import com.invasion.entity.pathfinding.path.PathAction;
+import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
+import com.invasion.entity.pathfinding.IMMobNavigation;
 import com.invasion.nexus.ai.scaffold.ScaffoldView;
 import com.invasion.util.math.PosUtils;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.PathNode;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
+import net.minecraft.entity.ai.pathing.PathNodeType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.CollisionView;
 import net.minecraft.world.World;
 
 public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implements Miner {
-    protected final TerrainModifier terrainModifier;
-    protected final TerrainDigger terrainDigger;
-
-    protected int swingTimer;
-    protected int scrapeSoundCooldown;
 
     private boolean fireImmune;
 
-    protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, float diggingSpeed) {
-        super(type, world);
-        terrainModifier = new TerrainModifier(this, diggingSpeed);
-        terrainDigger = new TerrainDigger(this, terrainModifier, 1);
+    public static boolean isTar(AbstractIMZombieEntity entity) {
+        return entity.getTier() == 2 && entity.getFlavour() == 2;
     }
 
-    @SuppressWarnings("deprecation")
+    protected AbstractIMZombieEntity(EntityType<? extends AbstractIMZombieEntity> type, World world, float diggingSpeed) {
+        super(type, world);
+    }
+
     @Override
-    protected Navigation createIMNavigation() {
-        return new IMNavigation(this, new PathCreator(700, 50)) {
-            @Override
-            protected <T extends Entity> Actor<T> createActor(T entity) {
-                return new Actor<>(entity) {
-                    @Override
-                    public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-                        if (getTier() == 2 && getFlavour() == 2 && ActionablePathNode.getAction(node) == PathAction.SWIM) {
-                            float multiplier = 1 + ScaffoldView.of(terrainMap).getMobDensity(node.getBlockPos()) * 3;
-
-                            if (node.y > prevNode.y && getNodeDestructability(terrainMap, node.getBlockPos()) == DestructableType.DESTRUCTABLE) {
-                                multiplier += 2;
-                            }
-
-                            return prevNode.getDistance(node) * 1.2F * multiplier;
-                        }
-
-                        return super.getPathNodePenalty(prevNode, node, terrainMap);
-                    }
-
-                    @Override
-                    public boolean isBlockDestructible(BlockView terrainMap, BlockPos pos, BlockState block) {
-                        return super.isBlockDestructible(terrainMap, pos, block)
-                                && getCurrentTargetPos().isPresent()
-                                && PosUtils.getInclination(getCurrentTargetPos().get(), pos) <= 2.144D;
-                    }
-                };
-            }
-        };
+    protected EntityNavigation createNavigation(World world) {
+        return new Navigation(this);
     }
 
     @Override
@@ -88,10 +54,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
     }
 
     protected void updateSound() {
-        if (terrainModifier.isBusy() && --scrapeSoundCooldown <= 0) {
-            playSound(InvSounds.ENTITY_SCRAPE, 0.85F, 1 / (getRandom().nextFloat() * 0.5F + 1));
-            scrapeSoundCooldown = 45 + getRandom().nextInt(20);
-        }
+
     }
 
     public abstract void updateAnimation(boolean override);
@@ -100,17 +63,6 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     protected int getSwingSpeed() {
         return 10;
-    }
-
-    @Override
-    public void mobTick() {
-        super.mobTick();
-        terrainModifier.onUpdate();
-    }
-
-    @Override
-    public void onPathSet() {
-        terrainModifier.cancelTask();
     }
 
     @Override
@@ -152,7 +104,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
+        getNavigatorNew().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
     }
 
     public float scaleAmount() {
@@ -162,5 +114,48 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
             return 1.21F;
         }
         return 1.0F;
+    }
+
+    protected static class Navigation extends IMMobNavigation {
+        public Navigation(MobEntity entity) {
+            super(entity);
+        }
+
+        @Override
+        public PathNodeMaker createNodeMaker() {
+            var nodeMaker = new NodeMaker();
+            nodeMaker.setCanEnterOpenDoors(true);
+            nodeMaker.setCanOpenDoors(true);
+            nodeMaker.setCanSwim(true);
+            nodeMaker.setCanClimbLadders(true);
+            return nodeMaker;
+        }
+
+        class NodeMaker extends IMLandPathNodeMaker {
+            @Override
+            public float getDistancePenalty(PathNode previousNode, PathNode nextNode, CollisionView world) {
+                world = context.getWorld();
+
+                if (this.entity instanceof AbstractIMZombieEntity entity
+                        && AbstractIMZombieEntity.isTar(entity)
+                        && nextNode.type == PathNodeType.WATER) {
+                    float multiplier = 1 + ScaffoldView.of(world).getMobDensity(nextNode.getBlockPos()) * 3;
+
+                    if (nextNode.y > previousNode.y && canMineBlock(world, nextNode.getBlockPos(), context.getBlockState(nextNode.getBlockPos()))) {
+                        multiplier += 2;
+                    }
+
+                    return 1.2F * multiplier;
+                }
+                return super.getDistancePenalty(previousNode, nextNode, world);
+            }
+
+            @Override
+            public boolean canMineBlock(CollisionView world, BlockPos pos, BlockState state) {
+                return super.canMineBlock(world, pos, state)
+                        && getTargetPos() != null
+                        && PosUtils.getInclination(getTargetPos(), pos) <= 2.144D;
+            }
+        }
     }
 }

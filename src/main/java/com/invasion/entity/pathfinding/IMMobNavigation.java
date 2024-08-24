@@ -2,7 +2,6 @@ package com.invasion.entity.pathfinding;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.InvasionMod;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.Stunnable;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
@@ -16,6 +15,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeNavigator;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -38,7 +38,11 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
     @Deprecated
     private final Actor<?> actor;
 
-	public IMMobNavigation(MobEntity entity, @SuppressWarnings("deprecation") Actor<?> actor) {
+    public IMMobNavigation(MobEntity entity) {
+        this(entity, null);
+    }
+
+	public IMMobNavigation(MobEntity entity, @SuppressWarnings("deprecation") @Nullable Actor<?> actor) {
 	    super(entity, entity.getWorld());
 	    this.actor = actor;
 	}
@@ -51,13 +55,18 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
 
     @Override
     protected PathNodeNavigator createPathNodeNavigator(int range) {
+        this.nodeMaker = createNodeMaker();
+        return new DynamicPathNodeNavigator(nodeMaker, range);
+    }
+
+    @Override
+    public PathNodeMaker createNodeMaker() {
         var nodeMaker = new IMLandPathNodeMaker();
-        this.nodeMaker = nodeMaker;
         nodeMaker.setCanEnterOpenDoors(true);
         nodeMaker.setCanOpenDoors(true);
         nodeMaker.setCanSwim(true);
-        nodeMaker.setCanClimbLadder(true);
-        return new DynamicPathNodeNavigator(nodeMaker, range);
+        nodeMaker.setCanClimbLadders(true);
+        return nodeMaker;
     }
 
     @Override
@@ -137,7 +146,6 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
         }
 
         if (haltingTicks > 0 || waitingForNotify > 0) {
-            InvasionMod.LOGGER.info("{} waiting for task to complete. halting={}, waiting={}", entity, haltingTicks, waitingForNotify);
             haltingTicks = Math.max(0, haltingTicks - 1);
             waitingForNotify = Math.max(0, (waitingForNotify / 2) - 1);
         } else {
@@ -181,7 +189,7 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
             } else {
                 if (isIdle() || (followingEntity.getPos().distanceTo(lastFollowingEntityPos) / (6 + entity.getPos().distanceTo(lastFollowingEntityPos)) > 0.1D)) {
                     Path newPath = findPathTo(followingEntity, (int)entity.distanceTo(followingEntity) + 1);
-                    if (newPath != null && startMovingAlong(newPath, entity.getMovementSpeed())) {
+                    if (newPath != null && startMovingAlong(newPath, 1)) {
                         lastFollowingEntityPos = followingEntity.getPos();
                     }
                 }
@@ -203,11 +211,10 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
 	}
 
 	protected void handlePathAction(PathAction action) {
-	    InvasionMod.LOGGER.info("Handling path action {}", action);
         if (action.getType() == PathAction.Type.CLIMB) {
-            Vec3d targetPosition = entity.getBlockPos().offset(action.getBuildDirection()).toCenterPos();
+            Vec3d targetPosition = entity.getBlockPos().offset(action.getOrientation()).toCenterPos();
             entity.getMoveControl().moveTo(targetPosition.x, targetPosition.y, targetPosition.z, 1);
-            if (action.getBuildDirection() == Direction.UP) {
+            if (action.getOrientation() == Direction.UP) {
                 entity.getJumpControl().setActive();
             } else {
                 if (entity instanceof NexusEntity e) {
@@ -259,5 +266,20 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
     @Override
     public void autoPathToEntity(Entity target) {
         followingEntity = target;
+    }
+
+    @Override
+    public void setCanDestroyBlocks(boolean flag) {
+        ((IMLandPathNodeMaker)getNodeMaker()).setCanDestroyBlocks(flag);
+    }
+
+    @Override
+    public void setCanDigDown(boolean flag) {
+        ((IMLandPathNodeMaker)getNodeMaker()).setCanDigDown(flag);
+    }
+
+    @Override
+    public void setCanClimbLadders(boolean flag) {
+        ((IMLandPathNodeMaker)getNodeMaker()).setCanClimbLadders(flag);
     }
 }

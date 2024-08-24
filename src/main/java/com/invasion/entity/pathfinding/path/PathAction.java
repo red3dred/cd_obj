@@ -56,7 +56,7 @@ public enum PathAction {
     }
 
     @Nullable
-    public Direction getBuildDirection() {
+    public Direction getOrientation() {
         return direction;
     }
 

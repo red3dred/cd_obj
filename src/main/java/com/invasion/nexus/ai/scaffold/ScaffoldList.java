@@ -1,8 +1,10 @@
 package com.invasion.nexus.ai.scaffold;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +25,13 @@ public class ScaffoldList implements Iterable<Scaffold> {
 
     public Scaffold get(int index) {
         return entries.get(index);
+    }
+
+    public Optional<BlockPos> getNearest(BlockPos pos) {
+        return entries.stream()
+                .map(i -> i.getNode().pos())
+                .sorted(Comparator.comparing(pos::getSquaredDistance))
+                .findFirst();
     }
 
     @Nullable

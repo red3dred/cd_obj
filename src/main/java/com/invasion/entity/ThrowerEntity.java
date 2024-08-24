@@ -42,15 +42,13 @@ public class ThrowerEntity extends TieredIMMobEntity {
     private int throwTime;
     private int punchTimer;
 
-    private boolean clearingPoint;
-
     private int blockBreakSoundCooldown;
 
     private BlockPos pointToClear;
 
     private Notifiable clearPointNotifee;
 
-    private float launchSpeed = 1.0F;
+    private float launchSpeed = 1;
 
     @Nullable
     protected Entity j;
@@ -58,8 +56,7 @@ public class ThrowerEntity extends TieredIMMobEntity {
     public ThrowerEntity(EntityType<ThrowerEntity> type, World world) {
         super(type, world);
         experiencePoints = 20;
-        setCanDestroyBlocks(true);
-        // setSize(1.8F, 1.95F);
+        getNavigatorNew().setCanDestroyBlocks(true);
     }
 
     public static DefaultAttributeContainer.Builder createT1V0Attributes() {
@@ -68,6 +65,11 @@ public class ThrowerEntity extends TieredIMMobEntity {
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 10);
     }
 
+    public static DefaultAttributeContainer.Builder createT2V0Attributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.23F)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 15);
+    }
 
     @Override
     protected void initGoals() {
@@ -92,8 +94,8 @@ public class ThrowerEntity extends TieredIMMobEntity {
     public void mobTick() {
         super.mobTick();
         throwTime--;
-        if (clearingPoint && clearPoint()) {
-            clearingPoint = false;
+        if (pointToClear != null && clearPoint()) {
+            pointToClear = null;
             if (clearPointNotifee != null) {
                 clearPointNotifee.notifyTask(Notifiable.Status.SUCCESS);
                 clearPointNotifee = null;
@@ -129,7 +131,6 @@ public class ThrowerEntity extends TieredIMMobEntity {
     @Override
     public boolean onPathBlocked(Path path, Notifiable notifee) {
         if (!path.isFinished()) {
-            clearingPoint = true;
             clearPointNotifee = notifee;
             pointToClear = path.getCurrentNodePos();
             return true;
@@ -139,26 +140,41 @@ public class ThrowerEntity extends TieredIMMobEntity {
 
     @Override
     protected Text getDefaultName() {
-        if (getTier() == 2) {
+        if (isBig()) {
             return Text.translatable(getType().getUntranslatedName() + ".big");
         }
         return super.getDefaultName();
     }
 
+    public boolean isBig() {
+        return getTier() == 2;
+    }
+
     @Override
     public void initTieredAttributes() {
-        clearingPoint = false;
-        if (getTier() == 1) {
-            setBaseMovementSpeed(0.13F);
-            setAttackStrength(10);
-            experiencePoints = 20;
-            // setSize(1.8F, 1.95F);
-        } else if (getTier() == 2) {
+        pointToClear = null;
+        if (isBig()) {
             setBaseMovementSpeed(0.23F);
             setAttackStrength(15);
             experiencePoints = 25;
-            // setSize(2F, 2F);
+        } else {
+            setBaseMovementSpeed(0.13F);
+            setAttackStrength(10);
+            experiencePoints = 20;
         }
+    }
+
+    @Override
+    public float getScaleFactor() {
+        if (isBig()) {
+            return 1.1F;
+        }
+        return super.getScaleFactor();
+    }
+
+    @Override
+    public float getScale() {
+        return super.getScale() * getScaleFactor();
     }
 
     @Override
@@ -216,7 +232,7 @@ public class ThrowerEntity extends TieredIMMobEntity {
             );
 
             if (tryDestroyArea(wideArea) || tryDestroyArea(narrowArea) || tryDestroyArea(singleTarget)) {
-                this.punchTimer = 160;
+                punchTimer = 160;
             } else {
                 return true;
             }

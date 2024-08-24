@@ -3,6 +3,11 @@ package com.invasion.nexus.ai;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+
 import com.invasion.entity.NexusEntity;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.Nexus;
@@ -19,6 +24,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CollisionView;
 
 public class AttackerAI {
+    private static final ExecutorService SCAFFOLD_EXECUTOR = Executors.newSingleThreadExecutor();
     private final Nexus nexus;
 
     private final Long2ObjectMap<Integer> entityDensityData = new Long2ObjectOpenHashMap<>();
@@ -31,6 +37,7 @@ public class AttackerAI {
 
     public AttackerAI(Nexus nexus) {
         this.nexus = nexus;
+
     }
 
     public ScaffoldList getScaffolds() {
@@ -69,13 +76,18 @@ public class AttackerAI {
         return view;
     }
 
-    public boolean askGenerateScaffolds(NexusEntity entity) {
+    public void requestBuildJob(NexusEntity entity, Consumer<Optional<BlockPos>> callback) {
         if (nextScaffoldCalcTimer > 0 || scaffolds.size() > getScaffoldLimit()) {
-            return false;
+            callback.accept(Optional.empty());
+        } else {
+            nextScaffoldCalcTimer = 200;
+            boolean success = scaffolds.addAll(nexus, new ScaffoldGenerator(this).generateScaffolds(entity));
+            if (success) {
+                callback.accept(scaffolds.getNearest(entity.asEntity().getBlockPos()));
+            } else {
+                callback.accept(Optional.empty());
+            }
         }
-        nextScaffoldCalcTimer = 200;
-
-        return scaffolds.addAll(nexus, new ScaffoldGenerator(this).generateScaffolds(entity));
     }
 
     private int getScaffoldLimit() {

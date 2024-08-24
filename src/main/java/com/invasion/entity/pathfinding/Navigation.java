@@ -5,10 +5,13 @@ import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.pathfinding.path.PathAction;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
 
 public interface Navigation extends Notifiable, HasAiGoals {
     @Deprecated
     Actor<?> getActor();
+
+    PathNodeMaker createNodeMaker();
 
     PathAction getCurrentWorkingAction();
 
@@ -27,4 +30,10 @@ public interface Navigation extends Notifiable, HasAiGoals {
     void haltForTick();
 
     Entity getTargetEntity();
+
+    void setCanDestroyBlocks(boolean flag);
+
+    void setCanDigDown(boolean flag);
+
+    void setCanClimbLadders(boolean flag);
 }

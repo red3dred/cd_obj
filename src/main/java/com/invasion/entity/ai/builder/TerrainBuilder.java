@@ -1,11 +1,9 @@
 package com.invasion.entity.ai.builder;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.Notifiable;
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
@@ -25,12 +23,10 @@ public class TerrainBuilder implements ITerrainBuild {
     private static final float COBBLE_COST = 65;
 
     private final NexusEntity mob;
-    private final ITerrainModify modifier;
     private float buildRate;
 
-    public TerrainBuilder(NexusEntity entity, ITerrainModify modifier, float buildRate) {
+    public TerrainBuilder(NexusEntity entity, float buildRate) {
         mob = entity;
-        this.modifier = modifier;
         this.buildRate = buildRate;
     }
 
@@ -43,14 +39,11 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public boolean askBuildScaffoldLayer(BlockPos pos, Notifiable asker) {
-        if (!modifier.isReadyForTask(asker)) {
-            return false;
-        }
+    public Stream<ModifyBlockEntry> askBuildScaffoldLayer(BlockPos pos) {
         @Nullable
         Scaffold scaffold = mob.getNexus().getAttackerAI().getScaffolds().getAt(pos);
         if (scaffold == null) {
-            return false;
+            return Stream.empty();
         }
 
         int height = pos.getY() - scaffold.getNode().bottom();
@@ -59,110 +52,102 @@ public class TerrainBuilder implements ITerrainBuild {
 
         World world = mob.asEntity().getWorld();
         BlockState block = world.getBlockState(mutable.set(pos).move(offset).move(Direction.DOWN));
-        List<ModifyBlockEntry> modList = new ArrayList<>();
+        Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
 
         if (height == 1) {
             if (!block.isFullCube(world, mutable)) {
-                modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
+                builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
             }
             if (world.isAir(mutable.set(pos).move(Direction.DOWN))) {
-                modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+                builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
             }
         }
 
         if (!world.getBlockState(mutable.set(pos).move(offset)).isFullCube(world, mutable)) {
-            modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
         }
         if (!world.getBlockState(pos).isOf(Blocks.LADDER)) {
-            modList.add(new ModifyBlockEntry(pos, Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(pos, Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
 
         if (scaffold.isPlatformLayer(height)) {
             for (Vec3i i : PosUtils.OFFSET_RING) {
                 if (!i.equals(offset.getVector()) && !world.getBlockState(mutable.set(pos).move(i)).isFullCube(world, mutable)) {
-                    modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
+                    builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
                 }
             }
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList, asker, null);
+        return builder.build();
     }
 
     @Override
-    public boolean askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild, Notifiable asker) {
-        if (!modifier.isReadyForTask(asker)) {
-            return false;
-        }
-        List<ModifyBlockEntry> modList = new ArrayList<>();
+    public Stream<ModifyBlockEntry> askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild) {
+        Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
 
         BlockPos.Mutable mutable = pos.mutableCopy();
         World world = mob.asEntity().getWorld();
 
         if (!world.getBlockState(mutable.set(pos).move(orientation).move(Direction.DOWN)).isFullCube(world, mutable)) {
-            modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
         }
         if (world.isAir(mutable.move(Direction.DOWN))) {
-            modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
 
         for (int i = 0; i < layersToBuild; i++) {
             if (!world.getBlockState(mutable.set(pos).move(orientation).move(Direction.UP, i)).isFullCube(world, mutable)) {
-                modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
+                builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.OAK_PLANKS.getDefaultState(), (int) (PLANKS_COST / buildRate)));
             }
             if (world.getBlockState(mutable.move(Direction.UP, i)).isOf(Blocks.LADDER)) {
-                modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+                builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
             }
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList, asker, null);
+        return builder.build();
     }
 
     @Override
-    public boolean askBuildLadder(BlockPos pos, Notifiable asker) {
-        if (!modifier.isReadyForTask(asker)) {
-            return false;
-        }
-        List<ModifyBlockEntry> modList = new ArrayList<>();
+    public Stream<ModifyBlockEntry> askBuildLadder(BlockPos pos) {
+        Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
+
         World world = mob.asEntity().getWorld();
 
         if (!world.getBlockState(pos).isOf(Blocks.LADDER)) {
             if (!canPlaceLadderAt(world, pos)) {
-                return false;
+                return Stream.empty();
             }
 
-            modList.add(new ModifyBlockEntry(pos, Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(pos, Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
 
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         BlockState block = world.getBlockState(mutable.move(Direction.DOWN, 2));
         if (!block.isAir() && block.isSolidBlock(world, pos) && canPlaceLadderAt(world, mutable.set(pos).move(Direction.DOWN))) {
-            modList.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList, asker, null);
+        return builder.build();
     }
 
     @Override
-    public boolean askBuildBridge(BlockPos pos, Notifiable asker) {
-        if (!modifier.isReadyForTask(asker)) {
-            return false;
-        }
+    public Stream<ModifyBlockEntry> askBuildBridge(BlockPos pos) {
+        Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
 
-        List<ModifyBlockEntry> modList = new ArrayList<>();
         BlockPos.Mutable mutable = pos.mutableCopy();
         World world = mob.asEntity().getWorld();
 
         if (world.isAir(mutable.move(Direction.DOWN))) {
             boolean needsSupport = IMLandPathNodeMaker.avoidsBlock(mob.asEntity(), mutable.set(pos).move(Direction.DOWN, 2))
                                 || IMLandPathNodeMaker.avoidsBlock(mob.asEntity(), mutable.set(pos).move(Direction.DOWN, 3));
-            modList.add(new ModifyBlockEntry(pos.down(),
+            builder.add(new ModifyBlockEntry(pos.down(),
                     (needsSupport ? Blocks.COBBLESTONE : Blocks.OAK_PLANKS).getDefaultState(),
                     (int) ((needsSupport ? COBBLE_COST : PLANKS_COST) / buildRate))
             );
         }
 
-        return !modList.isEmpty() && modifier.requestTask(modList, asker, Notifiable.NONE);
+        return builder.build();
     }
 
     public static boolean canPlaceLadderAt(BlockView map, BlockPos pos) {

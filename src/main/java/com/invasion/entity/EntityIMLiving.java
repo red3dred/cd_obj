@@ -38,10 +38,11 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
     }
 
     @Override
-    protected final EntityNavigation createNavigation(World world) {
-        return new IMMobNavigation(this, createIMNavigation().getActor()); //new PathNavigateAdapter(this, world, createIMNavigation());
+    protected EntityNavigation createNavigation(World world) {
+        return new IMMobNavigation(this, createIMNavigation().getActor());
     }
 
+    @Deprecated
     protected Navigation createIMNavigation() {
         return new IMNavigation(this, new PathCreator(700, 50));
     }

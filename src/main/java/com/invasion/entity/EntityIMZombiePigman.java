@@ -48,7 +48,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     public EntityIMZombiePigman(EntityType<EntityIMZombiePigman> type, World world) {
         super(type, world, 0.75F);
         setFireImmune(true);
-        setCanDestroyBlocks(true);
+        getNavigatorNew().setCanDestroyBlocks(true);
     }
 
     public static DefaultAttributeContainer.Builder createT1Attributes() {

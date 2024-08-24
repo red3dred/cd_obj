@@ -1,15 +1,16 @@
 package com.invasion.entity.ai.builder;
 
-import com.invasion.Notifiable;
+import java.util.stream.Stream;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public interface ITerrainBuild {
-    boolean askBuildScaffoldLayer(BlockPos pos, Notifiable task);
+    Stream<ModifyBlockEntry> askBuildScaffoldLayer(BlockPos pos);
 
-    boolean askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild, Notifiable task);
+    Stream<ModifyBlockEntry> askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild);
 
-    boolean askBuildLadder(BlockPos pos, Notifiable task);
+    Stream<ModifyBlockEntry> askBuildLadder(BlockPos pos);
 
-    boolean askBuildBridge(BlockPos pos, Notifiable task);
+    Stream<ModifyBlockEntry> askBuildBridge(BlockPos pos);
 }

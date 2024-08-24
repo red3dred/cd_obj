@@ -7,14 +7,11 @@ import com.invasion.block.InvBlocks;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.IMCreeperIgniteGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
-import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.ProvideSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
 import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
-import com.invasion.entity.pathfinding.Actor;
-import com.invasion.entity.pathfinding.IMNavigation;
-import com.invasion.entity.pathfinding.PathCreator;
-
+import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
+import com.invasion.entity.pathfinding.IMMobNavigation;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -26,8 +23,11 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -48,7 +48,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.CollisionView;
 import net.minecraft.world.World;
 import net.minecraft.world.World.ExplosionSourceType;
 
@@ -83,10 +83,8 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(1, new IMCreeperIgniteGoal(this));
         goalSelector.add(2, new FleeEntityGoal<>(this, CatEntity.class, 6.0F, 0.25D, 0.300000011920929D));
-        goalSelector.add(3, new KillEntityGoal<>(this, PlayerEntity.class, 40));
         goalSelector.add(4, new AttackNexusGoal<>(this));
         goalSelector.add(5, new ProvideSupportGoal(this, 4.0F, true));
-        goalSelector.add(6, new KillEntityGoal<>(this, MobEntity.class, 40));
         goalSelector.add(7, new GoToNexusGoal(this));
         goalSelector.add(8, new WanderAroundFarGoal(this, 1));
         goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 4.8F));
@@ -98,24 +96,8 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
     }
 
     @Override
-    protected IMNavigation createIMNavigation() {
-        return new IMNavigation(this, new PathCreator(700, 50)) {
-            @Override
-            protected <T extends Entity> Actor<T> createActor(T entity) {
-                return new Actor<>(entity) {
-                    @SuppressWarnings("deprecation")
-                    @Override
-                    public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-                        BlockState state = terrainMap.getBlockState(node.getBlockPos());
-                        if (!state.isAir() && !state.blocksMovement() && !state.isOf(InvBlocks.NEXUS_CORE)) {
-                            return prevNode.getDistance(node) * 12.0F;
-                        }
-
-                        return super.getPathNodePenalty(prevNode, node, terrainMap);
-                    }
-                };
-            }
-        };
+    protected EntityNavigation createNavigation(World world) {
+        return new Navigation(this);
     }
 
     @Override
@@ -241,5 +223,33 @@ public class IMCreeperEntity extends TieredIMMobEntity implements Leader, SkinOv
     @Override
     protected void initTieredAttributes() {
 
+    }
+
+    protected static class Navigation extends IMMobNavigation {
+        public Navigation(MobEntity entity) {
+            super(entity);
+        }
+
+        @Override
+        public PathNodeMaker createNodeMaker() {
+            var nodeMaker = new NodeMaker();
+            nodeMaker.setCanSwim(true);
+            nodeMaker.setCanClimbLadders(true);
+            return nodeMaker;
+        }
+
+        class NodeMaker extends IMLandPathNodeMaker {
+            @Override
+            public float getDistancePenalty(PathNode previousNode, PathNode nextNode, CollisionView world) {
+                world = context.getWorld();
+
+                BlockState state = world.getBlockState(nextNode.getBlockPos());
+                if (!state.isAir() && !state.canPathfindThrough(NavigationType.LAND) && !state.isOf(InvBlocks.NEXUS_CORE)) {
+                    // TODO: I'm not sure about this...
+                    return 12;
+                }
+                return super.getDistancePenalty(previousNode, nextNode, world);
+            }
+        }
     }
 }

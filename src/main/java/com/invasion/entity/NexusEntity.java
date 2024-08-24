@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import com.invasion.Notifiable;
 import com.invasion.InvasionMod;
 import com.invasion.entity.pathfinding.Navigation;
-import com.invasion.entity.pathfinding.PathNavigateAdapter;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
@@ -35,9 +34,10 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     float DEFAULT_GROUND_FRICTION = 0.546F;
     float DEFAULT_BASE_MOVEMENT_SPEED = 0.26F;
 
+    @SuppressWarnings("deprecation")
     default Navigation getNavigatorNew() {
         return asEntity().getNavigation() instanceof Navigation a ? a
-                : asEntity().getNavigation() instanceof PathNavigateAdapter b ? b.getNewNavigator()
+                : asEntity().getNavigation() instanceof com.invasion.entity.pathfinding.PathNavigateAdapter b ? b.getNewNavigator()
                 : null;
     }
 
@@ -99,10 +99,6 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
 
     default double getAttackStrength() {
         return asEntity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
-    }
-
-    default void setCanDestroyBlocks(boolean flag) {
-        getNavigatorNew().getActor().setCanDestroyBlocks(flag);
     }
 
     default boolean getLightLevelBelow8() {

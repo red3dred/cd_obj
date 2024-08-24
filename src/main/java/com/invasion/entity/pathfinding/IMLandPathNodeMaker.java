@@ -9,6 +9,7 @@ import com.invasion.entity.pathfinding.DynamicPathNodeNavigator.NodeFactory;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.IHasNexus;
+import com.invasion.nexus.NexusAccess;
 import com.invasion.nexus.ai.scaffold.ScaffoldView;
 
 import net.minecraft.block.BlockState;
@@ -51,11 +52,11 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
         canDigDown = flag;
     }
 
-    public boolean getCanClimbLadder() {
+    public boolean getCanClimbLadders() {
         return canClimbLadders;
     }
 
-    public void setCanClimbLadder(boolean flag) {
+    public void setCanClimbLadders(boolean flag) {
         canClimbLadders = flag;
     }
 
@@ -64,8 +65,12 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
         super.init(cachedWorld, entity);
         if (entity instanceof IHasNexus nexusHolder && nexusHolder.hasNexus()) {
             this.context = new PathContext(nexusHolder.getNexus().getAttackerAI().wrapEntityData(cachedWorld), entity);
-            this.chunkCacheModifier.accept(context.getWorld());
+            populateChunkCacheData(nexusHolder.getNexus(), context.getWorld());
         }
+    }
+
+    protected void populateChunkCacheData(NexusAccess nexus, CollisionView view) {
+        this.chunkCacheModifier.accept(view);
     }
 
     @Override
@@ -100,7 +105,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
 
     @Override
     public int getSuccessors(int index, PathNode[] successors, PathNode node, CollisionView world, DynamicPathNodeNavigator.NodeCache cache) {
-        boolean canClimb = getCanClimbLadder();
+        boolean canClimb = getCanClimbLadders();
         boolean canDigDown = getCanDigDown();
 
         if (canClimb || canDigDown) {
@@ -130,7 +135,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
     public PathNodeType getDefaultNodeType(PathContext context, int x, int y, int z) {
         BlockPos.Mutable pos = new BlockPos.Mutable(x, y, z);
         PathNodeType type = getLandNodeType(context, pos);
-        if (getCanClimbLadder() && PathingUtil.isLadder(context.getBlockState(pos))) {
+        if (getCanClimbLadders() && PathingUtil.isLadder(context.getBlockState(pos))) {
             return PathNodeType.WALKABLE;
         }
         if (canDestroyBlocks() && type == PathNodeType.BLOCKED) {
@@ -184,7 +189,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
         return state.isIn(BlockTags.DOORS) || state.isIn(BlockTags.TRAPDOORS) || state.isSolidBlock(world, pos);
     }
 
-    public boolean avoidsBlock(CollisionView world, BlockPos pos, BlockState state) {
+    public boolean avoidsBlock(MobEntity entity, CollisionView world, BlockPos pos, BlockState state) {
         return PathingUtil.shouldAvoidBlock(entity, pos);
     }
 
@@ -198,7 +203,9 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
     }
 
     public static boolean avoidsBlock(PathAwareEntity entity, BlockPos pos) {
-        return entity.getNavigation().getNodeMaker() instanceof IMLandPathNodeMaker maker
-                && maker.avoidsBlock(entity.getWorld(), pos, entity.getWorld().getBlockState(pos));
+        if (entity.getNavigation().getNodeMaker() instanceof IMLandPathNodeMaker maker) {
+            return maker.avoidsBlock(entity, entity.getWorld(), pos, entity.getWorld().getBlockState(pos));
+        }
+        return PathingUtil.shouldAvoidBlock(entity, pos);
     }
 }
