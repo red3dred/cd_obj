@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Stack;
 import java.util.stream.Stream;
 
+import com.invasion.InvSounds;
 import com.invasion.InvasionMod;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.InvBlockEntities;
@@ -60,6 +61,10 @@ public class MineBlockGoal extends Goal {
         breakProgress = 0;
         breakingBlockPos.clear();
         if (canStart()) {
+            mob.playSound(InvSounds.ENTITY_SCRAPE,
+                    (float)mob.getRandom().nextTriangular(0.5F, 0.5F),
+                    (float)mob.getRandom().nextTriangular(mob.getSoundPitch(), 0.2F)
+            );
             breakingBlockPos.addAll(getClearRegion(mob, navigation.getCurrentPath().getCurrentNodePos()).distinct().toList());
         }
     }
