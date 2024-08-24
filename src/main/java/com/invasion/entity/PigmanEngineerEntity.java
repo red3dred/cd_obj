@@ -1,6 +1,6 @@
 package com.invasion.entity;
 
-import com.invasion.block.BlockMetadata;
+import com.invasion.Notifiable;
 import com.invasion.entity.ai.builder.ITerrainBuild;
 import com.invasion.entity.ai.builder.TerrainBuilder;
 import com.invasion.entity.ai.builder.TerrainModifier;
@@ -34,8 +34,8 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
 
@@ -148,6 +148,26 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     }
 
     @Override
+    public boolean handlePathAction(BlockPos pos, PathAction action, Notifiable asker) {
+        if (action.getType() == PathAction.Type.BRIDGE) {
+            return terrainBuilder.askBuildBridge(pos, asker);
+        }
+
+        if (action.getType() == PathAction.Type.SCAFFOLD) {
+            return terrainBuilder.askBuildScaffoldLayer(pos, asker);
+        }
+
+        if (action.getType() == PathAction.Type.LADDER) {
+            Direction direction = action.getBuildDirection();
+            if (direction == Direction.UP) {
+                return terrainBuilder.askBuildLadderTower(pos, direction, (int)getRandom().nextTriangular(10, 4), asker);
+            }
+            return terrainBuilder.askBuildLadder(pos, asker);
+        }
+        return true;
+    }
+
+    @Override
     public void onPathSet() {
         terrainModifier.cancelTask();
     }
@@ -155,7 +175,6 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     public ITerrainBuild getTerrainBuildEngy() {
         return terrainBuilder;
     }
-
 
     @Override
     protected SoundEvent getAmbientSound() {
@@ -178,19 +197,6 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
 
     @Override
     public boolean isPushable() {
-        return false;
-    }
-
-    public static boolean canPlaceLadderAt(BlockView map, BlockPos pos) {
-        if (BlockMetadata.isIndestructible(map.getBlockState(pos))) {
-            BlockPos.Mutable mutable = pos.mutableCopy();
-            if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)
-                    || map.getBlockState(mutable.set(pos).move(-1, 0, 0)).isFullCube(map, mutable)
-                    || map.getBlockState(mutable.set(pos).move(0, 0, 1)).isFullCube(map, mutable)
-                    || map.getBlockState(mutable.set(pos).move(0, 0, -1)).isFullCube(map, mutable)) {
-                return true;
-            }
-        }
         return false;
     }
 

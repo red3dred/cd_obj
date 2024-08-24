@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.BlockView;
+import net.minecraft.world.CollisionView;
 import net.minecraft.world.chunk.ChunkCache;
 
 @Deprecated
@@ -351,7 +351,7 @@ public class IMNavigation implements Navigation {
 
 	protected Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius) {
 		actor.setCurrentTargetPos(pos);
-		BlockView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
+		CollisionView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
 		NexusAccess nexus = entity.getNexus();
 		if (nexus != null) {
 			terrainCache = nexus.getAttackerAI().wrapEntityData(terrainCache);

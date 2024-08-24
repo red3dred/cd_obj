@@ -3,7 +3,7 @@ package com.invasion.nexus;
 import java.util.List;
 import java.util.UUID;
 
-import com.invasion.entity.ai.AttackerAI;
+import com.invasion.nexus.ai.AttackerAI;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;

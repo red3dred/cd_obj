@@ -96,6 +96,7 @@ public class ThrowerEntity extends TieredIMMobEntity {
             clearingPoint = false;
             if (clearPointNotifee != null) {
                 clearPointNotifee.notifyTask(Notifiable.Status.SUCCESS);
+                clearPointNotifee = null;
             }
         }
     }

@@ -2,11 +2,11 @@ package com.invasion.entity.pathfinding;
 
 import java.util.Optional;
 
-import com.invasion.IBlockAccessExtended;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
+import com.invasion.nexus.ai.scaffold.ScaffoldView;
 import com.invasion.util.math.PosUtils;
 
 import net.minecraft.block.BlockState;
@@ -99,7 +99,7 @@ public class Actor<T extends Entity> implements IMPathNodeMaker {
 
     @Override
     public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-        float multiplier = 1 + ((IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3);
+        float multiplier = 1 + (ScaffoldView.of(terrainMap).getMobDensity(node.getBlockPos()) * 3);
 
         if (node.y > prevNode.y && getNodeDestructability(terrainMap, node.getBlockPos()) == DestructableType.DESTRUCTABLE) {
             multiplier += 2;

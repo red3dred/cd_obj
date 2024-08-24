@@ -6,6 +6,7 @@ import com.invasion.Notifiable;
 import com.invasion.InvasionMod;
 import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.PathNavigateAdapter;
+import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.EntityConstruct;
 import com.invasion.nexus.EntityConstruct.BuildableMob;
@@ -76,6 +77,10 @@ public interface NexusEntity extends IHasNexus, BuildableMob, HasAiGoals, Entity
     }
 
     default boolean onPathBlocked(Path path, Notifiable asker) {
+        return false;
+    }
+
+    default boolean handlePathAction(BlockPos pos, PathAction action, Notifiable asker) {
         return false;
     }
 

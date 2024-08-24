@@ -1,9 +1,5 @@
 package com.invasion.entity.pathfinding;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.apache.commons.lang3.stream.IntStreams;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.InvasionMod;
@@ -12,22 +8,17 @@ import com.invasion.entity.Stunnable;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.IHasNexus;
+import com.invasion.nexus.test.PathingDebugger;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.MobNavigation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeNavigator;
-import net.minecraft.entity.ai.pathing.TargetPathNode;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.custom.DebugPathCustomPayload;
 
 public class IMMobNavigation extends MobNavigation implements Navigation {
     static final int MAX_WAIT_TIME = 2000;
@@ -65,8 +56,8 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
         nodeMaker.setCanEnterOpenDoors(true);
         nodeMaker.setCanOpenDoors(true);
         nodeMaker.setCanSwim(true);
-        nodeMaker.setCanClimb(true);
-        return new EntityDensityAwarePathNodeNavigator(nodeMaker, range);
+        nodeMaker.setCanClimbLadder(true);
+        return new DynamicPathNodeNavigator(nodeMaker, range);
     }
 
     @Override
@@ -226,6 +217,10 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
                 entity.fallDistance = 0;
                 entity.setJumping(false);
             }
+        } else if (action.getType() != PathAction.Type.DIG) {
+            if (entity instanceof NexusEntity e && e.handlePathAction(getCurrentPath().getCurrentNodePos(), action, this)) {
+                waitingForNotify = MAX_WAIT_TIME;
+            }
         }
 	}
 
@@ -236,7 +231,7 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
 
     @Override
     public boolean startMovingAlong(Path path, double speed) {
-        @Nullable Path previousPath = this.getCurrentPath();
+        @Nullable Path previousPath = getCurrentPath();
         try {
             stuckTime = 0;
             return super.startMovingAlong(path, speed);
@@ -246,8 +241,7 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
             }
             Path currentPath = getCurrentPath();
             if (currentPath != null && currentPath != previousPath) {
-                currentPath.getDebugNodeInfos();
-                entity.getServer().getPlayerManager().sendToAll(new CustomPayloadS2CPacket(new DebugPathCustomPayload(entity.getId(), createDebuggablePath(currentPath), 0.5F)));
+                PathingDebugger.sendPathToClients(entity, currentPath, 0.5F);
             }
         }
     }
@@ -265,68 +259,5 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
     @Override
     public void autoPathToEntity(Entity target) {
         followingEntity = target;
-    }
-
-    /*
-     Pay no mind to what's below. Enjoy this cute little cottage instead
-                         (
-                            )
-                        (            ./\.
-                     |^^^^^^^^^|   ./LLLL\.
-                     |`.'`.`'`'| ./LLLLLLLL\.
-                     |.'`'.'`.'|/LLLL/^^\LLLL\.
-                     |.`.''``./LLLL/^ () ^\LLLL\.
-                     |.'`.`./LLLL/^  =   = ^\LLLL\.
-                     |.`../LLLL/^  _.----._  ^\LLLL\.
-                     |'./LLLL/^ =.' ______ `.  ^\LLLL\.
-                     |/LLLL/^   /|--.----.--|\ = ^\LLLL\.
-                   ./LLLL/^  = |=|__|____|__|=|    ^\LLLL\.
-                 ./LLLL/^=     |*|~~|~~~~|~~|*|   =  ^\LLLL\.
-               ./LLLL/^        |=|--|----|--|=|        ^\LLLL\.
-             ./LLLL/^      =   `-|__|____|__|-' =        ^\LLLL\.
-            /LLLL/^   =         `------------'        =    ^\LLLL\
-            ~~|.~       =        =      =          =         ~.|~~
-              ||     =      =      = ____     =         =     ||
-              ||  =               .-'    '-.        =         ||
-              ||     _..._ =    .'  .-()-.  '.  =   _..._  =  ||
-              || = .'_____`.   /___:______:___\   .'_____`.   ||
-              || .-|---.---|-.   ||  _  _  ||   .-|---.---|-. ||
-              || |=|   |   |=|   || | || | ||   |=|   |   |=| ||
-              || |=|___|___|=|=  || | || | ||=  |=|___|___|=| ||
-              || |=|~~~|~~~|=|   || | || | ||   |=|~~~|~~~|=| ||
-              || |*|   |   |*|   || | || | ||  =|*|   |   |*| ||
-              || |=|---|---|=| = || | || | ||   |=|---|---|=| ||
-              || |=|   |   |=|   || | || | ||   |=|   |   |=| ||
-              || `-|___|___|-'   ||o|_||_| ||   `-|___|___|-' ||
-              ||  '---------`  = ||  _  _  || =  `---------'  ||
-              || =   =           || | || | ||      =     =    ||
-              ||  %@&   &@  =    || |_||_| ||  =   @&@   %@ = ||
-              || %@&@% @%@&@    _||________||_   &@%&@ %&@&@  ||
-              ||,,\\V//\\V//, _|___|------|___|_ ,\\V//\\V//,,||
-              |--------------|____/--------\____|--------------|
-             /- _  -  _   - _ -  _ - - _ - _ _ - _  _-  - _ - _ \
-            /____________________________________________________\
-     */
-    static Path createDebuggablePath(Path path) {
-        return new Path(List.of(), BlockPos.ORIGIN, false) {
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            @Override
-            public void toBuf(PacketByteBuf buf) {
-                buf.writeBoolean(path.reachesTarget());
-                buf.writeInt(path.getCurrentNodeIndex());
-                buf.writeBlockPos(path.getTarget());
-
-                Set<PathNode> open = new HashSet<>();
-                Set<PathNode> closed = new HashSet<>();
-                Set<TargetPathNode> targets = new HashSet<>();
-
-                buf.writeCollection(IntStreams.range(path.getLength()).mapToObj(path::getNode).peek(node -> {
-                    ((Set)(node instanceof TargetPathNode ? targets : node.visited ? closed : open)).add(node instanceof TargetPathNode t ? t : node);
-                }).toList(), (bufx, node) -> node.write(bufx));
-
-
-                new Path.DebugNodeInfo(open.toArray(PathNode[]::new), closed.toArray(PathNode[]::new), targets).write(buf);
-            }
-        };
     }
 }

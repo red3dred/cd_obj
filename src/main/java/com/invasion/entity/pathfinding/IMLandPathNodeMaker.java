@@ -1,8 +1,15 @@
 package com.invasion.entity.pathfinding;
 
+import java.util.function.Consumer;
+
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.block.BlockMetadata;
+import com.invasion.entity.pathfinding.DynamicPathNodeNavigator.NodeFactory;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
+import com.invasion.nexus.IHasNexus;
+import com.invasion.nexus.ai.scaffold.ScaffoldView;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
@@ -10,6 +17,7 @@ import net.minecraft.entity.ai.pathing.PathContext;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.ai.pathing.TargetPathNode;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -17,11 +25,15 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.CollisionView;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.chunk.ChunkCache;
 
-public class IMLandPathNodeMaker extends LandPathNodeMaker {
+public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPathNodeNavigator.RootNodeFactory, DynamicPathNodeNavigator.NodeCache {
     private boolean canClimbLadders;
     private boolean canMineBlocks;
     private boolean canDigDown;
+
+    private DynamicPathNodeNavigator.NodeFactory delegate = DynamicPathNodeNavigator.NodeFactory.DEFAULT;
+    private Consumer<CollisionView> chunkCacheModifier = a -> {};
 
     public boolean canDestroyBlocks() {
         return canMineBlocks && (entity == null || entity.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING));
@@ -39,21 +51,35 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
         canDigDown = flag;
     }
 
-    public boolean getCanClimb() {
+    public boolean getCanClimbLadder() {
         return canClimbLadders;
     }
 
-    public void setCanClimb(boolean flag) {
+    public void setCanClimbLadder(boolean flag) {
         canClimbLadders = flag;
     }
 
+    @Override
+    public void init(ChunkCache cachedWorld, MobEntity entity) {
+        super.init(cachedWorld, entity);
+        if (entity instanceof IHasNexus nexusHolder && nexusHolder.hasNexus()) {
+            this.context = new PathContext(nexusHolder.getNexus().getAttackerAI().wrapEntityData(cachedWorld), entity);
+            this.chunkCacheModifier.accept(context.getWorld());
+        }
+    }
 
     @Override
     protected PathNode getNode(int x, int y, int z) {
         return getNode(x, y, z, PathAction.NONE);
     }
 
-    protected PathNode getNode(int x, int y, int z, PathAction action) {
+    @Override
+    public void setDelegate(NodeFactory delegate, Consumer<CollisionView> chunkCacheModifier) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public PathNode getNode(int x, int y, int z, PathAction action) {
         return pathNodeCache.computeIfAbsent(ActionablePathNode.makeHash(x, y, z, action), l -> ActionablePathNode.create(x, y, z, action));
     }
 
@@ -63,12 +89,18 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
     }
 
     @Override
-    public int getSuccessors(PathNode[] successors, PathNode node) {
-        this.setCanDestroyBlocks(true);
-        this.setCanDigDown(true);
-        int index = super.getSuccessors(successors, node);
+    public float getDistancePenalty(PathNode previousNode, PathNode nextNode, CollisionView world) {
+        return delegate.getDistancePenalty(previousNode, nextNode, context.getWorld());
+    }
 
-        boolean canClimb = getCanClimb();
+    @Override
+    public int getSuccessors(PathNode[] successors, PathNode node) {
+        return getSuccessors(super.getSuccessors(successors, node), successors, node, context.getWorld(), this);
+    }
+
+    @Override
+    public int getSuccessors(int index, PathNode[] successors, PathNode node, CollisionView world, DynamicPathNodeNavigator.NodeCache cache) {
+        boolean canClimb = getCanClimbLadder();
         boolean canDigDown = getCanDigDown();
 
         if (canClimb || canDigDown) {
@@ -91,14 +123,14 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
             }
         }
 
-        return index;
+        return delegate.getSuccessors(index, successors, node, world, cache);
     }
 
     @Override
     public PathNodeType getDefaultNodeType(PathContext context, int x, int y, int z) {
         BlockPos.Mutable pos = new BlockPos.Mutable(x, y, z);
         PathNodeType type = getLandNodeType(context, pos);
-        if (getCanClimb() && PathingUtil.isLadder(context.getBlockState(pos))) {
+        if (getCanClimbLadder() && PathingUtil.isLadder(context.getBlockState(pos))) {
             return PathNodeType.WALKABLE;
         }
         if (canDestroyBlocks() && type == PathNodeType.BLOCKED) {
@@ -107,34 +139,42 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker {
         return type;
     }
 
+    @Nullable
     @Override
     protected PathNode getPathNode(int x, int y, int z, int maxYStep, double prevFeetY, Direction direction, PathNodeType nodeType) {
+        @Nullable
         PathNode node = super.getPathNode(x, y, z, maxYStep, prevFeetY, direction, nodeType);
-        if (canDestroyBlocks() && node != null && getLandNodeType(entity, node.getBlockPos()) == PathNodeType.BLOCKED) {
-            BlockPos pos = new BlockPos(node.x, node.y, node.z);
+        if (canDestroyBlocks() && node != null && getLandNodeType(context, new BlockPos.Mutable(node.x, node.y, node.z)) == PathNodeType.BLOCKED) {
+            BlockPos pos = node.getBlockPos();
             BlockState state = context.getBlockState(pos);
             if (canMineBlock(context.getWorld(), pos, state)) {
                 node.type = PathNodeType.WALKABLE;
                 node.penalty = getBlockStrength(pos, state);
                 return ActionablePathNode.setAction(node, PathAction.DIG);
             }
-
         }
+
+        if (node != null && node.type == PathNodeType.WALKABLE) {
+            BlockPos pos = node.getBlockPos();
+            float mobDensityMultiplier = 1 + (ScaffoldView.of(context.getWorld()).getMobDensity(pos) * 3);
+            node.penalty += getWalkableNodePathingPenalty(context.getWorld(), pos, mobDensityMultiplier);
+        }
+
         return node;
+    }
+
+    protected float getWalkableNodePathingPenalty(CollisionView world, BlockPos pos, float mobDensityMultiplier) {
+        BlockState state = context.getBlockState(pos);
+        return BlockMetadata.getCost(state).orElse(state.isSolidBlock(world, pos) ? 3.2F : 1) * mobDensityMultiplier;
     }
 
     @Override
     protected boolean canPathThrough(BlockPos pos) {
-        return super.canPathThrough(pos) || (canDestroyBlocks() && canMineBlock(entity.getWorld(), pos, entity.getWorld().getBlockState(pos)));
-    }
-
-
-    public float getBlockStrength(PathContext context, BlockPos pos) {
-        return BlockMetadata.getStrength(pos, context.getBlockState(pos), context.getWorld());
+        return super.canPathThrough(pos) || (canDestroyBlocks() && canMineBlock(context.getWorld(), pos, context.getBlockState(pos)));
     }
 
     public float getBlockStrength(BlockPos pos, BlockState state) {
-        return BlockMetadata.getStrength(pos, state, entity.getWorld());
+        return BlockMetadata.getStrength(pos, state, context.getWorld());
     }
 
     public boolean canMineBlock(CollisionView world, BlockPos pos, BlockState state) {

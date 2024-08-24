@@ -1,6 +1,5 @@
 package com.invasion.entity.pathfinding;
 
-import com.invasion.IBlockAccessExtended;
 import com.invasion.block.DestructableType;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.EntityIMLiving;
@@ -9,6 +8,8 @@ import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.entity.pathfinding.path.PathAction.Type;
 import com.invasion.nexus.NexusAccess;
+import com.invasion.nexus.ai.scaffold.ScaffoldView;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -20,6 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.CollisionView;
 
 @Deprecated
 public class PigmanEngineerNavigator extends IMNavigation {
@@ -74,7 +76,7 @@ public class PigmanEngineerNavigator extends IMNavigation {
                     return prevNode.getDistance(node) * 1.4F;
                 }
 
-                float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG);
+                float multiplier = 1 + ScaffoldView.of(terrainMap).getMobDensity(node.getBlockPos());
 
                 if (block.isAir() || block.isReplaceable()) {
                     return prevNode.getDistance(node) * multiplier;
@@ -164,7 +166,7 @@ public class PigmanEngineerNavigator extends IMNavigation {
 
                 }
 
-                if (IBlockAccessExtended.getData(terrainMap, currentNode.getBlockPos().up()) == IBlockAccessExtended.EXT_DATA_SCAFFOLD_METAPOSITION) {
+                if (ScaffoldView.of(terrainMap).isScaffoldPosition(currentNode.getBlockPos().up())) {
                     pathFinder.addNode(currentNode.getBlockPos().up(), PathAction.SCAFFOLD_UP);
                 }
             }
@@ -196,13 +198,10 @@ public class PigmanEngineerNavigator extends IMNavigation {
 
     @Override
     protected Path createPath(EntityIMLiving entity, BlockPos pos, float targetRadius) {
-        BlockView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
+        CollisionView terrainCache = getChunkCache(entity.getBlockPos(), pos, 16);
         NexusAccess nexus = pigEntity.getNexus();
         if (nexus != null) {
-            IBlockAccessExtended terrainCacheExt = nexus.getAttackerAI().wrapEntityData(terrainCache);
-
-            nexus.getAttackerAI().addScaffoldDataTo(terrainCacheExt);
-            terrainCache = terrainCacheExt;
+            terrainCache = nexus.getAttackerAI().addScaffoldDataTo(nexus.getAttackerAI().wrapEntityData(terrainCache));
         }
         float maxSearchRange = 12 + (float) entity.getPos().distanceTo(pos.toBottomCenterPos());
         return pathSource.createPath(entity, pos, targetRadius, maxSearchRange, terrainCache);

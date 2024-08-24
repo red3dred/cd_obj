@@ -237,10 +237,10 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
             case 2 -> switch(getFlavour()) {
                 case 2 -> TAR;
                 case 3 -> ZOMBIE_PIGMAN;
-                default -> (((int)(getUuid().getLeastSignificantBits() % 2)) + 1) * 2; //2,4
+                default -> (((int)(Math.abs(getUuid().getLeastSignificantBits()) % 2)) + 1) * 2; //2,4
             };
             case 3 -> BRUTE;
-            default -> (int)(getUuid().getLeastSignificantBits() % 2); // 0,1
+            default -> (int)(Math.abs(getUuid().getLeastSignificantBits()) % 2); // 0,1
         };
     }
 

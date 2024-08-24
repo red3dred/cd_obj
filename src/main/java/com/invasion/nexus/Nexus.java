@@ -11,8 +11,8 @@ import com.invasion.block.InvBlocks;
 import com.invasion.entity.ElectricityBoltEntity;
 import com.invasion.entity.InvEntities;
 import com.invasion.entity.SpawnProxyEntity;
-import com.invasion.entity.ai.AttackerAI;
 import com.invasion.item.InvItems;
+import com.invasion.nexus.ai.AttackerAI;
 import com.invasion.nexus.spawns.IMWaveSpawner;
 import com.invasion.nexus.wave.WaveBuilder;
 import com.invasion.nexus.wave.Wave;
@@ -275,7 +275,6 @@ public class Nexus implements ControllableNexusAccess {
         } else {
             resumeSpawnerInvasion();
         }
-        attackerAI.onResume();
     }
 
     @Override

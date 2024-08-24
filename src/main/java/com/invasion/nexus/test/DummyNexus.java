@@ -3,11 +3,11 @@ package com.invasion.nexus.test;
 import java.util.List;
 import java.util.UUID;
 
-import com.invasion.entity.ai.AttackerAI;
 import com.invasion.nexus.Combatant;
 import com.invasion.nexus.ControllableNexusAccess;
 import com.invasion.nexus.Mode;
 import com.invasion.nexus.Participants;
+import com.invasion.nexus.ai.AttackerAI;
 
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.entity.damage.DamageSource;

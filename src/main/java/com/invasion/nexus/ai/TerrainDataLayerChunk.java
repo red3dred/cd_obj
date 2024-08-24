@@ -1,4 +1,6 @@
-package com.invasion;
+package com.invasion.nexus.ai;
+
+import com.invasion.nexus.ai.scaffold.ScaffoldView;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -8,27 +10,27 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 
-public class TerrainDataLayer implements IBlockAccessExtended {
-    private final Long2ObjectMap<Integer> dataLayer = new Long2ObjectOpenHashMap<>();
+class TerrainDataLayerChunk implements ScaffoldView, BlockView {
+    protected final Long2ObjectMap<Integer> data = new Long2ObjectOpenHashMap<>();
     private final BlockView world;
 
-    public TerrainDataLayer(BlockView world) {
+    public TerrainDataLayerChunk(BlockView world) {
         this.world = world;
     }
 
-    public TerrainDataLayer(BlockView world, Long2ObjectMap<Integer> dataLayer) {
+    public TerrainDataLayerChunk(BlockView world, Long2ObjectMap<Integer> dataLayer) {
         this.world = world;
-        this.dataLayer.putAll(dataLayer);
+        this.data.putAll(dataLayer);
     }
 
     @Override
     public void setData(BlockPos pos, int data) {
-        dataLayer.put(pos.asLong(), Integer.valueOf(data));
+        this.data.put(pos.asLong(), Integer.valueOf(data));
     }
 
     @Override
     public int getData(BlockPos pos) {
-        return dataLayer.getOrDefault(pos.asLong(), Integer.valueOf(0));
+        return data.getOrDefault(pos.asLong(), Integer.valueOf(0));
     }
 
     @Override

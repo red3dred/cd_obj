@@ -85,7 +85,7 @@ public class AbstractIMZombieEntityRenderer extends BipedEntityRenderer<Abstract
     public Identifier getTexture(AbstractIMZombieEntity entity) {
         int id = entity.getTextureId();
         List<Identifier> textures = getTextures();
-        return textures.get(id >= textures.size() ? 0 : id);
+        return textures.get(id < 0 || id >= textures.size() ? 0 : id);
     }
 
     private final class ArmorFeature extends ArmorFeatureRenderer<AbstractIMZombieEntity, BipedEntityModel<AbstractIMZombieEntity>, BipedEntityModel<AbstractIMZombieEntity>> {

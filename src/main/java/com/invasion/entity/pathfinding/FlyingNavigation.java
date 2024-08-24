@@ -3,13 +3,13 @@ package com.invasion.entity.pathfinding;
 
 import org.joml.Vector3f;
 
-import com.invasion.IBlockAccessExtended;
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.EntityIMFlying;
 import com.invasion.entity.ai.MoveState;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
+import com.invasion.nexus.ai.scaffold.ScaffoldView;
 import com.invasion.util.math.MathUtil;
 
 import it.unimi.dsi.fastutil.floats.FloatFloatPair;
@@ -106,7 +106,7 @@ public class FlyingNavigation extends IMNavigation {
 
             @Override
             public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
-                float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
+                float multiplier = 1 + ScaffoldView.of(terrainMap).getMobDensity(node.getBlockPos()) * 3;
 
                 BlockPos.Mutable mutable = new BlockPos.Mutable();
 

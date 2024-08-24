@@ -1,6 +1,5 @@
 package com.invasion.entity;
 
-import com.invasion.IBlockAccessExtended;
 import com.invasion.InvSounds;
 import com.invasion.block.DestructableType;
 import com.invasion.entity.ai.builder.TerrainDigger;
@@ -11,6 +10,7 @@ import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
 import com.invasion.entity.pathfinding.path.PathAction;
+import com.invasion.nexus.ai.scaffold.ScaffoldView;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -48,7 +48,7 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
                     @Override
                     public float getPathNodePenalty(PathNode prevNode, PathNode node, BlockView terrainMap) {
                         if (getTier() == 2 && getFlavour() == 2 && ActionablePathNode.getAction(node) == PathAction.SWIM) {
-                            float multiplier = 1 + (IBlockAccessExtended.getData(terrainMap, node.getBlockPos()) & IBlockAccessExtended.MOB_DENSITY_FLAG) * 3;
+                            float multiplier = 1 + ScaffoldView.of(terrainMap).getMobDensity(node.getBlockPos()) * 3;
 
                             if (node.y > prevNode.y && getNodeDestructability(terrainMap, node.getBlockPos()) == DestructableType.DESTRUCTABLE) {
                                 multiplier += 2;
@@ -96,13 +96,11 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     public abstract void updateAnimation(boolean override);
 
-
     public abstract int getTextureId();
 
     protected int getSwingSpeed() {
         return 10;
     }
-
 
     @Override
     public void mobTick() {
