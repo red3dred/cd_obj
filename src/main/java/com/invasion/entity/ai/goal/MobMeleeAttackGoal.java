@@ -25,10 +25,6 @@ public class MobMeleeAttackGoal extends MeleeAttackGoal {
     @Override
     public void tick() {
         super.tick();
-        if (++ticks >= 5 && getCooldown() < getMaxCooldown() / 2) {
-            mob.setAttacking(true);
-        } else {
-            mob.setAttacking(false);
-        }
+        mob.setAttacking(++ticks >= 5 && getCooldown() < getMaxCooldown() / 2);
     }
 }

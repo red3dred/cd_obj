@@ -7,7 +7,6 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 
 public class SearingBowItem extends BowItem {
     static final float SEARING_ACTIVATION_PULL_PERCENTAGE = 3.8F;
@@ -24,7 +23,6 @@ public class SearingBowItem extends BowItem {
     protected void shoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target) {
         super.shoot(shooter, projectile, index, speed, divergence, yaw, target);
         float pullProgress = getUncappedPullProgress(getMaxUseTime(getDefaultStack(), shooter) - shooter.getItemUseTimeLeft());
-        shooter.sendMessage(Text.literal(pullProgress + ""));
         if (pullProgress > SEARING_ACTIVATION_PULL_PERCENTAGE) {
             projectile.setFireTicks(100);
             if (projectile instanceof PersistentProjectileEntity p) {

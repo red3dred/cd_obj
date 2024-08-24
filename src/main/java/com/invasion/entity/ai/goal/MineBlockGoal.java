@@ -89,7 +89,6 @@ public class MineBlockGoal extends Goal {
 
             float speed = getDiggingSpeed(mob, breakingState, pos) * 10;
             breakProgress += speed;
-            System.out.println(breakProgress + " " + speed);
             if (breakProgress >= 10) {
                 mob.getWorld().setBlockBreakingInfo(mob.getId(), pos, -1);
                 mob.getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
