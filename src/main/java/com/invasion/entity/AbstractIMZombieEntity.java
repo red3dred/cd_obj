@@ -105,7 +105,9 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
 
     @Override
     public void onFollowingEntity(Entity entity) {
-        getNavigatorNew().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
+        if (entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity) {
+            getNavigatorNew().setCanDestroyBlocks(true);
+        }
     }
 
     public boolean isBrute() {
