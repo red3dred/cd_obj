@@ -6,9 +6,8 @@ import com.invasion.entity.pathfinding.path.PathAction;
 import com.invasion.nexus.ai.AttackerAI;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.ai.pathing.PathNode;
-import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.CollisionView;
@@ -54,8 +53,13 @@ public class ScaffoldNodeFactory implements DynamicPathNodeNavigator.NodeFactory
         BlockPos pos = node.getBlockPos();
         BlockPos positionAbove = pos.up();
         BlockState stateAbove = world.getBlockState(positionAbove);
-        if (ActionablePathNode.getAction(node.previous) == PathAction.SCAFFOLD_UP && !avoidsBlock(stateAbove)) {
-            successors[index++] = nodeCache.getNode(node.x, node.y + 1, node.z, PathAction.SCAFFOLD_UP);
+        if (ActionablePathNode.getAction(node.previous) == PathAction.SCAFFOLD_UP && !nodeCache.avoidsBlock(world, positionAbove, stateAbove)) {
+            PathNode n = nodeCache.getNode(node.x, node.y + 1, node.z, PathAction.SCAFFOLD_UP);
+            if (!n.visited) {
+                n.type = PathNodeType.WALKABLE;
+                n.penalty = n.type.getDefaultPenalty();
+                successors[index++] = n;
+            }
             return index;
         }
 
@@ -74,18 +78,15 @@ public class ScaffoldNodeFactory implements DynamicPathNodeNavigator.NodeFactory
                     }
                 }
 
-                successors[index++] = nodeCache.getNode(node.x, node.y + 1, node.z, PathAction.SCAFFOLD_UP);
+                PathNode n = nodeCache.getNode(node.x, node.y + 1, node.z, PathAction.SCAFFOLD_UP);
+                if (!n.visited) {
+                    n.type = PathNodeType.WALKABLE;
+                    n.penalty = n.type.getDefaultPenalty();
+                    successors[index++] = n;
+                }
             }
         }
 
         return index;
-    }
-
-    @SuppressWarnings("deprecation")
-    private boolean avoidsBlock(BlockState state) {
-        return state.isIn(BlockTags.FIRE)
-                || state.isOf(Blocks.BEDROCK)
-                || state.isIn(BlockTags.DOORS)
-                || state.isLiquid();
     }
 }

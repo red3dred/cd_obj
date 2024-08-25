@@ -439,9 +439,9 @@ public class Nexus implements ControllableNexusAccess {
                         boundPlayers.playSoundForBoundPlayers(InvSounds.BLOCK_NEXUS_CHIME);
                         waveDelayTimer = 0L;
                         waveDelay = waveSpawner.getWaveRestTime();
+                        InvasionMod.LOGGER.info("Next wave begins in: {}ticks", waveDelay);
                     } else {
                         waveDelayTimer += elapsed;
-                        InvasionMod.LOGGER.info("Next wave begins in: {}ticks", waveDelay - waveDelayTimer);
                         if (waveDelayTimer > waveDelay) {
                             currentWave += 1;
                             boundPlayers.sendWarning("invmod.message.wave.begin", "" + Formatting.DARK_RED + currentWave);

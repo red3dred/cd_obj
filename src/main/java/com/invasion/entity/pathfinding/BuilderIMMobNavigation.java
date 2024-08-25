@@ -2,6 +2,8 @@ package com.invasion.entity.pathfinding;
 
 import java.util.Set;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.invasion.block.BlockMetadata;
 import com.invasion.block.InvBlocks;
 import com.invasion.entity.NexusEntity;
@@ -12,10 +14,10 @@ import com.invasion.nexus.NexusAccess;
 import com.invasion.nexus.ai.scaffold.ScaffoldView;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -56,14 +58,12 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
     @Override
     protected void tickObjectives() {
         super.tickObjectives();
-
         if (!waitingForJob && nexusEntity.hasNexus()) {
             jobRequestTimer = Math.max(0, jobRequestTimer - 1);
             int yDifference = nexusEntity.getNexus().getOrigin().getY() - entity.getBlockPos().getY();
             int weight = yDifference > 1 ? Math.max(6000 / yDifference, 1) : 1;
             if (getAIGoal() == Goal.BREAK_NEXUS && (getLastPathDistanceToTarget() > 2 && jobRequestTimer <= 0 || entity.getRandom().nextInt(weight) == 0)) {
                 waitingForJob = true;
-                stop();
                 nexusEntity.getNexus().getAttackerAI().requestBuildJob(nexusEntity, target -> {
                     waitingForJob = false;
                     jobRequestTimer = target.isPresent() ? WORK_FOUND_COOLDOWN : JOBLESS_COOLDOWN;
@@ -73,6 +73,42 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
                 });
             }
         }
+    }
+
+    @Nullable
+    private static Direction getInitialLadderOrientation(CollisionView world, BlockPos.Mutable mutable) {
+        for (Direction facing : Direction.Type.HORIZONTAL) {
+            if (canPositionSupportLadder(world, mutable, facing)) {
+                return facing;
+            }
+        }
+        return Direction.UP;
+    }
+
+    private static Direction getHighLadderOrientation(CollisionView world, int maxHeight, BlockPos.Mutable mutable, PathNode currentNode) {
+        for (Direction facing : Direction.Type.HORIZONTAL) {
+            if (canPositionSupportLadder(world, mutable.set(currentNode.x, currentNode.y, currentNode.z), facing, maxHeight)) {
+                return facing;
+            }
+        }
+
+        return Direction.UP;
+    }
+
+    private static boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side, int height) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        while (height >= 0) {
+            if (!canPositionSupportLadder(world, pos.set(x, y + height--, z), side)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side) {
+        return world.getBlockState(pos.move(side)).isSideSolidFullSquare(world, pos, side.getOpposite());
     }
 
     class NodeMaker extends IMLandPathNodeMaker {
@@ -125,100 +161,99 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
 
         @Override
         public int getSuccessors(int index, PathNode[] successors, PathNode node, CollisionView world, DynamicPathNodeNavigator.NodeCache cache) {
-            index = getVerticalSuccessors(index, successors, node, world);
             index = super.getSuccessors(index, successors, node, world, cache);
             BlockPos.Mutable mutable = new BlockPos.Mutable();
-            for (Direction offset : Direction.Type.HORIZONTAL) {
-                if (canBuildOnBlock(world, mutable.set(node.x, node.y, node.z).move(offset))) {
-                    for (int yOffset = 0; yOffset > -MAX_LADDER_TOWER_HEIGHT; yOffset--) {
-                        BlockState block = world.getBlockState(mutable.set(node.x, node.y + yOffset - 1, node.z).move(offset));
-                        if (!block.isAir()) {
-                            break;
-                        }
-                        successors[index++] = getNode(node.x + offset.getOffsetX(), node.y + 1, node.z + offset.getOffsetZ(), PathAction.BRIDGE);
-                    }
+
+            PathAction ladderAction = PathAction.NONE;
+            if (world.getBlockState(mutable.set(node.x, node.y + 1, node.z)).isAir()) {
+                ladderAction = getLadderAction(mutable);
+            }
+
+            if (ladderAction == PathAction.NONE && (previousNodeAction == PathAction.NONE || previousNodeAction == PathAction.BRIDGE)) {
+                if (world.getBlockState(mutable.set(node.x, node.y - 1, node.z)).isAir()) {
+                    ladderAction = PathAction.getLadderActionForDirection(
+                            getHighLadderOrientation(world, getMaxLadderHeight(mutable, node), mutable.set(node.x, node.y - 1, node.z), node)
+                    );
+                }
+            }
+
+            if (ladderAction != PathAction.NONE) {
+                node = getBuilderNode(node.x, mutable.getY(), node.z, ladderAction);
+                if (!node.visited) {
+                    successors[index++] = node;
                 }
             }
 
             return index;
         }
 
-        protected int getVerticalSuccessors(int index, PathNode[] successors, PathNode currentNode, CollisionView world) {
-            world = context.getWorld();
-            PathAction action = ActionablePathNode.getAction(currentNode);
-            BlockPos.Mutable mutable = currentNode.getBlockPos().mutableCopy().move(Direction.UP);
+        private PathAction getLadderAction(BlockPos.Mutable mutable) {
+            if (previousNodeAction == PathAction.NONE) {
+                return PathAction.getLadderActionForDirection(getInitialLadderOrientation(world, mutable));
+            }
 
-            if (canBuildOnBlock(world, mutable)) {
-                if (world.getBlockState(mutable).isAir()) {
-                    index = getNextLadderSuccessor(index, successors, currentNode, world);
+            Direction orientation = previousNodeAction.getOrientation();
+            return previousNodeAction.getType() == Type.LADDER
+                    && orientation != Direction.UP
+                    && canPositionSupportLadder(world, mutable, orientation) ? previousNodeAction : PathAction.NONE;
+        }
+
+        @Override
+        protected PathNode getPathNode(int x, int y, int z, int maxYStep, double prevFeetY, Direction direction, PathNodeType nodeType) {
+            PathNode node = super.getPathNode(x, y, z, maxYStep, prevFeetY, direction, nodeType);
+            BlockPos.Mutable mutable = new BlockPos.Mutable();
+
+            if (node != null && ActionablePathNode.getAction(node) == PathAction.NONE) {
+                if (ScaffoldView.of(world).isScaffoldPosition(mutable.set(x, y, z))) {
+                    ActionablePathNode.setAction(node, PathAction.SCAFFOLD_UP);
                 }
+            }
 
-                if (action == PathAction.NONE || action == PathAction.BRIDGE) {
-                    int maxHeight = 4;
-                    int collideHeight = MathHelper.ceil(entity.getHeight());
-                    for (int i = collideHeight; i < 4; i++) {
-                        BlockState block = world.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(Direction.UP, i));
-                        if (!block.isAir() && !block.canPathfindThrough(NavigationType.LAND)) {
-                            maxHeight = i - collideHeight;
-                            break;
-                        }
-                    }
-
-                    for (Direction facing : Direction.Type.HORIZONTAL) {
-                        BlockState block = world.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(facing));
-                        if (block.isFullCube(world, mutable)) {
-                            for (int height = 0; height < maxHeight; height++) {
-                                block = world.getBlockState(mutable.set(currentNode.x, currentNode.y, currentNode.z).move(facing).move(Direction.UP, height));
-                                if (!block.isAir()) {
-                                    if (!block.isFullCube(world, mutable)) {
-                                        break;
-                                    }
-                                    successors[index++] = getNode(currentNode.x, currentNode.y + 1, currentNode.z, PathAction.getLadderActionForDirection(facing));
-                                    break;
-                                }
-                            }
-                        }
+            if (node == null || ActionablePathNode.getAction(node) == PathAction.NONE) {
+                if (direction.getAxis().isHorizontal()) {
+                    if (isClear(context.getWorld(), mutable.set(x, y - MAX_LADDER_TOWER_HEIGHT, z), MAX_LADDER_TOWER_HEIGHT)) {
+                        return getBuilderNode(x, y, z, PathAction.BRIDGE);
                     }
                 }
             }
 
-            if (ScaffoldView.of(world).isScaffoldPosition(currentNode.getBlockPos().up())) {
-                successors[index++] = getNode(currentNode.x, currentNode.y + 1, currentNode.z, PathAction.SCAFFOLD_UP);
-            }
+            return node;
+        }
 
-            return index;
+        private PathNode getBuilderNode(int x, int y, int z, PathAction action) {
+            PathNode node = getNode(x, y, z);
+            node.type = PathNodeType.WALKABLE;
+            node.penalty = node.type.getDefaultPenalty();
+            return ActionablePathNode.setAction(node, action);
+        }
+
+        private boolean isClear(CollisionView world, BlockPos.Mutable mutable, int height) {
+            int originalY = mutable.getY() + 1;
+            try {
+                for (int yOffset = 0; yOffset < height; yOffset++) {
+                    if (!world.getBlockState(mutable.setY(originalY + yOffset)).isAir()) {
+                        return false;
+                    }
+                }
+                return true;
+            } finally {
+                mutable.setY(originalY);
+            }
+        }
+
+        private int getMaxLadderHeight(BlockPos.Mutable mutable, PathNode currentNode) {
+            int collideHeight = MathHelper.ceil(entity.getHeight());
+            for (int i = collideHeight; i < 4; i++) {
+                BlockState block = world.getBlockState(mutable.setY(currentNode.y + i));
+                if (block.isSolidBlock(world, mutable)) {
+                    return i - collideHeight;
+                }
+            }
+            return 4;
         }
 
         private boolean canBuildOnBlock(CollisionView world, BlockPos pos) {
             return world.getBlockState(pos).isAir() || !BlockMetadata.isIndestructible(world.getBlockState(pos)) || PathingUtil.hasAdjacentLadder(world, pos);
-        }
-
-        private int getNextLadderSuccessor(int index, PathNode[] successors, PathNode currentNode, BlockView terrainMap) {
-            PathAction action = ActionablePathNode.getAction(currentNode);
-            BlockPos.Mutable mutable = currentNode.getBlockPos().mutableCopy();
-
-            if (action == PathAction.NONE) {
-                for (Direction facing : Direction.Type.HORIZONTAL) {
-                    if (canPositionSupportLadder(terrainMap, mutable.set(currentNode.x, currentNode.y + 1, currentNode.z), facing)) {
-                        successors[index++] = getNode(currentNode.x, currentNode.y + 1, currentNode.z, PathAction.getLadderActionForDirection(facing));
-                    }
-                }
-
-                return index;
-            }
-
-            Direction orientation = action.getOrientation();
-
-            if (action.getType() == Type.LADDER && orientation != Direction.UP
-                    && canPositionSupportLadder(terrainMap, mutable.set(currentNode.x, currentNode.y + 1, currentNode.z), orientation)) {
-                successors[index++] = getNode(currentNode.x, currentNode.y + 1, currentNode.z, action);
-            }
-
-            return index;
-        }
-
-        private boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side) {
-            return world.getBlockState(pos.move(side)).isSideSolidFullSquare(world, pos, side.getOpposite());
         }
     }
 }

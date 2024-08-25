@@ -142,7 +142,7 @@ public class IMPathNodeNavigator {
     }
 
     private PathNode openPoint(BlockPos pos, PathAction action) {
-        int hash = ActionablePathNode.makeHash(pos, action);
+        int hash = PathNode.hash(pos.getX(), pos.getY(), pos.getZ());
         PathNode pathpoint = pathNodeCache.get(hash);
         if (pathpoint == null) {
             pathpoint = ActionablePathNode.create(pos, action);

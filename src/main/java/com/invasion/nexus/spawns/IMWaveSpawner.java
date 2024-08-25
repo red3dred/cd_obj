@@ -309,7 +309,6 @@ public class IMWaveSpawner implements Spawner {
 		if (entity.canSpawn(nexus.getWorld()) && nexus.getWorld().isSpaceEmpty(entity)) {
 			int angle = (int) (Math.atan2(nexus.getOrigin().getZ() - pos.getZ(), nexus.getOrigin().getX() - pos.getX()) * MathHelper.DEGREES_PER_RADIAN);
 			spawnPoints.add(new SpawnPoint(pos.toImmutable(), angle, SpawnType.HUMANOID));
-			InvasionMod.LOGGER.info("[Spawn] Adding spawn point at {}", pos);
 		}
 	}
 

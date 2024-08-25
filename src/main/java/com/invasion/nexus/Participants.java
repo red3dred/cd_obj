@@ -170,7 +170,7 @@ public class Participants {
         }
 
         public NbtCompound writeNbt(NbtCompound compound, RegistryWrapper.WrapperLookup lookup) {
-            compound.putUuid("uuid", id);
+            compound.putUuid("id", id);
             compound.putLong("time", time);
             return compound;
         }

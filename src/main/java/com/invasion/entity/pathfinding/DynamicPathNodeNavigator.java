@@ -7,6 +7,7 @@ import java.util.function.Function;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.pathfinding.path.PathAction;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
@@ -73,6 +74,8 @@ public class DynamicPathNodeNavigator extends PathNodeNavigator {
 
     public interface NodeCache {
         PathNode getNode(int x, int y, int z, PathAction action);
+
+        boolean avoidsBlock(CollisionView world, BlockPos pos, BlockState state);
     }
 
     public interface NodeFactory {
