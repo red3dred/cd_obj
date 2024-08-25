@@ -115,8 +115,7 @@ public class NexusBlockEntity extends BlockEntity implements SidedInventory, Nam
 
     }
 
-    @Override
-    public void markRemoved() {
+    public void discard() {
         if (getWorld() instanceof ServerWorld sw) {
             WorldNexusStorage.of(sw).destroyNexus(nexusId);
         }
