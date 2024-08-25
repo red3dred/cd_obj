@@ -3,8 +3,8 @@ package com.invasion.entity;
 import com.invasion.entity.ai.IMSpiderMoveControl;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
-import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.LayEggGoal;
+import com.invasion.entity.ai.goal.MobMeleeAttackGoal;
 import com.invasion.entity.ai.goal.PounceGoal;
 import com.invasion.entity.ai.goal.RallyBehindLeaderGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
@@ -26,7 +26,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.SpiderEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundEvent;
@@ -41,7 +40,7 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 	public EntityIMSpider(EntityType<EntityIMSpider> type, World world) {
 		super(type, world);
 		moveControl = new IMSpiderMoveControl(this);
-		getNavigatorNew().getActor().setCanClimb(true);
+		getNavigatorNew().setCanClimbLadders(true);
 	}
 
     public static DefaultAttributeContainer.Builder createT1V0Attributes() {
@@ -60,13 +59,12 @@ public class EntityIMSpider extends TieredIMMobEntity implements Reproducer {
 	@Override
     protected void initGoals() {
 		goalSelector.add(0, new SwimGoal(this));
-		goalSelector.add(1, new KillEntityGoal<>(this, PlayerEntity.class, 40));
+		goalSelector.add(1, new MobMeleeAttackGoal(this, 1.3F, false));
 		goalSelector.add(1, new RallyBehindLeaderGoal<>(this, IMCreeperEntity.class, 4));
 		goalSelector.add(1, new PredicatedGoal(new LayEggGoal(this, 1), this::isMother));
 		goalSelector.add(2, new AttackNexusGoal<>(this));
 		goalSelector.add(3, new ProvideSupportGoal(this, 5, false));
-		goalSelector.add(3, new PredicatedGoal(new PounceGoal(this, 0.2F, 1.55F, 18), this::isJumper));
-		goalSelector.add(4, new KillEntityGoal<>(this, MobEntity.class, 40));
+		goalSelector.add(4, new PredicatedGoal(new PounceGoal(this, 0.2F, 1.55F, 18), this::isJumper));
 		goalSelector.add(5, new GoToNexusGoal(this));
 		goalSelector.add(7, new WanderAroundFarGoal(this, 1));
 		goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8));

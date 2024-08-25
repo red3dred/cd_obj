@@ -66,9 +66,9 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
     protected void initGoals() {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(0, new MineBlockGoal(this));
-        goalSelector.add(1, new MobMeleeAttackGoal(this, 1, false));
-        goalSelector.add(2, new AttackNexusGoal<>(this));
-        goalSelector.add(3, new GoToNexusGoal(this));
+        goalSelector.add(1, new AttackNexusGoal<>(this));
+        goalSelector.add(2, new GoToNexusGoal(this));
+        goalSelector.add(3, new MobMeleeAttackGoal(this, 1, false));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 7));
         goalSelector.add(9, new LookAtEntityGoal(this, IMCreeperEntity.class, 12));

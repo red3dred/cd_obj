@@ -7,8 +7,8 @@ import com.invasion.InvasionMod;
 import com.invasion.entity.ai.goal.AttackNexusGoal;
 import com.invasion.entity.ai.goal.ChargeMobGoal;
 import com.invasion.entity.ai.goal.GoToNexusGoal;
-import com.invasion.entity.ai.goal.KillEntityGoal;
 import com.invasion.entity.ai.goal.MineBlockGoal;
+import com.invasion.entity.ai.goal.MobMeleeAttackGoal;
 import com.invasion.entity.ai.goal.NoNexusPathGoal;
 import com.invasion.entity.ai.goal.ProvideSupportGoal;
 import com.invasion.entity.ai.goal.PredicatedGoal;
@@ -18,7 +18,6 @@ import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
@@ -31,6 +30,8 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.passive.IronGolemEntity;
+import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
@@ -79,11 +80,10 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         goalSelector.add(0, new SwimGoal(this));
         goalSelector.add(0, new MineBlockGoal(this));
         goalSelector.add(1, new PredicatedGoal(new ChargeMobGoal<>(this, PlayerEntity.class, 0.75F), () -> getTier() == 3));
-        goalSelector.add(2, new KillEntityGoal<>(this, PlayerEntity.class, 40));
-        goalSelector.add(3, new AttackNexusGoal<>(this));
-        goalSelector.add(4, new ProvideSupportGoal(this, 4.0F, true));
-        goalSelector.add(5, new KillEntityGoal<>(this, LivingEntity.class, 40));
+        goalSelector.add(2, new AttackNexusGoal<>(this));
+        goalSelector.add(4, new ProvideSupportGoal(this, 4, true));
         goalSelector.add(6, new GoToNexusGoal(this));
+        goalSelector.add(7, new MobMeleeAttackGoal(this, 1.4F, false));
         goalSelector.add(7, new WanderAroundFarGoal(this, 1));
         goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         goalSelector.add(9, new LookAtEntityGoal(this, IMCreeperEntity.class, 12.0F));
@@ -93,6 +93,8 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
         targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, false), () -> getTier() != 3));
         targetSelector.add(2, new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true));
         targetSelector.add(3, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PigmanEngineerEntity.class, 3.5F), () -> getTier() != 3 && NoNexusPathGoal.isLostPathToNexus(this)));
+        targetSelector.add(4, new CustomRangeActiveTargetGoal<>(this, MerchantEntity.class, this::getAggroRange, true));
+        targetSelector.add(4, new CustomRangeActiveTargetGoal<>(this, IronGolemEntity.class, this::getAggroRange, true));
         targetSelector.add(5, new RevengeGoal(this));
     }
 
