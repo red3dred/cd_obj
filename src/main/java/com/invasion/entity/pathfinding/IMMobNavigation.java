@@ -200,11 +200,11 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
 	@Override
     protected void continueFollowingPath() {
 	    super.continueFollowingPath();
-	    PathAction currentAction = getCurrentWorkingAction();
 	    entity.setSneaking(false);
 	    if (entity instanceof NexusEntity e) {
             e.setIsHoldingIntoLadder(false);
         }
+	    PathAction currentAction = getCurrentWorkingAction();
 	    if (currentAction != PathAction.NONE) {
             handlePathAction(currentAction);
 	    }

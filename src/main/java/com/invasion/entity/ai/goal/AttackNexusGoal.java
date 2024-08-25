@@ -1,5 +1,6 @@
 package com.invasion.entity.ai.goal;
 
+import com.invasion.InvasionMod;
 import com.invasion.entity.HasAiGoals;
 import com.invasion.entity.NexusEntity;
 
@@ -23,12 +24,12 @@ public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Go
 
     @Override
     public boolean canStart() {
-        return mob.age % 5 == 0 && shouldContinue();
+        return shouldContinue();
     }
 
     @Override
     public boolean shouldContinue() {
-        return mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() <= mob.getWidth();
+        return mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() <= 4;
     }
 
     @Override
@@ -39,7 +40,7 @@ public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Go
     @Override
     public void tick() {
         if (--cooldown <= 0) {
-            if (mob.findDistanceToNexus() <= mob.getWidth()) {
+            if (mob.findDistanceToNexus() <= 4) {
                 mob.swingHand(Hand.MAIN_HAND);
                 mob.getNexus().damage(mob.getDamageSources().mobAttack(mob), 2);
             }
@@ -50,6 +51,7 @@ public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Go
 
     @Override
     public void stop() {
-        mob.setAttacking(true);
+        InvasionMod.LOGGER.info("Break Nexus Goal Stop");
+        mob.setAttacking(false);
     }
 }

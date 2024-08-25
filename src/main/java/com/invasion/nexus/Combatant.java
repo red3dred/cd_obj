@@ -29,6 +29,6 @@ public interface Combatant<T extends LivingEntity> extends IHasNexus {
         if (!hasNexus()) {
             return Double.MAX_VALUE;
         }
-        return Math.sqrt(getNexus().getOrigin().toCenterPos().squaredDistanceTo(asEntity().getX(), asEntity().getBodyY(0.5), asEntity().getZ()));
+        return Math.sqrt(asEntity().squaredDistanceTo(getNexus().getOrigin().toCenterPos()));
     }
 }

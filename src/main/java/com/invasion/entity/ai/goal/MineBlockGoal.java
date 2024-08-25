@@ -13,9 +13,6 @@ import com.invasion.block.InvBlockEntities;
 import com.invasion.block.InvBlocks;
 import com.invasion.block.NexusBlockEntity;
 import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
-import com.invasion.entity.pathfinding.path.ActionablePathNode;
-import com.invasion.entity.pathfinding.path.PathAction;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -26,6 +23,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.HitResult.Type;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
 
@@ -48,7 +46,8 @@ public class MineBlockGoal extends Goal {
     public boolean canStart() {
         return mob.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)
                 && !navigation.isIdle()
-                && ActionablePathNode.getAction(navigation.getCurrentPath().getCurrentNode()) == PathAction.DIG;
+                && mob.age % 5 == 0
+                && mob.raycast(1, 1, false).getType() == Type.BLOCK;
     }
 
     @Override
@@ -66,6 +65,7 @@ public class MineBlockGoal extends Goal {
                     (float)mob.getRandom().nextTriangular(mob.getSoundPitch(), 0.2F)
             );
             breakingBlockPos.addAll(getClearRegion(mob, navigation.getCurrentPath().getCurrentNodePos()).distinct().toList());
+            navigation.stop();
         }
     }
 
@@ -92,6 +92,7 @@ public class MineBlockGoal extends Goal {
             if (breakProgress >= 10) {
                 mob.getWorld().setBlockBreakingInfo(mob.getId(), pos, -1);
                 mob.getWorld().breakBlock(pos, InvasionMod.getConfig().destructedBlocksDrop);
+                breakProgress = 0;
                 return false;
             } else {
                 if ((int)breakProgress != prevBreakProgress) {
@@ -149,7 +150,7 @@ public class MineBlockGoal extends Goal {
         return BlockPos.stream(mob.getDimensions(mob.getPose()).getBoxAt(
                     new BlockPos(center.getX(), mob.getBlockPos().getY(), center.getZ()).toBottomCenterPos()
                 ))
-                .filter(pos -> IMLandPathNodeMaker.canMineBlock(mob, pos))
+                .filter(pos -> IMLandPathNodeMaker.canMineBlock(mob, pos) || mob.getWorld().getBlockState(pos).isOf(InvBlocks.NEXUS_CORE))
                 .map(BlockPos::toImmutable)
                 .sorted(Comparator.comparing(i -> mob.squaredDistanceTo(i.toCenterPos()) + BlockMetadata.getStrength(i, mob.getWorld().getBlockState(i), mob.getWorld())))
                 .map(i -> new BreakEntry(i, mob.getWorld().getBlockState(i)));
