@@ -23,12 +23,12 @@ public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Go
 
     @Override
     public boolean canStart() {
-        if (cooldown == 0 && mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() > 4) {
-            cooldown = 5;
-            return false;
-        }
+        return mob.age % 5 == 0 && shouldContinue();
+    }
 
-        return mob.findDistanceToNexus() <= mob.getWidth();
+    @Override
+    public boolean shouldContinue() {
+        return mob.hasGoal(HasAiGoals.Goal.BREAK_NEXUS) && mob.findDistanceToNexus() <= mob.getWidth();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class AttackNexusGoal<E extends PathAwareEntity & NexusEntity> extends Go
 
     @Override
     public void tick() {
-        if (cooldown == 0) {
+        if (--cooldown <= 0) {
             if (mob.findDistanceToNexus() <= mob.getWidth()) {
                 mob.swingHand(Hand.MAIN_HAND);
                 mob.getNexus().damage(mob.getDamageSources().mobAttack(mob), 2);
