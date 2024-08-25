@@ -36,7 +36,6 @@ import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.GameRules;
@@ -106,11 +105,6 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    public float getSoundPitch() {
-        return super.getSoundPitch() * (getTier() == 3 ? 0.75F : 1);
-    }
-
-    @Override
     public void tickMovement() {
         super.tickMovement();
         if (isCharging()) {
@@ -176,19 +170,12 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
     }
 
     @Override
-    protected Text getDefaultName() {
-        if (getTier() == 3) {
-            return Text.translatable(getType().getUntranslatedName() + ".brute");
-        }
-        return super.getDefaultName();
-    }
-
-    @Override
     protected void initTieredAttributes() {
         if (getTier() == 1) {
             setBaseMovementSpeed(0.25F);
             setAttackStrength(8);
             equipStack(EquipmentSlot.MAINHAND, Items.GOLDEN_SWORD.getDefaultStack());
+            setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.2F);
         } else if (getTier() == 2) {
             setBaseMovementSpeed(0.35F);
             setAttackStrength(12);
@@ -208,7 +195,7 @@ public class EntityIMZombiePigman extends AbstractIMZombieEntity {
             if (getRandom().nextInt(5) == 1) {
                 equipStack(EquipmentSlot.FEET, Items.GOLDEN_BOOTS.getDefaultStack());
             }
-        } else if (getTier() == 3) {
+        } else if (isBrute()) {
             setBaseMovementSpeed(0.20F);
             setAttackStrength(18);
         }

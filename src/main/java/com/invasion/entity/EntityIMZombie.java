@@ -106,8 +106,8 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     protected void initGoals() {
         goalSelector.add(0, new PredicatedGoal(new SwimGoal(this), () -> getTier() != 2 || getFlavour() != 2));
         goalSelector.add(0, new MineBlockGoal(this));
+        goalSelector.add(1, new AttackNexusGoal<>(this));
         goalSelector.add(1, new MobMeleeAttackGoal(this, 1.3F, false));
-        goalSelector.add(2, new AttackNexusGoal<>(this));
         goalSelector.add(3, new ProvideSupportGoal(this, 4.0F, true));
         goalSelector.add(3, new PredicatedGoal(new SprintGoal<>(this), () -> getTier() == 3));
         goalSelector.add(4, new PredicatedGoal(new StoopGoal(this), () -> getTier() == 3));
@@ -133,10 +133,6 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
         }
     }
 
-    public boolean isBrute() {
-        return getTier() == 3;
-    }
-
     public boolean isTar() {
         return isTar(this);
     }
@@ -146,20 +142,12 @@ public class EntityIMZombie extends AbstractIMZombieEntity {
     }
 
     @Override
-    public float getSoundPitch() {
-        return super.getSoundPitch() * (isBrute() ? 0.75F : 1);
-    }
-
-    @Override
     protected Text getDefaultName() {
         if (isTar()) {
             return Text.translatable(getType().getUntranslatedName() + ".tar");
         }
         if (isPigman()) {
             return Text.translatable(getType().getUntranslatedName() + ".pigman");
-        }
-        if (isBrute()) {
-            return Text.translatable(getType().getUntranslatedName() + ".brute");
         }
         return super.getDefaultName();
     }

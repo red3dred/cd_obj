@@ -15,6 +15,7 @@ import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.CollisionView;
@@ -107,6 +108,15 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
         getNavigatorNew().setCanDestroyBlocks(entity instanceof PigmanEngineerEntity || entity instanceof IMCreeperEntity);
     }
 
+    public boolean isBrute() {
+        return getTier() == 3;
+    }
+
+    @Override
+    public float getSoundPitch() {
+        return super.getSoundPitch() * (isBrute() ? 0.75F : 1);
+    }
+
     public float scaleAmount() {
         if (getTier() == 2)
             return 1.12F;
@@ -114,6 +124,14 @@ public abstract class AbstractIMZombieEntity extends TieredIMMobEntity implement
             return 1.21F;
         }
         return 1.0F;
+    }
+
+    @Override
+    protected Text getDefaultName() {
+        if (isBrute()) {
+            return Text.translatable(getType().getUntranslatedName() + ".brute");
+        }
+        return super.getDefaultName();
     }
 
     protected static class Navigation extends IMMobNavigation {
