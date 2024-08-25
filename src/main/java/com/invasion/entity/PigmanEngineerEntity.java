@@ -142,11 +142,13 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
         }
 
         if (action.getType() == PathAction.Type.LADDER) {
-            Direction direction = action.getOrientation();
-            if (direction == Direction.UP) {
-                return terrainModifier.submitJob(pos, asker, p -> terrainBuilder.askBuildLadderTower(p, direction, (int)getRandom().nextTriangular(10, 4)));
-            }
-            return terrainModifier.submitJob(pos, asker, terrainBuilder::askBuildLadder);
+            return terrainModifier.submitJob(pos, asker, p -> {
+                Direction direction = action.getOrientation();
+                if (direction == Direction.UP) {
+                    return terrainBuilder.askBuildLadderTower(p, direction, (int)getRandom().nextTriangular(10, 4));
+                }
+                return terrainBuilder.askBuildLadder(p, direction);
+            });
         }
         return true;
     }

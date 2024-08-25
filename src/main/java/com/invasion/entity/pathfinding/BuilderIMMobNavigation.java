@@ -96,7 +96,7 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
         return Direction.UP;
     }
 
-    private static boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side, int height) {
+    public static boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side, int height) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -108,8 +108,8 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
         return true;
     }
 
-    private static boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side) {
-        return world.getBlockState(pos.move(side)).isSideSolidFullSquare(world, pos, side.getOpposite());
+    public static boolean canPositionSupportLadder(BlockView world, BlockPos.Mutable pos, Direction side) {
+        return world.getBlockState(pos.move(side)).isSideSolidFullSquare(world, pos, side);
     }
 
     class NodeMaker extends IMLandPathNodeMaker {
@@ -162,7 +162,6 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
 
         @Override
         public int getSuccessors(int index, PathNode[] successors, PathNode node, CollisionView world, DynamicPathNodeNavigator.NodeCache cache) {
-            index = super.getSuccessors(index, successors, node, world, cache);
             BlockPos.Mutable mutable = new BlockPos.Mutable();
 
             PathAction ladderAction = PathAction.NONE;
@@ -171,7 +170,9 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
             }
 
             if (ladderAction == PathAction.NONE && (previousNodeAction == PathAction.NONE || previousNodeAction == PathAction.BRIDGE)) {
-                if (world.getBlockState(mutable.set(node.x, node.y - 1, node.z)).isAir()) {
+                //BlockState stateBelow = world.getBlockState(mutable.set(node.x, node.y - 1, node.z));
+                PathNodeType typeBelow = getNodeType(node.x, node.y - 1, node.z);
+                if (typeBelow == PathNodeType.OPEN || typeBelow == PathNodeType.WATER || typeBelow == PathNodeType.LAVA || node.type == PathNodeType.WATER) {
                     ladderAction = PathAction.getLadderActionForDirection(
                             getHighLadderOrientation(world, getMaxLadderHeight(mutable, node), mutable.set(node.x, node.y - 1, node.z), node)
                     );
@@ -184,7 +185,7 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
                     successors[index++] = n;
                 }
             }
-
+            index = super.getSuccessors(index, successors, node, world, cache);
             return index;
         }
 
@@ -232,7 +233,8 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
             int originalY = mutable.getY() + 1;
             try {
                 for (int yOffset = 0; yOffset < height; yOffset++) {
-                    if (!world.getBlockState(mutable.setY(originalY + yOffset)).isAir()) {
+                    PathNodeType type = getLandNodeType(entity, mutable.setY(originalY + yOffset));
+                    if (type != PathNodeType.OPEN && type != PathNodeType.WATER && type != PathNodeType.LAVA) {
                         return false;
                     }
                 }

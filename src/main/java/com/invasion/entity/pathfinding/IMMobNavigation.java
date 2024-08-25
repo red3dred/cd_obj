@@ -2,6 +2,7 @@ package com.invasion.entity.pathfinding;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.InvasionMod;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.Stunnable;
 import com.invasion.entity.pathfinding.path.ActionablePathNode;
@@ -225,6 +226,7 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
                 entity.setJumping(false);
             }
         } else if (action.getType() != PathAction.Type.DIG) {
+            InvasionMod.LOGGER.info("Handling path action {}", action);
             if (entity instanceof NexusEntity e && e.handlePathAction(getCurrentPath().getCurrentNodePos(), action, this)) {
                 waitingForNotify = MAX_WAIT_TIME;
             }

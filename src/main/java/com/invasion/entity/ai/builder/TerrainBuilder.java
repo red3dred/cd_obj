@@ -6,11 +6,13 @@ import org.jetbrains.annotations.Nullable;
 
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.NexusEntity;
+import com.invasion.entity.pathfinding.BuilderIMMobNavigation;
 import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
 import com.invasion.nexus.ai.scaffold.Scaffold;
 import com.invasion.util.math.PosUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.LadderBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
@@ -108,24 +110,23 @@ public class TerrainBuilder implements ITerrainBuild {
     }
 
     @Override
-    public Stream<ModifyBlockEntry> askBuildLadder(BlockPos pos) {
+    public Stream<ModifyBlockEntry> askBuildLadder(BlockPos pos, Direction orientation) {
         Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
 
         World world = mob.asEntity().getWorld();
+        BlockState ladderState = Blocks.LADDER.getDefaultState().with(LadderBlock.FACING, orientation.getOpposite());
+        BlockPos.Mutable mutable = pos.mutableCopy();
 
         if (!world.getBlockState(pos).isOf(Blocks.LADDER)) {
-            if (!canPlaceLadderAt(world, pos)) {
+            if (!BuilderIMMobNavigation.canPositionSupportLadder(world, mutable, orientation)) {
                 return Stream.empty();
             }
 
-            builder.add(new ModifyBlockEntry(pos, Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+            builder.add(new ModifyBlockEntry(pos, ladderState, (int) (LADDER_COST / buildRate)));
         }
 
-        BlockPos.Mutable mutable = pos.mutableCopy();
-
-        BlockState block = world.getBlockState(mutable.move(Direction.DOWN, 2));
-        if (!block.isAir() && block.isSolidBlock(world, pos) && canPlaceLadderAt(world, mutable.set(pos).move(Direction.DOWN))) {
-            builder.add(new ModifyBlockEntry(mutable.toImmutable(), Blocks.LADDER.getDefaultState(), (int) (LADDER_COST / buildRate)));
+        if (world.isAir(mutable.move(Direction.DOWN, 2)) && BuilderIMMobNavigation.canPositionSupportLadder(world, mutable.set(pos).move(Direction.DOWN), orientation)) {
+            builder.add(new ModifyBlockEntry(mutable.toImmutable(), ladderState, (int) (LADDER_COST / buildRate)));
         }
 
         return builder.build();
@@ -136,12 +137,19 @@ public class TerrainBuilder implements ITerrainBuild {
         Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
 
         BlockPos.Mutable mutable = pos.mutableCopy();
+        BlockPos posBelow = pos.down();
         World world = mob.asEntity().getWorld();
 
-        if (world.isAir(mutable.move(Direction.DOWN))) {
+        boolean isFluid = world.getBlockState(pos).isLiquid();
+        boolean isAirBelow = world.isAir(posBelow);
+
+        if (isAirBelow || isFluid) {
+            if (isFluid) {
+                posBelow = pos;
+            }
             boolean needsSupport = IMLandPathNodeMaker.avoidsBlock(mob.asEntity(), mutable.set(pos).move(Direction.DOWN, 2))
                                 || IMLandPathNodeMaker.avoidsBlock(mob.asEntity(), mutable.set(pos).move(Direction.DOWN, 3));
-            builder.add(new ModifyBlockEntry(pos.down(),
+            builder.add(new ModifyBlockEntry(posBelow,
                     (needsSupport ? Blocks.COBBLESTONE : Blocks.OAK_PLANKS).getDefaultState(),
                     (int) ((needsSupport ? COBBLE_COST : PLANKS_COST) / buildRate))
             );
@@ -150,13 +158,15 @@ public class TerrainBuilder implements ITerrainBuild {
         return builder.build();
     }
 
+    @Deprecated
     public static boolean canPlaceLadderAt(BlockView map, BlockPos pos) {
         if (BlockMetadata.isIndestructible(map.getBlockState(pos))) {
             BlockPos.Mutable mutable = pos.mutableCopy();
-            if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)
-                    || map.getBlockState(mutable.set(pos).move(-1, 0, 0)).isFullCube(map, mutable)
-                    || map.getBlockState(mutable.set(pos).move(0, 0, 1)).isFullCube(map, mutable)
-                    || map.getBlockState(mutable.set(pos).move(0, 0, -1)).isFullCube(map, mutable)) {
+            for (Direction direction : Direction.Type.HORIZONTAL) {
+                if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)) {
+                }
+            }
+            if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)) {
                 return true;
             }
         }

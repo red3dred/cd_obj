@@ -9,6 +9,7 @@
       "PathNodeMixin"
     ],
     "client": [
-      "client.DebugRendererMixin"
+      "client.DebugRendererMixin",
+      "client.PathfindingDebugRendererMixin"
     ]
 }

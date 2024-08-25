@@ -10,7 +10,7 @@ public interface ITerrainBuild {
 
     Stream<ModifyBlockEntry> askBuildLadderTower(BlockPos pos, Direction orientation, int layersToBuild);
 
-    Stream<ModifyBlockEntry> askBuildLadder(BlockPos pos);
+    Stream<ModifyBlockEntry> askBuildLadder(BlockPos pos, Direction orientation);
 
     Stream<ModifyBlockEntry> askBuildBridge(BlockPos pos);
 }
