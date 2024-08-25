@@ -18,6 +18,12 @@ public class NexusScreen extends HandledScreen<NexusScreenHandler> {
     }
 
     @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
+        drawMouseoverTooltip(context, mouseX, mouseY);
+    }
+
+    @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         context.drawText(textRenderer, playerInventoryTitle, playerInventoryTitleX, playerInventoryTitleY, 0x404040, false);
         context.drawText(textRenderer, "Nexus - Level " + handler.getLevel(), 46, 6, 0x404040, false);

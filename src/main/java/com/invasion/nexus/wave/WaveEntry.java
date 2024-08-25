@@ -56,9 +56,7 @@ public class WaveEntry {
 
     private final List<EntityConstruct> spawnList = new ArrayList<>();
 
-    private WaveEntry(IntRange time, IntRange angle, int amount, int granularity, Select<EntityPattern> mobPool,
-            Map<Integer, String> alerts,
-            int minPointsInRange) {
+    private WaveEntry(IntRange time, IntRange angle, int amount, int granularity, Select<EntityPattern> mobPool, Map<Integer, String> alerts, int minPointsInRange) {
         this.time = time;
         this.angle = angle;
         this.amount = amount;
