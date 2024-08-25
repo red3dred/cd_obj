@@ -47,6 +47,7 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
         nodeMaker.setCanOpenDoors(true);
         nodeMaker.setCanSwim(true);
         nodeMaker.setCanClimbLadders(true);
+        nodeMaker.setCanDestroyBlocks(true);
         return nodeMaker;
     }
 
@@ -178,9 +179,9 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
             }
 
             if (ladderAction != PathAction.NONE) {
-                node = getBuilderNode(node.x, mutable.getY(), node.z, ladderAction);
-                if (!node.visited) {
-                    successors[index++] = node;
+                PathNode n = getBuilderNode(node.x, mutable.getY(), node.z, ladderAction);
+                if (isValidAdjacentSuccessor(n, node)) {
+                    successors[index++] = n;
                 }
             }
 

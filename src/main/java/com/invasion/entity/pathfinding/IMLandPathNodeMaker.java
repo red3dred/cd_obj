@@ -37,6 +37,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
     private Consumer<CollisionView> chunkCacheModifier = a -> {};
 
     protected PathAction previousNodeAction = PathAction.NONE;
+    protected BlockPos previousNodePosition = BlockPos.ORIGIN;
 
     public boolean canDestroyBlocks() {
         return canMineBlocks && (entity == null || entity.getWorld().getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING));
@@ -92,6 +93,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
 
     @Override
     public int getSuccessors(PathNode[] successors, PathNode node) {
+        previousNodePosition = node.getBlockPos();
         previousNodeAction = ActionablePathNode.getAction(node);
         int index = getSuccessors(super.getSuccessors(successors, node), successors, node, context.getWorld(), this);
         for (int i = 0; i < index; i++) {
@@ -130,7 +132,7 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
                         if (n != null) {
                             n.penalty = isClimbable ? 0 : getBlockStrength(pos, state);
                             n = ActionablePathNode.setAction(n, isClimbable ? PathAction.getClimbing(direction) : PathAction.DIG);
-                            if (!n.visited) {
+                            if (isValidAdjacentSuccessor(n, node)) {
                                 successors[index++] = n;
                             }
                         }
@@ -153,6 +155,12 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
             return PathNodeType.WALKABLE;
         }
         return type;
+    }
+
+    @Override
+    protected boolean isValidDiagonalSuccessor(PathNode xNode, @Nullable PathNode zNode, @Nullable PathNode xDiagNode) {
+        return super.isValidDiagonalSuccessor(xNode, zNode, xDiagNode)
+                && (ActionablePathNode.getAction(xNode) != PathAction.DIG || ActionablePathNode.getAction(zNode) != PathAction.DIG);
     }
 
     @Nullable
