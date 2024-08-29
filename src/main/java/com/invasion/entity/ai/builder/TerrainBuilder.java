@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.invasion.block.BlockMetadata;
 import com.invasion.entity.NexusEntity;
 import com.invasion.entity.pathfinding.BuilderIMMobNavigation;
 import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
@@ -16,7 +15,6 @@ import net.minecraft.block.LadderBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public class TerrainBuilder implements ITerrainBuild {
@@ -157,20 +155,4 @@ public class TerrainBuilder implements ITerrainBuild {
 
         return builder.build();
     }
-
-    @Deprecated
-    public static boolean canPlaceLadderAt(BlockView map, BlockPos pos) {
-        if (BlockMetadata.isIndestructible(map.getBlockState(pos))) {
-            BlockPos.Mutable mutable = pos.mutableCopy();
-            for (Direction direction : Direction.Type.HORIZONTAL) {
-                if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)) {
-                }
-            }
-            if (map.getBlockState(mutable.set(pos).move(1, 0, 0)).isFullCube(map, mutable)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }
