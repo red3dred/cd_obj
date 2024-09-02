@@ -24,6 +24,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.CollisionView;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.chunk.ChunkCache;
@@ -113,35 +114,24 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
 
     @Override
     public int getSuccessors(int index, PathNode[] successors, PathNode node, CollisionView world, DynamicPathNodeNavigator.NodeCache cache) {
-        boolean canClimb = getCanClimbLadders();
-        boolean canDigDown = getCanDigDown();
 
-        if (canClimb || canDigDown) {
-            PathNodeType currentNodeType = getNodeType(node.x, node.y, node.z);
-            BlockPos pos = new BlockPos(node.x, node.y, node.z);
-            double prevY = getFeetY(pos);
-            if (PathingUtil.isLadder(entity.getWorld().getBlockState(pos))) {
-                for (Direction direction : Direction.Type.VERTICAL) {
-                    BlockPos p = pos.offset(direction);
-                    BlockState state = entity.getWorld().getBlockState(p);
-                    boolean isClimbable = canClimb && PathingUtil.isLadder(state);
-                    boolean isDiggable = canDigDown && direction == Direction.DOWN && canMineBlock(entity.getWorld(), p, state);
+        PathNodeType currentNodeType = getNodeType(node.x, node.y, node.z);
+        double prevY = getFeetY(node.getBlockPos());
 
-                    if (isClimbable || isDiggable) {
-                        PathNode n = getPathNode(node.x, node.y + direction.getOffsetY(), node.z, 1, prevY, direction, currentNodeType);
-                        if (n != null) {
-                            n.penalty = isClimbable ? 0 : getBlockStrength(pos, state);
-                            n = ActionablePathNode.setAction(n, isClimbable ? PathAction.getClimbing(direction) : PathAction.DIG);
-                            if (isValidAdjacentSuccessor(n, node)) {
-                                successors[index++] = n;
-                            }
-                        }
-                    }
-                }
+        int stepHeight = MathHelper.floor(Math.max(1, entity.getStepHeight()));
+
+        for (Direction direction : Direction.Type.VERTICAL) {
+            PathNode n = getPathNode(node.x, node.y + direction.getOffsetY(), node.z, stepHeight, prevY, direction, currentNodeType);
+            if (isValidVerticalSuccessor(n, node, direction)) {
+                successors[index++] = n;
             }
         }
 
         return delegate.getSuccessors(index, successors, node, world, cache);
+    }
+
+    protected boolean isValidVerticalSuccessor(@Nullable PathNode node, PathNode successor, Direction direction) {
+        return node != null && !node.visited && node.penalty != 0 && ActionablePathNode.getAction(node) != PathAction.NONE;
     }
 
     @Override
@@ -165,9 +155,9 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
 
     @Nullable
     @Override
-    protected PathNode getPathNode(int x, int y, int z, int maxYStep, double prevFeetY, Direction direction, PathNodeType nodeType) {
+    protected PathNode getPathNode(int x, int y, int z, int maxYStep, double feetY, Direction direction, PathNodeType nodeType) {
         @Nullable
-        PathNode node = super.getPathNode(x, y, z, maxYStep, prevFeetY, direction, nodeType);
+        PathNode node = super.getPathNode(x, y, z, maxYStep, feetY, direction, nodeType);
         if (canDestroyBlocks() && node != null && getLandNodeType(context, new BlockPos.Mutable(node.x, node.y, node.z)) == PathNodeType.BLOCKED) {
             BlockPos pos = node.getBlockPos();
             BlockState state = context.getBlockState(pos);
@@ -182,6 +172,26 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
             BlockPos pos = node.getBlockPos();
             float mobDensityMultiplier = 1 + (ScaffoldView.of(context.getWorld()).getMobDensity(pos) * 3);
             node.penalty += getWalkableNodePathingPenalty(context.getWorld(), pos, mobDensityMultiplier);
+        }
+
+        if (node != null) {
+            boolean canClimb = getCanClimbLadders();
+            boolean canDigDown = getCanDigDown();
+
+            if (canClimb || canDigDown) {
+                BlockPos pos = new BlockPos(node.x, node.y, node.z);
+                if (PathingUtil.isLadder(entity.getWorld().getBlockState(pos))) {
+                    BlockPos next = pos.offset(direction);
+                    BlockState nextState = entity.getWorld().getBlockState(next);
+                    boolean isClimbable = canClimb && PathingUtil.isLadder(nextState);
+                    boolean isDiggable = canDigDown && direction == Direction.DOWN && canMineBlock(entity.getWorld(), next, nextState);
+
+                    if (isClimbable || isDiggable) {
+                        node.penalty = isClimbable ? 0 : getBlockStrength(pos, nextState);
+                        ActionablePathNode.setAction(node, isClimbable ? PathAction.getClimbing(node.y < (int)feetY ? Direction.DOWN : Direction.UP) : PathAction.DIG);
+                    }
+                }
+            }
         }
 
         return node;

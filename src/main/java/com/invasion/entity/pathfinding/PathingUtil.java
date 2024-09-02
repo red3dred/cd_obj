@@ -1,6 +1,7 @@
 package com.invasion.entity.pathfinding;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
@@ -10,6 +11,7 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
 
 public interface PathingUtil {
     Set<PathNodeType> AVOIDED_TYPES = Set.of(
@@ -42,6 +44,10 @@ public interface PathingUtil {
         return state.isIn(BlockTags.CLIMBABLE);
     }
 
+    static boolean isAirOrReplaceable(BlockState state) {
+        return state.isAir() || state.isReplaceable();
+    }
+
     static boolean shouldAvoidBlock(MobEntity entity, BlockPos pos) {
         if (entity.isInvulnerable()) {
             return false;
@@ -52,5 +58,14 @@ public interface PathingUtil {
                 || (!entity.isFireImmune() && FIRE_DAMAGE_TYPES.contains(type))
                 || ( entity.canFreeze() && type == PathNodeType.DANGER_POWDER_SNOW)
                 || (!entity.canBreatheInWater() && WATER_DAMAGE_TYPES.contains(type));
+    }
+
+    static int scanVertically(WorldView world, BlockPos.Mutable mutable, int max, Predicate<BlockPos.Mutable> test) {
+        int initialY = mutable.getY();
+        int height = 0;
+        while (height < max && test.test(mutable.setY(initialY + height))) {
+            height++;
+        }
+        return height;
     }
 }

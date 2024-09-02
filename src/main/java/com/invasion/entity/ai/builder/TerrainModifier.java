@@ -15,6 +15,7 @@ import com.invasion.block.InvBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
@@ -137,6 +138,9 @@ public final class TerrainModifier implements ITerrainModify {
                 : theEntity.getWorld().setBlockState(entry.pos(), entry.newBlock(), flags);
         if (!succeeded) {
             return Notifiable.Status.UNMODIFIABLE;
+        }
+        if (!entry.newBlock().isAir()) {
+            theEntity.getWorld().playSound(null, entry.pos(), entry.newBlock().getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS);
         }
         return Notifiable.Status.SUCCESS;
     }

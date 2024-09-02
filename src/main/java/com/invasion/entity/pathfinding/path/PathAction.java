@@ -1,5 +1,7 @@
 package com.invasion.entity.pathfinding.path;
 
+import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.math.Direction;
@@ -22,21 +24,19 @@ public enum PathAction {
     LADDER_TOWER_UP_NZ(Type.TOWER, Direction.NORTH),
     SCAFFOLD_UP(Type.SCAFFOLD, Direction.UP);
 
-    public static final PathAction[] ladderTowerIndexOrient = {
-            LADDER_TOWER_UP_PX, LADDER_TOWER_UP_NX, LADDER_TOWER_UP_PZ, LADDER_TOWER_UP_NZ
-    };
-    public static final PathAction[] ladderIndexOrient = {
-            LADDER_UP_PX, LADDER_UP_NX, LADDER_UP_PZ, LADDER_UP_NZ
-    };
+    private static final List<PathAction> LADDER_ACTIONS = List.of(
+            LADDER_UP_PZ, LADDER_UP_NX, LADDER_UP_NZ, LADDER_UP_NX
+    );
+    private static final List<PathAction> TOWER_ACTIONS = List.of(
+            LADDER_TOWER_UP_PZ, LADDER_TOWER_UP_NX, LADDER_TOWER_UP_NZ, LADDER_TOWER_UP_NX
+    );
 
     public static PathAction getLadderActionForDirection(Direction direction) {
-        return switch (direction) {
-            case EAST -> LADDER_UP_PX;
-            case WEST -> LADDER_UP_NX;
-            case SOUTH -> LADDER_UP_PZ;
-            case NORTH -> LADDER_UP_NZ;
-            default -> NONE;
-        };
+        return LADDER_ACTIONS.get(direction.getHorizontal());
+    }
+
+    public static PathAction getTowerActionForDirection(Direction direction) {
+        return TOWER_ACTIONS.get(direction.getHorizontal());
     }
 
     public static PathAction getClimbing(Direction direction) {

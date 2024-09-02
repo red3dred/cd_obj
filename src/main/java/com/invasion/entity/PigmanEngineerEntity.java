@@ -25,6 +25,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -74,6 +75,7 @@ public class PigmanEngineerEntity extends IMMobEntity implements Miner {
         goalSelector.add(9, new LookAtEntityGoal(this, IMCreeperEntity.class, 12));
         goalSelector.add(9, new LookAroundGoal(this));
 
+        targetSelector.add(1, new CustomRangeActiveTargetGoal<>(this, VillagerEntity.class, 3, true));
         targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, 3, true), this::hasNexus));
         targetSelector.add(1, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getSenseRange, false), () -> !hasNexus()));
         targetSelector.add(2, new PredicatedGoal(new CustomRangeActiveTargetGoal<>(this, PlayerEntity.class, this::getAggroRange, true), () -> !hasNexus()));

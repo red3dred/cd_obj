@@ -221,7 +221,6 @@ public class IMMobNavigation extends MobNavigation implements Navigation {
                 if (entity instanceof NexusEntity e) {
                     e.setIsHoldingIntoLadder(true);
                 }
-                entity.setSneaking(true);
                 entity.fallDistance = 0;
                 entity.setJumping(false);
             }

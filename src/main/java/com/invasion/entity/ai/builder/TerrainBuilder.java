@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.Nullable;
 
 import com.invasion.entity.NexusEntity;
-import com.invasion.entity.pathfinding.BuilderIMMobNavigation;
+import com.invasion.entity.pathfinding.ClimberUtil;
 import com.invasion.entity.pathfinding.IMLandPathNodeMaker;
 import com.invasion.nexus.ai.scaffold.Scaffold;
 import com.invasion.util.math.PosUtils;
@@ -112,19 +112,20 @@ public class TerrainBuilder implements ITerrainBuild {
         Stream.Builder<ModifyBlockEntry> builder = Stream.builder();
 
         World world = mob.asEntity().getWorld();
-        BlockState ladderState = Blocks.LADDER.getDefaultState().with(LadderBlock.FACING, orientation.getOpposite());
+        BlockState ladderState = Blocks.LADDER.getDefaultState().with(LadderBlock.FACING, orientation);
         BlockPos.Mutable mutable = pos.mutableCopy();
 
         if (!world.getBlockState(pos).isOf(Blocks.LADDER)) {
-            if (!BuilderIMMobNavigation.canPositionSupportLadder(world, mutable, orientation)) {
+            if (!ClimberUtil.canPositionSupportLadder(world, mutable, orientation)) {
                 return Stream.empty();
             }
 
-            builder.add(new ModifyBlockEntry(pos, ladderState, (int) (LADDER_COST / buildRate)));
-        }
-
-        if (world.isAir(mutable.move(Direction.DOWN, 2)) && BuilderIMMobNavigation.canPositionSupportLadder(world, mutable.set(pos).move(Direction.DOWN), orientation)) {
             builder.add(new ModifyBlockEntry(mutable.toImmutable(), ladderState, (int) (LADDER_COST / buildRate)));
+            for (int i = 0; i < 4; i++) {
+                if (ClimberUtil.canPositionSupportLadder(world, mutable.move(Direction.UP), orientation)) {
+                    builder.add(new ModifyBlockEntry(mutable.toImmutable(), ladderState, (int) (LADDER_COST / buildRate)));
+                }
+            }
         }
 
         return builder.build();
