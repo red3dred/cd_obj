@@ -4,6 +4,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -238,7 +239,7 @@ public class IMWaveSpawner implements Spawner {
 				return true;
 			}
 
-			if (spawnPoint.trySpawnEntity(nexus.getWorld(), mob)) {
+			if (spawnPoint.trySpawnEntity((ServerWorld)nexus.getWorld(), mob)) {
 				successfulSpawns++;
 				if (debugMode) {
 				    InvasionMod.LOGGER.info("[Spawn] Time: " + currentWave.getTimeInWave() / 1000 + "  Type: " + mob + "  Coords: " + mob.getX() + ", " + mob.getY() + ", " + mob.getZ() + "  θ" + spawnPoint.getAngle() + "  Specified: " + angle);

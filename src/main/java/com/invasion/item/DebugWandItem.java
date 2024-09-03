@@ -8,7 +8,7 @@ import com.invasion.entity.VultureEntity;
 import com.invasion.entity.IMCreeperEntity;
 import com.invasion.entity.PigmanEngineerEntity;
 import com.invasion.entity.IMSkeletonEntity;
-import com.invasion.entity.EntityIMSpider;
+import com.invasion.entity.NexusSpiderEntity;
 import com.invasion.entity.ThrowerEntity;
 import com.invasion.entity.EntityIMZombie;
 import com.invasion.entity.InvEntities;
@@ -93,10 +93,8 @@ class DebugWandItem extends Item {
             creep.setNexus(nexus);
             creep.setPosition(pos.toBottomCenterPos());
 
-            EntityIMSpider spider = InvEntities.SPIDER.create(world);
+            NexusSpiderEntity spider = InvEntities.JUMPING_SPIDER.create(world);
             spider.setNexus(nexus);
-            spider.setFlavour(0);
-            spider.setTier(2);
 
             spider.setPosition(pos.toBottomCenterPos());
 
@@ -105,10 +103,8 @@ class DebugWandItem extends Item {
             skeleton.setPosition(pos.toBottomCenterPos());
         }
 
-        EntityIMSpider entity = InvEntities.SPIDER.create(world);
+        NexusSpiderEntity entity = InvEntities.QUEEN_SPIDER.create(world);
         entity.setNexus(nexus);
-        entity.setFlavour(1);
-        entity.setTier(2);
 
         entity.setPosition(pos.toBottomCenterPos());
 

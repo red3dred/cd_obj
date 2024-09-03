@@ -1,6 +1,6 @@
 {
     "block.invmod.nexus_core": "Nexus Core",
-    "itemGroup.invmod.invasion": "Invasion Mod",
+    "itemGroup.invmod.invasion_mod": "Invasion Mod",
 
     "item.invmod.phase_crystal": "Phase Crystal",
     "item.invmod.rift_flux": "Rift Flux",
@@ -22,11 +22,16 @@
     "item.invmod.nexus_adjuster": "Nexus Adjuster",
     "item.invmod.material_probe": "Material Probe",
     "item.invmod.debug_wand": "Debug Wand",
+    "item.invmod.spider_spawn_egg": "Invading Spider Spawn Egg",
+    "item.invmod.jumping_spider_spawn_egg": "Jumping Spider Spawn Egg",
+    "item.invmod.mother_spider_spawn_egg": "Mother Spider Spawn Egg",
 
     "entity.invmod.zombie": "IM Zombie",
     "entity.invmod.zombie_pigma": "IM Zombie Pigman",
     "entity.invmod.skeleton": "IM Skeleton",
-    "entity.invmod.spider": "IM Spider",
+    "entity.invmod.spider": "Invading Spider",
+    "entity.invmod.jumping_spider": "Jumping Spider",
+    "entity.invmod.queen_spider": "Mother Spider",
     "entity.invmod.pigman_engineer": "IM Pigman Engineer",
     "entity.invmod.bird": "WIP-IM Bird",
     "entity.invmod.thrower": "IM Thrower",
@@ -65,7 +70,7 @@
 
     "invmod.message.bone.nonearbynexus1": "The wolf doesn't like this Strange Bone.",
     "invmod.message.bone.nonearbynexus2": "Maybe a certain block is missing...",
-    
+
     "invmod.subtitle.nexus_chimes": "Nexus Chimes",
     "invmod.subtitle.nexus_rumbles": "Nexus Rumbles",
     "invmod.subtitle.enemy_explodes": "Enemy Explodes",

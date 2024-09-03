@@ -1,6 +1,5 @@
 package com.invasion.entity;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.invasion.InvSounds;
@@ -33,9 +32,9 @@ public class SpiderEggEntity extends MobEntity implements Combatant<SpiderEggEnt
         super(type, world);
     }
 
-    public SpiderEggEntity(Entity parent, Entity[] contents, int hatchTime) {
+    public SpiderEggEntity(Entity parent, List<Entity> contents, int hatchTime) {
         super(InvEntities.SPIDER_EGG, parent.getWorld());
-        this.contents = contents == null ? List.of() : Arrays.asList(contents);
+        this.contents = contents == null ? List.of() : contents;
         this.hatchTime = hatchTime;
         resetHealth();
         setPosition(parent.getPos());

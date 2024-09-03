@@ -27,8 +27,14 @@ public interface InvEntities {
             .dimensions(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.0125F).vehicleAttachment(-0.7F).maxTrackingRange(8));
     EntityType<IMCreeperEntity> CREEPER = register("creeper", EntityType.Builder.<IMCreeperEntity>create(IMCreeperEntity::new, SpawnGroup.MONSTER)
             .dimensions(0.6F, 1.7F).maxTrackingRange(8));
-    EntityType<EntityIMSpider> SPIDER = register("spider", EntityType.Builder.<EntityIMSpider>create(EntityIMSpider::new, SpawnGroup.MONSTER)
+
+    EntityType<NexusSpiderEntity> SPIDER = register("spider", EntityType.Builder.<NexusSpiderEntity>create(NexusSpiderEntity::new, SpawnGroup.MONSTER)
             .dimensions(1.4F, 0.9F).eyeHeight(0.65F).passengerAttachments(0.765F).maxTrackingRange(8));
+    EntityType<JumpingSpiderEntity> JUMPING_SPIDER = register("jumping_spider", EntityType.Builder.<JumpingSpiderEntity>create(JumpingSpiderEntity::new, SpawnGroup.MONSTER)
+            .dimensions(1.4F, 0.9F).eyeHeight(0.65F).passengerAttachments(0.765F).maxTrackingRange(8));
+    EntityType<QueenSpiderEntity> QUEEN_SPIDER = register("queen_spider", EntityType.Builder.<QueenSpiderEntity>create(QueenSpiderEntity::new, SpawnGroup.MONSTER)
+            .dimensions(1.4F, 0.9F).eyeHeight(0.65F).passengerAttachments(0.765F).maxTrackingRange(8));
+
     EntityType<ThrowerEntity> THROWER = register("thrower", EntityType.Builder.<ThrowerEntity>create(ThrowerEntity::new, SpawnGroup.MONSTER)
             .dimensions(1.8F, 1.95F).eyeHeight(1.74F).vehicleAttachment(-0.7F).maxTrackingRange(8));
     EntityType<BurrowerEntity> BURROWER = register("burrower", EntityType.Builder.<BurrowerEntity>create(BurrowerEntity::new, SpawnGroup.MONSTER)
@@ -76,7 +82,9 @@ public interface InvEntities {
         FabricDefaultAttributeRegistry.register(ZOMBIE_PIGMAN, EntityIMZombiePigman.createT1Attributes());
         FabricDefaultAttributeRegistry.register(PIGMAN_ENGINEER, PigmanEngineerEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(CREEPER, IMCreeperEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(SPIDER, EntityIMSpider.createT1V0Attributes());
+        FabricDefaultAttributeRegistry.register(SPIDER, NexusSpiderEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(JUMPING_SPIDER, JumpingSpiderEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(QUEEN_SPIDER, QueenSpiderEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(THROWER, ThrowerEntity.createT1V0Attributes());
         FabricDefaultAttributeRegistry.register(BURROWER, BurrowerEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(IMP, ImpEnitty.createAttributes());
@@ -92,6 +100,8 @@ public interface InvEntities {
             BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.ZOMBIE, EntityType.SKELETON, EntityType.SPIDER), SPAWN_PROXY.getSpawnGroup(), SPAWN_PROXY, config.nightMobSpawnChance, 1, 1);
             BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.ZOMBIE), ZOMBIE.getSpawnGroup(), ZOMBIE, 1, 1, 1);
             BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.SPIDER), SPIDER.getSpawnGroup(), SPIDER, 1, 1, 1);
+            BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.SPIDER), SPIDER.getSpawnGroup(), JUMPING_SPIDER, 1, 1, 1);
+            BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.SPIDER), SPIDER.getSpawnGroup(), QUEEN_SPIDER, 1, 1, 1);
             BiomeModifications.addSpawn(BiomeSelectors.spawnsOneOf(EntityType.SKELETON), SKELETON.getSpawnGroup(), SKELETON, 1, 1, 1);
         }
 

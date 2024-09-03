@@ -65,16 +65,17 @@ public interface InvItems {
 
     Item NEXUS_CORE = register("nexus_core", new BlockItem(InvBlocks.NEXUS_CORE, new Item.Settings()));
 
-    Item TIER_ONE_ZOMBIE_SPAWN_EGG = register("tier_one_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x6B753F, 0x281B0A, NexusEntity.createVariant(0, 1)));
+    Item ZOMBIE_SPAWN_EGG = register("zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x6B753F, 0x281B0A, NexusEntity.createVariant(0, 1)));
     Item TIER_TWO_ZOMBIE_SPAWN_EGG = register("tier_two_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x497533, 0x7C7C7C, NexusEntity.createVariant(0, 2)));
     Item TAR_ZOMBIE_SPAWN_EGG = register("tar_zombie_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x3A4225, 0x191C13, NexusEntity.createVariant(2, 2)));
     Item ZOMBIE_BRUTE_SPAWN_EGG = register("zombie_brute_spawn_egg", createSpawnEgg(InvEntities.ZOMBIE, 0x3A4225, 0x191C13, NexusEntity.createVariant(0, 3)));
-    Item TIER_ONE_SKELETON_SPAWN_EGG = register("tier_one_skeleton_spawn_egg", createSpawnEgg(InvEntities.SKELETON, 0x9B9B9B, 0x797979));
-    Item TIER_ONE_SPIDER_SPAWN_EGG = register("tier_one_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C));
-    Item BABY_SPIDER_SPAWN_EGG = register("baby_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C, NexusEntity.createVariant(1, 1)));
-    Item JUMPING_SPIDER_SPAWN_EGG = register("jumping_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(0, 2)));
-    Item MOTHER_SPIDER_SPAWN_EGG = register("mother_spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x444167, 0x0A0328, NexusEntity.createVariant(1, 2)));
-    Item TIER_ONE_CREEPER_SPAWN_EGG = register("tier_one_creeper_spawn_egg", createSpawnEgg(InvEntities.CREEPER, 0x238F1F, 0xA5AAA6));
+    Item SKELETON_SPAWN_EGG = register("skeleton_spawn_egg", createSpawnEgg(InvEntities.SKELETON, 0x9B9B9B, 0x797979));
+
+    Item SPIDER_SPAWN_EGG = register("spider_spawn_egg", createSpawnEgg(InvEntities.SPIDER, 0x504A3E, 0xA4121C));
+    Item JUMPING_SPIDER_SPAWN_EGG = register("jumping_spider_spawn_egg", createSpawnEgg(InvEntities.JUMPING_SPIDER, 0x444167, 0x0A0328));
+    Item MOTHER_SPIDER_SPAWN_EGG = register("mother_spider_spawn_egg", createSpawnEgg(InvEntities.QUEEN_SPIDER, 0x444167, 0x0A0328));
+
+    Item CREEPER_SPAWN_EGG = register("creeper_spawn_egg", createSpawnEgg(InvEntities.CREEPER, 0x238F1F, 0xA5AAA6));
     Item PIGMAN_ENGINEER_SPAWN_EGG = register("pigman_engineer_spawn_egg", createSpawnEgg(InvEntities.PIGMAN_ENGINEER, 0xEC9695, 0x420000));
     Item THROWER_SPAWN_EGG = register("thrower_spawn_egg", createSpawnEgg(InvEntities.THROWER, 0x545F37, 0x1D2D3E));
     Item BIG_THROWER_SPAWN_EGG = register("big_thrower_spawn_egg", createSpawnEgg(InvEntities.THROWER, 0x5303814, 0x632808, NexusEntity.createVariant(0, 2)));

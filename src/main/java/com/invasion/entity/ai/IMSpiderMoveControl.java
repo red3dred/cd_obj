@@ -2,7 +2,7 @@ package com.invasion.entity.ai;
 
 import java.util.Optional;
 
-import com.invasion.entity.EntityIMSpider;
+import com.invasion.entity.NexusSpiderEntity;
 import com.invasion.util.math.PosUtils;
 
 import net.minecraft.block.BlockState;
@@ -16,7 +16,7 @@ import net.minecraft.util.math.Vec3i;
 public class IMSpiderMoveControl extends ClimbableMoveControl {
     private static final Direction[] DIRECTIONS = Direction.values();
 
-    public IMSpiderMoveControl(EntityIMSpider entity) {
+    public IMSpiderMoveControl(NexusSpiderEntity entity) {
         super(entity);
     }
 

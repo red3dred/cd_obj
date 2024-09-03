@@ -8,7 +8,7 @@ import net.minecraft.predicate.NumberRange.IntRange;
 import net.minecraft.util.math.random.Random;
 
 public record EntityPattern(
-        EntityType<? extends MobEntity> entityType,
+        Select<EntityType<? extends MobEntity>> typePool,
         Select<Integer> tierPool,
         Select<Integer> texturePool,
         Select<Integer> flavourPool) {
@@ -25,23 +25,29 @@ public record EntityPattern(
     }
 
     public EntityConstruct generateEntityConstruct(Random random, IntRange angle) {
+        EntityType<? extends MobEntity> type = typePool.selectNext(random);
         Integer tier = tierPool.selectNext(random);
         Integer texture = texturePool.selectNext(random);
         Integer flavour = flavourPool.selectNext(random);
-        return new EntityConstruct(this.entityType,
+        return new EntityConstruct(type,
                 tier == null ? DEFAULT_TIER : tier,
                 texture == null ? OPEN_TEXTURE : texture,
                 flavour == null ? DEFAULT_FLAVOUR : flavour, OPEN_SCALING, angle.min().orElse(-MAX_VALID_ANGLE), angle.max().orElse(MAX_VALID_ANGLE));
     }
 
     public static final class Builder {
-        private final EntityType<? extends MobEntity> entityType;
+        private final Select.PoolBuilder<EntityType<? extends MobEntity>, Float> typePool = Select.random();
         private final Select.PoolBuilder<Integer, Float> tierPool = Select.random();
         private final Select.PoolBuilder<Integer, Float> texturePool = Select.random();
         private final Select.PoolBuilder<Integer, Float> flavourPool = Select.random();
 
         public Builder(EntityType<? extends MobEntity> entityType) {
-            this.entityType = entityType;
+            addType(entityType, 1);
+        }
+
+        public Builder addType(EntityType<? extends MobEntity> entityType, float weight) {
+            typePool.entry(entityType, weight);
+            return this;
         }
 
         public Builder addTier(int tier, float weight) {
@@ -60,7 +66,7 @@ public record EntityPattern(
         }
 
         public EntityPattern build() {
-            return new EntityPattern(entityType, tierPool.build(), texturePool.build(), flavourPool.build());
+            return new EntityPattern(typePool.build(), tierPool.build(), texturePool.build(), flavourPool.build());
         }
     }
 }

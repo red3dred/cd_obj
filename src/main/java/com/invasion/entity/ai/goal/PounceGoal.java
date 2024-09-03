@@ -1,6 +1,6 @@
 package com.invasion.entity.ai.goal;
 
-import com.invasion.entity.EntityIMSpider;
+import com.invasion.entity.NexusSpiderEntity;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -8,7 +8,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 public class PounceGoal extends Goal {
-    private final EntityIMSpider theEntity;
+    private final NexusSpiderEntity theEntity;
     private final float minPower;
     private final float maxPower;
 
@@ -18,7 +18,7 @@ public class PounceGoal extends Goal {
 
     private int airborneTime;
 
-    public PounceGoal(EntityIMSpider entity, float minPower, float maxPower, int cooldown) {
+    public PounceGoal(NexusSpiderEntity entity, float minPower, float maxPower, int cooldown) {
         this.theEntity = entity;
         this.minPower = minPower;
         this.maxPower = maxPower;
@@ -28,12 +28,15 @@ public class PounceGoal extends Goal {
     @Override
     public boolean canStart() {
         LivingEntity target = theEntity.getTarget();
-        return --pounceTimer <= 0 && target != null && theEntity.getVisibilityCache().canSee(target) && theEntity.isOnGround();
+        return --pounceTimer <= 0
+                && target != null
+                && theEntity.getVisibilityCache().canSee(target)
+                && theEntity.isOnGround();
     }
 
     @Override
     public boolean shouldContinue() {
-        return this.isPouncing;
+        return isPouncing;
     }
 
     @Override

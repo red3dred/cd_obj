@@ -4,9 +4,10 @@ import com.invasion.InvasionMod;
 import com.invasion.util.math.PolarAngle;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 public record SpawnPoint(BlockPos pos, int angle, SpawnType type) implements PolarAngle, Comparable<PolarAngle> {
@@ -28,8 +29,13 @@ public record SpawnPoint(BlockPos pos, int angle, SpawnType type) implements Pol
         return entity.canSpawn(world) && world.isSpaceEmpty(entity);
     }
 
-    public boolean trySpawnEntity(World world, MobEntity entity) {
-        return isValidFor(world, entity) && world.spawnEntity(entity);
+    public boolean trySpawnEntity(ServerWorld world, MobEntity entity) {
+        if (isValidFor(world, entity)) {
+            entity.initialize(world, world.getLocalDifficulty(entity.getBlockPos()), SpawnReason.STRUCTURE, null);
+            world.spawnEntityAndPassengers(entity);
+            return true;
+        }
+        return false;
     }
 
     public boolean columnEquals(SpawnPoint position) {

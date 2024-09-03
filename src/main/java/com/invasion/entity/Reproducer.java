@@ -1,7 +1,9 @@
 package com.invasion.entity;
 
+import java.util.List;
+
 import net.minecraft.entity.Entity;
 
 public interface Reproducer {
-    Entity[] getOffspring(Entity paramEntity);
+    List<Entity> getOffspring(Entity paramEntity);
 }

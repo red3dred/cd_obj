@@ -3,7 +3,10 @@ package com.invasion.nexus;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public record EntityConstruct (
@@ -26,6 +29,14 @@ public record EntityConstruct (
             b.onSpawned(nexus, this);
         }
         return entity;
+    }
+
+    public MobEntity createMob(ServerWorld world, @Nullable NexusAccess nexus, BlockPos position) {
+        return entityType().create(world, entity -> {
+            if (entity instanceof BuildableMob b) {
+                b.onSpawned(nexus, this);
+            }
+        }, position, SpawnReason.NATURAL, true, false);
     }
 
     public interface BuildableMob {

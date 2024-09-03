@@ -164,6 +164,6 @@ public class WaveBuilder {
                 .entry(WaveEntry.random()
                         .entry(EntityPatterns.ZOMBIE_T2_ANY_BASIC, 2F)
                         .entry(EntityPatterns.ZOMBIE_T1_ANY, 3F)
-                        .entry(EntityPatterns.SPIDER_T2_ANY, 1F).begin((int) (timeScale * 95000)).end((int) (timeScale * 97000)).amount((int) (mobScale * 6)).granularity(500).angle(45).minSpawns(2));
+                        .entry(EntityPatterns.SPIDER_T3_ANY, 1F).begin((int) (timeScale * 95000)).end((int) (timeScale * 97000)).amount((int) (mobScale * 6)).granularity(500).angle(45).minSpawns(2));
     }
 }
