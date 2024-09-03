@@ -7,6 +7,8 @@ import java.util.Set;
 import org.apache.commons.lang3.stream.IntStreams;
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.Debug;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.ai.pathing.PathNode;
@@ -19,50 +21,12 @@ import net.minecraft.util.math.BlockPos;
 public class PathingDebugger {
 
     public static void sendPathToClients(Entity sender, @Nullable Path path, float scale) {
-        sender.getServer().getPlayerManager().sendToAll(new CustomPayloadS2CPacket(new DebugPathCustomPayload(sender.getId(), createDebuggablePath(path), scale)));
+        if (Debug.DEBUG_PATHFINDING) {
+            sender.getServer().getPlayerManager().sendToAll(new CustomPayloadS2CPacket(new DebugPathCustomPayload(sender.getId(), createDebuggablePath(path), scale)));
+        }
     }
 
-    /*
-     Pay no mind to what's below. Enjoy this cute little cottage instead
-                         (
-                            )
-                        (            ./\.
-                     |^^^^^^^^^|   ./LLLL\.
-                     |`.'`.`'`'| ./LLLLLLLL\.
-                     |.'`'.'`.'|/LLLL/^^\LLLL\.
-                     |.`.''``./LLLL/^ () ^\LLLL\.
-                     |.'`.`./LLLL/^  =   = ^\LLLL\.
-                     |.`../LLLL/^  _.----._  ^\LLLL\.
-                     |'./LLLL/^ =.' ______ `.  ^\LLLL\.
-                     |/LLLL/^   /|--.----.--|\ = ^\LLLL\.
-                   ./LLLL/^  = |=|__|____|__|=|    ^\LLLL\.
-                 ./LLLL/^=     |*|~~|~~~~|~~|*|   =  ^\LLLL\.
-               ./LLLL/^        |=|--|----|--|=|        ^\LLLL\.
-             ./LLLL/^      =   `-|__|____|__|-' =        ^\LLLL\.
-            /LLLL/^   =         `------------'        =    ^\LLLL\
-            ~~|.~       =        =      =          =         ~.|~~
-              ||     =      =      = ____     =         =     ||
-              ||  =               .-'    '-.        =         ||
-              ||     _..._ =    .'  .-()-.  '.  =   _..._  =  ||
-              || = .'_____`.   /___:______:___\   .'_____`.   ||
-              || .-|---.---|-.   ||  _  _  ||   .-|---.---|-. ||
-              || |=|   |   |=|   || | || | ||   |=|   |   |=| ||
-              || |=|___|___|=|=  || | || | ||=  |=|___|___|=| ||
-              || |=|~~~|~~~|=|   || | || | ||   |=|~~~|~~~|=| ||
-              || |*|   |   |*|   || | || | ||  =|*|   |   |*| ||
-              || |=|---|---|=| = || | || | ||   |=|---|---|=| ||
-              || |=|   |   |=|   || | || | ||   |=|   |   |=| ||
-              || `-|___|___|-'   ||o|_||_| ||   `-|___|___|-' ||
-              ||  '---------`  = ||  _  _  || =  `---------'  ||
-              || =   =           || | || | ||      =     =    ||
-              ||  %@&   &@  =    || |_||_| ||  =   @&@   %@ = ||
-              || %@&@% @%@&@    _||________||_   &@%&@ %&@&@  ||
-              ||,,\\V//\\V//, _|___|------|___|_ ,\\V//\\V//,,||
-              |--------------|____/--------\____|--------------|
-             /- _  -  _   - _ -  _ - - _ - _ _ - _  _-  - _ - _ \
-            /____________________________________________________\
-     */
-    static Path createDebuggablePath(Path path) {
+    private static Path createDebuggablePath(Path path) {
         return new Path(List.of(), BlockPos.ORIGIN, false) {
             @SuppressWarnings({ "unchecked", "rawtypes" })
             @Override

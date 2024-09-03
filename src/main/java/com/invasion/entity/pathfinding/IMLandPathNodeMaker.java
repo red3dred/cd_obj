@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.invasion.Debug;
 import com.invasion.InvasionMod;
 import com.invasion.block.BlockMetadata;
 import com.invasion.entity.pathfinding.DynamicPathNodeNavigator.NodeFactory;
@@ -97,22 +98,21 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
         previousNodePosition = node.getBlockPos();
         previousNodeAction = ActionablePathNode.getAction(node);
         int index = getSuccessors(super.getSuccessors(successors, node), successors, node, context.getWorld(), this);
-        for (int i = 0; i < index; i++) {
-
-            if (ActionablePathNode.getAction(successors[i]) != PathAction.NONE) {
-                successors[i].type = PathNodeType.WALKABLE;
-            }
-
-            if (successors[i].visited) {
-                InvasionMod.LOGGER.warn("{} Looping path detected at ({}) {} was returned in a previous iteration", entity, i, successors[i]);
-            } else {
-                for (int j = 0; j < index; j++) {
-                    if (i != j && successors[i].hashCode() == successors[j].hashCode()) {
-                        InvasionMod.LOGGER.warn("{} Looping path detected at ({}) {} was repeated in this iteration and collides with ({}) {}", entity, i, successors[i], j, successors[j]);
+        if (Debug.DEBUG_PATHFINDING) {
+            for (int i = 0; i < index; i++) {
+                /*if (ActionablePathNode.getAction(successors[i]) != PathAction.NONE) {
+                    successors[i].type = PathNodeType.WALKABLE;
+                }*/
+                if (successors[i].visited) {
+                    InvasionMod.LOGGER.warn("{} Looping path detected at ({}) {} was returned in a previous iteration", entity, i, successors[i]);
+                } else {
+                    for (int j = 0; j < index; j++) {
+                        if (i != j && successors[i].hashCode() == successors[j].hashCode()) {
+                            InvasionMod.LOGGER.warn("{} Looping path detected at ({}) {} was repeated in this iteration and collides with ({}) {}", entity, i, successors[i], j, successors[j]);
+                        }
                     }
                 }
             }
-
         }
         return index;
     }
