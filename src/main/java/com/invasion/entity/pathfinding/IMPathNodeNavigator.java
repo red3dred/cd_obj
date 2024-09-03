@@ -145,7 +145,7 @@ public class IMPathNodeNavigator {
         int hash = PathNode.hash(pos.getX(), pos.getY(), pos.getZ());
         PathNode pathpoint = pathNodeCache.get(hash);
         if (pathpoint == null) {
-            pathpoint = ActionablePathNode.create(pos, action);
+            pathpoint =  ActionablePathNode.setAction(new PathNode(pos.getX(), pos.getY(), pos.getZ()), action);
             pathNodeCache.put(hash, pathpoint);
             nodesOpened++;
         }

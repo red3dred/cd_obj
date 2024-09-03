@@ -21,6 +21,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.LadderBlock;
 import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.entity.ai.pathing.PathContext;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -176,81 +177,89 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
         }
 
         @Override
+        public PathNodeType getDefaultNodeType(PathContext context, int x, int y, int z) {
+            PathNodeType type = super.getDefaultNodeType(context, x, y, z);
+            if (type != PathNodeType.WALKABLE && !getPossibleLadderOrientations(new BlockPos.Mutable(x, y, z)).isEmpty()) {
+                return PathNodeType.WALKABLE;
+            }
+            return type;
+        }
+
+        @Override
         protected PathNode getPathNode(int x, int y, int z, int maxYStep, double feetY, Direction direction, PathNodeType nodeType) {
-            PathNode node = super.getPathNode(x, y, z, maxYStep, feetY, direction, nodeType);
             BlockPos.Mutable mutable = new BlockPos.Mutable();
+            boolean isHorizontal = direction.getAxis().isHorizontal();
+            boolean isOnLadder = previousNodeAction.getType() == PathAction.Type.LADDER;
+            boolean isScaffoldPosition = ScaffoldView.of(world).isScaffoldPosition(mutable.set(x, y, z));
 
-            if (node != null && ActionablePathNode.getAction(node) == PathAction.NONE && ScaffoldView.of(world).isScaffoldPosition(mutable.set(x, y, z))) {
-                ActionablePathNode.setAction(node, PathAction.SCAFFOLD_UP);
+            if (isHorizontal && isOnLadder && !isScaffoldPosition) {
+                return null;
             }
 
-            if (node == null || ActionablePathNode.getAction(node) == PathAction.NONE) {
-                if (direction.getAxis().isHorizontal()) {
-                    if (isBridgableGap(context.getWorld(), mutable.set(x, y - MAX_LADDER_TOWER_HEIGHT, z), MAX_LADDER_TOWER_HEIGHT)) {
-                        return getBuilderNode(x, y, z, PathAction.BRIDGE);
-                    }
-                }
+            PathNode node = super.getPathNode(x, y, z, maxYStep, feetY, direction, nodeType);
+
+            if (isScaffoldPosition && ActionablePathNode.getAction(node) == PathAction.NONE) {
+                return ActionablePathNode.setActionIfNotPresent(node, PathAction.SCAFFOLD_UP);
             }
 
-            if (direction.getAxis().isHorizontal() && previousNodeAction.getType() != PathAction.Type.LADDER) {
-                // check can begin ladder
-                if (node == null || node.type != PathNodeType.WALKABLE) {
-                    return node;
+            boolean isNoAction = ActionablePathNode.getAction(node) == PathAction.NONE;
+            boolean isClimb = ActionablePathNode.getAction(node).getType() == PathAction.Type.CLIMB;
+
+            if (isNoAction && isHorizontal) {
+
+                if (isBridgableGap(context.getWorld(), mutable.set(x, y - MAX_LADDER_TOWER_HEIGHT, z), MAX_LADDER_TOWER_HEIGHT)) {
+                    return getBridgeNode(x, y, z);
                 }
 
                 // Get possible sides that can hold a ladder
                 List<Direction> possibleOrientations = getPossibleLadderOrientations(mutable.set(x, y, z));
 
-                if (!possibleOrientations.isEmpty()) {
-                    // Get the initial orientation from vertical neighbours
-                    Direction ladderOrientation = ClimberUtil.getOrientationFromNeighbors(world, mutable.set(x, y, z), possibleOrientations);
-                    long ladderHeight = getWallHeightPermittingGaps(ladderOrientation, mutable.set(x, feetY, z));
-                    Direction optimalOrientation = ladderOrientation;
+                if (possibleOrientations.isEmpty()) {
+                    return node;
+                }
 
-                    // Measure wall heights and pick the side that gets us the farthest
-                    for (Direction alternate : possibleOrientations) {
-                        if (alternate != ladderOrientation) {
-                            long alternateHeight = getWallHeightPermittingGaps(alternate, mutable.set(x, feetY, z));
-                            if (alternateHeight > 0 && alternateHeight < MAX_LADDER_TOWER_HEIGHT && alternateHeight > ladderHeight) {
-                                optimalOrientation = alternate;
-                                ladderHeight = alternateHeight;
-                            }
+                // Get the initial orientation from vertical neighbours
+                Direction ladderOrientation = ClimberUtil.getOrientationFromNeighbors(world, mutable.set(x, y, z), possibleOrientations);
+                long ladderHeight = getWallHeightPermittingGaps(ladderOrientation, mutable.set(x, feetY, z));
+                Direction optimalOrientation = ladderOrientation;
+
+                // Measure wall heights and pick the side that gets us the farthest
+                for (Direction alternate : possibleOrientations) {
+                    if (alternate != ladderOrientation) {
+                        long alternateHeight = getWallHeightPermittingGaps(alternate, mutable.set(x, feetY, z));
+                        if (alternateHeight > 0 && alternateHeight < MAX_LADDER_TOWER_HEIGHT && alternateHeight > ladderHeight) {
+                            optimalOrientation = alternate;
+                            ladderHeight = alternateHeight;
                         }
                     }
-
-                    // Only add if it's valid and above the jump height
-                    if (ladderOrientation.getAxis() != Direction.Axis.Y && ladderHeight > maxYStep) {
-                        return getBuilderNode(x, y, z, PathAction.getLadderActionForDirection(optimalOrientation));
-                    }
-                }
-            } else if (direction.getAxis().isVertical()) {
-                BlockState stateAtNode = world.getBlockState(previousNodePosition);
-                Direction ladderOrientation = Direction.UP;
-                if (PathingUtil.isLadder(stateAtNode)) {
-                    ladderOrientation = stateAtNode.get(LadderBlock.FACING);
-                }
-                if (previousNodeAction.getType() == PathAction.Type.LADDER && previousNodeAction.getOrientation().getAxis() != Direction.Axis.Y) {
-                    ladderOrientation = previousNodeAction.getOrientation();
                 }
 
-                if (ladderOrientation.getAxis() != Direction.Axis.Y) {
+                // Only add if it's valid and above the jump height
+                if (optimalOrientation.getAxis() != Direction.Axis.Y && ladderHeight > maxYStep) {
+                    return getLadderNode(x, y, z, PathAction.getLadderActionForDirection(optimalOrientation), 1.25F);
+                }
+
+                return node;
+            }
+
+            if (!isHorizontal && !isClimb) {
+                Direction ladderOrientation = getRememberedLadderOrientation();
+
+                if (ladderOrientation.getAxis().isHorizontal()) {
                     // Check if we can continue laddering
                     int ascentionHeight = ClimberUtil.getGapHeight(world, mutable.set(x, feetY, z).move(ladderOrientation.getOpposite()), MAX_LADDERABLE_WALL_HEIGHT);
 
-                    if (ascentionHeight > 0 && ascentionHeight < MAX_LADDER_TOWER_HEIGHT) {
-                        if (ClimberUtil.canPositionSupportLadder(world, mutable.set(x, y, z), ladderOrientation)) {
-                            node = getBuilderNode(x, y, z, PathAction.getLadderActionForDirection(ladderOrientation));
-                            node.penalty /= 4;
-                            return node;
+                    if (ClimberUtil.canPositionSupportLadder(world, mutable.set(x, y, z), ladderOrientation)) {
+                        if (ascentionHeight <= 0 || ascentionHeight > MAX_LADDER_TOWER_HEIGHT) {
+                           // return null;
                         }
 
-                        if (PathingUtil.isAirOrReplaceable(world.getBlockState(mutable.set(x, y, z)))
-                            && PathingUtil.isAirOrReplaceable(world.getBlockState(mutable.set(x, y, z).move(ladderOrientation.getOpposite())))) {
-                            // If there is no supporting block, but we're below the required height, build our own
-                            node = getBuilderNode(x, y, z, PathAction.getTowerActionForDirection(ladderOrientation));
-                            node.penalty /= 2;
-                            return node;
-                        }
+                        return getLadderNode(x, y, z, PathAction.getLadderActionForDirection(ladderOrientation), 1.25F);
+                    }
+
+                    if (canPositionFitTower(mutable.set(x, y, z), ladderOrientation)) {
+                        // If there is no supporting block, but we're below the required height, build our own
+                        return getLadderNode(x, y, z, PathAction.getTowerActionForDirection(ladderOrientation), 1.75F);
                     }
                 }
             }
@@ -258,10 +267,35 @@ public class BuilderIMMobNavigation extends IMMobNavigation {
             return node;
         }
 
-        private PathNode getBuilderNode(int x, int y, int z, PathAction action) {
+        private boolean canPositionFitTower(BlockPos.Mutable pos, Direction ladderOrientation) {
+            return ladderOrientation.getAxis().isHorizontal()
+                && PathingUtil.isAirOrReplaceable(world.getBlockState(pos))
+                && PathingUtil.isAirOrReplaceable(world.getBlockState(pos.move(ladderOrientation.getOpposite())));
+        }
+
+        private Direction getRememberedLadderOrientation() {
+            if (previousNodeAction.getType() == PathAction.Type.LADDER || previousNodeAction.getType() == PathAction.Type.TOWER) {
+                return previousNodeAction.getOrientation();
+            }
+
+            BlockState stateAtNode = world.getBlockState(previousNodePosition);
+            if (PathingUtil.isLadder(stateAtNode)) {
+                return stateAtNode.get(LadderBlock.FACING);
+            }
+            return Direction.UP;
+        }
+
+        private PathNode getBridgeNode(int x, int y, int z) {
             PathNode node = getNode(x, y, z);
             node.type = PathNodeType.WALKABLE;
-            node.penalty = 0.5F;
+            node.penalty = 1.5F;
+            return ActionablePathNode.setAction(node, PathAction.BRIDGE);
+        }
+
+        private PathNode getLadderNode(int x, int y, int z, PathAction action, float penalty) {
+            PathNode node = getNode(x, y, z);
+            node.type = PathNodeType.WALKABLE;
+            node.penalty = penalty;
             return ActionablePathNode.setAction(node, action);
         }
 

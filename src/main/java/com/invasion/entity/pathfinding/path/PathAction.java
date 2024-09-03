@@ -8,7 +8,6 @@ import net.minecraft.util.math.Direction;
 
 public enum PathAction {
     NONE(Type.NONE, null),
-    LADDER_UP(Type.LADDER, Direction.UP),
     BRIDGE(Type.BRIDGE, null),
     SWIM(Type.SWIM, null),
     DIG(Type.DIG, null),

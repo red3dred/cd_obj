@@ -45,7 +45,7 @@ abstract class PathfindingDebugRendererMixin {
                 if (getManhattanDistance(node.getBlockPos(), cameraX, cameraY, cameraZ) <= 80) {
                     DebugRenderer.drawString(matrices, vertexConsumers,
                             String.valueOf(ActionablePathNode.getAction(node)),
-                            node.x + 0.5, node.y + 0.75 + 0.75, node.z + 0.5,
+                            node.x + 0.5, node.y + 0.75 + 0.2, node.z + 0.5,
                             Colors.WHITE, 0.02F, true, 0, true
                     );
                 }

@@ -98,6 +98,11 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
         previousNodeAction = ActionablePathNode.getAction(node);
         int index = getSuccessors(super.getSuccessors(successors, node), successors, node, context.getWorld(), this);
         for (int i = 0; i < index; i++) {
+
+            if (ActionablePathNode.getAction(successors[i]) != PathAction.NONE) {
+                successors[i].type = PathNodeType.WALKABLE;
+            }
+
             if (successors[i].visited) {
                 InvasionMod.LOGGER.warn("{} Looping path detected at ({}) {} was returned in a previous iteration", entity, i, successors[i]);
             } else {
@@ -153,6 +158,10 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
                 && (ActionablePathNode.getAction(xNode) != PathAction.DIG || ActionablePathNode.getAction(zNode) != PathAction.DIG);
     }
 
+    protected boolean isNoActionNode(PathNode node) {
+        return node != null && ActionablePathNode.getAction(node) == PathAction.NONE;
+    }
+
     @Nullable
     @Override
     protected PathNode getPathNode(int x, int y, int z, int maxYStep, double feetY, Direction direction, PathNodeType nodeType) {
@@ -177,18 +186,31 @@ public class IMLandPathNodeMaker extends LandPathNodeMaker implements DynamicPat
         if (node != null) {
             boolean canClimb = getCanClimbLadders();
             boolean canDigDown = getCanDigDown();
+            BlockPos pos = new BlockPos(x, y, z);
 
-            if (canClimb || canDigDown) {
-                BlockPos pos = new BlockPos(node.x, node.y, node.z);
-                if (PathingUtil.isLadder(entity.getWorld().getBlockState(pos))) {
-                    BlockPos next = pos.offset(direction);
-                    BlockState nextState = entity.getWorld().getBlockState(next);
-                    boolean isClimbable = canClimb && PathingUtil.isLadder(nextState);
-                    boolean isDiggable = canDigDown && direction == Direction.DOWN && canMineBlock(entity.getWorld(), next, nextState);
+            if (canClimb && PathingUtil.isLadder(entity.getWorld().getBlockState(pos))) {
+                ActionablePathNode.setAction(node, previousNodeAction.getType() == PathAction.Type.CLIMB ? previousNodeAction
+                            : PathAction.getClimbing(direction.getAxis().isVertical() ? direction
+                            : node.y < (int)feetY ? Direction.DOWN
+                            : Direction.UP
+                ));
+            }
 
-                    if (isClimbable || isDiggable) {
-                        node.penalty = isClimbable ? 0 : getBlockStrength(pos, nextState);
-                        ActionablePathNode.setAction(node, isClimbable ? PathAction.getClimbing(node.y < (int)feetY ? Direction.DOWN : Direction.UP) : PathAction.DIG);
+            if (direction == Direction.DOWN && canDigDown && ActionablePathNode.getAction(node) == PathAction.NONE) {
+                BlockState nextState = entity.getWorld().getBlockState(pos);
+                boolean isDiggable = canDigDown && direction == Direction.DOWN && canMineBlock(entity.getWorld(), pos, nextState);
+
+                if (isDiggable) {
+                    int gapHeight = 0;
+                    int magDropHeight = entity.getSafeFallDistance();
+                    for (int i = 0; i <= magDropHeight; i++) {
+                        if (PathingUtil.isAirOrReplaceable(entity.getWorld().getBlockState(pos.down(1 + i)))) {
+                            gapHeight++;
+                        }
+                    }
+                    if (gapHeight > 0 && gapHeight <= magDropHeight) {
+                        node.penalty = getBlockStrength(pos, nextState);
+                        ActionablePathNode.setAction(node, PathAction.DIG);
                     }
                 }
             }
