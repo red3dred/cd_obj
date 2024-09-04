@@ -15,7 +15,7 @@ public class JumpingSpiderEntity extends NexusSpiderEntity {
 
     public static DefaultAttributeContainer.Builder createAttributes() {
         return SpiderEntity.createSpiderAttributes()
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.7F)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.5F)
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4)
                 .add(EntityAttributes.GENERIC_GRAVITY, 0.08);
     }
@@ -28,5 +28,10 @@ public class JumpingSpiderEntity extends NexusSpiderEntity {
     @Override
     protected void initExtraGoals() {
         goalSelector.add(4, new PounceGoal(this, 0.2F, 1.55F, 18));
+    }
+
+    @Override
+    public int getSafeFallDistance() {
+        return 13;
     }
 }

@@ -2,6 +2,7 @@ package com.invasion.entity.ai.goal;
 
 import com.invasion.entity.NexusSpiderEntity;
 
+import net.minecraft.command.argument.EntityAnchorArgumentType.EntityAnchor;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.MathHelper;
@@ -26,6 +27,11 @@ public class PounceGoal extends Goal {
     }
 
     @Override
+    public boolean shouldRunEveryTick() {
+        return true;
+    }
+
+    @Override
     public boolean canStart() {
         LivingEntity target = theEntity.getTarget();
         return --pounceTimer <= 0
@@ -41,7 +47,7 @@ public class PounceGoal extends Goal {
 
     @Override
     public void start() {
-        if (pounce(theEntity.getTarget().getPos())) {
+        if (pounce(theEntity.getTarget().getEyePos())) {
             airborneTime = 0;
             isPouncing = true;
             theEntity.getNavigatorNew().haltForTick();
@@ -67,9 +73,11 @@ public class PounceGoal extends Goal {
         Vec3d delta = pos.subtract(theEntity.getPos());
         double dXZ = delta.horizontalLength();
         double a = Math.atan(delta.y / dXZ);
-        if (Math.abs(a) > 0.7853981633974483D) {
+
+        if (Math.abs(a) > 0.4853981633974483D) {
             double radius = (dXZ / ((1 - Math.tan(a)) / Math.cos(a))) * theEntity.getFinalGravity();
             double power = 1D / Math.sqrt(1D / radius);
+
             if (power > minPower && power < maxPower) {
                 double distance = MathHelper.SQUARE_ROOT_OF_TWO * dXZ;
                 theEntity.addVelocity(
@@ -77,6 +85,7 @@ public class PounceGoal extends Goal {
                         (power * dXZ / distance),
                         (power * delta.z / distance)
                 );
+                theEntity.lookAt(EntityAnchor.EYES, pos);
                 return true;
             }
         }
