@@ -57,7 +57,7 @@ public class BoulderEntity extends PersistentProjectileEntity {
 
                 if (!state.isIn(BlockTags.WITHER_IMMUNE) && !state.isIn(BlockTags.DRAGON_IMMUNE)) {
                     getWorld().emitGameEvent(this, GameEvent.HIT_GROUND, hit.getBlockPos());
-                    if (BlockSpecial.of(state) == BlockSpecial.DEFLECTION_1 && getRandom().nextInt(2) == 0) {
+                    if (BlockSpecial.of(state) == BlockSpecial.DEFLECTION && getRandom().nextInt(2) == 0) {
                         discard();
                         return;
                     }

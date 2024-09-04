@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.MobEntity;
@@ -51,6 +52,12 @@ public interface PathingUtil {
     static boolean shouldAvoidBlock(MobEntity entity, BlockPos pos) {
         if (entity.isInvulnerable()) {
             return false;
+        }
+
+        BlockState state = entity.getWorld().getBlockState(pos);
+
+        if (state.isOf(Blocks.END_PORTAL_FRAME) || state.isIn(BlockTags.PORTALS)) {
+            return true;
         }
 
         PathNodeType type = LandPathNodeMaker.getLandNodeType(entity, pos);

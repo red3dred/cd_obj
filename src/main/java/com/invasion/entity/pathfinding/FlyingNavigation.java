@@ -111,12 +111,11 @@ public class FlyingNavigation extends IMNavigation {
                 BlockPos.Mutable mutable = new BlockPos.Mutable();
 
                 for (int i = -1; i > -6; i--) {
-                    BlockState state = terrainMap.getBlockState(mutable.set(node.x, node.y, node.z).move(Direction.UP, i));
+                    BlockState state = terrainMap.getBlockState(mutable.set(node.x, node.y + i, node.z));
                     if (!state.isAir()) {
-                        int blockType = BlockMetadata.getBlockType(state);
-                        if (blockType != 1) {
+                        if (!state.canPathfindThrough(NavigationType.LAND)) {
                             multiplier += 1 + i * 0.2F;
-                            if (blockType != 2 || i < -2) {
+                            if (!PathingUtil.shouldAvoidBlock(theEntity, mutable) || i < -2) {
                                 break;
                             }
                             multiplier += 6 + i * 2;
@@ -127,10 +126,10 @@ public class FlyingNavigation extends IMNavigation {
 
                 for (Direction offset : Direction.Type.HORIZONTAL) {
                     for (int j = 1; j <= 2; j++) {
-                        int blockType = BlockMetadata.getBlockType(terrainMap.getBlockState(mutable.set(node.x, node.y, node.z).move(offset, j)));
-                        if (blockType != 1) {
+                        BlockState state = terrainMap.getBlockState(mutable.set(node.x, node.y, node.z).move(offset, j));
+                        if (!state.canPathfindThrough(NavigationType.LAND)) {
                             multiplier += 1.5F - j * 0.5F;
-                            if (blockType != 2) {
+                            if (!PathingUtil.shouldAvoidBlock(theEntity, mutable)) {
                                 break;
                             }
                             multiplier += 6 - j * 2;
