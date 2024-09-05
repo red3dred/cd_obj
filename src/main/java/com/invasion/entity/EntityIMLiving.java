@@ -6,6 +6,8 @@ import com.invasion.entity.pathfinding.IMNavigation;
 import com.invasion.entity.pathfinding.Navigation;
 import com.invasion.entity.pathfinding.PathCreator;
 import com.invasion.nexus.IHasNexus;
+import com.invasion.particle.InvParticles;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
@@ -14,6 +16,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
@@ -54,6 +57,12 @@ public abstract class EntityIMLiving extends HostileEntity implements NexusEntit
 
     @Override
     public void tickMovement() {
+        if (isStunned()) {
+            if (!getWorld().isClient && age % 10 == 0) {
+                ((ServerWorld)getWorld()).spawnParticles(InvParticles.DAZE, getX(), getEyeY(), getZ(), 1, 0, 0, 0, 0);
+            }
+            stunTimer--;
+        }
         super.tickMovement();
         if (getBurnsInDay() && isAffectedByDaylight()) {
             sunlightDamageTick();

@@ -20,14 +20,6 @@ public class TrapItem extends Item {
         this.trapType = trapType;
     }
 
-    /*
-     * @SideOnly(Side.CLIENT)
-     *
-     * @Override public void registerIcons(IIconRegister par1IconRegister) {
-     * this.emptyIcon = par1IconRegister.registerIcon("invmod:trapEmpty");
-     * this.riftIcon = par1IconRegister.registerIcon("invmod:trapPurple");
-     * this.flameIcon = par1IconRegister.registerIcon("invmod:trapRed"); }
-     */
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         if (context.getSide() == Direction.UP) {

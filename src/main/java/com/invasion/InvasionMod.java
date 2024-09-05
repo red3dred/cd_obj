@@ -8,6 +8,8 @@ import com.invasion.block.InvBlocks;
 import com.invasion.entity.InvEntities;
 import com.invasion.item.InvItems;
 import com.invasion.nexus.WorldNexusStorage;
+import com.invasion.particle.InvParticles;
+
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -47,5 +49,6 @@ public class InvasionMod implements ModInitializer {
         InvItems.bootstrap();
         InvSounds.boostrap();
         InvEntities.bootstrap();
+        InvParticles.bootstrap();
     }
 }

@@ -15,6 +15,7 @@ import com.invasion.entity.ai.goal.target.CustomRangeActiveTargetGoal;
 import com.invasion.entity.ai.goal.target.RetaliateGoal;
 import com.invasion.entity.pathfinding.IMMobNavigation;
 import com.invasion.nexus.IHasNexus;
+import com.invasion.particle.InvParticles;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
@@ -39,6 +40,7 @@ import net.minecraft.entity.passive.PassiveEntity.PassiveData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
@@ -186,6 +188,13 @@ public class NexusSpiderEntity extends SpiderEntity implements NexusEntity, Moun
 
     @Override
     public void tickMovement() {
+        if (isStunned()) {
+            if (!getWorld().isClient && age % 10 == 0) {
+                ((ServerWorld)getWorld()).spawnParticles(InvParticles.DAZE, getX(), getEyeY(), getZ(), 1, 0, 0, 0, 0);
+            }
+            stunTime--;
+            return;
+        }
         super.tickMovement();
         if (!getWorld().isClient && isAlive() && isBaby() && ++ticksToGrow >= 0) {
             setBaby(false);

@@ -26,6 +26,9 @@ public interface InvSounds {
     SoundEvent ENTITY_SPIDER_EGG_HATCH = register("entity.spider_egg.hatch");
     SoundEvent ENTITY_BIG_ZOMBIE_AMBIENT = register("entity.big_zombie.ambient");
 
+    SoundEvent ENTITY_TRAP_READY = register("entity.trap.ready");
+    SoundEvent ENTITY_TRAP_COUNTDOWN = register("entity.trap.countdown");
+
     private static SoundEvent register(String name) {
         Identifier id = InvasionMod.id(name);
         return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));

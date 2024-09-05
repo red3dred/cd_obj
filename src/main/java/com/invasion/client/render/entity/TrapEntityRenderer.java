@@ -27,6 +27,7 @@ public class TrapEntityRenderer extends EntityRenderer<TrapEntity> {
 	    matrices.push();
 	    matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(180));
 	    matrices.scale(1.3F, 1.3F, 1.3F);
+	    model.setAngles(entity, 0, 0, entity.age + tickDelta, 0, 0);
 	    model.render(matrices, vertices.getBuffer(model.getLayer(getTexture(entity))), light, 0);
 	    matrices.pop();
 	}

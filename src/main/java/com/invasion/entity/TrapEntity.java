@@ -1,9 +1,12 @@
 package com.invasion.entity;
 
+import java.util.List;
 import java.util.Locale;
 
-import com.invasion.item.InvItems;
+import org.jetbrains.annotations.Nullable;
 
+import com.invasion.InvSounds;
+import com.invasion.item.InvItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -29,6 +32,8 @@ import net.minecraft.entity.data.DataTracker.Builder;
 
 public class TrapEntity extends Entity {
     private static final TrackedData<String> TYPE = DataTracker.registerData(TrapEntity.class, TrackedDataHandlerRegistry.STRING);
+
+    private int timeTriggered;
 
     public TrapEntity(EntityType<TrapEntity> type, World world) {
         super(type, world);
@@ -57,27 +62,65 @@ public class TrapEntity extends Entity {
                 doRiftParticles();
             }
             return;
-        } else {
-            if (!isValidPlacement()) {
-                dropItem(InvItems.EMPTY_TRAP);
-                discard();
-            }
+        }
 
-            if (age >= 60 && getTrapType() != Type.EMPTY) {
-                if (getWorld().getEntitiesByClass(LivingEntity.class, getBoundingBox(), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR).stream().anyMatch(this::trapEffect)) {
-                    setTrapType(Type.EMPTY);
+        if (!isValidPlacement()) {
+            dropItem(InvItems.EMPTY_TRAP);
+            discard();
+        }
+
+        if (getTrapType() != Type.EMPTY) {
+            if (age < 60) {
+                if (age % 10 == 0) {
+                    playSound(InvSounds.ENTITY_TRAP_COUNTDOWN, 0.1F, 1);
+                }
+                return;
+            } else if (age == 60) {
+                playSound(InvSounds.ENTITY_TRAP_READY, 0.1F, 1);
+            } else {
+                List<LivingEntity> targets = getWorld().getEntitiesByClass(LivingEntity.class, getBoundingBox().expand(0.1), EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR);
+                if (targets.size() > 0) {
+                    if (timeTriggered <= 0) {
+                        timeTriggered = age + 250;
+                    }
+
+                    if (age > timeTriggered) {
+                        if (targets.stream().anyMatch(this::trapEffect)) {
+                            setTrapType(Type.EMPTY);
+                        }
+                    } else {
+                        int timeRemaining = timeTriggered - age;
+                        if (age % Math.max(timeRemaining / 10, 1) == 0) {
+                            playSound(InvSounds.ENTITY_TRAP_READY, 0.1F, 1);
+                        }
+                    }
+                } else {
+                    if (timeTriggered > 0) {
+                        if (age > timeTriggered) {
+                            trapEffect(null);
+                            setTrapType(Type.EMPTY);
+                        } else {
+                            int timeRemaining = timeTriggered - age;
+                            if (age % Math.max(timeRemaining / 10, 1) == 0) {
+                                playSound(InvSounds.ENTITY_TRAP_READY, 0.1F, 1);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    public boolean trapEffect(LivingEntity triggerEntity) {
-        if (getTrapType() == Type.EMPTY) {
-            triggerEntity.damage(getDamageSources().generic(), 4);
-        } else if (getTrapType() == Type.RIFT) {
-            triggerEntity.damage(getDamageSources().magic(), triggerEntity instanceof PlayerEntity ? 12 : 38);
+    public boolean trapEffect(@Nullable LivingEntity triggerEntity) {
+        if (getTrapType() == Type.RIFT) {
+            if (triggerEntity != null) {
+                triggerEntity.damage(getDamageSources().magic(), triggerEntity instanceof PlayerEntity ? 12 : 38);
+            }
 
             for (Entity entity : getWorld().getOtherEntities(this, getBoundingBox().expand(2, 1, 2))) {
+                if (entity instanceof TrapEntity) {
+                    continue;
+                }
                 entity.damage(getDamageSources().magic(), 8);
                 if (entity instanceof Stunnable l) {
                     l.stun(60);
@@ -94,11 +137,12 @@ public class TrapEntity extends Entity {
 
     @Override
     public void onPlayerCollision(PlayerEntity player) {
-        if (!getWorld().isClient && age > 30 && getTrapType() == Type.EMPTY) {
+        if (age > 30 && getTrapType() == Type.EMPTY) {
             ItemStack drop = InvItems.EMPTY_TRAP.getDefaultStack();
             if (!player.giveItemStack(drop)) {
                 player.dropItem(drop, false);
             }
+            playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1, 1);
             discard();
         }
     }
@@ -115,6 +159,7 @@ public class TrapEntity extends Entity {
             if (!player.giveItemStack(drop)) {
                 player.dropItem(drop, false);
             }
+            playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1, 1);
             discard();
             return ActionResult.SUCCESS;
         }
@@ -141,12 +186,20 @@ public class TrapEntity extends Entity {
         return true;
     }
 
+    @Override
+    public boolean canHit() {
+        return true;
+    }
+
+
     private void doFireball(float size, int initialDamage) {
         int sz = MathHelper.ceil(size);
         for (BlockPos pos : BlockPos.iterateOutwards(getBlockPos(), sz, sz, sz)) {
-            BlockState state = getWorld().getBlockState(pos);
-            if (state.isAir() || state.isBurnable()) {
-                getWorld().setBlockState(pos, Blocks.FIRE.getDefaultState());
+            if (!pos.equals(getBlockPos())) {
+                BlockState state = getWorld().getBlockState(pos);
+                if (state.isAir() || state.isBurnable()) {
+                    getWorld().setBlockState(pos, Blocks.FIRE.getDefaultState());
+                }
             }
         }
 

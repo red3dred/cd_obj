@@ -10,6 +10,7 @@ import com.invasion.client.render.entity.IMCreeperEntityRenderer;
 import com.invasion.client.render.entity.IMSkeletonEntityRenderer;
 import com.invasion.client.render.entity.IMSpiderEntityRenderer;
 import com.invasion.client.render.entity.IMWolfEntityRenderer;
+import com.invasion.client.particle.DazeParticle;
 import com.invasion.client.render.entity.AbstractIMZombieEntityRenderer;
 import com.invasion.client.render.entity.ZombiePigmanEntityRenderer;
 import com.invasion.client.render.entity.ImpEntityRenderer;
@@ -19,6 +20,8 @@ import com.invasion.client.render.entity.TntEntityRenderer;
 import com.invasion.client.render.entity.TrapEntityRenderer;
 import com.invasion.entity.InvEntities;
 import com.invasion.item.InvItems;
+import com.invasion.particle.InvParticles;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
@@ -27,6 +30,8 @@ import net.minecraft.util.Identifier;
 
 public interface InvRenderers {
     static void bootstrap() {
+        ParticleFactoryRegistry.getInstance().register(InvParticles.DAZE, DazeParticle::factory);
+
         EntityRendererRegistry.register(InvEntities.ZOMBIE, AbstractIMZombieEntityRenderer::new);
         EntityRendererRegistry.register(InvEntities.ZOMBIE_PIGMAN, ZombiePigmanEntityRenderer::new);
         EntityRendererRegistry.register(InvEntities.SKELETON, IMSkeletonEntityRenderer::new);

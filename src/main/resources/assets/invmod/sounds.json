@@ -113,5 +113,19 @@
       { "name": "invmod:lightning_zap/zap2" },
       { "name": "invmod:lightning_zap/zap3" }
     ]
+  },
+  "entity.trap.countdown": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.trap_countdown",
+    "sounds": [
+      { "name": "invmod:explosive/countdown" }
+    ]
+  },
+  "entity.trap.ready": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.trap_ready",
+    "sounds": [
+      { "name": "invmod:explosive/ready" }
+    ]
   }
 }
