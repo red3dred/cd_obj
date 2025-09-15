@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "invmod:empty_trap" },
+    { "item": "minecraft:lava_bucket" }
+  ],
+  "result": {
+    "item": "invmod:fire_trap"
+  }
+}

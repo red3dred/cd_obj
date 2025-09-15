@@ -1,24 +1,131 @@
 {
-	"bigzombie1": {"category": "hostile","sounds": [{"name": "bigzombie1","stream": false}]},
-	"chime1": {"category": "master","sounds": [{"name": "chime1","stream": false}]},
-	"egghatch1": {"category": "hostile","sounds": [{"name": "egghatch1","stream": false}]},
-	"egghatch2": {"category": "hostile","sounds": [{"name": "egghatch2","stream": false}]},
-	"fireball1": {"category": "hostile","sounds": [{"name": "fireball1","stream": false}]},
-	"rumble1": {"category": "master","sounds": [{"name": "rumble1","stream": false}]},
-	"scrape1": {"category": "hostile","sounds": [{"name": "scrape1","stream": false}]},
-	"scrape2": {"category": "hostile","sounds": [{"name": "scrape2","stream": false}]},
-	"scrape3": {"category": "hostile","sounds": [{"name": "scrape3","stream": false}]},
-	"v_death1": {"category": "hostile","sounds": [{"name": "v_death1","stream": false}]},
-	"v_hiss1": {"category": "hostile","sounds": [{"name": "v_hiss1","stream": false}]},
-	"v_longscreech1": {"category": "hostile","sounds": [{"name": "v_longscreech1","stream": false}]},
-	"v_screech1": {"category": "hostile","sounds": [{"name": "v_screech1","stream": false}]},
-	"v_screech2": {"category": "hostile","sounds": [{"name": "v_screech2","stream": false}]},
-	"v_screech3": {"category": "hostile","sounds": [{"name": "v_screech3","stream": false}]},
-	"v_squawk1": {"category": "hostile","sounds": [{"name": "v_squawk1","stream": false}]},
-	"v_squawk2": {"category": "hostile","sounds": [{"name": "v_squawk2","stream": false}]},
-	"v_squawk3": {"category": "hostile","sounds": [{"name": "v_squawk3","stream": false}]},
-	"v_squawk4": {"category": "hostile","sounds": [{"name": "v_squawk4","stream": false}]},
-	"zap1": {"category": "hostile","sounds": [{"name": "zap1","stream": false}]},
-	"zap2": {"category": "hostile","sounds": [{"name": "zap2","stream": false}]},
-	"zap3": {"category": "hostile","sounds": [{"name": "zap3","stream": false}]}
+  "block.nexus.chime": {
+    "category": "master",
+    "subtitle": "invmod.subtitle.nexus_chimes",
+    "sounds": [
+      { "name": "invmod:nexus/chime1" }
+    ]
+  },
+  "block.nexus.rumble": {
+    "category": "master",
+    "subtitle": "invmod.subtitle.nexus_rumbles",
+    "sounds": [
+      { "name": "invmod:nexus/rumble1"  }
+    ]
+  },
+  "entity.explode": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.enemy_explodes",
+    "sounds": [
+      { "name": "invmod:fireball1" }
+    ]
+  },
+  "entity.crash": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.enemy_crashes",
+    "sounds": [
+      { "name": "invmod:fireball1" }
+    ]
+  },
+  "entity.scrape": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.wall_scrapes",
+    "sounds": [
+      { "name": "invmod:scrape/scrape1" },
+      { "name": "invmod:scrape/scrape2" },
+      { "name": "invmod:scrape/scrape3" }
+    ]
+  },
+  "entity.big_zombie.ambient": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.big_zombie_ambient",
+    "sounds": [
+      { "name": "invmod:bigzombie1" }
+    ]
+  },
+  "entity.thrower.rage": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.thrower_rages",
+    "sounds": [
+      { "name": "invmod:fireball1" }
+    ]
+  },
+  "entity.boulder.land": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.boulder_lands",
+    "sounds": [
+      { "name": "invmod:fireball1" }
+    ]
+  },
+  "entity.spider_egg.hatch": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.spider_egg_hatches",
+    "sounds": [
+      { "name": "invmod:spider_egg_hatch/egghatch1" },
+      { "name": "invmod:spider_egg_hatch/egghatch2" }
+    ]
+  },
+  "entity.vulture.death": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.vulture_death",
+    "sounds": [
+      { "name": "invmod:vulture_death/v_death1" }
+    ]
+  },
+  "entity.vulture.hiss": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.vulture_hiss",
+    "sounds": [
+      { "name": "invmod:vulture_hiss/v_hiss1" }
+    ]
+  },
+  "entity.vulture.long_screech": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.vulture_long_screech",
+    "sounds": [
+      { "name": "invmod:vulture_long_screech/v_longscreech1" }
+    ]
+  },
+  "entity.vulture.screech": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.vulture_screech",
+    "sounds": [
+      { "name": "invmod:vulture_screech/v_screech1" },
+      { "name": "invmod:vulture_screech/v_screech2" },
+      { "name": "invmod:vulture_screech/v_screech3" }
+    ]
+  },
+  "entity.vulture.squawk": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.vulture_squawk",
+    "sounds": [
+      { "name": "invmod:vulture_squawk/v_squawk1" },
+      { "name": "invmod:vulture_squawk/v_squawk2" },
+      { "name": "invmod:vulture_squawk/v_squawk3" },
+      { "name": "invmod:vulture_squawk/v_squawk4" }
+    ]
+  },
+  "entity.lightning.zap": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.lightning_zaps",
+    "sounds": [
+      { "name": "invmod:lightning_zap/zap1" },
+      { "name": "invmod:lightning_zap/zap2" },
+      { "name": "invmod:lightning_zap/zap3" }
+    ]
+  },
+  "entity.trap.countdown": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.trap_countdown",
+    "sounds": [
+      { "name": "invmod:explosive/countdown" }
+    ]
+  },
+  "entity.trap.ready": {
+    "category": "hostile",
+    "subtitle": "invmod.subtitle.trap_ready",
+    "sounds": [
+      { "name": "invmod:explosive/ready" }
+    ]
+  }
 }
